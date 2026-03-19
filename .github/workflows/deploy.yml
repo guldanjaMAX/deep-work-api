@@ -1,8 +1,10 @@
 name: Deploy Worker
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    # Manual only — do not auto-deploy on push.
+    # Worker is deployed via: CLOUDFLARE_API_TOKEN=... npx wrangler deploy
+    # Auto-deploy was disabled because wrangler-action was overriding the
+    # correct live deployment with a stale bundled version.
 
 jobs:
   deploy:
