@@ -1,5 +1,5 @@
 // ============================================================
-// DEEP WORK APP — CLOUDFLARE WORKER
+// DEEP WORK APP — CLOUDFLARE WORKER (deployed 2026-03-19T17:00)
 // ============================================================
 // Infra IDs:
 //   KV:  DEEP_WORK_SESSIONS  (ad823265a8944b9da7a561198f7f3782)
