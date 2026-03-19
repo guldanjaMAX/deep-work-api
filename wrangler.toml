@@ -1,0 +1,16 @@
+name = "deep-work-api"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "ad823265a8944b9da7a561198f7f3782"
+
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "deep-work-uploads"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "deep-work-db"
+database_id = "92121f3b-dcfb-4fa8-8482-b827224b611d"
