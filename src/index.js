@@ -168,10 +168,6 @@ async function handleCheckout(request, env) {
     'metadata[tier]': primaryTier,
     // Branded checkout experience
     'branding_settings[display_name]': 'James Guldan',
-    'branding_settings[palette][primary]': '#1a1a1a',
-    'branding_settings[palette][background]': '#FDFCFA',
-    'branding_settings[palette][button]': '#c4703f',
-    'branding_settings[typography][font]': 'Inter',
   });
   lineItems.forEach((priceId, i) => {
     params.append(`line_items[${i}][price]`, priceId);
