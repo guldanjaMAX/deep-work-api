@@ -138,27 +138,47 @@ async function handleCheckout(request, env) {
   // Support both single tier (legacy) and multiple tiers (new popup)
   const tiers = body.tiers || (body.tier ? [body.tier] : []);
 
-  const PRICE_MAP = {
-    blueprint: 'price_1TCXL7FArNSFW9mB5DDauxQg',
-    call:      'price_1TCXL8FArNSFW9mBBtiWVRCb',
-    site:      'price_1TCXL9FArNSFW9mBr189gJuC',
+  // Standalone prices (for single-tier purchases)
+  const STANDALONE_PRICES = {
+    blueprint: 'price_1TCXL7FArNSFW9mB5DDauxQg',  // $67
+    call:      'price_1TCXL8FArNSFW9mBBtiWVRCb',  // $197
+    site:      'price_1TCXL9FArNSFW9mBr189gJuC',  // $197
+  };
+
+  // Add-on prices (used when purchased alongside blueprint)
+  const ADDON_PRICES = {
+    site: 'price_1TCpHqFArNSFW9mBWI4H8w2j',  // $130 add-on
+    call: 'price_1TCpHrFArNSFW9mBu0kQISZi',  // $130 add-on
   };
 
   // Validate all tiers
+  const validTiers = ['blueprint', 'call', 'site'];
+  for (const t of tiers) {
+    if (!validTiers.includes(t)) return json({ error: `Invalid tier: ${t}` }, 400);
+  }
+  if (tiers.length === 0) return json({ error: 'No tiers specified' }, 400);
+
+  // Build line items: blueprint at full price, bumps at add-on price
+  const hasBlueprint = tiers.includes('blueprint');
   const lineItems = [];
   for (const t of tiers) {
-    if (!PRICE_MAP[t]) return json({ error: `Invalid tier: ${t}` }, 400);
-    lineItems.push(PRICE_MAP[t]);
+    if (t === 'blueprint') {
+      lineItems.push(STANDALONE_PRICES.blueprint);
+    } else if (hasBlueprint && ADDON_PRICES[t]) {
+      // Purchased as add-on alongside blueprint: use $130 price
+      lineItems.push(ADDON_PRICES[t]);
+    } else {
+      // Standalone purchase: use full price
+      lineItems.push(STANDALONE_PRICES[t]);
+    }
   }
-  if (lineItems.length === 0) return json({ error: 'No tiers specified' }, 400);
 
   const origin = new URL(request.url).origin;
   const tierString = tiers.join(',');
-  const primaryTier = tiers[0] || 'blueprint';
+  const primaryTier = tiers.includes('blueprint') ? 'blueprint' : tiers[0];
   const successUrl = `${origin}/payment-success?tier=${primaryTier}&tiers=${tierString}&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = 'https://jamesguldan.com/deep-work/';
 
-  // Build URLSearchParams with multiple line items + branding
   const params = new URLSearchParams({
     'payment_method_types[]': 'card',
     'mode': 'payment',
@@ -166,8 +186,6 @@ async function handleCheckout(request, env) {
     'cancel_url': cancelUrl,
     'metadata[tiers]': tierString,
     'metadata[tier]': primaryTier,
-    // Branded checkout experience
-    'branding_settings[display_name]': 'James Guldan',
   });
   lineItems.forEach((priceId, i) => {
     params.append(`line_items[${i}][price]`, priceId);
