@@ -158,7 +158,7 @@ async function handleCheckout(request, env) {
   const successUrl = `${origin}/payment-success?tier=${primaryTier}&tiers=${tierString}&session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = 'https://jamesguldan.com/deep-work/';
 
-  // Build URLSearchParams with multiple line items
+  // Build URLSearchParams with multiple line items + branding
   const params = new URLSearchParams({
     'payment_method_types[]': 'card',
     'mode': 'payment',
@@ -166,6 +166,12 @@ async function handleCheckout(request, env) {
     'cancel_url': cancelUrl,
     'metadata[tiers]': tierString,
     'metadata[tier]': primaryTier,
+    // Branded checkout experience
+    'branding_settings[display_name]': 'James Guldan',
+    'branding_settings[palette][primary]': '#1a1a1a',
+    'branding_settings[palette][background]': '#FDFCFA',
+    'branding_settings[palette][button]': '#c4703f',
+    'branding_settings[typography][font]': 'Inter',
   });
   lineItems.forEach((priceId, i) => {
     params.append(`line_items[${i}][price]`, priceId);
@@ -356,45 +362,76 @@ async function sendDeepWorkEmail(email, name, magicUrl, tier, env) {
   const firstName = (name || 'there').split(' ')[0];
 
   const emailHtml = `<!DOCTYPE html>
-<html><head><style>
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.7;color:#1a1a1a;max-width:560px;margin:0 auto;padding:40px 20px;background:#FDFCFA}
-h1{font-size:28px;font-weight:700;margin-bottom:8px}
-.accent{color:#c4703f}
-.card{background:#fff;border:1px solid #EAE7E2;border-radius:12px;padding:24px;margin:24px 0}
-.btn{display:inline-block;background:#0d0c0b;color:#fff !important;padding:16px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px}
-.steps{margin:0;padding:0;list-style:none;counter-reset:step}
-.steps li{counter-increment:step;padding:8px 0 8px 32px;position:relative}
-.steps li::before{content:counter(step);position:absolute;left:0;top:8px;background:#c4703f;color:#fff;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.footer{margin-top:40px;padding-top:20px;border-top:1px solid #EAE7E2;color:#999;font-size:13px}
-a{color:#c4703f}
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{margin:0;padding:0;background:#f5f3ef;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1a1a1a;-webkit-text-size-adjust:100%}
+.wrapper{max-width:560px;margin:0 auto;padding:0}
+.header{background:#1a1a1a;padding:32px 40px;text-align:center}
+.header-logo{font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:400;letter-spacing:4px;text-transform:uppercase;color:#fff;margin:0}
+.header-accent{width:40px;height:2px;background:#c4703f;margin:12px auto 0;border-radius:1px}
+.body-wrap{background:#FDFCFA;padding:40px 40px 32px;border-left:1px solid #EAE7E2;border-right:1px solid #EAE7E2}
+.body-wrap h1{font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:400;line-height:1.3;margin:0 0 16px;color:#1a1a1a}
+.body-wrap p{font-size:15px;line-height:1.7;color:#444;margin:0 0 16px}
+.btn-wrap{text-align:center;margin:32px 0}
+.btn{display:inline-block;background:#c4703f;color:#ffffff !important;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:600;font-size:15px;letter-spacing:0.3px}
+.divider{height:1px;background:#EAE7E2;margin:28px 0}
+.steps-wrap{background:#fff;border:1px solid #EAE7E2;border-radius:10px;padding:24px 28px;margin:24px 0}
+.steps-title{font-weight:700;font-size:14px;color:#1a1a1a;margin:0 0 16px;letter-spacing:0.5px;text-transform:uppercase}
+.step{display:table;width:100%;margin-bottom:14px}
+.step:last-child{margin-bottom:0}
+.step-num{display:table-cell;width:28px;vertical-align:top;padding-top:2px}
+.step-num span{display:inline-block;width:24px;height:24px;background:#c4703f;color:#fff;border-radius:50%;font-size:12px;font-weight:700;text-align:center;line-height:24px}
+.step-text{display:table-cell;vertical-align:top;padding-left:12px;font-size:14px;line-height:1.6;color:#555}
+.tip{background:#f9f6f2;border-left:3px solid #c4703f;padding:16px 20px;margin:24px 0;border-radius:0 8px 8px 0}
+.tip p{margin:0;font-size:14px;line-height:1.6;color:#555;font-style:italic}
+.footer-wrap{background:#f5f3ef;padding:28px 40px;text-align:center;border-top:1px solid #EAE7E2}
+.footer-name{font-family:Georgia,'Times New Roman',serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#999;margin:0 0 8px}
+.footer-link{font-size:12px;color:#bbb;text-decoration:none}
+.footer-copy{font-size:11px;color:#ccc;margin-top:12px}
 </style></head><body>
 
-<h1>You're in, ${firstName}.</h1>
-<p>Your Deep Work Process is ready and waiting. This is the link you will use to pick up your session anytime.</p>
+<div class="wrapper">
 
-<div style="text-align:center;margin:32px 0">
+<div class="header">
+<p class="header-logo">James Guldan</p>
+<div class="header-accent"></div>
+</div>
+
+<div class="body-wrap">
+
+<h1>You're in, ${firstName}.</h1>
+<p>Your Deep Work session is ready. This is your personal link to pick up right where you left off, anytime over the next 7 days.</p>
+
+<div class="btn-wrap">
 <a href="${magicUrl}" class="btn">Open Your Session &rarr;</a>
 </div>
 
-<div class="card">
-<p style="font-weight:600;margin-bottom:12px">Here is how it works:</p>
-<ol class="steps">
-<li>Click the button above to open your session</li>
-<li>Fill in a few details about your business (2 min)</li>
-<li>Have an honest conversation with your AI strategist</li>
-<li>Walk away with a complete brand blueprint</li>
-</ol>
+<div class="steps-wrap">
+<p class="steps-title">How It Works</p>
+<div class="step"><div class="step-num"><span>1</span></div><div class="step-text">Click the button above to open your session</div></div>
+<div class="step"><div class="step-num"><span>2</span></div><div class="step-text">Fill in a few details about your business</div></div>
+<div class="step"><div class="step-num"><span>3</span></div><div class="step-text">Have a two hour conversation with your AI strategist</div></div>
+<div class="step"><div class="step-num"><span>4</span></div><div class="step-text">Walk away with a complete brand blueprint</div></div>
 </div>
 
-<p>Block two uninterrupted hours. Close your other tabs. Put your phone face down. The more present you are, the more powerful the output becomes.</p>
+<div class="tip">
+<p>Block two uninterrupted hours. Close your other tabs. Put your phone face down. The more present and vulnerable you are, the more powerful the output becomes.</p>
+</div>
 
-<p style="margin-top:24px">Bookmark <a href="${magicUrl}">this link</a> — it is your personal access to this session for the next 7 days.</p>
+<p>Bookmark <a href="${magicUrl}" style="color:#c4703f;font-weight:600">this link</a> to come back to your session anytime.</p>
 
-<p style="margin-top:24px">Questions? Just reply to this email.<br>
-<strong>James</strong></p>
+<div class="divider"></div>
 
-<div class="footer">
-<p>James Guldan | <a href="https://jamesguldan.com" style="color:#999">jamesguldan.com</a></p>
+<p style="margin-bottom:0">Questions? Just reply to this email.</p>
+<p style="font-weight:700;margin-top:4px;color:#1a1a1a">James</p>
+
+</div>
+
+<div class="footer-wrap">
+<p class="footer-name">James Guldan</p>
+<a href="https://jamesguldan.com" class="footer-link">jamesguldan.com</a>
+<p class="footer-copy">&copy; 2026 James Guldan. All rights reserved.</p>
+</div>
+
 </div>
 
 </body></html>`;
