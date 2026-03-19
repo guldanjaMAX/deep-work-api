@@ -65,6 +65,17 @@ export default {
         return handlePaymentSuccess(request, env, url);
       }
 
+      // ── Buy redirect (creates checkout + redirects to Stripe) ─
+      if (path.startsWith('/buy/') && request.method === 'GET') {
+        const tier = path.split('/').pop();
+        return handleBuyRedirect(request, env, tier);
+      }
+
+      // ── Magic link login ──────────────────────────────────
+      if (path === '/magic' && request.method === 'GET') {
+        return handleMagicLink(request, env, url);
+      }
+
       // ── API routes ────────────────────────────────────
       if (path === '/api/checkout' && request.method === 'POST') {
         return handleCheckout(request, env);
@@ -164,12 +175,16 @@ async function handlePaymentSuccess(request, env, url) {
     return Response.redirect(new URL('/').toString(), 302);
   }
 
-  // Verify payment with Stripe
+  // Verify payment with Stripe and extract customer details
   let verified = false;
+  let customerEmail = '';
+  let customerName = '';
   try {
     const res = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`);
-    const session = await res.json();
-    verified = session.payment_status === 'paid';
+    const stripeSession = await res.json();
+    verified = stripeSession.payment_status === 'paid';
+    customerEmail = stripeSession.customer_details?.email || '';
+    customerName = stripeSession.customer_details?.name || '';
   } catch (e) {
     // If Stripe key not set yet, allow through for testing
     verified = true;
@@ -182,11 +197,22 @@ async function handlePaymentSuccess(request, env, url) {
   // Create a session ID for this user
   const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
 
-  // Store minimal session in KV
+  // Generate a magic link token (7-day expiry)
+  const magicToken = `ml_${Date.now()}_${Math.random().toString(36).slice(2,12)}`;
+  await env.SESSIONS.put(`magic:${magicToken}`, JSON.stringify({
+    sessionId,
+    email: customerEmail,
+    createdAt: new Date().toISOString()
+  }), { expirationTtl: 60 * 60 * 24 * 7 });
+
+  // Store session in KV (with customer info + magic token)
   await env.SESSIONS.put(sessionId, JSON.stringify({
     id: sessionId,
     tier,
     stripeCheckoutId: checkoutSessionId,
+    customerEmail,
+    customerName,
+    magicToken,
     phase: 1,
     messages: [],
     userData: {},
@@ -195,8 +221,23 @@ async function handlePaymentSuccess(request, env, url) {
     createdAt: new Date().toISOString()
   }), { expirationTtl: 60 * 60 * 24 * 30 }); // 30 days
 
-  // Redirect to app with session token
+  // Send magic link email (fire and forget)
   const origin = new URL(request.url).origin;
+  const magicUrl = `${origin}/magic?token=${magicToken}`;
+
+  if (customerEmail) {
+    sendDeepWorkEmail(customerEmail, customerName, magicUrl, tier, env)
+      .catch(e => console.error('Email send error:', e));
+  }
+
+  // Log to D1
+  await logEvent(env, sessionId, 'payment_success', {
+    tier,
+    email: customerEmail,
+    stripeCheckoutId: checkoutSessionId
+  });
+
+  // Redirect to app with session token
   return Response.redirect(`${origin}/?session=${sessionId}&tier=${tier}`, 302);
 }
 
@@ -216,6 +257,154 @@ async function handleWebhook(request, env) {
     }
   } catch (e) {}
   return json({ received: true });
+}
+
+
+// ════════════════════════════════════════════════════════
+// BUY REDIRECT + MAGIC LINKS
+// ════════════════════════════════════════════════════════
+
+async function handleBuyRedirect(request, env, tier) {
+  const PRICE_MAP = {
+    blueprint: 'price_1TCXL7FArNSFW9mB5DDauxQg',
+    call:      'price_1TCXL8FArNSFW9mBBtiWVRCb',
+    site:      'price_1TCXL9FArNSFW9mBr189gJuC',
+  };
+
+  const priceId = PRICE_MAP[tier];
+  if (!priceId) return new Response('Invalid tier. Use: blueprint, call, or site', { status: 400 });
+
+  const origin = new URL(request.url).origin;
+  const successUrl = `${origin}/payment-success?tier=${tier}&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = 'https://jamesguldan.com/deep-work/';
+
+  const res = await stripePost(env, '/v1/checkout/sessions', new URLSearchParams({
+    'payment_method_types[]': 'card',
+    'line_items[0][price]': priceId,
+    'line_items[0][quantity]': '1',
+    'mode': 'payment',
+    'success_url': successUrl,
+    'cancel_url': cancelUrl,
+    'metadata[tier]': tier,
+  }));
+
+  const session = await res.json();
+  if (session.url) {
+    return Response.redirect(session.url, 302);
+  }
+  return new Response('Checkout creation failed. Please try again.', { status: 500 });
+}
+
+async function handleMagicLink(request, env, url) {
+  const token = url.searchParams.get('token');
+  if (!token) return new Response('Missing token', { status: 400 });
+
+  const raw = await env.SESSIONS.get(`magic:${token}`);
+  if (!raw) {
+    return new Response(getMagicLinkExpiredHTML(), {
+      headers: { 'Content-Type': 'text/html;charset=UTF-8' }
+    });
+  }
+
+  const { sessionId } = JSON.parse(raw);
+  const origin = new URL(request.url).origin;
+  return Response.redirect(`${origin}/?session=${sessionId}`, 302);
+}
+
+function getMagicLinkExpiredHTML() {
+  return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Link Expired | Deep Work</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#FDFCFA;color:#1a1a1a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{text-align:center;max-width:440px}
+h1{font-family:'Outfit',sans-serif;font-size:28px;margin-bottom:12px}
+p{color:#666;line-height:1.6;margin-bottom:24px}
+a{display:inline-block;background:#0d0c0b;color:#fff;padding:14px 32px;border-radius:8px;font-weight:500;text-decoration:none;transition:transform 0.15s ease}
+a:hover{transform:translateY(-2px)}
+</style></head><body>
+<div class="card">
+<h1>This link has expired</h1>
+<p>Magic links are valid for 7 days. You can request a new one by signing in with your email, or start a new session.</p>
+<a href="/">Go to Deep Work App</a>
+</div></body></html>`;
+}
+
+async function sendDeepWorkEmail(email, name, magicUrl, tier, env) {
+  if (!env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not set — skipping welcome email');
+    return;
+  }
+
+  const firstName = (name || 'there').split(' ')[0];
+
+  const emailHtml = `<!DOCTYPE html>
+<html><head><style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.7;color:#1a1a1a;max-width:560px;margin:0 auto;padding:40px 20px;background:#FDFCFA}
+h1{font-size:28px;font-weight:700;margin-bottom:8px}
+.accent{color:#c4703f}
+.card{background:#fff;border:1px solid #EAE7E2;border-radius:12px;padding:24px;margin:24px 0}
+.btn{display:inline-block;background:#0d0c0b;color:#fff !important;padding:16px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:step}
+.steps li{counter-increment:step;padding:8px 0 8px 32px;position:relative}
+.steps li::before{content:counter(step);position:absolute;left:0;top:8px;background:#c4703f;color:#fff;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.footer{margin-top:40px;padding-top:20px;border-top:1px solid #EAE7E2;color:#999;font-size:13px}
+a{color:#c4703f}
+</style></head><body>
+
+<h1>You're in, ${firstName}.</h1>
+<p>Your Deep Work Process is ready and waiting. This is the link you will use to pick up your session anytime.</p>
+
+<div style="text-align:center;margin:32px 0">
+<a href="${magicUrl}" class="btn">Open Your Session &rarr;</a>
+</div>
+
+<div class="card">
+<p style="font-weight:600;margin-bottom:12px">Here is how it works:</p>
+<ol class="steps">
+<li>Click the button above to open your session</li>
+<li>Fill in a few details about your business (2 min)</li>
+<li>Have an honest conversation with your AI strategist</li>
+<li>Walk away with a complete brand blueprint</li>
+</ol>
+</div>
+
+<p>Block two uninterrupted hours. Close your other tabs. Put your phone face down. The more present you are, the more powerful the output becomes.</p>
+
+<p style="margin-top:24px">Bookmark <a href="${magicUrl}">this link</a> — it is your personal access to this session for the next 7 days.</p>
+
+<p style="margin-top:24px">Questions? Just reply to this email.<br>
+<strong>James</strong></p>
+
+<div class="footer">
+<p>James Guldan | <a href="https://jamesguldan.com" style="color:#999">jamesguldan.com</a></p>
+</div>
+
+</body></html>`;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'James Guldan <james@jamesguldan.com>',
+        to: [email],
+        subject: "Your Deep Work Session is Ready",
+        html: emailHtml,
+      }),
+    });
+    const result = await res.json();
+    if (!res.ok) console.error('Resend error:', result);
+    return result;
+  } catch (e) {
+    console.error('Email send failed:', e);
+  }
 }
 
 
