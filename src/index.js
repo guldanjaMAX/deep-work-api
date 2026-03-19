@@ -1,5 +1,5 @@
 // ============================================================
-// DEEP WORK APP — CLOUDFLARE WORKER (deployed 2026-03-19T17:00)
+// DEEP WORK APP — CLOUDFLARE WORKER
 // ============================================================
 // Infra IDs:
 //   KV:  DEEP_WORK_SESSIONS  (ad823265a8944b9da7a561198f7f3782)
@@ -135,7 +135,8 @@ export default {
 
 async function handleCheckout(request, env) {
   const body = await request.json();
-  const { tier } = body;
+  // Support both single tier (legacy) and multiple tiers (new popup)
+  const tiers = body.tiers || (body.tier ? [body.tier] : []);
 
   const PRICE_MAP = {
     blueprint: 'price_1TCXL7FArNSFW9mB5DDauxQg',
@@ -143,22 +144,35 @@ async function handleCheckout(request, env) {
     site:      'price_1TCXL9FArNSFW9mBr189gJuC',
   };
 
-  const priceId = PRICE_MAP[tier];
-  if (!priceId) return json({ error: 'Invalid tier' }, 400);
+  // Validate all tiers
+  const lineItems = [];
+  for (const t of tiers) {
+    if (!PRICE_MAP[t]) return json({ error: `Invalid tier: ${t}` }, 400);
+    lineItems.push(PRICE_MAP[t]);
+  }
+  if (lineItems.length === 0) return json({ error: 'No tiers specified' }, 400);
 
   const origin = new URL(request.url).origin;
-  const successUrl = `${origin}/payment-success?tier=${tier}&session_id={CHECKOUT_SESSION_ID}`;
-  const cancelUrl = `${origin}/`;
+  const tierString = tiers.join(',');
+  const primaryTier = tiers[0] || 'blueprint';
+  const successUrl = `${origin}/payment-success?tier=${primaryTier}&tiers=${tierString}&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = 'https://jamesguldan.com/deep-work/';
 
-  const res = await stripePost(env, '/v1/checkout/sessions', new URLSearchParams({
+  // Build URLSearchParams with multiple line items
+  const params = new URLSearchParams({
     'payment_method_types[]': 'card',
-    'line_items[0][price]': priceId,
-    'line_items[0][quantity]': '1',
     'mode': 'payment',
     'success_url': successUrl,
     'cancel_url': cancelUrl,
-    'metadata[tier]': tier,
-  }));
+    'metadata[tiers]': tierString,
+    'metadata[tier]': primaryTier,
+  });
+  lineItems.forEach((priceId, i) => {
+    params.append(`line_items[${i}][price]`, priceId);
+    params.append(`line_items[${i}][quantity]`, '1');
+  });
+
+  const res = await stripePost(env, '/v1/checkout/sessions', params);
 
   const session = await res.json();
   if (session.url) {
