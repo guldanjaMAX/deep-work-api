@@ -352,6 +352,7 @@ async function handleWebhook(request, env) {
 // ════════════════════════════════════════════════════════
 
 async function handleCreatePaymentIntent(request, env) {
+  env = getStripeEnv(request, env);
   const body = await request.json();
   const tiers = body.tiers || ['blueprint'];
   const email = (body.email || '').trim();
@@ -398,14 +399,16 @@ async function handleCreatePaymentIntent(request, env) {
   }
 
   return json({
-    clientSecret:   pi.client_secret,
-    publishableKey: env.STRIPE_PUBLISHABLE_KEY || '',
+    clientSecret:    pi.client_secret,
+    publishableKey:  env.STRIPE_PUBLISHABLE_KEY || '',
     amount,
     paymentIntentId: pi.id,
+    testMode:        env._isTestMode || false,
   });
 }
 
 async function handleFulfillPayment(request, env) {
+  env = getStripeEnv(request, env);
   const body = await request.json();
   const { paymentIntentId, email, name, tiers } = body;
 
@@ -491,6 +494,7 @@ async function handleFulfillPayment(request, env) {
 }
 
 async function handlePaymentStatus(request, env, url) {
+  env = getStripeEnv(request, env);
   const piId = url.searchParams.get('pi');
   if (!piId) return json({ error: 'Missing pi param' }, 400);
 
@@ -1501,6 +1505,24 @@ function stripMetadata(text) {
 // ════════════════════════════════════════════════════════
 // STRIPE HELPERS
 // ════════════════════════════════════════════════════════
+
+// Returns an env-like object with Stripe keys swapped to test keys when the
+// request comes from the dev preview or localhost. No frontend changes needed.
+function getStripeEnv(request, env) {
+  const origin = request.headers.get('Origin') || request.headers.get('Referer') || '';
+  const isTest = origin.includes('dev.jamesguldan-site.pages.dev') ||
+                 origin.includes('localhost') ||
+                 origin.includes('127.0.0.1');
+  if (isTest && env.STRIPE_TEST_SECRET_KEY) {
+    return {
+      ...env,
+      STRIPE_SECRET_KEY: env.STRIPE_TEST_SECRET_KEY,
+      STRIPE_PUBLISHABLE_KEY: env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY,
+      _isTestMode: true,
+    };
+  }
+  return env;
+}
 
 async function stripePost(env, path, params) {
   return fetch(`https://api.stripe.com${path}`, {
