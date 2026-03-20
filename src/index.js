@@ -80,6 +80,15 @@ export default {
       if (path === '/api/checkout' && request.method === 'POST') {
         return handleCheckout(request, env);
       }
+      if (path === '/api/create-payment-intent' && request.method === 'POST') {
+        return handleCreatePaymentIntent(request, env);
+      }
+      if (path === '/api/fulfill-payment' && request.method === 'POST') {
+        return handleFulfillPayment(request, env);
+      }
+      if (path === '/api/payment-status' && request.method === 'GET') {
+        return handlePaymentStatus(request, env, url);
+      }
       if (path === '/api/webhook' && request.method === 'POST') {
         return handleWebhook(request, env);
       }
@@ -278,9 +287,9 @@ async function handlePaymentSuccess(request, env, url) {
 async function handleWebhook(request, env) {
   // Stripe webhook - log events to D1
   const body = await request.text();
-  // Signature verification would use env.STRIPE_WEBHOOK_SECRET
   try {
     const event = JSON.parse(body);
+
     if (event.type === 'checkout.session.completed') {
       const s = event.data.object;
       await logEvent(env, null, 'stripe_payment_completed', {
@@ -289,8 +298,218 @@ async function handleWebhook(request, env) {
         amount: s.amount_total
       });
     }
-  } catch (e) {}
+
+    // Backup fulfillment for Payment Intent flow (popup v2)
+    if (event.type === 'payment_intent.succeeded') {
+      const pi = event.data.object;
+      if (pi.metadata?.source === 'deep-work-popup-v2') {
+        const idempotencyKey = `pi:${pi.id}`;
+        const existing = await env.SESSIONS.get(idempotencyKey).catch(() => null);
+        if (!existing) {
+          // Not yet fulfilled — run fulfillment as backup
+          const email = pi.metadata?.email || pi.receipt_email || '';
+          const name = pi.metadata?.name || '';
+          const tierString = pi.metadata?.tiers || 'blueprint';
+          const primaryTier = tierString.includes('blueprint') ? 'blueprint' : tierString.split(',')[0];
+
+          const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
+          const magicToken = `ml_${Date.now()}_${Math.random().toString(36).slice(2,12)}`;
+
+          await env.SESSIONS.put(`magic:${magicToken}`, JSON.stringify({
+            sessionId, email, createdAt: new Date().toISOString()
+          }), { expirationTtl: 60 * 60 * 24 * 7 });
+
+          await env.SESSIONS.put(sessionId, JSON.stringify({
+            id: sessionId, tier: primaryTier, tiers: tierString,
+            stripePaymentIntentId: pi.id, customerEmail: email, customerName: name,
+            magicToken, phase: 1, messages: [], userData: {},
+            blueprintGenerated: false, siteGenerated: false,
+            createdAt: new Date().toISOString()
+          }), { expirationTtl: 60 * 60 * 24 * 30 });
+
+          await env.SESSIONS.put(idempotencyKey, JSON.stringify({ sessionId }), { expirationTtl: 60 * 60 * 24 * 90 });
+
+          const magicUrl = `https://app.jamesguldan.com/magic?token=${magicToken}`;
+          if (email) {
+            sendDeepWorkEmail(email, name, magicUrl, primaryTier, env)
+              .catch(e => console.error('Webhook email error:', e));
+          }
+          await logEvent(env, sessionId, 'payment_intent_fulfilled_webhook', {
+            tiers: tierString, email, paymentIntentId: pi.id
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Webhook error:', e);
+  }
   return json({ received: true });
+}
+
+
+// ════════════════════════════════════════════════════════
+// PAYMENT INTENT — EMBEDDED CHECKOUT (popup v2)
+// ════════════════════════════════════════════════════════
+
+async function handleCreatePaymentIntent(request, env) {
+  const body = await request.json();
+  const tiers = body.tiers || ['blueprint'];
+  const email = (body.email || '').trim();
+  const name = (body.name || '').trim();
+
+  // Amounts in cents — mirrors the price logic in handleCheckout
+  const STANDALONE = { blueprint: 6700, call: 19700, site: 19700 };
+  const ADDON      = { site: 13000, call: 13000 };
+
+  const validTiers = ['blueprint', 'call', 'site'];
+  for (const t of tiers) {
+    if (!validTiers.includes(t)) return json({ error: `Invalid tier: ${t}` }, 400);
+  }
+  if (tiers.length === 0) return json({ error: 'No tiers specified' }, 400);
+
+  const hasBlueprint = tiers.includes('blueprint');
+  let amount = 0;
+  for (const t of tiers) {
+    if (t === 'blueprint')              amount += STANDALONE.blueprint;
+    else if (hasBlueprint && ADDON[t])  amount += ADDON[t];
+    else                                amount += STANDALONE[t];
+  }
+
+  const tierString = tiers.join(',');
+  const params = new URLSearchParams({
+    'amount':                            String(amount),
+    'currency':                          'usd',
+    'automatic_payment_methods[enabled]':'true',
+    'metadata[tiers]':                   tierString,
+    'metadata[source]':                  'deep-work-popup-v2',
+  });
+  if (email) {
+    params.set('metadata[email]', email);
+    params.set('receipt_email', email);
+  }
+  if (name) params.set('metadata[name]', name);
+
+  const res = await stripePost(env, '/v1/payment_intents', params);
+  const pi  = await res.json();
+
+  if (!pi.client_secret) {
+    console.error('PaymentIntent creation failed:', JSON.stringify(pi));
+    return json({ error: pi.error?.message || 'Failed to create payment' }, 500);
+  }
+
+  return json({
+    clientSecret:   pi.client_secret,
+    publishableKey: env.STRIPE_PUBLISHABLE_KEY || '',
+    amount,
+    paymentIntentId: pi.id,
+  });
+}
+
+async function handleFulfillPayment(request, env) {
+  const body = await request.json();
+  const { paymentIntentId, email, name, tiers } = body;
+
+  if (!paymentIntentId) return json({ error: 'Missing paymentIntentId' }, 400);
+
+  // Idempotency — if already fulfilled, return existing session
+  const idempotencyKey = `pi:${paymentIntentId}`;
+  const existing = await env.SESSIONS.get(idempotencyKey).catch(() => null);
+  if (existing) {
+    const data = JSON.parse(existing);
+    const origin = new URL(request.url).origin;
+    return json({
+      success: true,
+      sessionId: data.sessionId,
+      sessionUrl: `${origin}/?session=${data.sessionId}`,
+      alreadyFulfilled: true,
+    });
+  }
+
+  // Verify payment status with Stripe
+  const res = await stripeGet(env, `/v1/payment_intents/${paymentIntentId}`);
+  const pi  = await res.json();
+
+  if (pi.status !== 'succeeded') {
+    return json({ error: 'Payment not completed', status: pi.status }, 402);
+  }
+
+  // Resolve customer details (frontend params > PI metadata > PI receipt_email)
+  const customerEmail = (email || pi.metadata?.email || pi.receipt_email || '').trim();
+  const customerName  = (name  || pi.metadata?.name  || '').trim();
+  const tierString    = tiers?.join(',') || pi.metadata?.tiers || 'blueprint';
+  const primaryTier   = tierString.includes('blueprint') ? 'blueprint' : tierString.split(',')[0];
+
+  // Create session + magic link
+  const sessionId   = `sess_${Date.now()}_${Math.random().toString(36).slice(2,9)}`;
+  const magicToken  = `ml_${Date.now()}_${Math.random().toString(36).slice(2,12)}`;
+
+  await env.SESSIONS.put(`magic:${magicToken}`, JSON.stringify({
+    sessionId,
+    email: customerEmail,
+    createdAt: new Date().toISOString(),
+  }), { expirationTtl: 60 * 60 * 24 * 7 });
+
+  await env.SESSIONS.put(sessionId, JSON.stringify({
+    id: sessionId,
+    tier: primaryTier,
+    tiers: tierString,
+    stripePaymentIntentId: paymentIntentId,
+    customerEmail,
+    customerName,
+    magicToken,
+    phase: 1,
+    messages: [],
+    userData: {},
+    blueprintGenerated: false,
+    siteGenerated: false,
+    createdAt: new Date().toISOString(),
+  }), { expirationTtl: 60 * 60 * 24 * 30 });
+
+  // Mark as fulfilled (idempotency)
+  await env.SESSIONS.put(idempotencyKey, JSON.stringify({ sessionId }), { expirationTtl: 60 * 60 * 24 * 90 });
+
+  // Send welcome email (fire-and-forget)
+  const origin   = new URL(request.url).origin;
+  const magicUrl = `${origin}/magic?token=${magicToken}`;
+  if (customerEmail) {
+    sendDeepWorkEmail(customerEmail, customerName, magicUrl, primaryTier, env)
+      .catch(e => console.error('Fulfill email error:', e));
+  }
+
+  await logEvent(env, sessionId, 'payment_intent_fulfilled', {
+    tiers: tierString,
+    email: customerEmail,
+    paymentIntentId,
+    source: 'popup_v2',
+  });
+
+  return json({
+    success:    true,
+    sessionId,
+    sessionUrl: `${origin}/?session=${sessionId}`,
+  });
+}
+
+async function handlePaymentStatus(request, env, url) {
+  const piId = url.searchParams.get('pi');
+  if (!piId) return json({ error: 'Missing pi param' }, 400);
+
+  // Check idempotency store first
+  const stored = await env.SESSIONS.get(`pi:${piId}`).catch(() => null);
+  if (stored) {
+    const data = JSON.parse(stored);
+    const origin = new URL(request.url).origin;
+    return json({ status: 'succeeded', sessionId: data.sessionId, sessionUrl: `${origin}/?session=${data.sessionId}` });
+  }
+
+  // Fetch from Stripe
+  const res = await stripeGet(env, `/v1/payment_intents/${piId}`);
+  const pi  = await res.json();
+  return json({
+    status: pi.status,
+    email:  pi.metadata?.email || pi.receipt_email || '',
+    tiers:  pi.metadata?.tiers || 'blueprint',
+  });
 }
 
 
@@ -1354,3 +1573,4 @@ function json(data, status = 200) {
     headers: { 'Content-Type': 'application/json', ...CORS }
   });
 }
+
