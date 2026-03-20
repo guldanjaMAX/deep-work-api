@@ -356,7 +356,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     margin-left: 6px;
   }
 
-  input[type="text"], input[type="email"], input[type="url"], textarea {
+  input[type="text"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], textarea {
     width: 100%;
     background: var(--bg);
     border: 1.5px solid var(--border);
@@ -486,6 +486,15 @@ export const getHTML = (config) => `<!DOCTYPE html>
   }
 
   .session-loading.active { display: flex; }
+
+  #loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 480px;
+  }
 
   @keyframes loadFadeIn {
     from { opacity: 0; }
@@ -1716,8 +1725,11 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <div class="voice-status" id="voice-status"></div>
     <div class="input-tools">
       <button class="tool-btn" onclick="openUploadModal()">📎 Add photos</button>
+      <button class="tool-btn" onclick="openDocUpload()">📄 Upload document</button>
       <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none">✨ Generate brand images</button>
+      <input type="file" id="doc-upload-input" accept=".pdf,.txt,.md" style="display:none" onchange="handleDocUpload(this)">
     </div>
+    <div id="doc-upload-status" style="display:none;padding:8px 16px;font-size:13px;color:var(--text2);background:var(--bg2);border-radius:8px;margin-top:6px;"></div>
   </div>
 </div>
 
@@ -2658,13 +2670,25 @@ function toggleVoice() {
   }
 }
 
-function startVoice() {
+async function startVoice() {
   if (!window._voiceRecognition) {
     showToast('Voice input is not supported in this browser. Try Chrome or Safari.');
     return;
   }
 
   const btn = document.getElementById('voice-btn');
+
+  // Explicitly request microphone permission first (Chrome requirement)
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // Stop the stream immediately — we just needed the permission grant
+    stream.getTracks().forEach(t => t.stop());
+  } catch (permErr) {
+    console.log('Mic permission error:', permErr);
+    setVoiceStatus('Microphone access denied. Please allow microphone in your browser settings and try again.');
+    return;
+  }
+
   window._voiceIsRecording = true;
   window._voiceFinalTranscript = '';
   btn.classList.add('recording');
@@ -3790,6 +3814,62 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function openUploadModal() {
   document.getElementById('file-input')?.click();
+}
+
+function openDocUpload() {
+  document.getElementById('doc-upload-input')?.click();
+}
+
+async function handleDocUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const statusEl = document.getElementById('doc-upload-status');
+
+  // Security: validate file type client-side
+  const ext = file.name.split('.').pop().toLowerCase();
+  const allowed = ['pdf', 'txt', 'md'];
+  if (!allowed.includes(ext)) {
+    showToast('Only PDF, TXT, and MD files are supported.');
+    input.value = '';
+    return;
+  }
+
+  // Security: validate file size (5MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Document must be under 5MB.');
+    input.value = '';
+    return;
+  }
+
+  statusEl.style.display = '';
+  statusEl.textContent = 'Uploading and reading ' + file.name + '...';
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('sessionId', STATE.sessionId);
+
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.ok && data.textExtracted) {
+      statusEl.textContent = '✓ ' + file.name + ' uploaded and added to your session context.';
+      appendMessage('system', '📄 Document uploaded: ' + file.name + '. The AI can now reference this content.');
+      setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+    } else if (data.ok) {
+      statusEl.textContent = '✓ ' + file.name + ' uploaded (could not extract text, but file is saved).';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+    } else {
+      statusEl.textContent = 'Upload failed: ' + (data.error || 'Unknown error');
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  } catch (e) {
+    statusEl.textContent = 'Upload failed. Please try again.';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+  }
+
+  input.value = '';
 }
 </script>
 </body>

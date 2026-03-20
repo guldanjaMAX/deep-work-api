@@ -188,7 +188,7 @@ const SEC_HEADERS = {
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Permissions-Policy': 'camera=(), microphone=(self), geolocation=()',
 };
 
 function htmlHeaders(extra = {}) {
@@ -827,6 +827,16 @@ async function handleSessionStart(request, env) {
   }
 
   await Promise.allSettled(fetchPromises);
+
+  // Auto-research competitors if user didn't provide any but we have other data
+  if ((!competitorUrls || competitorUrls.length === 0) && (session.userData.existingWebsiteAnalysis || session.userData.linkedinData)) {
+    try {
+      const autoCompetitors = await autoResearchCompetitors(env, session.userData.existingWebsiteAnalysis, session.userData.linkedinData);
+      if (autoCompetitors) {
+        session.userData.autoResearchedCompetitors = autoCompetitors;
+      }
+    } catch (_) {}
+  }
 
   // Build context enrichment
   const contextExtra = contextEnrichmentPrompt(session.userData);
@@ -1571,14 +1581,63 @@ async function handleUpload(request, env) {
   if (!file) return json({ error: 'No file provided' }, 400);
 
   const ext = file.name.split('.').pop().toLowerCase();
+
+  // Security: validate file type
+  const ALLOWED_IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+  const ALLOWED_DOC_EXTS = ['pdf', 'txt', 'md'];
+  const allAllowed = [...ALLOWED_IMAGE_EXTS, ...ALLOWED_DOC_EXTS];
+
+  if (!allAllowed.includes(ext)) {
+    return json({ error: `File type .${ext} is not supported. Allowed: images (JPG, PNG, WebP), documents (PDF, TXT).` }, 400);
+  }
+
+  // Security: file size limits (10MB for images, 5MB for documents)
+  const maxSize = ALLOWED_DOC_EXTS.includes(ext) ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+  const arrayBuffer = await file.arrayBuffer();
+  if (arrayBuffer.byteLength > maxSize) {
+    return json({ error: `File too large. Maximum ${maxSize / 1024 / 1024}MB for this file type.` }, 400);
+  }
+
   const key = `uploads/${sessionId}/${Date.now()}_${Math.random().toString(36).slice(2,7)}.${ext}`;
 
-  const arrayBuffer = await file.arrayBuffer();
   await env.UPLOADS.put(key, arrayBuffer, {
     httpMetadata: { contentType: file.type }
   });
 
-  return json({ ok: true, key, name: file.name });
+  // For document files, extract text and add to session context
+  const isDocument = ALLOWED_DOC_EXTS.includes(ext);
+  let extractedText = '';
+
+  if (isDocument) {
+    extractedText = await extractDocumentText(env, key);
+
+    if (extractedText) {
+      // Update session context with the document content
+      const raw = await env.SESSIONS.get(sessionId);
+      if (raw) {
+        const session = JSON.parse(raw);
+        if (!session.userData) session.userData = {};
+        if (!session.userData.uploadedDocuments) session.userData.uploadedDocuments = [];
+
+        session.userData.uploadedDocuments.push(`[Document: ${file.name}]\n${extractedText}`);
+
+        // Rebuild system prompt with new context
+        const contextExtra = contextEnrichmentPrompt(session.userData);
+        session.systemPrompt = DEEP_WORK_SYSTEM_PROMPT + (contextExtra ? '\n\n' + contextExtra : '');
+
+        await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+      }
+    }
+  }
+
+  return json({
+    ok: true,
+    key,
+    name: file.name,
+    isDocument,
+    textExtracted: !!extractedText,
+    textPreview: extractedText ? extractedText.slice(0, 200) + '...' : undefined
+  });
 }
 
 
@@ -3377,6 +3436,111 @@ async function fetchAndSummarize(env, url, instruction) {
   } catch (e) {
     return '';
   }
+}
+
+// Auto-research competitors when user doesn't provide them
+// Uses their website analysis + niche to find relevant competitors
+async function autoResearchCompetitors(env, websiteAnalysis, linkedinData) {
+  if (!websiteAnalysis && !linkedinData) return '';
+  try {
+    const context = [
+      websiteAnalysis ? `Website: ${websiteAnalysis}` : '',
+      linkedinData ? `LinkedIn: ${linkedinData}` : ''
+    ].filter(Boolean).join('\n\n');
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: `Based on this person's business information, identify 3 to 5 likely competitors or similar businesses in their space. For each, provide: the company/person name, what they do, their approximate positioning, and what they seem to do well. Be specific and use real companies/people if you can identify the niche clearly enough. If you cannot determine the niche with confidence, say so.
+
+${context}`
+        }]
+      })
+    });
+    const data = await res.json();
+    return data.content?.[0]?.text || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+// Parse and extract text from uploaded documents (PDF/DOCX)
+// Returns plain text content, sanitized for safety
+async function extractDocumentText(env, r2Key) {
+  try {
+    const obj = await env.UPLOADS.get(r2Key);
+    if (!obj) return '';
+    const bytes = await obj.arrayBuffer();
+    const ext = r2Key.split('.').pop().toLowerCase();
+
+    if (ext === 'txt' || ext === 'md') {
+      const text = new TextDecoder().decode(bytes);
+      return sanitizeDocumentText(text).slice(0, 5000);
+    }
+
+    // For PDF and DOCX, use Claude to extract text from the raw content
+    // We send the file as base64 to Claude which can read these formats
+    if (ext === 'pdf') {
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 2000,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'document',
+                source: { type: 'base64', media_type: 'application/pdf', data: base64 }
+              },
+              {
+                type: 'text',
+                text: 'Extract all the text content from this document. Return only the text, no commentary. If there are tables, format them clearly. Maximum 5000 characters.'
+              }
+            ]
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || '';
+      return sanitizeDocumentText(text);
+    }
+
+    return '';
+  } catch (e) {
+    return '';
+  }
+}
+
+// Sanitize document text to prevent prompt injection
+function sanitizeDocumentText(text) {
+  if (!text) return '';
+  // Remove common injection patterns
+  let clean = text
+    .replace(/\b(ignore|disregard|forget)\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?|context)/gi, '[REMOVED]')
+    .replace(/\b(you\s+are\s+now|act\s+as|pretend\s+to\s+be|your\s+new\s+instructions?)\b/gi, '[REMOVED]')
+    .replace(/\b(system\s*:?\s*prompt|SYSTEM\s*:)/gi, '[REMOVED]')
+    .replace(/<\/?script[^>]*>/gi, '')
+    .replace(/<\/?iframe[^>]*>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '');
+  // Truncate to prevent context flooding
+  return clean.slice(0, 5000);
 }
 
 
