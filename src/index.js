@@ -3955,7 +3955,14 @@ async function handleAdminCreateUser(request, env) {
       await updateUserPassword(env, user.id, hash);
     }
 
-    return json({ user }, 201);
+    // Auto-generate magic link for the new user
+    const token = generateMagicToken();
+    const linkType = user.role === 'admin' ? 'admin_magic' : 'magic_login';
+    await storeMagicToken(env, token, user.id, linkType, 72);
+    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const magicLink = `${origin}/magic?token=${token}`;
+
+    return json({ user, magicLink }, 201);
   } catch (e) {
     return json({ error: 'Failed to create user', detail: e.message }, 500);
   }
@@ -4052,20 +4059,31 @@ async function handleAdminMagicLink(request, env) {
   if (!admin) return json({ error: 'Forbidden' }, 403);
 
   try {
-    const { userId, type } = await request.json();
-    if (!userId) return json({ error: 'userId required' }, 400);
+    const { userId, email, type, createIfMissing, tier } = await request.json();
 
-    const user = await getUserById(env, userId);
+    let user = null;
+
+    // Look up by userId first, then by email
+    if (userId) {
+      user = await getUserById(env, userId);
+    } else if (email) {
+      user = await getUserByEmail(env, email);
+      // Auto-create if requested and user doesn't exist
+      if (!user && createIfMissing) {
+        user = await createUser(env, { email, name: '', role: 'user' });
+      }
+    }
+
     if (!user) return json({ error: 'User not found' }, 404);
 
     const token = generateMagicToken();
     const linkType = type || (user.role === 'admin' ? 'admin_magic' : 'magic_login');
-    await storeMagicToken(env, token, userId, linkType, 72);
+    await storeMagicToken(env, token, user.id, linkType, 72);
 
     const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
-    const magicUrl = `${origin}/magic?token=${token}`;
+    const magicLink = `${origin}/magic?token=${token}`;
 
-    return json({ url: magicUrl, token, expires_in_hours: 72 });
+    return json({ magicLink, url: magicLink, token, expires_in_hours: 72 });
   } catch (e) {
     return json({ error: 'Failed to generate magic link', detail: e.message }, 500);
   }
