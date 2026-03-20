@@ -3349,9 +3349,45 @@ async function handleRequestMagic(request, env) {
           from: 'Deep Work App <noreply@jamesguldan.com>',
           to: [email],
           subject: 'Your Deep Work App login link',
-          html: `<p>Click the link below to log in. It expires in 24 hours.</p>
-<p><a href="${magicUrl}" style="font-size:18px;font-weight:bold;">Log In to Deep Work App</a></p>
-<p style="color:#888;font-size:12px;">If you did not request this, you can ignore this email.</p>`
+          html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+<body style="margin:0;padding:0;background-color:#f0eeea;font-family:Arial,Helvetica,sans-serif;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f0eeea;">
+<tr><td align="center" style="padding:40px 16px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#FDFCFA;border-radius:2px;">
+<tr><td style="padding:40px 48px 0 48px;">
+<p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2.5px;color:#999;text-transform:uppercase;font-weight:600;margin:0;">JAMES GULDAN</p>
+</td></tr>
+<tr><td style="padding:16px 48px 0 48px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr><td style="width:40px;height:2px;background-color:#c4703f;font-size:0;line-height:0;">&nbsp;</td></tr>
+</table>
+</td></tr>
+<tr><td style="padding:32px 48px 40px 48px;">
+<p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:26px;color:#1a1a1a;margin:0 0 24px 0;">Here is your sign in link for the Deep Work App. It expires in 24 hours.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 32px 0;">
+<tr><td style="background-color:#1a1a1a;border-radius:6px;padding:14px 32px;">
+<a href="${magicUrl}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.3px;display:inline-block;">Sign In to Deep Work &rarr;</a>
+</td></tr>
+</table>
+<p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:22px;color:#999;margin:0;">If you did not request this, you can safely ignore this email. The link will expire on its own.</p>
+</td></tr>
+</table>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
+<tr><td style="padding:24px 48px;text-align:center;">
+<p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#999;margin:0 0 4px 0;"><a href="https://jamesguldan.com" style="color:#999;text-decoration:none;">jamesguldan.com</a></p>
+<p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#bbb;margin:0;">&copy; 2026 James Guldan. All rights reserved.</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>`
         })
       });
     }
