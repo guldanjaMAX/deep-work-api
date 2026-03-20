@@ -210,6 +210,15 @@ window.location.replace('/');
       if (path === '/api/admin/prompt'                 && request.method === 'POST') return handleAdminSavePrompt(request, env);
 
       // ── API routes ────────────────────────────────────
+      if (path === '/api/create-payment-intent' && request.method === 'POST') {
+        return handleCreatePaymentIntent(request, env);
+      }
+      if (path === '/api/fulfill-payment' && request.method === 'POST') {
+        return handleFulfillPayment(request, env);
+      }
+      if (path === '/api/payment-status' && request.method === 'GET') {
+        return handlePaymentStatus(request, env, url);
+      }
       if (path === '/api/checkout' && request.method === 'POST') {
         return handleCheckout(request, env);
       }
@@ -405,6 +414,123 @@ function getLegalHTML(title, content) {
 // ════════════════════════════════════════════════════════
 // PAYMENT
 // ════════════════════════════════════════════════════════
+
+function getStripeKeys(request, env) {
+  const origin = request.headers.get('Origin') || request.headers.get('Referer') || '';
+  const isTest = origin.includes('dev.') || origin.includes('localhost') || origin.includes('127.0.0.1');
+  return {
+    secretKey:      isTest ? (env.STRIPE_TEST_SECRET_KEY      || env.STRIPE_SECRET_KEY)      : env.STRIPE_SECRET_KEY,
+    publishableKey: isTest ? (env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY) : env.STRIPE_PUBLISHABLE_KEY,
+    testMode:       isTest,
+  };
+}
+
+async function handleCreatePaymentIntent(request, env) {
+  try {
+    const body = await request.json();
+    const { tiers } = body;
+    if (!Array.isArray(tiers) || tiers.length === 0) {
+      return json({ error: 'Invalid tiers' }, 400);
+    }
+    const PRICES = { blueprint: 6700, site: 13000, call: 13000 };
+    const amount = tiers.reduce((sum, t) => sum + (PRICES[t] || 0), 0);
+    if (amount === 0) return json({ error: 'Invalid tiers: no known products' }, 400);
+
+    const { secretKey, publishableKey, testMode } = getStripeKeys(request, env);
+    if (!secretKey) return json({ error: 'Stripe not configured' }, 500);
+
+    const params = new URLSearchParams({
+      amount:   amount.toString(),
+      currency: 'usd',
+      'metadata[tiers]': tiers.join(','),
+      'payment_method_types[]': 'card',
+    });
+
+    const res = await fetch('https://api.stripe.com/v1/payment_intents', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type':  'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
+
+    const pi = await res.json();
+    if (!pi.client_secret) {
+      return json({ error: pi.error?.message || 'Failed to create payment intent' }, 500);
+    }
+
+    return json({ clientSecret: pi.client_secret, publishableKey, amount, paymentIntentId: pi.id, testMode });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+async function handleFulfillPayment(request, env) {
+  try {
+    const { paymentIntentId, email, tiers } = await request.json();
+    if (!paymentIntentId || !email) {
+      return json({ error: 'Missing paymentIntentId or email' }, 400);
+    }
+
+    const { secretKey, testMode } = getStripeKeys(request, env);
+
+    let verified = false;
+    let resolvedTiers = tiers || ['blueprint'];
+    try {
+      const res = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
+        headers: { 'Authorization': `Bearer ${secretKey}` },
+      });
+      const pi = await res.json();
+      verified = pi.status === 'succeeded';
+      if (pi.metadata?.tiers) resolvedTiers = pi.metadata.tiers.split(',');
+    } catch (e) {
+      verified = testMode;
+    }
+
+    if (!verified) {
+      return json({ error: 'Payment not verified' }, 402);
+    }
+
+    const tier = resolvedTiers[0] || 'blueprint';
+
+    try {
+      await createUser(env, email, null, { tier, source: 'payment', paymentIntentId });
+    } catch (e) {
+      // User may already exist
+    }
+
+    let sessionUrl = 'https://app.jamesguldan.com';
+    try {
+      const token = await generateMagicToken();
+      await storeMagicToken(env, token, email);
+      sessionUrl = `https://app.jamesguldan.com/login?token=${token}`;
+    } catch (e) {
+      // Magic token generation failed
+    }
+
+    return json({ success: true, sessionUrl });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+async function handlePaymentStatus(request, env, url) {
+  const piId = url.searchParams.get('pi');
+  if (!piId) return json({ error: 'Missing pi parameter' }, 400);
+
+  const { secretKey, testMode } = getStripeKeys(request, env);
+
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/payment_intents/${piId}`, {
+      headers: { 'Authorization': `Bearer ${secretKey}` },
+    });
+    const pi = await res.json();
+    return json({ status: pi.status, testMode });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
 
 async function handleCheckout(request, env) {
   const body = await request.json();
