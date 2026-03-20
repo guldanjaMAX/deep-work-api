@@ -631,7 +631,7 @@ async function handleCheckout(request, env) {
   const PRICE_MAP = {
     blueprint: 'price_1TCXL7FArNSFW9mB5DDauxQg',
     call:      'price_1TCXL8FArNSFW9mBBtiWVRCb',
-    site:      'price_1TCXL9FArNSFW9mBr189gJuC',
+    site:      'price_1TCpHrFArNSFW9mBu0kQISZi',   // $130 add-on (was $197 bundle)
   };
 
   const priceId = PRICE_MAP[tier];
@@ -704,8 +704,8 @@ async function handlePaymentSuccess(request, env, url) {
       existingSession.stripeCheckoutId = checkoutSessionId;
       await env.SESSIONS.put(existingSessionId, JSON.stringify(existingSession), { expirationTtl: 60 * 60 * 24 * 30 });
       await logEvent(env, existingSessionId, 'tier_upgraded', { from: existingSession.tier, to: tier });
-      // Send them to the app with their existing session — the blueprint screen will show with the build-site-btn
-      return Response.redirect(`${origin}/?session=${existingSessionId}&tier=${tier}`, 302);
+      // Send them back to the app — upgraded=true triggers auto-proceed to site builder
+      return Response.redirect(`${origin}/?session=${existingSessionId}&tier=${tier}&upgraded=true`, 302);
     }
   }
 

@@ -1741,18 +1741,18 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ ORDER BUMP (shown after blueprint, before blueprint screen renders) ══ -->
+<!-- ══ ORDER BUMP (shown after blueprint) ══ -->
 <div id="order-bump" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--gold);padding:20px 24px;z-index:999;animation:slideUp 0.4s ease;">
   <div class="order-bump-inner">
     <div class="order-bump-text">
-      <div class="bump-label">One-Time Upgrade</div>
-      <h3>Turn your blueprint into a live website — right now.</h3>
-      <p>Add Site In Sixty and we'll build a complete, branded website from your blueprint in about 60 seconds.</p>
+      <div class="bump-label">Your Blueprint Is Ready</div>
+      <h3>Turn this into a live website, right here.</h3>
+      <p>We'll walk you through building a complete, branded website from your blueprint. You'll connect your free Cloudflare account and have a real site live in minutes.</p>
     </div>
     <div class="bump-actions">
-      <span class="bump-price">$297</span>
-      <button class="btn btn-gold" onclick="addSiteUpgrade()" style="width:auto;padding:14px 24px;">Add Website Upgrade</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('order-bump').style.display='none'" style="width:auto;padding:14px 24px;font-size:13px;color:var(--text2);">No thanks</button>
+      <span class="bump-price">+ $130</span>
+      <button class="btn btn-gold" onclick="addSiteUpgrade()" style="width:auto;padding:14px 24px;">Build My Website</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('order-bump').style.display='none'" style="width:auto;padding:14px 24px;font-size:13px;color:var(--text2);">Not right now</button>
     </div>
   </div>
 </div>
@@ -1761,7 +1761,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 <div id="site-screen" class="screen">
   <div class="site-progress">
     <h2>Building Your Website</h2>
-    <p>Your brand blueprint is being turned into a real website. This takes about 60 seconds.</p>
+    <p>Your brand blueprint is being turned into a real, branded website. This takes about 60 seconds.</p>
     <div class="progress-steps" id="gen-steps">
       <div class="progress-step">
         <div class="step-icon active" id="step-1-icon">⚡</div>
@@ -1994,10 +1994,19 @@ window.addEventListener('DOMContentLoaded', async () => {
   const sessionId = params.get('session');
   const tier = params.get('tier');
 
-  // Legacy flow: ?session=X&tier=Y from Stripe redirect
+  // Stripe redirect: ?session=X&tier=Y from checkout
+  const upgraded = params.get('upgraded');
   if (sessionId && tier) {
     STATE.sessionId = sessionId;
     STATE.tier = tier;
+    localStorage.setItem('dw_active_session', sessionId);
+    window.history.replaceState({}, '', '/app');
+    if (upgraded === 'true') {
+      // Returning from site upgrade purchase — go straight to site builder
+      showScreen('site-screen');
+      runSiteGeneration();
+      return;
+    }
     showScreen('intake');
   } else {
     // New auth flow: check dw_session token
@@ -3241,8 +3250,8 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
           </div>
 
           <div style="text-align:center;">
-            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Bring This To Life</button>
-            <div style="font-size:12px;color:#999;margin-top:8px;">Your blueprint becomes a website in about 60 seconds</div>
+            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Build Your Website Now</button>
+            <div style="font-size:12px;color:#999;margin-top:8px;">Your blueprint has everything we need. Let's make it real.</div>
           </div>
         </div>
       \`;
