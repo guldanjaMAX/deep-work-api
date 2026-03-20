@@ -2027,14 +2027,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
             const activeData = await activeRes.json();
             if (activeData.hasActiveSession && activeData.session) {
-              if (activeData.blueprintComplete) {
-                // Blueprint already generated, go straight to it
-                pendingResumeSessionId = activeData.session.id;
-                localStorage.setItem('dw_active_session', activeData.session.id);
-                await resumeSession();
-              } else {
-                showResumeBanner(activeData.session);
-              }
+              // Always auto-resume — drop user right where they left off
+              pendingResumeSessionId = activeData.session.id;
+              localStorage.setItem('dw_active_session', activeData.session.id);
+              await resumeSession();
             }
           } catch(_) {}
         }
@@ -2488,8 +2484,7 @@ async function resumeSession() {
   if (!pendingResumeSessionId) return;
 
   const btn = document.getElementById('resume-btn');
-  btn.textContent = 'Loading...';
-  btn.disabled = true;
+  if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
   showLoadingOverlay();
   updateLoadingStage('Restoring your session', 30);
 
@@ -2526,8 +2521,7 @@ async function resumeSession() {
       } else {
         showLoadingError('Could not restore session', errMsg, null);
       }
-      btn.textContent = 'Continue My Session';
-      btn.disabled = false;
+      if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
     }
 
@@ -2535,8 +2529,7 @@ async function resumeSession() {
 
     if (!data.ok || !data.messages || data.messages.length === 0) {
       showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
-      btn.textContent = 'Continue My Session';
-      btn.disabled = false;
+      if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
     }
 

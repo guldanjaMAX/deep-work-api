@@ -405,21 +405,19 @@ export function getLoginHTML() {
   }
 })();
 
-// ── Check existing session (skip if ?logout or ?switch in URL) ──
+// ── Check existing session — auto-redirect to app if logged in ──
 (function checkExistingSession() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('logout') || params.has('switch')) return;
   const token = localStorage.getItem('dw_session');
   if (!token) return;
+  // Immediately redirect — don't show login page at all
   fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
     .then(r => r.json())
     .then(user => {
       if (user?.id) {
-        // Show a banner instead of silently redirecting
-        const banner = document.createElement('div');
-        banner.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #EAE7E2;border-radius:12px;padding:14px 20px;font-size:14px;color:#1a1a1a;display:flex;align-items:center;gap:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);z-index:50;white-space:nowrap;';
-        banner.innerHTML = 'Signed in as <strong>' + (user.email || 'you') + '</strong> &nbsp;<a href="/app" style="color:#c4703f;font-weight:600;text-decoration:none;">Continue &rarr;</a> &nbsp;<a href="/logout" style="color:#888;font-size:13px;text-decoration:none;">Sign out</a>';
-        document.body.appendChild(banner);
+        // User is authenticated — skip login entirely and go to app
+        window.location.href = '/app';
       }
     })
     .catch(() => {});
