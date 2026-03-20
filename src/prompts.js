@@ -1,3 +1,7 @@
+// ============================================================
+// DEEP WORK APP — SYSTEM PROMPTS
+// ============================================================
+
 export const DEEP_WORK_SYSTEM_PROMPT = `You are a world class brand strategist, offer architect, positioning expert, and market researcher. You speak like a really smart friend who happens to have deep expertise in all of these areas. You never talk like a consultant. You never use corporate language. You are direct, warm, occasionally funny, and always honest.
 
 ## How You Begin Every Session
@@ -304,6 +308,90 @@ export const SITE_CSS_FOUNDATION = (colors, fonts, fontImport) => `
   @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 `;
 
+// ============================================================
+// DESIGN BRIEF BUILDER
+// Generates a creative director's brief from blueprint data.
+// Zero latency — deterministic, no extra Claude call needed.
+// ============================================================
+function buildDesignBrief(p1, p2, p3, p5) {
+  const aesthetic = (p1.visualDirection?.aesthetic || '').toLowerCase();
+  const brandPromise = p1.coreBrandPromise || '';
+  const avatarPain = (p2.whatIsStoppingThem || '').substring(0, 80);
+  const exactWords = (p2.exactWords || []).slice(0, 2);
+  const mechanism = (p3.uniqueMechanism || '').substring(0, 70);
+  const brandName = (p1.brandNames || [])[0] || 'this brand';
+
+  // Derive visual personality from aesthetic field
+  let personality, spacing, typography;
+  if (/minimal|clean|executive|corporate|professional/i.test(aesthetic)) {
+    personality = 'Understated authority. Silence and white space are design elements. Headlines carry the full weight — resist over-explaining.';
+    spacing = 'Generous vertical padding on every section. One powerful sentence before any supporting copy.';
+    typography = 'Use <em> sparingly, only at the single most emotionally loaded phrase per section. Let the headline breathe alone on its line before the subtext.';
+  } else if (/bold|energy|dynamic|vibrant|modern/i.test(aesthetic)) {
+    personality = 'Conviction lives in the structure. Contrast between dark and light sections creates rhythm and momentum.';
+    spacing = 'Alternate light and dark sections every 2-3 sections for visual pulse. Use .dark on key proof sections.';
+    typography = 'Headlines can be questions that the reader is already asking themselves. CTAs should sound like a decision, not an offer.';
+  } else if (/warm|human|story|authentic|personal|intimate/i.test(aesthetic)) {
+    personality = 'Authenticity over polish. This person\'s real story is the strategy. Specificity IS the design.';
+    spacing = 'The about/origin section is the emotional centerpiece — give it room. Testimonials run longer than a sentence.';
+    typography = 'First person throughout. "<em>I</em>" statements in the about section feel intentional. Real quotes from clients in their actual voice.';
+  } else {
+    personality = 'Premium and particular. Every sentence has to earn its place.';
+    spacing = 'Sections transition with intention. Use .dark for the offer section to signal a shift from story to action.';
+    typography = `The mechanism ("${mechanism}") appears as a named, distinct concept — capitalize it once when introduced.`;
+  }
+
+  // Section-by-section emotional purpose
+  const sections = (p5.sections || []).slice(0, 7);
+  const sectionMap = sections.map((s, i) => {
+    const name = (s.name || '').toLowerCase();
+    let intent;
+    if (i === 0 || /hero|problem|gap|pain|stuck/i.test(name)) {
+      intent = `Mirror: reader must see themselves in the first 5 words. Use their exact language, not a clinical description of their pain.`;
+    } else if (/story|origin|why|journey|about/i.test(name)) {
+      intent = `Vulnerability pivot: one specific moment of failure or doubt that makes this person real. Not a resume, not a credentials list.`;
+    } else if (/believe|framework|method|process|how/i.test(name)) {
+      intent = `Intellectual credibility: the named mechanism earns trust here. Why conventional approaches fail + why this one doesn't.`;
+    } else if (/result|proof|case|success|client|transform/i.test(name)) {
+      intent = `Specificity as credibility: exact numbers, real timelines, named outcomes. Generic results make people doubt; specific results make them believe.`;
+    } else if (/offer|service|work with|program|package/i.test(name)) {
+      intent = `Invitation, not a menu: each offer is a doorway with a clear "this is for you if" qualifier. Make saying yes feel obvious.`;
+    } else if (/testimon|review|said|words/i.test(name)) {
+      intent = `Transformation evidence: two stories that show the before/after. Let them be long enough to feel real. Include a specific outcome metric.`;
+    } else {
+      intent = (s.purpose || '').substring(0, 120);
+    }
+    return `  "${s.name}": ${intent}`;
+  }).join('\n');
+
+  return `━━━ CREATIVE DIRECTOR'S BRIEF ━━━
+This is a site for ${brandName}. Do not design a template. Design a story.
+
+THE CORE TENSION THIS SITE MUST RESOLVE:
+"${avatarPain}..." → "${brandPromise.substring(0, 80)}"
+Every section either deepens the problem or opens the door to its resolution.
+
+VISUAL PERSONALITY:
+${personality}
+
+LAYOUT RHYTHM:
+${spacing}
+
+TYPOGRAPHY DIRECTION:
+${typography}
+
+SECTION-BY-SECTION EMOTIONAL PURPOSE:
+${sectionMap}
+
+THE HOOK:
+The visitor's first reaction must be: "how do they know that about me?"
+Write the hero around this exact feeling the ICA carries: "${exactWords[0] || avatarPain.substring(0, 60)}"
+
+WHAT MAKES THIS SITE DIFFERENT FROM EVERY OTHER COACHING SITE:
+The mechanism is "${mechanism}" — it has a name and a reason. Use it once, early, with confidence.
+This person's story is not a liability or a detour. It IS the product. Let it take up space.`;
+}
+
 // Returns { prompt: string, head: string }
 // prompt = system prompt for Claude (no CSS, just brand data + instructions)
 // head   = complete <head> block with CSS already assembled (not sent to Claude)
@@ -379,6 +467,9 @@ export const SITE_GENERATION_PROMPT = (blueprint) => {
   const tagline = (p7.taglineOptions || [])[0] || '';
   const positioning = p7.positioningStatements || {};
 
+  // Build the creative director's brief — zero latency, deterministic
+  const designBrief = buildDesignBrief(p1, p2, p3, p5);
+
   const css = SITE_CSS_FOUNDATION(colorVars, fontsRaw, fontImport);
 
   const brandName = (p1.brandNames || [])[0] || 'Brand';
@@ -398,10 +489,24 @@ ${css}
   </style>
 </head>`;
 
-  // System prompt for Claude — brand data + body-only output instructions (no CSS)
-  const prompt = `You are writing HTML body sections for a personal brand website. The complete CSS stylesheet and <head> are already finished and injected by the server — you must NOT write any CSS, <style> tags, <html> tags, <head> tags, or <!DOCTYPE>. Writing CSS will break the page. Output ONLY the HTML elements that belong inside <body>, starting with <nav>.
+  // System prompt for Claude — brand data + instructions (no CSS)
+  const prompt = `You are a senior brand designer and copywriter producing HTML body sections for a personal brand website. The complete CSS and <head> are already built by the server. You must NOT write any CSS, <style> tags, <html>, <head>, or <!DOCTYPE>. Writing CSS will break the page. Output ONLY the HTML that belongs inside <body>, starting with <nav>.
 
-Available CSS classes: .container, .container--narrow, .eyebrow, .divider, .divider--center, .btn .btn--primary .btn--outline .btn--ghost .btn--gold, nav/.nav-inner/.nav-logo/.nav-links/.nav-cta/.nav-hamburger/.nav-mobile, .hero/.hero-inner/.hero-sub/.hero-actions/.hero-stats/.hero-stat-num/.hero-stat-label/.hero-visual/.hero-img-frame/.hero-quote, section/section.dark, .section-header, .card-grid/.card-grid-2/.card/.card--border/.card--dark, .quote-block, .testimonial-grid/.testimonial/.testimonial-quote/.testimonial-author, .offer-card/.offer-card.featured/.offer-name/.offer-price/.offer-desc, .about-inner/.about-photo, .cta-section, .form-group, footer/.footer-inner/.footer-logo/.footer-copy/.footer-links, .text-center, .eyebrow, .divider, .color-accent, .color-gold.
+${designBrief}
+
+━━━ AVAILABLE CSS CLASSES ━━━
+Layout: .container, .container--narrow
+Nav: nav, .nav-inner, .nav-logo, .nav-links, .nav-cta, .nav-hamburger, .nav-mobile
+Hero: .hero, .hero-inner, .hero-sub, .hero-actions, .hero-stats, .hero-stat-num, .hero-stat-label, .hero-visual, .hero-quote
+Sections: section, section.dark (dark bg), .section-header, .eyebrow, .divider, .divider--center
+Cards: .card-grid, .card-grid-2, .card, .card--border, .card--dark
+Testimonials: .testimonial-grid, .testimonial, .testimonial-quote, .testimonial-author
+Offers: .offer-card, .offer-card.featured, .offer-name, .offer-price, .offer-desc
+About: .about-inner, .about-photo
+Quote: .quote-block
+CTA/Form: .cta-section, .form-group
+Footer: footer, .footer-inner, .footer-logo, .footer-copy, .footer-links
+Utilities: .text-center, .color-accent, .color-gold, .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--gold
 
 ━━━ BRAND ━━━
 NAME: ${brandName}
@@ -519,4 +624,3 @@ export const contextEnrichmentPrompt = (userData) => {
 
   return context ? `## Pre-Session Context\nThe following information was provided before the interview began. Use it throughout the conversation.\n${context}` : '';
 };
-
