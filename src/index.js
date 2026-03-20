@@ -1791,28 +1791,33 @@ async function handleDeploy(request, env) {
   if (!siteObj) return json({ error: 'Site file not found' }, 404);
   const siteHtml = await siteObj.text();
 
-  // Generate a project name from blueprint
-  const projectName = session.blueprint?.blueprint?.part1?.brandNames?.[0]
-    ?.toLowerCase()
+  // Generate a clean project name from blueprint brand name
+  const bp = session.blueprint?.blueprint || session.blueprint || {};
+  const rawBrand = bp.part1?.brandNames?.[0] || '';
+  const cleanBrand = rawBrand
+    .toLowerCase()
     .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
-    .slice(0, 28) + '-' + Math.random().toString(36).slice(2, 6)
-    || `deep-work-${Math.random().toString(36).slice(2, 9)}`;
+    .replace(/^-|-$/g, '')
+    .slice(0, 28);
+  const projectName = cleanBrand
+    ? `dw-${cleanBrand}-${Math.random().toString(36).slice(2, 6)}`
+    : `dw-site-${Math.random().toString(36).slice(2, 8)}`;
+
+  // Use James's infrastructure token (CF_DEPLOY_TOKEN secret) OR a customer-provided token
+  const deployToken = cfToken || env.CF_DEPLOY_TOKEN;
+  const accountId = env.CF_ACCOUNT_ID || 'bd13f1dff62d4ccbea47440e45b48ec2';
+
+  if (!deployToken) {
+    return json({ error: 'Deployment not configured. Contact support.' }, 500);
+  }
 
   try {
-    // Step 1: Get account ID from Cloudflare
-    const acctRes = await fetch('https://api.cloudflare.com/client/v4/accounts', {
-      headers: { 'Authorization': `Bearer ${cfToken}` }
-    });
-    const acctData = await acctRes.json();
-    const accountId = acctData.result?.[0]?.id;
-    if (!accountId) return json({ error: 'Could not find Cloudflare account. Check your token permissions.' }, 400);
-
-    // Step 2: Create Pages project
+    // Step 1: Create Pages project
     const createRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${cfToken}`,
+        'Authorization': `Bearer ${deployToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -1823,10 +1828,11 @@ async function handleDeploy(request, env) {
     const createData = await createRes.json();
 
     if (!createData.success && !createData.result?.name) {
-      return json({ error: createData.errors?.[0]?.message || 'Could not create Pages project.' }, 400);
+      const errMsg = createData.errors?.[0]?.message || 'Could not create Pages project.';
+      return json({ error: errMsg }, 400);
     }
 
-    // Step 3: Deploy via direct upload
+    // Step 2: Deploy via direct upload
     const formData = new FormData();
     formData.append('index.html', new Blob([siteHtml], { type: 'text/html' }), 'index.html');
 
@@ -1834,19 +1840,25 @@ async function handleDeploy(request, env) {
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
       {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${cfToken}` },
+        headers: { 'Authorization': `Bearer ${deployToken}` },
         body: formData
       }
     );
     const deployData = await deployRes.json();
 
+    if (!deployData.success) {
+      return json({ error: deployData.errors?.[0]?.message || 'Deployment upload failed.' }, 500);
+    }
+
     const liveUrl = `https://${projectName}.pages.dev`;
 
     session.cfDeployed = true;
     session.pagesUrl = liveUrl;
+    session.projectName = projectName;
+    session.hostedOnJamesInfra = !cfToken; // Track if hosted on our infra vs customer's
     await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
 
-    await logEvent(env, sessionId, 'site_deployed', { url: liveUrl });
+    await logEvent(env, sessionId, 'site_deployed', { url: liveUrl, projectName, hostedOnJamesInfra: !cfToken });
 
     return json({ ok: true, url: liveUrl, projectName });
 

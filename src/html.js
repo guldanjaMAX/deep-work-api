@@ -1777,108 +1777,97 @@ export const getHTML = (config) => `<!DOCTYPE html>
       </div>
       <div class="progress-step">
         <div class="step-icon pending" id="step-4-icon">🚀</div>
-        <div class="step-text"><strong>Ready to deploy</strong>Your site is built and ready</div>
+        <div class="step-text"><strong>Deploying your site</strong>Publishing to a live URL</div>
       </div>
     </div>
-    <button class="btn btn-gold" id="deploy-btn" style="display:none" onclick="showScreen('deploy-screen')">Connect Cloudflare &amp; Go Live →</button>
   </div>
 </div>
 
 <!-- ══ DEPLOY SCREEN ══ -->
-<div id="deploy-screen" class="screen">
-  <div class="deploy-inner">
+<div id="deploy-screen" class="screen" style="display:none;">
+  <!-- Legacy deploy screen kept hidden; Mission Control replaces it -->
+</div>
 
-    <!-- Step 0: No account yet? -->
-    <div id="deploy-no-account" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;gap:16px;">
-      <div style="font-size:22px">☁️</div>
-      <div>
-        <div style="font-weight:600;font-size:14px;margin-bottom:3px">Don't have a Cloudflare account yet?</div>
-        <div style="font-size:13px;color:var(--text2)">It's free and takes 2 minutes to sign up. Your website will be hosted on their global network at no cost.</div>
-      </div>
-      <a href="https://dash.cloudflare.com/sign-up" target="_blank" class="btn btn-outline" style="white-space:nowrap;flex-shrink:0;padding:10px 18px;font-size:13px;">Create Free Account →</a>
+<div id="mission-control" class="screen">
+  <div style="max-width:720px;margin:0 auto;padding:40px 20px;">
+
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:36px;">
+      <div style="font-size:48px;margin-bottom:12px;">🚀</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:6px;">
+        <span id="mc-brand-name">Your Brand</span> is Live
+      </h2>
+      <p style="color:var(--text2);font-size:15px;margin:0;">Your website is published and ready to share with the world.</p>
     </div>
 
-    <h2>Connect Cloudflare &amp; Go Live</h2>
-    <p style="color:var(--text2);margin-bottom:28px">Your site is built and ready. The last step is giving it a home on the internet. Follow these steps exactly — it takes about 3 minutes.</p>
-
-    <div class="token-steps">
-      <div class="token-step">
-        <div class="token-step-num">1</div>
-        <div class="token-step-text">
-          <strong>Open the API Tokens page</strong><br>
-          <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--gold)">Click here to open Cloudflare API Tokens ↗</a>
-          <span style="color:var(--text2);font-size:13px;display:block;margin-top:4px">It will open in a new tab. Sign in if prompted.</span>
-        </div>
-      </div>
-      <div class="token-step">
-        <div class="token-step-num">2</div>
-        <div class="token-step-text">
-          <strong>Click "Create Token"</strong><br>
-          <span style="color:var(--text2);font-size:13px">You'll see a blue button at the top right of that page.</span>
-        </div>
-      </div>
-      <div class="token-step">
-        <div class="token-step-num">3</div>
-        <div class="token-step-text">
-          <strong>Choose "Edit Cloudflare Workers" template</strong><br>
-          <span style="color:var(--text2);font-size:13px">Scroll down to the template list. Click "Use template" next to <em>Edit Cloudflare Workers</em>.</span>
-        </div>
-      </div>
-      <div class="token-step">
-        <div class="token-step-num">4</div>
-        <div class="token-step-text">
-          <strong>Add one more permission: Cloudflare Pages</strong><br>
-          <span style="color:var(--text2);font-size:13px">On the permissions screen, click <strong>+ Add more</strong> and add: <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px">Cloudflare Pages — Edit</code>. This lets us publish your site.</span>
-        </div>
-      </div>
-      <div class="token-step">
-        <div class="token-step-num">5</div>
-        <div class="token-step-text">
-          <strong>Click "Continue to summary" → "Create Token"</strong><br>
-          <span style="color:var(--text2);font-size:13px">Cloudflare will show you your token <strong>once</strong>. Copy it immediately and paste it below.</span>
-        </div>
-      </div>
+    <!-- Live URL bar -->
+    <div id="mc-live-url" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:18px;">🌐</div>
+      <a id="mc-url-link" href="#" target="_blank" style="color:var(--gold);font-size:15px;font-weight:500;text-decoration:none;flex:1;word-break:break-all;"></a>
+      <button id="mc-copy-btn" onclick="copyMcUrl()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">Copy Link</button>
+      <a id="mc-visit-btn" href="#" target="_blank" class="btn btn-gold" style="padding:8px 18px;font-size:13px;text-decoration:none;white-space:nowrap;">Visit Site</a>
     </div>
 
-    <div style="background:var(--bg3);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;">
-      <div style="font-size:18px;margin-top:1px">🔒</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.6">
-        Your token is used once to deploy your site and is never stored. Your Cloudflare account stays under your full control. You can revoke this token anytime from your Cloudflare dashboard.
-      </div>
+    <!-- Fallback if no URL -->
+    <div id="mc-no-url" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:24px;text-align:center;">
+      <div style="font-size:14px;color:var(--text2);">Your site was generated but deployment is still processing. Refresh in a moment to see your live URL.</div>
     </div>
 
-    <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:500;">Paste Your Cloudflare API Token</label>
-    <div class="token-input-row">
-      <input type="password" id="cf-token" placeholder="Paste your token here..." style="margin:0;font-family:monospace;font-size:13px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-      <button class="btn btn-gold" onclick="deployToCloudflare()" id="deploy-btn-go" style="width:auto;padding:14px 20px;flex-shrink:0;">Deploy My Site →</button>
+    <!-- Site Preview -->
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px;background:var(--bg1);">
+      <div style="background:var(--bg3);padding:8px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e05252;"></span>
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8a838;"></span>
+        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3cc43c;"></span>
+        <span style="flex:1;text-align:center;font-family:monospace;font-size:11px;color:var(--text2);" id="mc-preview-domain"></span>
+      </div>
+      <iframe id="mc-preview" src="" style="width:100%;height:420px;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
+      <div id="mc-preview-placeholder" style="height:420px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;">Loading preview...</div>
     </div>
-    <div id="token-error" style="display:none;color:#e05252;font-size:13px;margin-top:8px;"></div>
 
-    <div id="deploy-status" style="margin-top:24px;display:none;">
-      <div style="margin-bottom:12px;font-size:14px;font-weight:600">Deploying your site...</div>
-      <div class="progress-step" id="ds-step1">
-        <div class="step-icon" id="deploy-step-icon-1">⏳</div>
-        <div class="step-text" id="deploy-step-text-1">Verifying your Cloudflare token</div>
-      </div>
-      <div class="progress-step" id="ds-step2" style="opacity:0.4">
-        <div class="step-icon" id="deploy-step-icon-2">⏳</div>
-        <div class="step-text" id="deploy-step-text-2">Creating your Pages project</div>
-      </div>
-      <div class="progress-step" id="ds-step3" style="opacity:0.4">
-        <div class="step-icon" id="deploy-step-icon-3">⏳</div>
-        <div class="step-text" id="deploy-step-text-3">Publishing your website files</div>
+    <!-- Share & Actions -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+      <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">
+        ✉️ &nbsp;Email My Site Link
+      </button>
+      <button onclick="copyMcUrl()" class="btn btn-outline" style="padding:14px;font-size:14px;">
+        📋 &nbsp;Copy Link to Share
+      </button>
+    </div>
+
+    <!-- What's Next -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:24px;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px;">What's Next</h3>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-size:18px;margin-top:1px;">🔗</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px;">Connect a Custom Domain</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;">Point your own domain (like yourbrand.com) to your new site. We can walk you through it on a strategy call.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-size:18px;margin-top:1px;">✏️</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px;">Refine Your Content</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;">Want to tweak your copy, swap images, or add sections? A strategy call includes hands on refinement time.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-size:18px;margin-top:1px;">📈</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px;">Launch Your Growth Engine</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.5;">Your blueprint has a full positioning strategy. Let's build a plan to drive traffic and convert visitors into clients.</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="deploy-success" style="margin-top:32px;display:none;text-align:center;">
-      <div style="font-size:52px;margin-bottom:16px;">🎉</div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:30px;margin-bottom:8px;">Your site is live.</h3>
-      <p style="color:var(--text2);margin-bottom:8px;font-size:15px">Hosted on Cloudflare's global network. Free forever.</p>
-      <p style="color:var(--text2);font-size:13px;margin-bottom:24px">You can connect a custom domain from your Cloudflare Pages dashboard anytime.</p>
-      <a id="live-url" href="#" target="_blank" class="btn btn-gold" style="width:auto;padding:16px 32px;text-decoration:none;font-size:15px;">View Your Live Site →</a>
-      <div style="margin-top:20px">
-        <a id="pages-dashboard-url" href="#" target="_blank" style="font-size:13px;color:var(--text2);text-decoration:underline">Open Cloudflare Pages Dashboard to connect a custom domain</a>
-      </div>
+    <!-- Strategy Call CTA -->
+    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:28px 24px;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Ready to Take It Further?</h3>
+      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a 1:1 strategy call to connect your domain, refine your site, and build a launch plan.</p>
+      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>
     </div>
 
   </div>
@@ -3504,7 +3493,7 @@ async function proceedToSite() {
 
 async function runSiteGeneration() {
   try {
-    // Step 1 active by default, step 2 next
+    // Step 1: Preparing context
     await delay(800);
     setStep(1, 'done');
     setStep(2, 'active');
@@ -3533,11 +3522,100 @@ async function runSiteGeneration() {
     }
 
     setStep(3, 'done');
-    setStep(4, 'done');
+    setStep(4, 'active');
 
-    document.getElementById('deploy-btn').style.display = 'block';
+    // Step 4: Auto-deploy (no customer Cloudflare account needed)
+    const deployRes = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    const deployData = await deployRes.json();
+
+    if (deployData.url) {
+      setStep(4, 'done');
+      STATE.liveUrl = deployData.url;
+      STATE.projectName = deployData.projectName;
+      await delay(1200);
+      showMissionControl(deployData.url, deployData.projectName);
+    } else {
+      setStep(4, 'done');
+      showMissionControl(null, null);
+    }
   } catch (e) {
     showToast('Site generation encountered an error. Please try again.');
+  }
+}
+
+function showMissionControl(liveUrl, projectName) {
+  showScreen('mission-control');
+  const bp = STATE.blueprint?.blueprint || STATE.blueprint || {};
+  const brandName = bp.part1?.brandNames?.[0] || 'Your Brand';
+  const mcBrand = document.getElementById('mc-brand-name');
+  if (mcBrand) mcBrand.textContent = brandName;
+
+  const urlSection = document.getElementById('mc-live-url');
+  const urlLink = document.getElementById('mc-url-link');
+  const visitBtn = document.getElementById('mc-visit-btn');
+  const previewFrame = document.getElementById('mc-preview');
+  const previewPlaceholder = document.getElementById('mc-preview-placeholder');
+  const previewDomain = document.getElementById('mc-preview-domain');
+  const noUrl = document.getElementById('mc-no-url');
+
+  if (liveUrl) {
+    if (urlSection) urlSection.style.display = '';
+    if (noUrl) noUrl.style.display = 'none';
+    if (urlLink) { urlLink.href = liveUrl; urlLink.textContent = liveUrl.replace('https://',''); }
+    if (visitBtn) visitBtn.href = liveUrl;
+    if (previewDomain) previewDomain.textContent = liveUrl.replace('https://','');
+    if (previewFrame) {
+      previewFrame.src = liveUrl;
+      previewFrame.style.display = '';
+      previewFrame.onload = function() {
+        if (previewPlaceholder) previewPlaceholder.style.display = 'none';
+      };
+    }
+  } else {
+    if (urlSection) urlSection.style.display = 'none';
+    if (noUrl) noUrl.style.display = '';
+    if (previewFrame) previewFrame.style.display = 'none';
+    if (previewPlaceholder) previewPlaceholder.textContent = 'Deploy is processing...';
+  }
+}
+
+function copyMcUrl() {
+  const url = document.getElementById('mc-url-link')?.href;
+  if (url) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('mc-copy-btn');
+      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy Link', 2000); }
+    });
+  }
+}
+
+function emailMySite() {
+  const url = document.getElementById('mc-url-link')?.href || '';
+  const brand = document.getElementById('mc-brand-name')?.textContent || 'My Website';
+  window.open('mailto:?subject=' + encodeURIComponent(brand + ' is Live') + '&body=' + encodeURIComponent('Check out my new website: ' + url), '_blank');
+}
+
+function handleBookCall() {
+  // Redirect to strategy call checkout
+  handleCheckoutRedirect('call');
+}
+
+async function handleCheckoutRedirect(product) {
+  try {
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId, product })
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else showToast('Could not start checkout. Please try again.');
+  } catch (e) {
+    showToast('Something went wrong. Please try again.');
   }
 }
 
