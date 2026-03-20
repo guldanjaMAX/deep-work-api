@@ -685,6 +685,50 @@ export const getAdminHTML = () => `<!DOCTYPE html>
           </div>
         </div>
 
+        <!-- Test Blueprint Generator -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+          <div class="card">
+            <div class="card-header"><h2>Generate Test Blueprint</h2></div>
+            <div style="padding:20px">
+              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Create a complete fake blueprint for any user session. Populates all 8 parts with realistic data so you can test the blueprint screen, site generation, and deploy flow without running a full interview.</p>
+              <div class="form-group">
+                <label>Email address (must have an existing session)</label>
+                <input type="email" id="test-bp-email" placeholder="user@example.com">
+              </div>
+              <div class="form-group">
+                <label>Brand name for the test blueprint</label>
+                <input type="text" id="test-bp-brand" placeholder="Mitchell Performance Group" value="Mitchell Performance Group">
+              </div>
+              <div class="form-group">
+                <label>Niche / industry</label>
+                <input type="text" id="test-bp-niche" placeholder="Executive coaching" value="Executive coaching for new leaders">
+              </div>
+              <button class="btn btn-gold" onclick="generateTestBlueprint()">Generate Blueprint</button>
+              <div id="test-bp-result" style="margin-top:14px;font-size:13px"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h2>Quick Test Session</h2></div>
+            <div style="padding:20px">
+              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Create a new user + session + blueprint + magic link in one click. Perfect for testing the full flow end to end.</p>
+              <div class="form-group">
+                <label>Test email address</label>
+                <input type="email" id="quick-test-email" placeholder="test@jamesguldan.com">
+              </div>
+              <div class="form-group">
+                <label>Tier</label>
+                <select id="quick-test-tier" style="margin:0">
+                  <option value="blueprint">Blueprint only</option>
+                  <option value="site" selected>Site + Deploy (full flow)</option>
+                </select>
+              </div>
+              <button class="btn btn-gold" onclick="quickTestSession()">Create Test Session</button>
+              <div id="quick-test-result" style="margin-top:14px;font-size:13px"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Ecosystem Testing Checklist -->
         <div class="card">
           <div class="card-header"><h2>Ecosystem Testing Checklist</h2></div>
@@ -1161,6 +1205,63 @@ async function generateAdminMagicLink() {
     }
   } catch {
     toast('Failed to generate link.');
+  }
+}
+
+// ── TEST BLUEPRINT GENERATOR ──────────────────────────────
+async function generateTestBlueprint() {
+  const email = document.getElementById('test-bp-email').value.trim();
+  const brandName = document.getElementById('test-bp-brand').value.trim() || 'Test Brand';
+  const niche = document.getElementById('test-bp-niche').value.trim() || 'Business coaching';
+  const resultEl = document.getElementById('test-bp-result');
+
+  if (!email) { toast('Enter an email address.'); return; }
+
+  resultEl.innerHTML = '<div style="color:var(--text3)">Generating blueprint...</div>';
+
+  try {
+    const res = await api('POST', '/api/admin/generate-test-blueprint', { email, brandName, niche });
+    if (res.ok) {
+      resultEl.innerHTML = \`
+        <div style="color:var(--green);font-weight:500;margin-bottom:8px">Blueprint created successfully!</div>
+        <div style="font-size:12px;color:var(--text2)">Session: \${res.sessionId}</div>
+        \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)" style="margin-top:8px">\${res.magicLink}</div>
+        <div style="font-size:11px;color:var(--text3)">Click to copy magic link. User will see their blueprint.</div>\` : ''}
+      \`;
+    } else {
+      resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to generate blueprint.'}</div>\`;
+    }
+  } catch (e) {
+    resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';
+  }
+}
+
+async function quickTestSession() {
+  const email = document.getElementById('quick-test-email').value.trim();
+  const tier = document.getElementById('quick-test-tier').value;
+  const resultEl = document.getElementById('quick-test-result');
+
+  if (!email) { toast('Enter an email address.'); return; }
+
+  resultEl.innerHTML = '<div style="color:var(--text3)">Creating test session...</div>';
+
+  try {
+    const res = await api('POST', '/api/admin/quick-test-session', { email, tier });
+    if (res.ok) {
+      resultEl.innerHTML = \`
+        <div style="color:var(--green);font-weight:500;margin-bottom:8px">Test session created!</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">User: \${res.userId}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Session: \${res.sessionId}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Tier: \${res.tier} | Blueprint: \${res.hasBlueprint ? 'Yes' : 'No'}</div>
+        \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>
+        <div style="font-size:11px;color:var(--text3)">Click to copy. Opens directly to \${res.hasBlueprint ? 'blueprint' : 'interview'}.</div>\` : ''}
+      \`;
+      loadUsers();
+    } else {
+      resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to create test session.'}</div>\`;
+    }
+  } catch (e) {
+    resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';
   }
 }
 

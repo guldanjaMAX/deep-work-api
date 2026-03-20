@@ -300,6 +300,8 @@ window.location.replace('/');
       if (path === '/api/admin/prompt'                 && request.method === 'GET')  return handleAdminGetPrompt(request, env);
       if (path === '/api/admin/prompt'                 && request.method === 'POST') return handleAdminSavePrompt(request, env);
       if (path === '/api/admin/generate-debrief'       && request.method === 'POST') return handleAdminGenerateDebrief(request, env);
+      if (path === '/api/admin/generate-test-blueprint' && request.method === 'POST') return handleAdminTestBlueprint(request, env);
+      if (path === '/api/admin/quick-test-session'      && request.method === 'POST') return handleAdminQuickTestSession(request, env);
 
       // ── API routes ────────────────────────────────────
       if (path === '/api/create-payment-intent' && request.method === 'POST') {
@@ -4250,6 +4252,189 @@ async function handleAdminMagicLink(request, env) {
     return json({ magicLink, url: magicLink, token, expires_in_hours: 72 });
   } catch (e) {
     return json({ error: 'Failed to generate magic link', detail: e.message }, 500);
+  }
+}
+
+async function handleAdminTestBlueprint(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: 'Forbidden' }, 403);
+
+  try {
+    const { email, brandName, niche } = await request.json();
+    if (!email) return json({ error: 'Email required' }, 400);
+
+    // Find user
+    const user = await getUserByEmail(env, email);
+    if (!user) return json({ error: 'User not found. Create them first.' }, 404);
+
+    // Find their most recent session from D1
+    const sessionRow = await env.DB.prepare('SELECT id FROM sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1').bind(user.id).first();
+    if (!sessionRow) return json({ error: 'No session found for this user. They need to start the app first.' }, 404);
+
+    const sessionId = sessionRow.id;
+
+    // Load session from KV
+    const raw = await env.SESSIONS.get(sessionId);
+    if (!raw) return json({ error: 'Session not found in KV.' }, 404);
+    const session = JSON.parse(raw);
+
+    // Generate a realistic blueprint using Claude Haiku
+    const bpRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        messages: [{
+          role: 'user',
+          content: `Generate a complete brand blueprint JSON for a person named "${brandName}" in the niche "${niche}". The blueprint should be realistic and detailed with all 8 parts filled out. Follow this exact JSON structure:
+
+{
+  "blueprint": {
+    "name": "Full Name",
+    "generatedAt": "${new Date().toISOString()}",
+    "part1": { "title": "Brand Foundation", "brandNames": ["Name 1", "Name 2", "Name 3"], "taglines": ["Tag 1", "Tag 2", "Tag 3"], "visualDirection": { "colors": [{"name":"Primary","hex":"#1B3A4B"},{"name":"Secondary","hex":"#C17F3E"},{"name":"Accent","hex":"#E8B86D"},{"name":"Background","hex":"#F8F5F0"},{"name":"Text","hex":"#1A1A1A"}], "fonts": {"heading":"Playfair Display","body":"Inter"}, "aesthetic": "2 sentences" }, "brandVoice": { "descriptors": ["word1","word2","word3","word4","word5"], "doSay": ["ex1","ex2","ex3"], "neverSay": ["ex1","ex2","ex3"] }, "coreBrandPromise": "One sentence" },
+    "part2": { "title": "Ideal Customer Avatar", "name": "First name", "ageRange": "range", "lifeSituation": "2 sentences", "tryingToAchieve": "goal", "whatIsStoppingThem": "obstacle", "exactWords": ["phrase1","phrase2","phrase3"], "alreadyTried": ["thing1","thing2"], "whyItDidNotWork": "pattern" },
+    "part3": { "title": "Niche Positioning", "nicheStatement": "I help X do Y without Z", "whoTheyServe": "desc", "whoTheyDoNotServe": "desc", "uniqueMechanism": "methodology name", "competitorGap": "differentiation" },
+    "part4": { "title": "Offer Suite", "entryOffer": {"name":"","description":"","price":"","delivery":""}, "coreOffer": {"name":"","description":"","price":"","delivery":""}, "premiumOffer": {"name":"","description":"","price":"","delivery":""}, "ascensionLogic": "how each leads to next" },
+    "part5": { "title": "Website Blueprint", "heroHeadlines": ["1","2","3"], "heroSubheadline": "one line", "heroCTA": "button text", "sections": [{"name":"Section","purpose":"purpose","content":"content"}], "testimonialFraming": "approach" },
+    "part6": { "title": "Gap Analysis", "credibilityGaps": ["gap1","gap2","gap3"], "marketingOpportunities": ["opp1","opp2","opp3"], "firstMove": "most important first step" },
+    "part7": { "title": "Headlines and Positioning Statements", "heroHeadlineOptions": ["1","2","3","4","5","6","7","8","9","10"], "taglineOptions": ["1","2","3","4","5"], "positioningStatements": {"website":"for homepage","social":"for bios","inPerson":"for introductions"} },
+    "part8": { "title": "Your Recommended Next Step", "recommendation": "site_in_sixty", "headline": "compelling one liner", "personalizedMessage": "3 to 5 sentences", "whyNow": "1 to 2 sentences", "specificBenefit": "concrete benefit" },
+    "leadIntel": { "estimatedRevenue": "100K to 500K", "industry": "${niche}", "yearsInBusiness": "1 to 3", "teamSize": "Solo", "hasExistingBrand": false, "hasExistingWebsite": false, "hasInternalTeam": false, "brandMaturity": "Starting fresh", "buyingTemperature": "Hot", "biggestPainPoint": "main pain", "budgetSignals": "signal", "bestFitService": "site_in_sixty", "bestFitReason": "1 sentence", "notableQuotes": ["quote1","quote2","quote3"], "followUpAngle": "angle" }
+  }
+}
+
+Return ONLY the JSON, no other text.`
+        }]
+      })
+    });
+
+    const bpData = await bpRes.json();
+    let blueprintText = bpData.content?.[0]?.text || '';
+
+    // Parse the JSON
+    let blueprint;
+    try {
+      // Try to extract JSON from code block if present
+      const jsonMatch = blueprintText.match(/```(?:json)?\n?([\s\S]*?)\n?```/) || [null, blueprintText];
+      blueprint = JSON.parse(jsonMatch[1]);
+    } catch (parseErr) {
+      return json({ error: 'Failed to parse generated blueprint JSON', detail: blueprintText.slice(0, 500) }, 500);
+    }
+
+    // Update the session
+    session.blueprint = blueprint;
+    session.blueprintGenerated = true;
+    session.phase = 8;
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+
+    // Save blueprint to R2
+    await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
+
+    // Update D1
+    await env.DB.prepare('UPDATE sessions SET status = ?, phase = ? WHERE id = ?')
+      .bind('blueprint_complete', 8, sessionId).run();
+
+    // Generate magic link for convenience
+    const token = generateMagicToken();
+    await storeMagicToken(env, token, user.id, 'magic_login', 72);
+    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const magicLink = `${origin}/magic?token=${token}`;
+
+    return json({ ok: true, sessionId, magicLink, brandName: blueprint?.blueprint?.part1?.brandNames?.[0] || brandName });
+  } catch (e) {
+    return json({ error: 'Failed to generate test blueprint', detail: e.message }, 500);
+  }
+}
+
+async function handleAdminQuickTestSession(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: 'Forbidden' }, 403);
+
+  try {
+    const { email, tier } = await request.json();
+    if (!email) return json({ error: 'Email required' }, 400);
+
+    // Create or find user
+    let user = await getUserByEmail(env, email);
+    if (!user) {
+      user = await createUser(env, { email, name: '', role: 'user' });
+    }
+
+    // Create a new session
+    const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const session = {
+      id: sessionId,
+      tier: tier || 'blueprint',
+      phase: 1,
+      messages: [],
+      userData: {},
+      userId: user.id,
+      email: email,
+      blueprintGenerated: false,
+      siteGenerated: false,
+      createdAt: new Date().toISOString(),
+      systemPrompt: DEEP_WORK_SYSTEM_PROMPT
+    };
+
+    // If tier is 'site', also generate a test blueprint
+    let hasBlueprint = false;
+    if (tier === 'site') {
+      // Use the test blueprint endpoint logic inline
+      const bpRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 4000,
+          messages: [{
+            role: 'user',
+            content: 'Generate a complete brand blueprint JSON for a fictional executive coaching business. The person is "Alex Rivera" who helps mid-level tech managers become better leaders. Return ONLY valid JSON with this structure: {"blueprint":{"name":"Alex Rivera","generatedAt":"' + new Date().toISOString() + '","part1":{"title":"Brand Foundation","brandNames":["Rivera Leadership","The Rivera Method","Alex Rivera Coaching"],"taglines":["tag1","tag2","tag3"],"visualDirection":{"colors":[{"name":"Primary","hex":"#2C3E50"},{"name":"Secondary","hex":"#C0842D"},{"name":"Accent","hex":"#E8B86D"},{"name":"Background","hex":"#FAFAF8"},{"name":"Text","hex":"#1A1A1A"}],"fonts":{"heading":"Playfair Display","body":"Inter"},"aesthetic":"desc"},"brandVoice":{"descriptors":["w1","w2","w3","w4","w5"],"doSay":["s1","s2","s3"],"neverSay":["s1","s2","s3"]},"coreBrandPromise":"promise"},"part2":{"title":"Ideal Customer Avatar","name":"Name","ageRange":"30 to 45","lifeSituation":"desc","tryingToAchieve":"goal","whatIsStoppingThem":"obstacle","exactWords":["p1","p2","p3"],"alreadyTried":["t1","t2"],"whyItDidNotWork":"reason"},"part3":{"title":"Niche Positioning","nicheStatement":"statement","whoTheyServe":"desc","whoTheyDoNotServe":"desc","uniqueMechanism":"method","competitorGap":"gap"},"part4":{"title":"Offer Suite","entryOffer":{"name":"n","description":"d","price":"$497","delivery":"del"},"coreOffer":{"name":"n","description":"d","price":"$5000","delivery":"del"},"premiumOffer":{"name":"n","description":"d","price":"$2500/mo","delivery":"del"},"ascensionLogic":"logic"},"part5":{"title":"Website Blueprint","heroHeadlines":["h1","h2","h3"],"heroSubheadline":"sub","heroCTA":"cta","sections":[{"name":"s","purpose":"p","content":"c"}],"testimonialFraming":"frame"},"part6":{"title":"Gap Analysis","credibilityGaps":["g1","g2","g3"],"marketingOpportunities":["o1","o2","o3"],"firstMove":"move"},"part7":{"title":"Headlines and Positioning Statements","heroHeadlineOptions":["1","2","3","4","5","6","7","8","9","10"],"taglineOptions":["1","2","3","4","5"],"positioningStatements":{"website":"w","social":"s","inPerson":"p"}},"part8":{"title":"Your Recommended Next Step","recommendation":"site_in_sixty","headline":"h","personalizedMessage":"msg","whyNow":"why","specificBenefit":"benefit"},"leadIntel":{"estimatedRevenue":"100K to 500K","industry":"Executive coaching","yearsInBusiness":"1 to 3","teamSize":"Solo","hasExistingBrand":false,"hasExistingWebsite":false,"hasInternalTeam":false,"brandMaturity":"Starting fresh","buyingTemperature":"Hot","biggestPainPoint":"pain","budgetSignals":"signal","bestFitService":"site_in_sixty","bestFitReason":"reason","notableQuotes":["q1","q2","q3"],"followUpAngle":"angle"}}}'
+          }]
+        })
+      });
+
+      const bpData = await bpRes.json();
+      let bpText = bpData.content?.[0]?.text || '';
+      try {
+        const match = bpText.match(/```(?:json)?\n?([\s\S]*?)\n?```/) || [null, bpText];
+        const blueprint = JSON.parse(match[1]);
+        session.blueprint = blueprint;
+        session.blueprintGenerated = true;
+        session.phase = 8;
+        hasBlueprint = true;
+        await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
+      } catch (_) {
+        // Blueprint generation failed, just create session without it
+      }
+    }
+
+    // Save to KV
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+
+    // Save to D1
+    const now = new Date().toISOString();
+    await env.DB.prepare('INSERT INTO sessions (id, user_id, tier, phase, status, email, created_at, message_count) VALUES (?,?,?,?,?,?,?,?)')
+      .bind(sessionId, user.id, tier || 'blueprint', hasBlueprint ? 8 : 1, hasBlueprint ? 'blueprint_complete' : 'active', email, now, 0).run();
+
+    // Generate magic link
+    const magicToken = generateMagicToken();
+    await storeMagicToken(env, magicToken, user.id, 'magic_login', 72);
+    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const magicLink = `${origin}/magic?token=${magicToken}`;
+
+    return json({ ok: true, userId: user.id, sessionId, tier: tier || 'blueprint', hasBlueprint, magicLink });
+  } catch (e) {
+    return json({ error: 'Failed to create test session', detail: e.message }, 500);
   }
 }
 
