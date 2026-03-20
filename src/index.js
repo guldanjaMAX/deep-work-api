@@ -429,7 +429,7 @@ async function handleCreatePaymentIntent(request, env) {
       amount:   amount.toString(),
       currency: 'usd',
       'metadata[tiers]': tiers.join(','),
-      'automatic_payment_methods[enabled]': 'true',
+      'payment_method_types[]': 'card',
     });
 
     const res = await fetch('https://api.stripe.com/v1/payment_intents', {
