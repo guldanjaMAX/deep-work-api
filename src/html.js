@@ -8,29 +8,32 @@ export const getHTML = (config) => `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Deep Work Blueprint | James Guldan</title>
+<link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
 <meta name="description" content="A 90-minute AI-powered brand strategy session that produces a complete brand blueprint, offer structure, and website-ready copy.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0a0a0b;
-    --bg2: #111113;
-    --bg3: #1a1a1e;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --gold: #c9a84c;
-    --gold2: #e8c46a;
-    --text: #f0ede8;
-    --text2: #9a9490;
-    --text3: #6b6560;
-    --user-bubble: #1e2a3a;
-    --ai-bubble: #1a1a1e;
-    --accent: #2563eb;
-    --success: #16a34a;
-    --radius: 12px;
-    --radius-sm: 8px;
+    --bg:          #FDFCFA;
+    --bg2:         #F5F2EF;
+    --bg3:         #ECEAE6;
+    --border:      #E8E5E1;
+    --border2:     #D4D0CB;
+    --gold:        #c4703f;
+    --gold2:       #d4855a;
+    --text:        #111111;
+    --text2:       #555555;
+    --text3:       #9A9A9A;
+    --user-bubble: #ECEAE6;
+    --ai-bubble:   #FFFFFF;
+    --accent:      #c4703f;
+    --success:     #2d7a4f;
+    --radius:      12px;
+    --radius-sm:   8px;
   }
 
   html { font-size: 16px; scroll-behavior: smooth; }
@@ -41,17 +44,18 @@ export const getHTML = (config) => `<!DOCTYPE html>
     color: var(--text);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  /* ── LANDING PAGE ── */
+  /* ── LANDING PAGE (welcome for authenticated users) ── */
   #landing {
     min-height: 100vh;
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 40px 20px;
-    background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%);
   }
 
   .landing-inner { max-width: 720px; width: 100%; text-align: center; }
@@ -59,26 +63,29 @@ export const getHTML = (config) => `<!DOCTYPE html>
   .eyebrow {
     display: inline-block;
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--gold);
-    background: rgba(201,168,76,0.1);
-    border: 1px solid rgba(201,168,76,0.2);
-    padding: 6px 16px;
+    padding: 5px 14px;
     border-radius: 100px;
-    margin-bottom: 28px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(196,112,63,0.2);
   }
 
   .landing-inner h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: clamp(36px, 6vw, 64px);
     font-weight: 700;
     line-height: 1.1;
     margin-bottom: 20px;
-    background: linear-gradient(135deg, #f0ede8 0%, var(--gold2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text);
+  }
+
+  .landing-inner h1 em {
+    font-style: italic;
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
   }
 
   .landing-inner p {
@@ -89,95 +96,6 @@ export const getHTML = (config) => `<!DOCTYPE html>
     max-width: 560px;
     margin-left: auto;
     margin-right: auto;
-  }
-
-  .pricing-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 48px;
-  }
-
-  @media (max-width: 600px) {
-    .pricing-cards { grid-template-columns: 1fr; }
-  }
-
-  .pricing-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 24px;
-    text-align: left;
-    transition: border-color 0.2s;
-    cursor: pointer;
-    position: relative;
-  }
-
-  .pricing-card:hover { border-color: var(--border2); }
-
-  .pricing-card.featured {
-    border-color: var(--gold);
-    background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, var(--bg2) 100%);
-  }
-
-  .pricing-card .badge {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--gold);
-    color: #000;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 4px 14px;
-    border-radius: 100px;
-    white-space: nowrap;
-  }
-
-  .card-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 8px;
-  }
-
-  .card-price {
-    font-family: 'Playfair Display', serif;
-    font-size: 42px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-
-  .card-price sup { font-size: 20px; vertical-align: super; }
-
-  .card-desc {
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-
-  .card-features { list-style: none; margin-bottom: 24px; }
-
-  .card-features li {
-    font-size: 13px;
-    color: var(--text2);
-    padding: 5px 0;
-    padding-left: 20px;
-    position: relative;
-  }
-
-  .card-features li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--gold);
-    font-weight: 700;
   }
 
   .btn {
@@ -191,32 +109,48 @@ export const getHTML = (config) => `<!DOCTYPE html>
     font-weight: 600;
     cursor: pointer;
     border: none;
-    transition: all 0.2s;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     width: 100%;
+    letter-spacing: 0.01em;
   }
 
   .btn-gold {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-    color: #000;
+    background: var(--text);
+    color: #fff;
+    border-radius: 50px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
   }
 
-  .btn-gold:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-gold:hover {
+    background: #2d2d2d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+  }
+
+  .btn-gold:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
 
   .btn-outline {
     background: transparent;
     color: var(--text);
     border: 1px solid var(--border2);
+    border-radius: 50px;
   }
 
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-outline:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(196,112,63,0.04);
+  }
 
   .btn-primary {
-    background: var(--accent);
+    background: var(--text);
     color: #fff;
+    border-radius: 50px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
   }
 
-  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:hover { background: #2d2d2d; transform: translateY(-1px); }
 
   .trust-bar {
     display: flex;
@@ -236,50 +170,177 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   .trust-item .icon { color: var(--gold); font-size: 16px; }
 
+  .legal-footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .legal-footer p {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    line-height: 1.6;
+    max-width: 100%;
+  }
+
+  .legal-footer a {
+    color: var(--text3);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .legal-footer a:hover { color: var(--text2); }
+
+  .legal-disclaimer {
+    font-size: 11px !important;
+    color: var(--border2) !important;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
   /* ── INTAKE SCREEN ── */
   #intake {
     display: none;
     min-height: 100vh;
-    padding: 40px 20px;
-    max-width: 680px;
+    padding: 0 0 80px 0;
     margin: 0 auto;
   }
 
-  .intake-header { text-align: center; margin-bottom: 40px; }
+  /* Intake hero */
+  .intake-hero {
+    text-align: center;
+    padding: 52px 20px 40px;
+    position: relative;
+  }
 
-  .intake-header h2 {
+  .intake-hero .eyebrow { margin-bottom: 20px; }
+
+  .intake-hero h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .intake-hero h2 em {
+    font-style: italic;
     font-family: 'Playfair Display', serif;
-    font-size: 32px;
-    margin-bottom: 10px;
-  }
-
-  .intake-header p { color: var(--text2); font-size: 15px; }
-
-  .intake-section {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 16px;
-  }
-
-  .intake-section h3 {
-    font-size: 14px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     color: var(--gold);
-    margin-bottom: 6px;
   }
 
-  .intake-section p {
-    font-size: 13px;
+  .intake-hero > p {
+    font-size: 17px;
     color: var(--text2);
-    margin-bottom: 16px;
-    line-height: 1.6;
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto 32px;
   }
 
-  .intake-section label {
+  /* Promise strip */
+  .promise-strip {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding: 0 20px;
+  }
+
+  .promise-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text2);
+  }
+
+  .promise-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(196,112,63,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* Step cards */
+  .intake-steps {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 40px 20px 0;
+  }
+
+  .step-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .step-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+  }
+
+  .step-card-header {
+    padding: 28px 28px 0;
+  }
+
+  .step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1.5px solid var(--border2);
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 12px;
+  }
+
+  .step-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .step-card .step-why {
+    font-size: 15px;
+    color: var(--text2);
+    line-height: 1.65;
+    margin-bottom: 4px;
+  }
+
+  .step-card .step-impact {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .step-card-body {
+    padding: 20px 28px 28px;
+  }
+
+  .step-card label {
     display: block;
     font-size: 13px;
     font-weight: 500;
@@ -287,45 +348,57 @@ export const getHTML = (config) => `<!DOCTYPE html>
     margin-bottom: 6px;
   }
 
+  .step-optional {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+
   input[type="text"], input[type="email"], input[type="url"], textarea {
     width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
     color: var(--text);
-    font-size: 14px;
+    font-size: 15px;
     font-family: 'Inter', sans-serif;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     margin-bottom: 12px;
     resize: vertical;
   }
 
-  input:focus, textarea:focus { border-color: var(--gold); }
+  input:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196,112,63,0.1);
+  }
 
   input::placeholder, textarea::placeholder { color: var(--text3); }
 
   .upload-zone {
     border: 2px dashed var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 32px;
+    border-radius: 12px;
+    padding: 36px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s;
     position: relative;
+    background: var(--bg);
   }
 
   .upload-zone:hover, .upload-zone.drag-over {
     border-color: var(--gold);
-    background: rgba(201,168,76,0.04);
+    background: rgba(196,112,63,0.03);
   }
 
   .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-  .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-zone .upload-icon { font-size: 32px; margin-bottom: 10px; }
 
-  .upload-zone p { font-size: 14px; color: var(--text2); margin: 0; }
+  .upload-zone p { font-size: 15px; color: var(--text2); margin: 0 0 4px; }
 
   .upload-zone span { font-size: 12px; color: var(--text3); }
 
@@ -338,8 +411,8 @@ export const getHTML = (config) => `<!DOCTYPE html>
     background: var(--bg3);
     border: 1px solid var(--border2);
     border-radius: 100px;
-    padding: 4px 12px;
-    font-size: 12px;
+    padding: 6px 14px;
+    font-size: 13px;
     color: var(--text2);
   }
 
@@ -353,6 +426,213 @@ export const getHTML = (config) => `<!DOCTYPE html>
     padding: 0;
   }
 
+  /* CTA area */
+  .intake-cta {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  .intake-cta .btn-gold {
+    font-size: 16px;
+    padding: 18px 40px;
+    width: auto;
+    display: inline-flex;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 16px rgba(26,26,26,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intake-cta .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(26,26,26,0.28);
+  }
+
+  .intake-cta .btn-gold:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+    background: var(--text);
+  }
+
+  .intake-reassurance {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.6;
+  }
+
+  .intake-reassurance strong {
+    color: var(--text2);
+  }
+
+  /* Loading overlay */
+  .session-loading {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(253,252,250,0.97);
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    text-align: center;
+    animation: loadFadeIn 0.35s ease;
+  }
+
+  .session-loading.active { display: flex; }
+
+  @keyframes loadFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: loadSpin 0.8s linear infinite;
+    margin-bottom: 28px;
+    flex-shrink: 0;
+  }
+
+  @keyframes loadSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loading-message {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 19px;
+    color: var(--text);
+    max-width: 360px;
+    width: 100%;
+    line-height: 1.55;
+    min-height: 56px;
+    transition: opacity 0.3s ease;
+  }
+
+  .loading-stage {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 20px;
+  }
+
+  .loading-progress {
+    width: 180px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .loading-progress-bar {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+
+  .loading-error {
+    display: none;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .loading-error h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .loading-error p {
+    font-size: 15px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .loading-error .error-detail {
+    font-size: 12px;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-family: monospace;
+    word-break: break-all;
+    text-align: left;
+  }
+
+  @media (max-width: 600px) {
+    /* ── INTAKE: strip the wall of text — show title + input only ── */
+    .intake-hero { padding: 28px 16px 20px; }
+    .intake-hero > p { font-size: 15px; margin-bottom: 20px; }
+    .promise-strip { gap: 10px; }
+    .promise-item { font-size: 12px; }
+    .promise-item .promise-icon { width: 26px; height: 26px; font-size: 13px; }
+
+    /* The big fix: hide long copy on mobile — inputs speak for themselves */
+    .step-why { display: none; }
+    .step-impact { display: none; }
+    .step-card-header { padding: 18px 18px 0; }
+    .step-card-body { padding: 10px 18px 18px; }
+    .step-card h3 { font-size: 16px; margin-bottom: 0; }
+    .step-card { margin-bottom: 10px; border-radius: 14px; }
+    .step-number { width: 24px; height: 24px; font-size: 11px; margin-bottom: 8px; }
+    .intake-steps { padding: 12px 14px 0; }
+
+    /* Sticky begin button — always reachable without scrolling to the bottom */
+    .intake-cta {
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      padding: 12px 16px 20px;
+      border-top: 1px solid var(--border);
+      margin: 0;
+      z-index: 5;
+      text-align: center;
+    }
+    .intake-cta .btn-gold { font-size: 15px; padding: 15px 28px; }
+    .intake-reassurance { font-size: 11px; margin-top: 8px; }
+
+    /* Chat: hide avatars on mobile so bubbles get full width */
+    .msg.ai .avatar,
+    .msg.user .avatar { display: none; }
+
+    .msg.ai .bubble,
+    .msg.user .bubble { max-width: calc(100% - 8px); }
+
+    /* Thinking bubble expands on mobile */
+    .thinking-bubble { min-width: 0; max-width: calc(100% - 8px); width: auto; }
+
+    /* Smaller message gap on mobile */
+    #messages { gap: 12px; padding: 16px 12px; }
+
+    /* Tighter input */
+    .input-area { padding: 10px 12px 12px; }
+
+    /* Keep phase bar compact */
+    .phase-bar { padding: 8px 12px; }
+    .phase-dot { width: 24px; height: 24px; font-size: 10px; }
+    .phase-label { display: none; }
+  }
+
   /* ── APP SCREEN ── */
   #app {
     display: none;
@@ -363,24 +643,25 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   /* Phase bar */
   .phase-bar {
-    background: var(--bg2);
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
-    padding: 12px 20px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
     flex-shrink: 0;
     overflow-x: auto;
     scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
   .phase-bar::-webkit-scrollbar { display: none; }
 
   .phase-label {
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: 500;
     color: var(--text3);
     white-space: nowrap;
     flex-shrink: 0;
@@ -388,46 +669,47 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   .phases {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     flex-shrink: 0;
   }
 
   .phase-dot {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 600;
-    border: 1.5px solid var(--border2);
+    border: 1.5px solid var(--border);
     color: var(--text3);
-    transition: all 0.3s;
+    transition: all 0.25s;
     flex-shrink: 0;
+    background: var(--bg);
   }
 
   .phase-dot.active {
     background: var(--gold);
     border-color: var(--gold);
-    color: #000;
+    color: #fff;
   }
 
   .phase-dot.complete {
-    background: rgba(201,168,76,0.15);
+    background: transparent;
     border-color: var(--gold);
     color: var(--gold);
   }
 
   .phase-name {
     font-size: 13px;
-    color: var(--text2);
+    color: var(--text3);
     white-space: nowrap;
     flex-shrink: 0;
     margin-left: auto;
   }
 
-  .phase-name strong { color: var(--gold); }
+  .phase-name strong { color: var(--text); font-weight: 600; }
 
   /* Chat area */
   .chat-wrap {
@@ -480,8 +762,8 @@ export const getHTML = (config) => `<!DOCTYPE html>
   }
 
   .avatar.ai {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
-    color: #000;
+    background: var(--gold);
+    color: #fff;
   }
 
   .avatar.user-av {
@@ -499,16 +781,16 @@ export const getHTML = (config) => `<!DOCTYPE html>
   }
 
   .msg.ai .bubble {
-    background: var(--ai-bubble);
-    border: 1px solid var(--border);
-    border-radius: 4px 16px 16px 16px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03);
+    border-radius: 4px 18px 18px 18px;
     color: var(--text);
+    border: 1px solid var(--border);
   }
 
   .msg.user .bubble {
     background: var(--user-bubble);
-    border: 1px solid var(--border2);
-    border-radius: 16px 4px 16px 16px;
+    border-radius: 18px 4px 18px 18px;
     color: var(--text);
   }
 
@@ -516,16 +798,16 @@ export const getHTML = (config) => `<!DOCTYPE html>
   .bubble p:last-child { margin-bottom: 0; }
   .bubble ol { padding-left: 20px; margin: 8px 0; }
   .bubble ol li { margin-bottom: 6px; }
-  .bubble strong { color: var(--gold2); font-weight: 600; }
+  .bubble strong { color: var(--text); font-weight: 600; }
 
   .typing-indicator {
     display: flex;
     align-items: center;
     gap: 4px;
     padding: 14px 18px;
-    background: var(--ai-bubble);
-    border: 1px solid var(--border);
-    border-radius: 4px 16px 16px 16px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 10px rgba(0,0,0,0.04);
+    border-radius: 4px 18px 18px 18px;
   }
 
   .typing-indicator span {
@@ -544,17 +826,142 @@ export const getHTML = (config) => `<!DOCTYPE html>
     30% { transform: translateY(-6px); }
   }
 
+  /* Thinking message (enhanced typing indicator) */
+  .thinking-bubble {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
+    border-radius: 4px 18px 18px 18px;
+    padding: 0;
+    overflow: hidden;
+    min-width: 200px;
+    max-width: 340px;
+  }
+  .thinking-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 13px 16px 5px;
+  }
+  .thinking-dots span {
+    width: 5px;
+    height: 5px;
+    background: var(--text3);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  .thinking-msg {
+    padding: 3px 16px 13px;
+    font-size: 12px;
+    color: var(--text3);
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.4s ease;
+    min-height: 18px;
+  }
+  .thinking-progress {
+    height: 2px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .thinking-progress-bar {
+    height: 100%;
+    background: var(--gold);
+    width: 0%;
+    transition: width 0.8s ease;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  /* Blueprint generation overlay */
+  .blueprint-generating {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(253,252,250,0.97);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .blueprint-generating.active { display: flex; }
+  .blueprint-gen-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #e8935a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    animation: pulse-glow 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .blueprint-gen-icon svg {
+    width: 30px;
+    height: 30px;
+    fill: white;
+    animation: spin-slow 4s linear infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(196,112,63,0.25); transform: scale(1); }
+    50% { box-shadow: 0 0 36px rgba(196,112,63,0.4); transform: scale(1.04); }
+  }
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .blueprint-gen-title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 26px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .blueprint-gen-msg {
+    font-size: 15px;
+    color: var(--text2);
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.5s ease;
+    max-width: 360px;
+    width: 100%;
+    line-height: 1.65;
+    min-height: 52px;
+  }
+  .blueprint-gen-progress {
+    width: 220px;
+    height: 2px;
+    background: rgba(196,112,63,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 24px;
+  }
+  .blueprint-gen-progress-bar {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1.2s ease;
+  }
+
   /* Input area */
   .input-area {
     border-top: 1px solid var(--border);
-    background: var(--bg2);
-    padding: 16px 20px;
+    background: var(--bg);
+    padding: 12px 16px 14px;
     flex-shrink: 0;
   }
 
   .input-row {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: flex-end;
     max-width: 760px;
     margin: 0 auto;
@@ -562,28 +969,34 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   .input-row textarea {
     flex: 1;
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
+    background: #ffffff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 14px;
     color: var(--text);
     font-size: 15px;
     font-family: 'Inter', sans-serif;
     resize: none;
     outline: none;
-    max-height: 160px;
+    max-height: 140px;
     overflow-y: auto;
     line-height: 1.5;
     margin: 0;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
   }
 
-  .input-row textarea:focus { border-color: var(--gold); }
+  .input-row textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196,112,63,0.08);
+  }
+
+  .input-row textarea::placeholder { color: var(--text3); }
 
   .send-btn {
     width: 44px;
     height: 44px;
-    border-radius: var(--radius-sm);
+    border-radius: 50%;
     background: var(--gold);
     border: none;
     cursor: pointer;
@@ -592,35 +1005,120 @@ export const getHTML = (config) => `<!DOCTYPE html>
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s;
-    color: #000;
+    color: #fff;
   }
 
-  .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
-  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .send-btn:hover { background: var(--gold2); transform: scale(1.05); }
+  .send-btn:active { transform: scale(0.97); }
+  .send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  /* Voice input button */
+  .voice-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg2);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: var(--text3);
+  }
+
+  .voice-btn:hover { border-color: var(--border2); color: var(--text2); }
+
+  .voice-btn.recording {
+    background: rgba(196,112,63,0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+    animation: voicePulse 1.5s ease-in-out infinite;
+  }
+
+  .voice-btn.unsupported { display: none; }
+
+  @keyframes voicePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196,112,63,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(196,112,63,0); }
+  }
+
+  .voice-status {
+    font-size: 12px;
+    color: var(--gold);
+    text-align: center;
+    max-width: 760px;
+    margin: 6px auto 0;
+    min-height: 16px;
+    font-weight: 500;
+  }
+
+  /* Resume banner */
+  .resume-banner {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    max-width: 640px;
+    margin: 0 auto 24px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  .resume-banner h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .resume-banner p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .resume-banner .resume-meta {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 16px;
+  }
+
+  .resume-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .resume-actions .btn { width: auto; padding: 14px 28px; }
 
   .input-tools {
     display: flex;
     align-items: center;
     gap: 8px;
     max-width: 760px;
-    margin: 10px auto 0;
+    margin: 8px auto 0;
   }
 
   .tool-btn {
     background: none;
-    border: 1px solid var(--border);
+    border: none;
     border-radius: 6px;
-    padding: 5px 10px;
+    padding: 4px 8px;
     color: var(--text3);
     font-size: 12px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: color 0.2s;
     display: flex;
     align-items: center;
     gap: 5px;
   }
 
-  .tool-btn:hover { border-color: var(--border2); color: var(--text2); }
+  .tool-btn:hover { color: var(--text2); }
 
   /* ── BLUEPRINT SCREEN ── */
   #blueprint-screen {
@@ -630,19 +1128,18 @@ export const getHTML = (config) => `<!DOCTYPE html>
   }
 
   .blueprint-header {
-    background: linear-gradient(135deg, var(--bg2) 0%, rgba(201,168,76,0.05) 100%);
+    background: linear-gradient(135deg, var(--bg2) 0%, rgba(196,112,63,0.05) 100%);
     border-bottom: 1px solid var(--border);
     padding: 32px 40px;
     text-align: center;
   }
 
   .blueprint-header h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 36px;
+    font-weight: 700;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--text) 0%, var(--gold2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text);
   }
 
   .blueprint-header p { color: var(--text2); font-size: 15px; }
@@ -661,11 +1158,12 @@ export const getHTML = (config) => `<!DOCTYPE html>
   .blueprint-body { padding: 40px; max-width: 900px; margin: 0 auto; width: 100%; }
 
   .bp-part {
-    background: var(--bg2);
+    background: #fff;
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
+    border-radius: 16px;
+    padding: 32px;
     margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
   }
 
   .bp-part-header {
@@ -679,7 +1177,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: rgba(201,168,76,0.15);
+    background: rgba(196,112,63,0.12);
     border: 1px solid var(--gold);
     color: var(--gold);
     font-size: 13px;
@@ -769,12 +1267,12 @@ export const getHTML = (config) => `<!DOCTYPE html>
   }
 
   .step-icon.pending { background: var(--bg3); border: 1px solid var(--border2); }
-  .step-icon.active { background: rgba(201,168,76,0.15); border: 1px solid var(--gold); animation: pulse 1.5s infinite; }
+  .step-icon.active { background: rgba(196,112,63,0.12); border: 1px solid var(--gold); animation: pulse 1.5s infinite; }
   .step-icon.done { background: rgba(22,163,74,0.15); border: 1px solid var(--success); color: var(--success); }
 
   @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.3); }
-    50% { box-shadow: 0 0 0 6px rgba(201,168,76,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196,112,63,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(196,112,63,0); }
   }
 
   .step-text { font-size: 14px; color: var(--text2); }
@@ -814,7 +1312,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: rgba(201,168,76,0.1);
+    background: rgba(196,112,63,0.1);
     border: 1px solid var(--gold);
     color: var(--gold);
     font-size: 12px;
@@ -841,10 +1339,11 @@ export const getHTML = (config) => `<!DOCTYPE html>
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #1a1408 0%, #1a1a1e 100%);
-    border-top: 1px solid var(--gold);
+    background: #fff;
+    border-top: 2px solid var(--gold);
     padding: 20px;
     z-index: 100;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
     animation: slideUp 0.4s ease;
   }
 
@@ -873,7 +1372,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     margin-bottom: 4px;
   }
 
-  .order-bump-text h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .order-bump-text h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
 
   .order-bump-text p { font-size: 13px; color: var(--text2); }
 
@@ -883,7 +1382,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     font-family: 'Playfair Display', serif;
     font-size: 28px;
     font-weight: 700;
-    color: var(--gold2);
+    color: var(--text);
   }
 
   .bump-close {
@@ -894,6 +1393,9 @@ export const getHTML = (config) => `<!DOCTYPE html>
     cursor: pointer;
     padding: 4px;
     line-height: 1;
+    position: absolute;
+    top: 12px;
+    right: 16px;
   }
 
   /* ── IMAGE GALLERY ── */
@@ -910,6 +1412,60 @@ export const getHTML = (config) => `<!DOCTYPE html>
     border: 1px solid var(--border);
     aspect-ratio: 16/9;
     object-fit: cover;
+  }
+
+  /* ── PHASE COMPLETION BANNER ── */
+  .phase-complete-banner {
+    max-width: 760px;
+    width: 100%;
+    margin: 8px auto;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .phase-complete-inner {
+    background: rgba(196,112,63,0.06);
+    border: 1px solid rgba(196,112,63,0.18);
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .phase-complete-check {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .phase-complete-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--gold);
+    margin-bottom: 2px;
+  }
+
+  .phase-complete-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .phase-complete-progress {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text3);
+    white-space: nowrap;
   }
 
   /* ── TOAST ── */
@@ -953,92 +1509,160 @@ export const getHTML = (config) => `<!DOCTYPE html>
 </head>
 <body>
 
-<!-- ══ LANDING SCREEN ══ -->
+<!-- ══ LANDING SCREEN (fallback for unauthenticated) ══ -->
 <div id="landing" class="screen active">
   <div class="landing-inner">
-    <div class="eyebrow">By James Guldan</div>
-    <h1>Your Brand, Fully Defined in 90 Minutes</h1>
-    <p>A structured AI-powered brand strategy session that extracts your story, sharpens your positioning, and produces a complete 7-part blueprint you can build a business on.</p>
-
-    <div class="pricing-cards">
-      <div class="pricing-card" onclick="selectTier('blueprint')">
-        <div class="card-title">Deep Work Blueprint</div>
-        <div class="card-price"><sup>$</sup>67</div>
-        <div class="card-desc">The full 8-phase brand strategy interview. Walk in with a vague idea, walk out with a complete brand foundation.</div>
-        <ul class="card-features">
-          <li>8-phase brand strategy interview</li>
-          <li>7-part brand blueprint PDF</li>
-          <li>Ideal customer avatar</li>
-          <li>Offer suite design</li>
-          <li>10 headline options</li>
-        </ul>
-        <button class="btn btn-outline">Get My Blueprint &rarr;</button>
-      </div>
-
-      <div class="pricing-card featured" onclick="selectTier('site')">
-        <div class="badge">Most Popular</div>
-        <div class="card-title">Blueprint + Website Build</div>
-        <div class="card-price"><sup>$</sup>197</div>
-        <div class="card-desc">Everything in the blueprint, plus your brand turned into a real deployed website. No code. No Cloudflare knowledge required.</div>
-        <ul class="card-features">
-          <li>Everything in the Blueprint</li>
-          <li>AI-generated website from your blueprint</li>
-          <li>Brand images via Imagen 4</li>
-          <li>Auto-deploy to Cloudflare Pages</li>
-          <li>Live site in under 10 minutes</li>
-        </ul>
-        <button class="btn btn-gold">Get My Site &rarr;</button>
-      </div>
-    </div>
-
-    <div class="trust-bar">
-      <div class="trust-item"><span class="icon">🔒</span> Secure checkout via Stripe</div>
-      <div class="trust-item"><span class="icon">⚡</span> Instant access after payment</div>
-      <div class="trust-item"><span class="icon">✦</span> Built by James Guldan</div>
+    <div class="eyebrow">Deep Work by James Guldan</div>
+    <h1>This Experience Starts<br>at <em>jamesguldan.com/deep-work</em></h1>
+    <p>You need an active session to access Deep Work. If you already purchased, check your email for a login link. Otherwise, visit the main page to get started.</p>
+    <a href="https://jamesguldan.com/deep-work" class="btn btn-gold" style="width:auto;display:inline-flex;padding:16px 36px;text-decoration:none;">Go to Deep Work &rarr;</a>
+    <div class="legal-footer">
+      <p>&copy; 2025 James Guldan / Align Growth LLC. All rights reserved.</p>
+      <p>
+        <a href="/legal/terms" target="_blank">Terms of Service</a>
+        &middot;
+        <a href="/legal/privacy" target="_blank">Privacy Policy</a>
+        &middot;
+        <a href="mailto:james@jamesguldan.com">Support</a>
+      </p>
     </div>
   </div>
 </div>
 
 <!-- ══ INTAKE SCREEN ══ -->
 <div id="intake" class="screen">
-  <div class="intake-header">
-    <h2>Before We Begin</h2>
-    <p>The more context you give upfront, the sharper your blueprint will be. Everything here is optional but valuable.</p>
-  </div>
 
-  <div class="intake-section">
-    <h3>Your Existing Presence</h3>
-    <p>If you already have a website or LinkedIn profile, paste the URLs here. The AI will analyze them before the interview starts.</p>
-    <label>Your current website URL</label>
-    <input type="url" id="intake-website" placeholder="https://yoursite.com">
-    <label>Your LinkedIn profile URL</label>
-    <input type="url" id="intake-linkedin" placeholder="https://linkedin.com/in/yourname">
-    <label>Competitor URLs (paste up to 3, one per line)</label>
-    <textarea id="intake-competitors" rows="4" placeholder="https://competitor1.com&#10;https://competitor2.com"></textarea>
-  </div>
-
-  <div class="intake-section">
-    <h3>Testimonials &amp; Social Proof</h3>
-    <p>Paste any client testimonials, Google reviews, or LinkedIn recommendations. The AI will mine the exact language your best clients use.</p>
-    <textarea id="intake-testimonials" rows="5" placeholder="Paste testimonials, reviews, or feedback here..."></textarea>
-  </div>
-
-  <div class="intake-section">
-    <h3>Photos &amp; Brand Assets</h3>
-    <p>Upload headshots, product photos, or any images you want considered for your brand. Up to 10 files.</p>
-    <div class="upload-zone" id="upload-zone">
-      <input type="file" id="file-input" multiple accept="image/*">
-      <div class="upload-icon">📷</div>
-      <p>Drag photos here or click to browse</p>
-      <span>JPG, PNG, WebP up to 10MB each</span>
+  <!-- Hero section -->
+  <div class="intake-hero">
+    <div class="eyebrow">Your Session Is Ready</div>
+    <h2>Let&rsquo;s Build Something<br><em>Only You</em> Could Build</h2>
+    <p>Eight conversations. One complete brand blueprint. Built around who you actually are — not a template, not a formula. The real thing.</p>
+    <div class="promise-strip">
+      <div class="promise-item">
+        <div class="promise-icon">✦</div>
+        <span>8 short conversations</span>
+      </div>
+      <div class="promise-item">
+        <div class="promise-icon">📄</div>
+        <span>Complete brand blueprint</span>
+      </div>
+      <div class="promise-item">
+        <div class="promise-icon">🎯</div>
+        <span>Custom to your story</span>
+      </div>
     </div>
-    <div class="uploaded-files" id="uploaded-files"></div>
   </div>
 
-  <div style="display:flex;gap:12px;margin-bottom:60px;">
-    <button class="btn btn-outline" onclick="showScreen('landing')" style="width:auto;padding:14px 24px;">← Back</button>
-    <button class="btn btn-gold" onclick="startSession()" id="start-btn">Start My Deep Work Session →</button>
+  <!-- Resume banner (shown when active session exists) -->
+  <div class="resume-banner" id="resume-banner" style="display:none;">
+    <h3>Welcome Back</h3>
+    <p id="resume-text">You have an active session in progress. Pick up right where you left off, or start fresh.</p>
+    <div class="resume-meta" id="resume-meta"></div>
+    <div class="resume-actions">
+      <button class="btn btn-gold" onclick="resumeSession()" id="resume-btn">Continue My Session</button>
+      <button class="btn btn-outline" onclick="dismissResume()">Start Fresh</button>
+    </div>
   </div>
+
+  <!-- Step cards -->
+  <div class="intake-steps">
+
+    <!-- Step 1: Website -->
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-number">1</div>
+        <h3>Where You Are Right Now</h3>
+        <p class="step-why">If you have an existing website, paste it here. This is not about judging what you have built so far. This is about understanding your starting point so we can see the gap between where you are and where you are going. Most people who do this exercise are shocked at how much more clearly they can articulate their value afterward.</p>
+        <p class="step-impact">This one input alone can save 20+ minutes of the interview.</p>
+      </div>
+      <div class="step-card-body">
+        <label>Your current website URL <span class="step-optional">(if you have one)</span></label>
+        <input type="url" id="intake-website" placeholder="https://yoursite.com">
+      </div>
+    </div>
+
+    <!-- Step 2: LinkedIn -->
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-number">2</div>
+        <h3>Your Professional Story</h3>
+        <p class="step-why">Your LinkedIn profile holds a goldmine of positioning data you probably do not even realize. The way you describe your experience, the endorsements you have collected, the language you naturally use when you are not overthinking it. We will analyze all of it so the AI interviewer already understands your world before asking the first question.</p>
+        <p class="step-impact">The AI reads your entire professional narrative before your session begins.</p>
+      </div>
+      <div class="step-card-body">
+        <label>Your LinkedIn profile URL <span class="step-optional">(if you have one)</span></label>
+        <input type="url" id="intake-linkedin" placeholder="https://linkedin.com/in/yourname">
+      </div>
+    </div>
+
+    <!-- Step 3: Competitors -->
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-number">3</div>
+        <h3>The Landscape Around You</h3>
+        <p class="step-why">Here is why this matters more than you think: your brand does not exist in a vacuum. The people you admire, the competitors you respect (or resent), the businesses in your space that seem to have it figured out. When we see what they are doing, we can find the white space. The gap where only you can stand. This is how you stop competing and start leading.</p>
+        <p class="step-impact">Competitor analysis reveals the positioning gap only your brand can fill.</p>
+      </div>
+      <div class="step-card-body">
+        <label>Competitor or inspiration URLs <span class="step-optional">(up to 3)</span></label>
+        <textarea id="intake-competitors" rows="3" placeholder="Paste one URL per line..."></textarea>
+      </div>
+    </div>
+
+    <!-- Step 4: Testimonials -->
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-number">4</div>
+        <h3>The Words That Already Work</h3>
+        <p class="step-why">This might be the most powerful input of all. When your best clients describe what you did for them, they use language that is pure gold. They say things you would never say about yourself. They capture the transformation in ways that feel authentic because they ARE authentic. The AI will mine these words and weave them into your brand messaging so your copy sounds like real humans raving about you, not like a marketing robot.</p>
+        <p class="step-impact">Client language becomes your most persuasive brand copy.</p>
+      </div>
+      <div class="step-card-body">
+        <label>Testimonials, reviews, or client feedback <span class="step-optional">(the more the better)</span></label>
+        <textarea id="intake-testimonials" rows="5" placeholder="Paste Google reviews, LinkedIn recommendations, client emails, DMs... anything where someone said something great about working with you."></textarea>
+      </div>
+    </div>
+
+    <!-- Step 5: Photos -->
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-number">5</div>
+        <h3>Put a Face to the Brand</h3>
+        <p class="step-why">People buy from people. Your headshot, your team, your workspace, your product in action. These images tell a story that words alone cannot. Upload anything that represents you or your work. The AI will use these to understand your visual identity and, if you chose the website package, to build a site that actually looks and feels like you.</p>
+        <p class="step-impact">Visuals make your blueprint and website uniquely, unmistakably yours.</p>
+      </div>
+      <div class="step-card-body">
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="file-input" multiple accept="image/*">
+          <div class="upload-icon">📷</div>
+          <p>Drag photos here or click to browse</p>
+          <span>JPG, PNG, WebP up to 10MB each (up to 10 files)</span>
+        </div>
+        <div class="uploaded-files" id="uploaded-files"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Phone (for session nudges) -->
+  <div class="step-card">
+    <div class="step-card-header">
+      <div class="step-number">✆</div>
+      <h3>Get Nudged Back In</h3>
+      <p class="step-impact">If life gets in the way, we will send you a quick text reminder so you do not lose momentum.</p>
+    </div>
+    <div class="step-card-body">
+      <label>Your mobile number <span class="step-optional">(optional, US numbers only)</span></label>
+      <input type="tel" id="intake-phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="intake-cta">
+    <button class="btn btn-gold" onclick="startSession()" id="start-btn">Begin My Deep Work Session</button>
+    <p class="intake-reassurance"><strong>Everything above is optional.</strong> You can skip any step and jump right in. But every detail you share makes your blueprint sharper, more personal, and more powerful. This is the difference between generic advice and a strategy built on the truth of who you are.</p>
+  </div>
+
 </div>
 
 <!-- ══ APP SCREEN ══ -->
@@ -1064,7 +1688,15 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   <div class="input-area">
     <div class="input-row">
-      <textarea id="msg-input" placeholder="Type your answer..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <textarea id="msg-input" placeholder="Type or tap the mic to talk..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Tap to speak">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+      </button>
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -1072,6 +1704,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
         </svg>
       </button>
     </div>
+    <div class="voice-status" id="voice-status"></div>
     <div class="input-tools">
       <button class="tool-btn" onclick="openUploadModal()">📎 Add photos</button>
       <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none">✨ Generate brand images</button>
@@ -1093,6 +1726,22 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
   <div class="blueprint-body" id="blueprint-body">
     <!-- populated by JS -->
+  </div>
+</div>
+
+<!-- ══ ORDER BUMP (shown after blueprint, before blueprint screen renders) ══ -->
+<div id="order-bump" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--gold);padding:20px 24px;z-index:999;animation:slideUp 0.4s ease;">
+  <div class="order-bump-inner">
+    <div class="order-bump-text">
+      <div class="bump-label">One-Time Upgrade</div>
+      <h3>Turn your blueprint into a live website — right now.</h3>
+      <p>Add Site In Sixty and we'll build a complete, branded website from your blueprint in about 60 seconds.</p>
+    </div>
+    <div class="bump-actions">
+      <span class="bump-price">$297</span>
+      <button class="btn btn-gold" onclick="addSiteUpgrade()" style="width:auto;padding:14px 24px;">Add Website Upgrade</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('order-bump').style.display='none'" style="width:auto;padding:14px 24px;font-size:13px;color:var(--text2);">No thanks</button>
+    </div>
   </div>
 </div>
 
@@ -1172,20 +1821,33 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ ORDER BUMP ══ -->
-<div id="order-bump">
-  <div class="order-bump-inner">
-    <button class="bump-close" onclick="document.getElementById('order-bump').style.display='none'">×</button>
-    <div class="order-bump-text">
-      <div class="bump-label">Add to your order</div>
-      <h3>60-Minute Strategy Call with James</h3>
-      <p>Review your blueprint together and map out your exact next steps. Limited availability.</p>
-    </div>
-    <div class="bump-actions">
-      <div class="bump-price">$197</div>
-      <button class="btn btn-gold" onclick="addStrategyCall()" style="width:auto;padding:12px 20px;">Add &rarr;</button>
-    </div>
+<!-- order bump removed -->
+
+<!-- ══ SESSION LOADING OVERLAY ══ -->
+<div class="session-loading" id="session-loading">
+  <div id="loading-content">
+    <div class="loading-spinner"></div>
+    <div class="loading-message" id="loading-message"></div>
+    <div class="loading-stage" id="loading-stage">Warming up</div>
+    <div class="loading-progress"><div class="loading-progress-bar" id="loading-bar"></div></div>
   </div>
+  <div class="loading-error" id="loading-error">
+    <h3>Something went sideways</h3>
+    <p id="loading-error-text">We hit a snag starting your session. This is almost certainly temporary.</p>
+    <div class="error-detail" id="loading-error-detail"></div>
+    <button class="btn btn-gold" onclick="dismissLoadingError()" style="width:auto;padding:14px 28px;">Try Again</button>
+    <button class="btn btn-outline" onclick="window.location.reload()" style="width:auto;padding:14px 28px;margin-top:8px;">Refresh Page</button>
+  </div>
+</div>
+
+<!-- ══ BLUEPRINT GENERATION OVERLAY ══ -->
+<div class="blueprint-generating" id="blueprint-generating">
+  <div class="blueprint-gen-icon">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  </div>
+  <div class="blueprint-gen-title" id="blueprint-gen-title">Building Your Blueprint</div>
+  <div class="blueprint-gen-msg" id="blueprint-gen-msg">Synthesizing everything you shared into something you have never seen before...</div>
+  <div class="blueprint-gen-progress"><div class="blueprint-gen-progress-bar" id="blueprint-gen-bar"></div></div>
 </div>
 
 <!-- ══ TOAST ══ -->
@@ -1201,7 +1863,8 @@ const STATE = {
   blueprint: null,
   generatedSiteHtml: null,
   uploadedFiles: [],
-  uploadedKeys: []
+  uploadedKeys: [],
+  blueprintOverlayShown: false
 };
 
 const PHASE_NAMES = [
@@ -1257,18 +1920,49 @@ async function initiateCheckout(tier) {
 }
 
 // Check URL for session token on load
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session');
   const tier = params.get('tier');
+
+  // Legacy flow: ?session=X&tier=Y from Stripe redirect
   if (sessionId && tier) {
     STATE.sessionId = sessionId;
     STATE.tier = tier;
     showScreen('intake');
+  } else {
+    // New auth flow: check dw_session token
+    const token = localStorage.getItem('dw_session');
+    if (token) {
+      try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        const user = await res.json();
+        if (user && user.id) {
+          STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
+          showScreen('intake');
+
+          // Check for active session to resume
+          try {
+            const activeRes = await fetch('/api/user/active-session', {
+              headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const activeData = await activeRes.json();
+            if (activeData.hasActiveSession && activeData.session) {
+              showResumeBanner(activeData.session);
+            }
+          } catch(_) {}
+        }
+      } catch(e) {
+        // Auth failed silently, show landing
+      }
+    }
   }
 
   // File upload setup
   setupFileUpload();
+
+  // Voice input setup
+  initVoiceInput();
 
   // Auto-resize textarea
   const ta = document.getElementById('msg-input');
@@ -1317,58 +2011,620 @@ function removeFile(i) {
   renderUploadedFiles();
 }
 
+// ── LOADING MESSAGES ──────────────────────────────────────
+const LOADING_MESSAGES = [
+  "Brewing something strong for your brand...",
+  "Reading between your lines...",
+  "Convincing the AI you are interesting (easy sell)...",
+  "Sharpening the questions that matter...",
+  "Preparing to ask things your therapist would charge double for...",
+  "Loading 10,000 hours of brand strategy into 90 minutes...",
+  "Finding the words you did not know you needed...",
+  "Tuning the frequency to your specific flavor of genius...",
+  "Almost there. The good stuff takes a second...",
+  "Assembling the interview that will change how you see your business...",
+  "Your brand is already forming. We just need to pull it out...",
+  "Setting up a conversation you will actually enjoy having...",
+  "Calibrating for depth. Shallow is for swimming pools...",
+];
+
+let loadingInterval = null;
+let loadingMsgIndex = 0;
+
+function showLoadingOverlay() {
+  const overlay = document.getElementById('session-loading');
+  const content = document.getElementById('loading-content');
+  const error = document.getElementById('loading-error');
+  const msgEl = document.getElementById('loading-message');
+  const bar = document.getElementById('loading-bar');
+  const stage = document.getElementById('loading-stage');
+
+  content.style.display = '';
+  error.style.display = 'none';
+  overlay.classList.add('active');
+
+  // Shuffle messages
+  const shuffled = [...LOADING_MESSAGES].sort(() => Math.random() - 0.5);
+  loadingMsgIndex = 0;
+  msgEl.textContent = shuffled[0];
+  bar.style.width = '5%';
+  stage.textContent = 'Warming up';
+
+  // Rotate messages every 3.5s
+  loadingInterval = setInterval(() => {
+    loadingMsgIndex = (loadingMsgIndex + 1) % shuffled.length;
+    msgEl.style.opacity = '0';
+    setTimeout(() => {
+      msgEl.textContent = shuffled[loadingMsgIndex];
+      msgEl.style.opacity = '1';
+    }, 300);
+  }, 3500);
+}
+
+function updateLoadingStage(stageName, progress) {
+  const stage = document.getElementById('loading-stage');
+  const bar = document.getElementById('loading-bar');
+  if (stage) stage.textContent = stageName;
+  if (bar) bar.style.width = progress + '%';
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('session-loading');
+  overlay.classList.remove('active');
+  if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
+}
+
+function showLoadingError(title, message, detail) {
+  const content = document.getElementById('loading-content');
+  const error = document.getElementById('loading-error');
+  const errorText = document.getElementById('loading-error-text');
+  const errorDetail = document.getElementById('loading-error-detail');
+
+  if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
+  content.style.display = 'none';
+  error.style.display = '';
+  if (title) error.querySelector('h3').textContent = title;
+  if (message) errorText.textContent = message;
+  if (detail) {
+    errorDetail.textContent = detail;
+    errorDetail.style.display = '';
+  } else {
+    errorDetail.style.display = 'none';
+  }
+}
+
+function dismissLoadingError() {
+  hideLoadingOverlay();
+  const btn = document.getElementById('start-btn');
+  btn.textContent = 'Begin My Deep Work Session';
+  btn.disabled = false;
+}
+
 async function startSession() {
   const btn = document.getElementById('start-btn');
-  btn.textContent = 'Preparing your session...';
+
+  // ── Validate inputs before starting ──
+  const websiteVal = (document.getElementById('intake-website')?.value || '').trim();
+  const linkedinVal = (document.getElementById('intake-linkedin')?.value || '').trim();
+  const competitorsVal = (document.getElementById('intake-competitors')?.value || '').trim();
+
+  // URL validation helper
+  function isValidUrl(str) {
+    if (!str) return true; // empty is fine (optional)
+    try {
+      const u = new URL(str.startsWith('http') ? str : 'https://' + str);
+      return u.hostname.includes('.');
+    } catch { return false; }
+  }
+
+  if (websiteVal && !isValidUrl(websiteVal)) {
+    showToast('That website URL does not look right. Double check the format (e.g. https://yoursite.com).');
+    document.getElementById('intake-website').focus();
+    return;
+  }
+
+  if (linkedinVal && !isValidUrl(linkedinVal)) {
+    showToast('That LinkedIn URL does not look right. It should look like https://linkedin.com/in/yourname.');
+    document.getElementById('intake-linkedin').focus();
+    return;
+  }
+
+  if (competitorsVal) {
+    const urls = competitorsVal.split('\\n').filter(Boolean);
+    if (urls.length > 3) {
+      showToast('Please keep it to 3 competitor URLs or fewer.');
+      document.getElementById('intake-competitors').focus();
+      return;
+    }
+    for (const u of urls) {
+      if (!isValidUrl(u.trim())) {
+        showToast('One of your competitor URLs does not look right: ' + u.trim().slice(0, 40));
+        document.getElementById('intake-competitors').focus();
+        return;
+      }
+    }
+  }
+
+  // ── Start loading ──
+  btn.textContent = 'Preparing...';
   btn.disabled = true;
+  showLoadingOverlay();
 
   try {
-    // Upload files first if any
-    if (STATE.uploadedFiles.length > 0 && STATE.sessionId) {
-      for (const file of STATE.uploadedFiles) {
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('sessionId', STATE.sessionId);
-        const r = await fetch('/api/upload', { method: 'POST', body: fd });
-        const d = await r.json();
-        if (d.key) STATE.uploadedKeys.push(d.key);
+    // ── Step 1: Upload files ──
+    if (STATE.uploadedFiles.length > 0) {
+      updateLoadingStage('Uploading your files', 10);
+
+      // Generate session ID early if needed for uploads
+      if (!STATE.sessionId) {
+        STATE.sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      }
+
+      let uploadErrors = [];
+      for (let i = 0; i < STATE.uploadedFiles.length; i++) {
+        const file = STATE.uploadedFiles[i];
+        updateLoadingStage('Uploading ' + file.name, 10 + Math.round((i / STATE.uploadedFiles.length) * 20));
+
+        // File size check (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          uploadErrors.push(file.name + ' is too large (max 10MB)');
+          continue;
+        }
+
+        // File type check
+        if (!file.type.startsWith('image/')) {
+          uploadErrors.push(file.name + ' is not an image file');
+          continue;
+        }
+
+        try {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('sessionId', STATE.sessionId);
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 30000);
+          const r = await fetch('/api/upload', { method: 'POST', body: fd, signal: controller.signal });
+          clearTimeout(timeout);
+
+          if (!r.ok) {
+            uploadErrors.push(file.name + ' failed to upload (server returned ' + r.status + ')');
+            continue;
+          }
+          const d = await r.json();
+          if (d.key) STATE.uploadedKeys.push(d.key);
+          else uploadErrors.push(file.name + ' uploaded but got no key back');
+        } catch (uploadErr) {
+          if (uploadErr.name === 'AbortError') {
+            uploadErrors.push(file.name + ' timed out after 30 seconds');
+          } else {
+            uploadErrors.push(file.name + ': ' + (uploadErr.message || 'upload failed'));
+          }
+        }
+      }
+
+      if (uploadErrors.length > 0 && uploadErrors.length === STATE.uploadedFiles.length) {
+        showLoadingError(
+          'File uploads failed',
+          'None of your files could be uploaded. You can try again or skip the photos and continue without them.',
+          uploadErrors.join('; ')
+        );
+        return;
+      }
+
+      if (uploadErrors.length > 0) {
+        // Some succeeded, some failed. Continue but warn.
+        showToast(uploadErrors.length + ' file(s) could not be uploaded. Continuing with the rest.');
       }
     }
 
-    // Gather intake data
+    // ── Step 2: Generate session ID ──
+    updateLoadingStage('Setting up your session', 35);
+    if (!STATE.sessionId) {
+      STATE.sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    // ── Step 3: Gather and validate intake data ──
+    updateLoadingStage('Gathering your context', 45);
     const intakeData = {
       sessionId: STATE.sessionId,
-      tier: STATE.tier,
-      existingWebsiteUrl: document.getElementById('intake-website')?.value || '',
-      linkedinUrl: document.getElementById('intake-linkedin')?.value || '',
-      competitorUrls: (document.getElementById('intake-competitors')?.value || '').split('\\n').filter(Boolean),
-      testimonials: document.getElementById('intake-testimonials')?.value || '',
-      uploadedKeys: STATE.uploadedKeys
+      tier: STATE.tier || 'blueprint',
+      existingWebsiteUrl: websiteVal,
+      linkedinUrl: linkedinVal,
+      competitorUrls: competitorsVal ? competitorsVal.split('\\n').map(s => s.trim()).filter(Boolean) : [],
+      testimonials: (document.getElementById('intake-testimonials')?.value || '').trim(),
+      uploadedKeys: STATE.uploadedKeys,
+      phone: (document.getElementById('intake-phone')?.value || '').trim()
     };
+
+    // ── Step 4: Start the session (the big one) ──
+    updateLoadingStage('Starting your Deep Work session', 55);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+    const startHeaders = { 'Content-Type': 'application/json' };
+    const authToken = localStorage.getItem('dw_session');
+    if (authToken) startHeaders['Authorization'] = 'Bearer ' + authToken;
 
     const res = await fetch('/api/session/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(intakeData)
+      headers: startHeaders,
+      body: JSON.stringify(intakeData),
+      signal: controller.signal
     });
+
+    clearTimeout(timeout);
+
+    updateLoadingStage('Processing response', 80);
+
+    if (!res.ok) {
+      let errMsg = 'Server returned status ' + res.status;
+      try {
+        const errData = await res.json();
+        errMsg = errData.error || errData.message || errMsg;
+      } catch (_) {
+        try { errMsg = await res.text(); } catch (_) {}
+      }
+
+      if (res.status === 429) {
+        showLoadingError(
+          'Whoa, slow down',
+          'Too many requests. Give it 30 seconds and try again. Your data is safe.',
+          errMsg
+        );
+      } else if (res.status >= 500) {
+        showLoadingError(
+          'Server hiccup',
+          'Something went wrong on our end. This is usually temporary. Your information has been saved.',
+          errMsg
+        );
+      } else if (res.status === 401 || res.status === 403) {
+        showLoadingError(
+          'Session expired',
+          'Your login session may have timed out. Try refreshing the page and logging in again.',
+          errMsg
+        );
+      } else {
+        showLoadingError(
+          'Something went sideways',
+          'We could not start your session right now. Here is what we know:',
+          errMsg
+        );
+      }
+      return;
+    }
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      showLoadingError(
+        'Unexpected response',
+        'The server responded but we could not understand the response. Try again in a moment.',
+        parseErr.message
+      );
+      return;
+    }
+
+    if (data.ok) {
+      updateLoadingStage('Ready. Let us do this.', 100);
+      STATE.sessionId = data.sessionId;
+
+      // Persist session ID for resume
+      localStorage.setItem('dw_active_session', data.sessionId);
+
+      // Brief pause so user sees 100% before transition
+      await new Promise(r => setTimeout(r, 600));
+      hideLoadingOverlay();
+      showScreen('app');
+      appendMessage('ai', data.firstMessage);
+      document.getElementById('msg-input')?.focus();
+
+      // One-time voice hint on mobile
+      const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+      if (isMobile && !localStorage.getItem('dw_voice_hint_seen')) {
+        setTimeout(() => {
+          showToast('Tip: tap the mic and just speak — most people find it easier than typing');
+          localStorage.setItem('dw_voice_hint_seen', '1');
+        }, 4000);
+      }
+    } else {
+      showLoadingError(
+        'Could not start session',
+        data.error || 'Something unexpected happened. Your information is saved. Try again.',
+        data.details || null
+      );
+    }
+
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      showLoadingError(
+        'This is taking longer than expected',
+        'The session start timed out after 60 seconds. This usually means the AI is under heavy load. Your data is safe. Try again in a minute.',
+        null
+      );
+    } else if (!navigator.onLine) {
+      showLoadingError(
+        'You appear to be offline',
+        'Check your internet connection and try again. Nothing has been lost.',
+        null
+      );
+    } else {
+      showLoadingError(
+        'Connection issue',
+        'We could not reach the server. This might be a temporary network issue. Try again.',
+        e.message || null
+      );
+    }
+  }
+}
+
+// ── SESSION RESUME ────────────────────────────────────────
+let pendingResumeSessionId = null;
+
+function showResumeBanner(sessionInfo) {
+  const banner = document.getElementById('resume-banner');
+  const meta = document.getElementById('resume-meta');
+  if (!banner) return;
+
+  pendingResumeSessionId = sessionInfo.id;
+
+  const phase = sessionInfo.phase || 1;
+  const msgCount = sessionInfo.messageCount || 0;
+  const PHASE_LABELS = ['', 'Your Story', 'Your Expertise', 'Your Beliefs', 'Your People', 'Your Voice & Identity', 'Your Market', 'Your Offers', 'Synthesis'];
+  const phaseName = PHASE_LABELS[phase] || 'Phase ' + phase;
+
+  meta.textContent = 'Phase ' + phase + ' of 8: ' + phaseName + '  ·  ' + msgCount + ' messages so far';
+  banner.style.display = '';
+
+  // Store in localStorage for persistence
+  localStorage.setItem('dw_active_session', sessionInfo.id);
+}
+
+function dismissResume() {
+  const banner = document.getElementById('resume-banner');
+  if (banner) banner.style.display = 'none';
+  pendingResumeSessionId = null;
+  localStorage.removeItem('dw_active_session');
+}
+
+async function resumeSession() {
+  if (!pendingResumeSessionId) return;
+
+  const btn = document.getElementById('resume-btn');
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+  showLoadingOverlay();
+  updateLoadingStage('Restoring your session', 30);
+
+  const token = localStorage.getItem('dw_session');
+  if (!token) {
+    showLoadingError('Session expired', 'Please log in again to resume your session.', null);
+    return;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+
+    const res = await fetch('/api/session/resume', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ sessionId: pendingResumeSessionId }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+    updateLoadingStage('Rebuilding your conversation', 60);
+
+    if (!res.ok) {
+      let errMsg = 'Server returned ' + res.status;
+      try { const d = await res.json(); errMsg = d.error || errMsg; } catch(_) {}
+
+      if (res.status === 410) {
+        showLoadingError('Session expired', 'Your session data has expired (sessions last 30 days). No worries, you can start a fresh session and the new one will be even better.', null);
+        localStorage.removeItem('dw_active_session');
+      } else {
+        showLoadingError('Could not restore session', errMsg, null);
+      }
+      btn.textContent = 'Continue My Session';
+      btn.disabled = false;
+      return;
+    }
 
     const data = await res.json();
 
-    if (data.ok) {
-      STATE.sessionId = data.sessionId;
-      showScreen('app');
-      appendMessage('ai', data.firstMessage);
-      document.getElementById('msg-input').focus();
-    } else {
-      showToast(data.error || 'Could not start session.');
-      btn.textContent = 'Start My Deep Work Session →';
+    if (!data.ok || !data.messages || data.messages.length === 0) {
+      showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
+      btn.textContent = 'Continue My Session';
       btn.disabled = false;
+      return;
     }
+
+    updateLoadingStage('Almost there', 85);
+
+    // Restore state
+    STATE.sessionId = data.sessionId;
+    STATE.tier = data.tier || STATE.tier;
+    STATE.phase = data.phase || 1;
+    localStorage.setItem('dw_active_session', data.sessionId);
+
+    // Switch to app screen
+    showScreen('app');
+
+    // Replay messages into the chat
+    for (const msg of data.messages) {
+      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+    }
+
+    // Update phase dots
+    updatePhase(data.phase);
+
+    // If blueprint was generated, navigate directly to blueprint screen
+    if (data.blueprintGenerated && data.blueprint) {
+      STATE.blueprint = data.blueprint;
+      updateLoadingStage('Your blueprint is ready.', 100);
+      await new Promise(r => setTimeout(r, 800));
+      hideLoadingOverlay();
+      renderBlueprint(data.blueprint);
+      showScreen('blueprint-screen');
+      if (STATE.tier === 'site') {
+        document.getElementById('build-site-btn').style.display = 'inline-flex';
+      }
+      return;
+    }
+
+    updateLoadingStage('Welcome back.', 100);
+    await new Promise(r => setTimeout(r, 600));
+    hideLoadingOverlay();
+
+    document.getElementById('msg-input')?.focus();
+    scrollToBottom();
+
   } catch (e) {
-    showToast('Connection error. Please try again.');
-    btn.textContent = 'Start My Deep Work Session →';
+    if (e.name === 'AbortError') {
+      showLoadingError('Resume timed out', 'The server took too long. Try again in a moment.', null);
+    } else {
+      showLoadingError('Connection issue', 'Could not reach the server. Check your connection and try again.', e.message);
+    }
+    btn.textContent = 'Continue My Session';
     btn.disabled = false;
   }
+}
+
+// ── VOICE INPUT (Web Speech API) ─────────────────────────
+window._voiceRecognition = null;
+window._voiceIsRecording = false;
+window._voiceFinalTranscript = '';
+
+function initVoiceInput() {
+  const btn = document.getElementById('voice-btn');
+  if (!btn) return;
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    btn.classList.add('unsupported');
+    btn.title = 'Voice not supported in this browser';
+    return;
+  }
+
+  const rec = new SpeechRecognition();
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.lang = 'en-US';
+  rec.maxAlternatives = 1;
+
+  rec.onresult = (event) => {
+    let interimTranscript = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        window._voiceFinalTranscript += transcript + ' ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+
+    const input = document.getElementById('msg-input');
+    if (input) {
+      input.value = window._voiceFinalTranscript + interimTranscript;
+      autoResize(input);
+    }
+
+    setVoiceStatus('Listening... (tap mic again to stop)');
+  };
+
+  rec.onend = () => {
+    if (window._voiceIsRecording) {
+      // Browser auto-stopped (timeout), restart
+      try { rec.start(); } catch(_) { stopVoice(); }
+    }
+  };
+
+  rec.onerror = (event) => {
+    console.log('Voice error:', event.error);
+    if (event.error === 'not-allowed') {
+      setVoiceStatus('Microphone access denied. Check your browser permissions.');
+      stopVoice();
+    } else if (event.error === 'no-speech') {
+      setVoiceStatus('No speech detected. Tap the mic and try again.');
+      stopVoice();
+    } else if (event.error === 'network') {
+      setVoiceStatus('Network error. Voice needs an internet connection.');
+      stopVoice();
+    } else if (event.error !== 'aborted') {
+      setVoiceStatus('Voice error: ' + event.error);
+      stopVoice();
+    }
+  };
+
+  window._voiceRecognition = rec;
+  console.log('Voice input initialized successfully');
+}
+
+function toggleVoice() {
+  // Lazy init if recognition was not set up
+  if (!window._voiceRecognition) {
+    initVoiceInput();
+  }
+  if (window._voiceIsRecording) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  if (!window._voiceRecognition) {
+    showToast('Voice input is not supported in this browser. Try Chrome or Safari.');
+    return;
+  }
+
+  const btn = document.getElementById('voice-btn');
+  window._voiceIsRecording = true;
+  window._voiceFinalTranscript = '';
+  btn.classList.add('recording');
+  setVoiceStatus('Listening... speak naturally');
+
+  try {
+    window._voiceRecognition.start();
+  } catch (e) {
+    if (e.message && e.message.includes('already started')) {
+      // Already running, just update UI
+    } else {
+      console.log('Voice start error:', e.message);
+      setVoiceStatus('Could not start microphone: ' + e.message);
+      stopVoice();
+    }
+  }
+}
+
+function stopVoice() {
+  const btn = document.getElementById('voice-btn');
+  window._voiceIsRecording = false;
+  if (btn) btn.classList.remove('recording');
+
+  try { window._voiceRecognition?.stop(); } catch(_) {}
+
+  const input = document.getElementById('msg-input');
+  if (input && input.value.trim()) {
+    setVoiceStatus('Got it. Review your answer and tap send, or keep talking.');
+  } else {
+    setVoiceStatus('');
+  }
+
+  // Clear status after 4 seconds
+  setTimeout(() => {
+    if (!window._voiceIsRecording) setVoiceStatus('');
+  }, 4000);
+}
+
+function setVoiceStatus(text) {
+  const el = document.getElementById('voice-status');
+  if (el) el.textContent = text;
 }
 
 // ── CHAT ─────────────────────────────────────────────────
@@ -1429,13 +2685,21 @@ async function sendMessage() {
             const ev = JSON.parse(raw);
             if (ev.type === 'delta') {
               fullText += ev.content;
-              // Strip METADATA line before displaying
-              const displayText = fullText.replace(/METADATA:\\{.*\\}$/m, '').trim();
+              // Strip METADATA line and blueprint JSON block before displaying
+              const displayText = fullText
+                .replace(/METADATA:\\{.*\\}$/m, '')
+                .replace(/\u0060\u0060\u0060json[\s\S]*?\u0060\u0060\u0060/g, '')
+                .trim();
               updateBubble(aiMsg, displayText);
               scrollToBottom();
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
+              if (ev.phase === 8 && !STATE.blueprintOverlayShown) {
+                STATE.blueprintOverlayShown = true;
+                showBlueprintGenerating();
+              }
               if (ev.sessionComplete) {
+                hideBlueprintGenerating();
                 handleBlueprintReady(ev.blueprint);
               }
             }
@@ -1473,23 +2737,165 @@ function updateBubble(bubble, text) {
   bubble.innerHTML = formatText(text);
 }
 
+// ── THINKING MESSAGES (shown while waiting for Claude) ──
+const THINKING_MESSAGES = {
+  early: [
+    "Thinking about what you just said...",
+    "That was a good answer. Processing...",
+    "Sitting with that for a second...",
+    "Interesting. Let me dig into this...",
+    "Connecting a few dots here...",
+    "That tells me more than you think...",
+  ],
+  mid: [
+    "Going deeper on this one...",
+    "This is getting good. Hold on...",
+    "Building on what you shared earlier...",
+    "Pulling a thread you probably have not noticed yet...",
+    "Your brand is starting to take shape...",
+    "I am seeing a pattern forming...",
+    "This is the part most people rush through. Not us...",
+  ],
+  late: [
+    "We are in the home stretch now...",
+    "Almost ready to show you something amazing...",
+    "Putting the finishing touches on this thought...",
+    "The best insights always take an extra beat...",
+    "What you have shared so far is really strong...",
+    "One more second. This one is worth the wait...",
+  ],
+  blueprint: [
+    "Synthesizing 7 phases of your story into one blueprint...",
+    "This is the part where everything comes together...",
+    "Building your brand foundation, offer suite, and positioning...",
+    "Turning your conversation into a comprehensive strategy document...",
+    "Creating something you have genuinely never seen before...",
+    "Packaging your genius into a format that actually works...",
+    "Every insight you shared is being woven into this...",
+    "Designing your complete brand identity and offer structure...",
+    "Almost there. The synthesis is the most important part...",
+    "Your blueprint is going to be worth every minute you invested...",
+  ]
+};
+
+let thinkingInterval = null;
+let thinkingProgressInterval = null;
+let thinkingStartTime = null;
+
+function getThinkingPool() {
+  const phase = STATE.phase || 1;
+  if (phase >= 7) return THINKING_MESSAGES.late;
+  if (phase >= 4) return THINKING_MESSAGES.mid;
+  return THINKING_MESSAGES.early;
+}
+
 function showTyping() {
   const msgs = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = 'msg ai';
   div.id = 'typing';
+
+  const pool = getThinkingPool();
+  const firstMsg = pool[Math.floor(Math.random() * pool.length)];
+
   div.innerHTML = \`
     <div class="avatar ai">JG</div>
-    <div class="typing-indicator">
-      <span></span><span></span><span></span>
+    <div class="thinking-bubble">
+      <div class="thinking-progress"><div class="thinking-progress-bar" id="thinking-bar"></div></div>
+      <div class="thinking-dots"><span></span><span></span><span></span></div>
+      <div class="thinking-msg" id="thinking-msg">\${firstMsg}</div>
     </div>
   \`;
   msgs.appendChild(div);
   scrollToBottom();
+
+  thinkingStartTime = Date.now();
+
+  // Animate progress bar
+  setTimeout(() => {
+    const bar = document.getElementById('thinking-bar');
+    if (bar) bar.style.width = '70%';
+  }, 200);
+
+  // Rotate messages every 4s
+  thinkingInterval = setInterval(() => {
+    const msgEl = document.getElementById('thinking-msg');
+    if (!msgEl) return;
+    const currentPool = getThinkingPool();
+    const msg = currentPool[Math.floor(Math.random() * currentPool.length)];
+    msgEl.style.opacity = '0';
+    setTimeout(() => {
+      msgEl.textContent = msg;
+      msgEl.style.opacity = '1';
+    }, 350);
+  }, 4000);
 }
 
 function removeTyping() {
-  document.getElementById('typing')?.remove();
+  if (thinkingInterval) { clearInterval(thinkingInterval); thinkingInterval = null; }
+  const el = document.getElementById('typing');
+  if (el) {
+    const bar = el.querySelector('.thinking-progress-bar');
+    if (bar) bar.style.width = '100%';
+    setTimeout(() => el.remove(), 200);
+  }
+}
+
+// ── BLUEPRINT GENERATION OVERLAY ──
+let blueprintGenInterval = null;
+
+function showBlueprintGenerating() {
+  const overlay = document.getElementById('blueprint-generating');
+  const msgEl = document.getElementById('blueprint-gen-msg');
+  const bar = document.getElementById('blueprint-gen-bar');
+  const title = document.getElementById('blueprint-gen-title');
+
+  overlay.classList.add('active');
+
+  const msgs = [...THINKING_MESSAGES.blueprint].sort(() => Math.random() - 0.5);
+  let idx = 0;
+  msgEl.textContent = msgs[0];
+
+  // Animate progress slowly
+  let progress = 5;
+  const progressInterval = setInterval(() => {
+    progress = Math.min(progress + Math.random() * 4 + 1, 92);
+    bar.style.width = progress + '%';
+    // Update title at milestones
+    if (progress > 30 && progress < 35) title.textContent = 'Crafting Your Strategy';
+    if (progress > 60 && progress < 65) title.textContent = 'Polishing the Details';
+    if (progress > 85) title.textContent = 'Almost There';
+  }, 2000);
+
+  // Rotate messages
+  blueprintGenInterval = setInterval(() => {
+    idx = (idx + 1) % msgs.length;
+    msgEl.style.opacity = '0';
+    setTimeout(() => {
+      msgEl.textContent = msgs[idx];
+      msgEl.style.opacity = '1';
+    }, 400);
+  }, 4500);
+
+  // Store progress interval to clear later
+  overlay._progressInterval = progressInterval;
+}
+
+function hideBlueprintGenerating() {
+  const overlay = document.getElementById('blueprint-generating');
+  const bar = document.getElementById('blueprint-gen-bar');
+  const title = document.getElementById('blueprint-gen-title');
+
+  if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
+  if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
+
+  // Finish the bar
+  if (bar) bar.style.width = '100%';
+  if (title) title.textContent = 'Your Blueprint is Ready';
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+  }, 1200);
 }
 
 function scrollToBottom() {
@@ -1510,8 +2916,34 @@ function formatText(text) {
 }
 
 // ── PHASE TRACKING ────────────────────────────────────────
+function showPhaseComplete(completedPhase) {
+  if (completedPhase < 1 || completedPhase > 7) return;
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'phase-complete-banner';
+  div.innerHTML = \`
+    <div class="phase-complete-inner">
+      <div class="phase-complete-check">✓</div>
+      <div>
+        <div class="phase-complete-label">Phase \${completedPhase} Complete</div>
+        <div class="phase-complete-name">\${PHASE_NAMES[completedPhase]}</div>
+      </div>
+      <div class="phase-complete-progress">\${completedPhase} of 7</div>
+    </div>
+  \`;
+  msgs.appendChild(div);
+  scrollToBottom();
+}
+
 function updatePhase(phase) {
   if (!phase || phase === STATE.phase) return;
+
+  const oldPhase = STATE.phase;
+
+  // Show phase completion banner when transitioning forward
+  if (phase > oldPhase && oldPhase > 0) {
+    showPhaseComplete(oldPhase);
+  }
 
   // Mark previous phases complete
   for (let i = 1; i < phase; i++) {
@@ -1542,10 +2974,12 @@ function handleBlueprintReady(blueprint) {
   if (!blueprint) return;
   STATE.blueprint = blueprint;
 
-  // Show order bump
-  setTimeout(() => {
-    document.getElementById('order-bump').style.display = 'flex';
-  }, 2000);
+  // Show order bump only for blueprint-tier users (not for site-tier who already have SIS)
+  if (STATE.tier !== 'site') {
+    setTimeout(() => {
+      document.getElementById('order-bump').style.display = 'flex';
+    }, 2000);
+  }
 
   // After a moment, transition to blueprint screen
   setTimeout(() => {
@@ -1662,6 +3096,24 @@ function renderOffer(label, offer) {
       </div>
     </div>
   \`;
+}
+
+// ── ORDER BUMP UPGRADE ─────────────────────────────────────
+async function addSiteUpgrade() {
+  document.getElementById('order-bump').style.display = 'none';
+  // Initiate Stripe checkout for site upgrade
+  const token = localStorage.getItem('dw_session');
+  const resp = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ tier: 'site', sessionId: STATE.sessionId })
+  });
+  const data = await resp.json();
+  if (data.url) {
+    window.location.href = data.url;
+  } else {
+    alert('Could not start checkout. Please try again.');
+  }
 }
 
 // ── SITE GENERATION ───────────────────────────────────────
