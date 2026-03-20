@@ -1,3 +1,23 @@
+// ============================================================
+// DEEP WORK APP — CLOUDFLARE WORKER
+// ============================================================
+// Infra IDs:
+//   KV:  DEEP_WORK_SESSIONS  (ad823265a8944b9da7a561198f7f3782)
+//   R2:  deep-work-uploads
+//   D1:  deep-work-db        (92121f3b-dcfb-4fa8-8482-b827224b611d)
+//
+// Stripe Price IDs:
+//   Blueprint:  price_1TCXL7FArNSFW9mB5DDauxQg  ($67)
+//   Call:       price_1TCXL8FArNSFW9mBBtiWVRCb  ($197)
+//   Site:       price_1TCXL9FArNSFW9mBr189gJuC  ($197)
+//
+// Required secrets (set via wrangler secret put):
+//   ANTHROPIC_API_KEY
+//   STRIPE_SECRET_KEY
+//   STRIPE_WEBHOOK_SECRET
+//   CF_ACCOUNT_ID  (bd13f1dff62d4ccbea47440e45b48ec2)
+// ============================================================
+
 import { getHTML } from './html.js';
 import { getAdminHTML } from './admin.js';
 import { getLoginHTML } from './login.js';
@@ -6,7 +26,8 @@ import {
   SITE_GENERATION_PROMPT,
   SITE_CSS_FOUNDATION,
   imagePrompts,
-  contextEnrichmentPrompt
+  contextEnrichmentPrompt,
+  buildImagenPrompt
 } from './prompts.js';
 import {
   hashPassword, verifyPassword,
@@ -22,6 +43,46 @@ import {
   handleMonitoringDashboard, generateDailyDigest,
   getErrorPageHTML, ERROR_PAGES
 } from './monitor.js';
+
+// ── XSS ESCAPE & FONT GUARD ─────────────────────────────
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const KNOWN_FONTS = new Set(['Inter','Playfair Display','Lora','Merriweather','Roboto','Open Sans','Montserrat','Raleway','Poppins','Oswald','Source Sans Pro','Nunito','PT Serif','Libre Baskerville','Cormorant Garamond','DM Sans','Work Sans','Space Grotesk','Bitter','Crimson Text','Georgia','Arial','Helvetica','Times New Roman']);
+function safeFont(f, fallback) { if (!f) return fallback; if (KNOWN_FONTS.has(f)) return f; const close = [...KNOWN_FONTS].find(k => k.toLowerCase() === f.toLowerCase()); return close || fallback; }
+
+// ── MODEL ROUTING ────────────────────────────────────────
+// Opus for high-impact moments, Sonnet for everything else
+const MODEL_OPUS = 'claude-opus-4-6';
+const MODEL_SONNET = 'claude-sonnet-4-6';
+const OPUS_MESSAGE_THRESHOLD = 16; // first 8 exchanges = 16 messages (user+assistant)
+function pickChatModel(session) {
+  const msgCount = (session.messages || []).length;
+  // Opus for first 8 exchanges (the opening rapport)
+  if (msgCount <= OPUS_MESSAGE_THRESHOLD) return MODEL_OPUS;
+  // Opus for first message of each new phase transition
+  const currentPhase = session.phase || 1;
+  const lastOpusPhase = session.lastPhaseOpusUsed || 1;
+  if (currentPhase > lastOpusPhase) return MODEL_OPUS;
+  return MODEL_SONNET;
+}
+
+// ── COST TRACKING ────────────────────────────────────────
+// Per-million-token pricing in cents
+const MODEL_COSTS = {
+  [MODEL_OPUS]:   { input: 1500, output: 7500, cacheRead: 150, cacheWrite: 1875 },
+  [MODEL_SONNET]: { input: 300, output: 1500, cacheRead: 30, cacheWrite: 375 },
+  'claude-haiku-4-5-20251001': { input: 80, output: 400, cacheRead: 8, cacheWrite: 100 },
+};
+function calcCostCents(model, inputTokens, outputTokens, cacheRead, cacheWrite) {
+  const r = MODEL_COSTS[model] || MODEL_COSTS[MODEL_SONNET];
+  return ((inputTokens * r.input) + (outputTokens * r.output) + ((cacheRead||0) * r.cacheRead) + ((cacheWrite||0) * r.cacheWrite)) / 1_000_000;
+}
+async function trackTokenUsage(env, { sessionId, userId, model, endpoint, inputTokens, outputTokens, cacheRead, cacheWrite, phase }) {
+  try {
+    const cost = calcCostCents(model, inputTokens||0, outputTokens||0, cacheRead||0, cacheWrite||0);
+    await env.DB.prepare(`INSERT INTO token_usage (session_id, user_id, model, endpoint, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, cost_cents, phase, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,datetime('now'))`)
+      .bind(sessionId||'unknown', userId||null, model, endpoint, inputTokens||0, outputTokens||0, cacheRead||0, cacheWrite||0, Math.round(cost*100)/100, phase||null).run();
+  } catch(e) { /* non-blocking */ }
+}
 
 // ── CORS HEADERS ─────────────────────────────────────────
 const CORS = {
@@ -152,15 +213,6 @@ window.location.replace('/');
       if (path === '/api/checkout' && request.method === 'POST') {
         return handleCheckout(request, env);
       }
-      if (path === '/api/create-payment-intent' && request.method === 'POST') {
-        return handleCreatePaymentIntent(request, env);
-      }
-      if (path === '/api/fulfill-payment' && request.method === 'POST') {
-        return handleFulfillPayment(request, env);
-      }
-      if (path === '/api/payment-status' && request.method === 'GET') {
-        return handlePaymentStatus(request, env, url);
-      }
       if (path === '/api/webhook' && request.method === 'POST') {
         return handleWebhook(request, env);
       }
@@ -257,6 +309,8 @@ window.location.replace('/');
       if (path === '/api/admin/resolve-alert' && request.method === 'POST') return handleResolveAlert(request, env);
       if (path === '/api/admin/test-trigger'  && request.method === 'POST') return handleAdminTestTrigger(request, env);
       if (path === '/api/admin/system-health' && request.method === 'GET')  return handleSystemHealthCheck(request, env);
+      if (path === '/api/admin/usage'         && request.method === 'GET')  return handleAdminUsage(request, env);
+      if (path === '/api/admin/usage/user'    && request.method === 'GET')  return handleAdminUserUsage(request, env);
 
       // ── 404 with beautiful error page ───────────────────
       return new Response(getErrorPageHTML(404, 'Page Not Found', ERROR_PAGES[404].message), {
@@ -395,130 +449,6 @@ async function handleCheckout(request, env) {
   await logError(env, { endpoint: '/api/checkout', method: 'POST', statusCode: 500, errorType: 'stripe_checkout', errorMessage: JSON.stringify(session.error) });
   await trackFunnelEvent(env, 'payment_failed', { tier, error: session.error?.message });
   return json({ error: 'Failed to create checkout session', detail: session.error }, 500);
-}
-
-
-// ── Payment Intent handlers (Stripe Payment Element embedded flow) ────────
-
-function getStripeKeys(request, env) {
-  const origin = request.headers.get('Origin') || request.headers.get('Referer') || '';
-  const isTest = origin.includes('dev.') || origin.includes('localhost') || origin.includes('127.0.0.1');
-  return {
-    secretKey:      isTest ? (env.STRIPE_TEST_SECRET_KEY      || env.STRIPE_SECRET_KEY)      : env.STRIPE_SECRET_KEY,
-    publishableKey: isTest ? (env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY) : env.STRIPE_PUBLISHABLE_KEY,
-    testMode:       isTest,
-  };
-}
-
-async function handleCreatePaymentIntent(request, env) {
-  try {
-    const body = await request.json();
-    const { tiers } = body;
-    if (!Array.isArray(tiers) || tiers.length === 0) {
-      return json({ error: 'Invalid tiers' }, 400);
-    }
-    // Pricing: blueprint=$67 base, site=+$130 bump, call=+$130 bump
-    const PRICES = { blueprint: 6700, site: 13000, call: 13000 };
-    const amount = tiers.reduce((sum, t) => sum + (PRICES[t] || 0), 0);
-    if (amount === 0) return json({ error: 'Invalid tiers: no known products' }, 400);
-
-    const { secretKey, publishableKey, testMode } = getStripeKeys(request, env);
-    if (!secretKey) return json({ error: 'Stripe not configured' }, 500);
-
-    const params = new URLSearchParams({
-      amount:   amount.toString(),
-      currency: 'usd',
-      'metadata[tiers]': tiers.join(','),
-      'payment_method_types[]': 'card',
-    });
-
-    const res = await fetch('https://api.stripe.com/v1/payment_intents', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${secretKey}`,
-        'Content-Type':  'application/x-www-form-urlencoded',
-      },
-      body: params.toString(),
-    });
-
-    const pi = await res.json();
-    if (!pi.client_secret) {
-      return json({ error: pi.error?.message || 'Failed to create payment intent' }, 500);
-    }
-
-    return json({ clientSecret: pi.client_secret, publishableKey, amount, paymentIntentId: pi.id, testMode });
-  } catch (e) {
-    return json({ error: e.message }, 500);
-  }
-}
-
-async function handleFulfillPayment(request, env) {
-  try {
-    const { paymentIntentId, email, tiers } = await request.json();
-    if (!paymentIntentId || !email) {
-      return json({ error: 'Missing paymentIntentId or email' }, 400);
-    }
-
-    const { secretKey, testMode } = getStripeKeys(request, env);
-
-    // Verify payment with Stripe
-    let verified = false;
-    let resolvedTiers = tiers || ['blueprint'];
-    try {
-      const res = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
-        headers: { 'Authorization': `Bearer ${secretKey}` },
-      });
-      const pi = await res.json();
-      verified = pi.status === 'succeeded';
-      if (pi.metadata?.tiers) resolvedTiers = pi.metadata.tiers.split(',');
-    } catch (e) {
-      verified = testMode; // Allow through in test mode if Stripe unreachable
-    }
-
-    if (!verified) {
-      return json({ error: 'Payment not verified' }, 402);
-    }
-
-    const tier = resolvedTiers[0] || 'blueprint';
-
-    // Create user account if they don't already have one
-    try {
-      await createUser(env, email, null, { tier, source: 'payment', paymentIntentId });
-    } catch (e) {
-      // User may already exist — not an error
-    }
-
-    // Generate a magic login token so user lands directly in their session
-    let sessionUrl = 'https://app.jamesguldan.com';
-    try {
-      const token = await generateMagicToken();
-      await storeMagicToken(env, token, email);
-      sessionUrl = `https://app.jamesguldan.com/login?token=${token}`;
-    } catch (e) {
-      // Magic token generation failed — fallback URL is fine
-    }
-
-    return json({ success: true, sessionUrl });
-  } catch (e) {
-    return json({ error: e.message }, 500);
-  }
-}
-
-async function handlePaymentStatus(request, env, url) {
-  const piId = url.searchParams.get('pi');
-  if (!piId) return json({ error: 'Missing pi parameter' }, 400);
-
-  const { secretKey, testMode } = getStripeKeys(request, env);
-
-  try {
-    const res = await fetch(`https://api.stripe.com/v1/payment_intents/${piId}`, {
-      headers: { 'Authorization': `Bearer ${secretKey}` },
-    });
-    const pi = await res.json();
-    return json({ status: pi.status, testMode });
-  } catch (e) {
-    return json({ error: e.message }, 500);
-  }
 }
 
 async function handlePaymentSuccess(request, env, url) {
@@ -891,28 +821,44 @@ async function handleTestBlueprint(request, env) {
     await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
   };
 
+  // Blueprint generation uses Opus for highest quality synthesis
   const streamPromise = (async () => {
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-beta': 'prompt-caching-2024-07-31',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 8192,
-          stream: true,
-          system: [{ type: 'text', text: session.systemPrompt, cache_control: { type: 'ephemeral' } }],
-          messages: recentMessages
-        })
-      });
+      const bpAbort = new AbortController();
+      const bpTimeout = setTimeout(() => bpAbort.abort(), 480000); // 8 min timeout for blueprint
+      let res;
+      try {
+        res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          signal: bpAbort.signal,
+          headers: {
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+            'anthropic-beta': 'prompt-caching-2024-07-31',
+          },
+          body: JSON.stringify({
+            model: MODEL_OPUS,
+            max_tokens: 8192,
+            stream: true,
+            system: [{ type: 'text', text: session.systemPrompt, cache_control: { type: 'ephemeral' } }],
+            messages: recentMessages
+          })
+        });
+      } catch (fetchErr) {
+        clearTimeout(bpTimeout);
+        const isTimeout = fetchErr.name === 'AbortError';
+        await logError(env, { endpoint: '/api/generate-blueprint', method: 'POST', statusCode: 0, errorType: isTimeout ? 'timeout' : 'fetch_error', errorMessage: fetchErr.message, sessionId });
+        await sendEvent({ type: 'error', message: isTimeout ? 'Blueprint generation timed out. Please try again — your conversation is saved.' : 'Connection error during blueprint generation. Please try again.' });
+        await writer.close();
+        return;
+      }
+      clearTimeout(bpTimeout);
 
       if (!res.ok) {
         const errText = await res.text();
-        await sendEvent({ type: 'error', message: 'Claude API error: ' + res.status });
+        await logError(env, { endpoint: '/api/generate-blueprint', method: 'POST', statusCode: res.status, errorType: 'anthropic_api', errorMessage: `Model: ${MODEL_OPUS}. ${errText.substring(0, 500)}`, sessionId });
+        await sendEvent({ type: 'error', message: 'Blueprint generation hit a temporary issue (error ' + res.status + '). Please try again — your conversation is saved.' });
         await writer.close();
         return;
       }
@@ -921,6 +867,7 @@ async function handleTestBlueprint(request, env) {
       const decoder = new TextDecoder();
       let buffer = '';
       let fullContent = '';
+      let bpUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -941,10 +888,21 @@ async function handleTestBlueprint(request, env) {
                 fullContent += chunk;
                 await sendEvent({ type: 'delta', content: chunk });
               }
+              if (ev.type === 'message_start' && ev.message?.usage) {
+                bpUsage.input = ev.message.usage.input_tokens || 0;
+                bpUsage.cacheRead = ev.message.usage.cache_read_input_tokens || 0;
+                bpUsage.cacheWrite = ev.message.usage.cache_creation_input_tokens || 0;
+              }
+              if (ev.type === 'message_delta' && ev.usage) {
+                bpUsage.output = ev.usage.output_tokens || 0;
+              }
             } catch (_) {}
           }
         }
       }
+
+      // Track blueprint generation cost
+      trackTokenUsage(env, { sessionId, userId: session.userId, model: MODEL_OPUS, endpoint: '/api/generate-blueprint', inputTokens: bpUsage.input, outputTokens: bpUsage.output, cacheRead: bpUsage.cacheRead, cacheWrite: bpUsage.cacheWrite, phase: 8 });
 
       // Check for blueprint JSON
       let blueprint = null;
@@ -1071,38 +1029,58 @@ async function handleChat(request, env) {
     await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
   };
 
-  // Run Claude call in background
+  // Run Claude call in background — Opus for first 8 exchanges + phase transitions
+  const chatModel = pickChatModel(session);
+  // Mark this phase as having received its Opus message
+  if (chatModel === MODEL_OPUS && (session.phase || 1) > (session.lastPhaseOpusUsed || 1)) {
+    session.lastPhaseOpusUsed = session.phase || 1;
+  }
   const streamPromise = (async () => {
     try {
       const apiStart = Date.now();
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-          'anthropic-beta': 'prompt-caching-2024-07-31',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 2048,
-          stream: true,
-          system: [
-            {
-              type: 'text',
-              text: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
-              cache_control: { type: 'ephemeral' }
-            }
-          ],
-          messages: recentMessages
-        })
-      });
+      const chatAbort = new AbortController();
+      const chatTimeout = setTimeout(() => chatAbort.abort(), 90000); // 90s timeout
+      let res;
+      try {
+        res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          signal: chatAbort.signal,
+          headers: {
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+            'anthropic-beta': 'prompt-caching-2024-07-31',
+          },
+          body: JSON.stringify({
+            model: chatModel,
+            max_tokens: 2048,
+            stream: true,
+            system: [
+              {
+                type: 'text',
+                text: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
+                cache_control: { type: 'ephemeral' }
+              }
+            ],
+            messages: recentMessages
+          })
+        });
+      } catch (fetchErr) {
+        clearTimeout(chatTimeout);
+        const isTimeout = fetchErr.name === 'AbortError';
+        await logError(env, { endpoint: '/api/chat', method: 'POST', statusCode: 0, errorType: isTimeout ? 'timeout' : 'fetch_error', errorMessage: fetchErr.message, sessionId });
+        await sendEvent({ type: 'error', message: isTimeout ? 'The AI took too long to respond. Please try again.' : 'Connection error. Please check your internet and try again.' });
+        await writer.close();
+        return;
+      }
+      clearTimeout(chatTimeout);
 
       // Track the API call
       trackAPICall(env, 'anthropic', '/v1/messages', res.status, Date.now() - apiStart);
 
       if (!res.ok) {
         const errText = await res.text();
+        await logError(env, { endpoint: '/api/chat', method: 'POST', statusCode: res.status, errorType: 'anthropic_api', errorMessage: `Model: ${chatModel}. ${errText.substring(0, 500)}`, sessionId });
         await sendEvent({ type: 'error', message: 'We hit a temporary issue generating your response. Please try sending your message again.' });
         await logError(env, { endpoint: '/api/chat', method: 'POST', statusCode: res.status, errorType: 'anthropic_api', errorMessage: errText, sessionId });
         await trackFunnelEvent(env, 'ai_error', { phase: session.phase, status: res.status });
@@ -1114,6 +1092,7 @@ async function handleChat(request, env) {
       const decoder = new TextDecoder();
       let buffer = '';
       let fullContent = '';
+      let usageData = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -1134,10 +1113,21 @@ async function handleChat(request, env) {
                 fullContent += chunk;
                 await sendEvent({ type: 'delta', content: chunk });
               }
+              if (ev.type === 'message_start' && ev.message?.usage) {
+                usageData.input = ev.message.usage.input_tokens || 0;
+                usageData.cacheRead = ev.message.usage.cache_read_input_tokens || 0;
+                usageData.cacheWrite = ev.message.usage.cache_creation_input_tokens || 0;
+              }
+              if (ev.type === 'message_delta' && ev.usage) {
+                usageData.output = ev.usage.output_tokens || 0;
+              }
             } catch (_) {}
           }
         }
       }
+
+      // Track token usage (non-blocking)
+      trackTokenUsage(env, { sessionId, userId: session.userId, model: chatModel, endpoint: '/api/chat', inputTokens: usageData.input, outputTokens: usageData.output, cacheRead: usageData.cacheRead, cacheWrite: usageData.cacheWrite, phase: session.phase });
 
       // Parse metadata from Claude's response
       const metadataMatch = fullContent.match(/METADATA:\{([^}]+)\}/);
@@ -1345,12 +1335,45 @@ async function handleGenerateSite(request, env) {
     return json({ error: 'Prompt build failed: ' + e.message }, 500);
   }
 
-  // Call Claude for site generation — dedicated function, no prompt caching (prompt changes every time)
-  const bodyContent = await callClaudeSiteGen(env, prompt, 3000);
+  // Build Imagen 4 prompt from blueprint
+  const bp = session.blueprint?.blueprint || session.blueprint || {};
+  const imagenPromptText = buildImagenPrompt(bp.part1 || {}, bp.part3 || {});
+
+  // Run Claude + Imagen 4 in parallel to stay within the 49s wall-clock limit
+  const GEMINI_PROXY = 'https://gemini-proxy.james-d13.workers.dev';
+  const PROXY_AUTH = env.GEMINI_PROXY_TOKEN || '';
+
+  // Use Cloudflare Service Binding if available (avoids workers.dev HTTP restriction)
+  const geminiCall = (env.GEMINI_PROXY ? env.GEMINI_PROXY.fetch.bind(env.GEMINI_PROXY) : fetch);
+
+  const [bodyContent, imagenResult] = await Promise.allSettled([
+    callClaudeSiteGen(env, prompt, 3000),
+    geminiCall(`${GEMINI_PROXY}/v1beta/models/imagen-4.0-generate-001:predict`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PROXY_AUTH}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        instances: [{ prompt: imagenPromptText }],
+        parameters: { sampleCount: 1, aspectRatio: '16:9' }
+      })
+    }).then(r => r.json()).catch(() => null)
+  ]);
+
+  const claudeBody = bodyContent.status === 'fulfilled' ? bodyContent.value : '';
+
+  // Extract base64 image from Imagen 4 response
+  let heroImageDataUrl = null;
+  if (imagenResult.status === 'fulfilled' && imagenResult.value?.predictions?.[0]?.bytesBase64Encoded) {
+    const b64 = imagenResult.value.predictions[0].bytesBase64Encoded;
+    const mimeType = imagenResult.value.predictions[0].mimeType || 'image/jpeg';
+    heroImageDataUrl = `data:${mimeType};base64,${b64}`;
+  }
 
   // Assemble the final HTML: pre-built head + Claude's body
   // Strip any <style> blocks Claude may have written despite instructions
-  let bodyHtml = bodyContent.replace(/<style[\s\S]*?<\/style>/gi, '');
+  let bodyHtml = claudeBody.replace(/<style[\s\S]*?<\/style>/gi, '');
   // Strip stray <html>, <head>, <body> wrappers
   bodyHtml = bodyHtml
     .replace(/<\/html>/gi, '')
@@ -1366,7 +1389,6 @@ async function handleGenerateSite(request, env) {
 
   // Footer fallback — inject if Claude ran out of tokens before writing one
   if (!/<footer[\s>]/i.test(bodyHtml)) {
-    const bp = session.blueprint?.blueprint || session.blueprint || {};
     const fallbackBrand = bp.part1?.brandNames?.[0] || 'Brand';
     const fallbackEmail = bp.part1?.contactEmail || '';
     const year = new Date().getFullYear();
@@ -1389,7 +1411,14 @@ async function handleGenerateSite(request, env) {
 </footer>`;
   }
 
-  const cleanHtml = `<!DOCTYPE html>\n<html lang="en">\n${head}\n<body>\n${bodyHtml}\n</body>\n</html>`;
+  // Embed Imagen 4 hero image as CSS background on the .hero section
+  let styledHead = head;
+  if (heroImageDataUrl) {
+    const heroStyle = `<style>.hero{background-image:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),url('${heroImageDataUrl}');background-size:cover;background-position:center;background-repeat:no-repeat;}</style>`;
+    styledHead = head.replace('</head>', `${heroStyle}\n</head>`);
+  }
+
+  const cleanHtml = `<!DOCTYPE html>\n<html lang="en">\n${styledHead}\n<body>\n${bodyHtml}\n</body>\n</html>`;
 
   // Store in R2
   await env.UPLOADS.put(`sessions/${sessionId}/site.html`, cleanHtml, {
@@ -1520,121 +1549,1152 @@ async function handleExport(request, env) {
 }
 
 function buildExportHTML(blueprint, session) {
+  return buildBrandGuideHTML(blueprint, session);
+}
+
+function buildBrandGuideHTML(blueprint, session) {
   const b = blueprint?.blueprint;
   if (!b) return '<html><body>Blueprint not available</body></html>';
+
+  const p1 = b.part1 || {};
+  const p2 = b.part2 || {};
+  const p3 = b.part3 || {};
+  const p4 = b.part4 || {};
+  const p5 = b.part5 || {};
+  const p6 = b.part6 || {};
+  const p7 = b.part7 || {};
+
+  const brandName  = esc((p1.brandNames || [])[0] || b.name || 'Your Brand');
+  const tagline    = esc((p1.taglines || [])[0] || '');
+  const colors     = p1.visualDirection?.colors || [];
+  const primary    = esc((colors[0]?.hex) || '#1C2B3A');
+  const secondary  = esc((colors[1]?.hex) || '#C4703F');
+  const accent     = esc((colors[2]?.hex) || '#E8C97A');
+  const bgColor    = esc((colors[3]?.hex) || '#F7F5F0');
+  const textColor  = esc((colors[4]?.hex) || '#1A1A1A');
+  const rawHeadingFont = p1.visualDirection?.fonts?.heading || 'Georgia';
+  const rawBodyFont    = p1.visualDirection?.fonts?.body || 'Inter';
+  const headingFont = safeFont(rawHeadingFont, 'Playfair Display');
+  const bodyFont    = safeFont(rawBodyFont, 'Inter');
+  const aesthetic   = esc(p1.visualDirection?.aesthetic || '');
+
+  const nicheStatement = esc(p3.nicheStatement || '');
+  const mechanism      = esc(p3.uniqueMechanism || '');
+  const compGap        = esc(p3.competitorGap || '');
+  const whoServe       = esc(p3.whoTheyServe || '');
+  const whoNotServe    = esc(p3.whoTheyDoNotServe || '');
+
+  const entryOffer   = p4.entryOffer   || {};
+  const coreOffer    = p4.coreOffer    || {};
+  const premiumOffer = p4.premiumOffer || {};
+  const ascensionLogic = esc(p4.ascensionLogic || '');
+
+  const headlines = (p7.heroHeadlineOptions || []).map(h => esc(h));
+  const posStatements = p7.positioningStatements || {};
+  const posWeb     = esc(posStatements.website || '');
+  const posSocial  = esc(posStatements.social || '');
+  const posPerson  = esc(posStatements.inPerson || '');
+
+  // Beliefs: might be strings or objects — normalize
+  const rawBeliefs = (p5.brandBeliefs || p6.coreBeliefs || p6.credibilityGaps || []);
+  const beliefs = rawBeliefs.map(item => {
+    if (typeof item === 'string') return esc(item);
+    if (item?.belief) return esc(item.belief);
+    if (item?.gap) return esc(item.gap);
+    return esc(JSON.stringify(item));
+  });
+
+  // Credibility gaps from part6
+  const credGaps = (p6.credibilityGaps || []).map(g => esc(typeof g === 'string' ? g : g?.gap || JSON.stringify(g)));
+  const mktOpportunities = (p6.marketingOpportunities || []).map(o => esc(typeof o === 'string' ? o : JSON.stringify(o)));
+  const firstMove = esc(p6.firstMove || '');
+
+  // Brand voice
+  const descriptors = (p1.brandVoice?.descriptors || []).map(d => esc(d));
+  const doSay       = (p1.brandVoice?.doSay || []).map(d => esc(d));
+  const neverSay    = (p1.brandVoice?.neverSay || []).map(d => esc(d));
+
+  const exactWords   = (p2.exactWords || []).map(w => esc(w));
+  const alreadyTried = (p2.alreadyTried || []).map(t => esc(t));
+  const whyNotWork   = esc(p2.whyItDidNotWork || '');
+  const avatarName   = esc(p2.name || 'Your Ideal Client');
+  const avatarAge    = esc(p2.ageRange || '');
+  const avatarSit    = esc(p2.lifeSituation || '');
+  const avatarWant   = esc(p2.tryingToAchieve || '');
+  const avatarBlock  = esc(p2.whatIsStoppingThem || '');
+
+  // Website blueprint sections from AI (part5) or generate generic
+  const aiSections = (p5.sections || []).map(s => ({
+    name: esc(s.name || ''),
+    purpose: esc(s.purpose || ''),
+    content: esc(s.content || '')
+  }));
+  const heroSub = esc(p5.heroSubheadline || '');
+  const heroCTA = esc(p5.heroCTA || '');
+  const testimonialFraming = esc(p5.testimonialFraming || '');
+
+  const coreBrandPromise = esc(p1.coreBrandPromise || nicheStatement);
+
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // Site blueprint sections — generated from blueprint data
+  const siteSections = [
+    {
+      name: 'Navigation',
+      emoji: '01',
+      purpose: 'First impression and wayfinding. Sets tone before a single word is read.',
+      headline: `Logo: "${brandName}" — minimal, confident. Links: About, Work With Me, Results. CTA button in accent color.`,
+      supporting: 'Sticky on scroll. Transparent over hero, solid on scroll.',
+      cta: 'Primary button links to your entry offer or contact form.'
+    },
+    {
+      name: 'Hero Section',
+      emoji: '02',
+      purpose: 'The hook. Must answer "is this for me?" in under 4 seconds. Creates immediate recognition.',
+      headline: headlines[0] ? `"${headlines[0]}"` : `Lead with the tension your ideal client is living in right now.`,
+      supporting: `Subheadline: "${nicheStatement.substring(0, 120)}" — be specific about who, what, and the transformation.`,
+      cta: `Primary: "${entryOffer.name || 'Work With Me'}" — Secondary: "See How This Works"`
+    },
+    {
+      name: 'The Problem You Name',
+      emoji: '03',
+      purpose: 'Validates their experience. Makes them feel seen before you offer anything. This is where trust starts.',
+      headline: `Headline names the specific gap or tension your people are living in. Use their exact words: ${exactWords.slice(0,2).map(w => `"${w}"`).join(', ')}`,
+      supporting: 'A short paragraph or 2-column layout: what they have already tried vs. why it did not work. No blame. Pure recognition.',
+      cta: 'Soft CTA or none — let them breathe here before the ask.'
+    },
+    {
+      name: 'Why You',
+      emoji: '04',
+      purpose: 'Your credibility and origin. Not a resume — the story of why this became your life\'s work.',
+      headline: `The inciting moment or the transformation you lived. Not "I help people" — the specific thing that happened to you that made this your purpose.`,
+      supporting: `Connect your story directly to their situation. The thread: you were where they are. You found the way out. "${mechanism}" is your proof.`,
+      cta: '"Learn More About My Approach" or a link to your full story.'
+    },
+    {
+      name: 'What I Believe',
+      emoji: '05',
+      purpose: 'Your worldview and the things you believe that most people in your space get wrong. Creates polarization in the best way — repels the wrong clients, magnetizes the right ones.',
+      headline: `"Here is what I know to be true that most ${(nicheStatement.split(' ')[3] || 'experts')} will never tell you."`,
+      supporting: beliefs.length ? `3 to 5 belief statements. Lead with: "${(typeof beliefs[0] === 'string' ? beliefs[0] : beliefs[0]?.belief || '').substring(0, 80)}..."` : '3 to 5 contrarian beliefs that reflect your genuine conviction. The more specific and honest, the better.',
+      cta: 'None needed here. Let the conviction speak.'
+    },
+    {
+      name: 'Results and Social Proof',
+      emoji: '06',
+      purpose: 'Evidence. Not generic testimonials — specific outcomes with context. Shows the transformation is real and repeatable.',
+      headline: `"Here is what actually happens when the work is real."`,
+      supporting: 'Lead with your best stat or most dramatic transformation. Then 3 client stories or quotes. Name, role, specific result. No vague "life-changing" language.',
+      cta: '"See More Results" or "Read Full Case Studies"'
+    },
+    {
+      name: 'Your Offers',
+      emoji: '07',
+      purpose: 'Gives visitors a clear next step at every commitment level. Removes the "I am not sure how to start" hesitation.',
+      headline: `"Three ways to work together. One clear place to start."`,
+      supporting: `Entry: ${entryOffer.name || 'Entry Offer'} at ${entryOffer.price || 'low price'} — low risk, high value, easy yes. Core: ${coreOffer.name || 'Core Program'} at ${coreOffer.price || 'mid price'} — the transformation. Premium: ${premiumOffer.name || 'Premium'} at ${premiumOffer.price || 'high price'} — the full experience.`,
+      cta: 'Each card has its own CTA. Entry offer CTA is the most prominent.'
+    },
+    {
+      name: 'Contact and Final CTA',
+      emoji: '08',
+      purpose: 'The close. For the visitor who has read everything and is ready to take the step.',
+      headline: headlines[1] ? `"${headlines[1]}"` : `One more direct call to action. Name the exact person this is for.`,
+      supporting: 'Simple form or direct calendar link. Remove friction. One or two fields maximum. No long forms.',
+      cta: `"${entryOffer.name || 'Book a Call'}" — make it as easy as possible to say yes.`
+    }
+  ];
+
+  // 90-day plan
+  const plan90 = [
+    {
+      month: 'Month 1',
+      title: 'Foundation and First Proof',
+      items: [
+        firstMove ? `Your first move: ${firstMove}` : 'Finalize your brand guide and apply it everywhere: bio, email signature, social profiles',
+        `Launch your entry offer: "${entryOffer.name || 'entry offer'}" — deliver it 3 times at any price to build case studies`,
+        'Identify your 20 best potential clients — people who already know and trust you',
+        'Publish your origin story in long form: LinkedIn article, email, or blog post',
+        'Set up a simple one-page site or landing page using this site blueprint'
+      ]
+    },
+    {
+      month: 'Month 2',
+      title: 'Momentum and Market Proof',
+      items: [
+        'Collect 3 specific testimonials from Month 1 delivery — get exact numbers and outcomes',
+        `Begin promoting your core offer: "${coreOffer.name || 'core program'}" to your warm audience`,
+        'Reach out to 5 potential referral partners or collaborators in adjacent spaces',
+        'Start one consistent content channel — one platform, one format, once per week minimum',
+        'Host one live event: webinar, workshop, or group call to build your list'
+      ]
+    },
+    {
+      month: 'Month 3',
+      title: 'Scale the Proven System',
+      items: [
+        `Launch your premium offer: "${premiumOffer.name || 'premium program'}" to your most engaged clients`,
+        'Build a simple referral process — ask every happy client for one introduction',
+        'Document your unique mechanism as a framework: name it, diagram it, teach it publicly',
+        'Raise prices on at least one offer based on demand signals from Months 1 and 2',
+        'Review: what worked, what to cut, what to double down on going into Month 4+'
+      ]
+    }
+  ];
+
+  const colorSwatches = colors.map(c => `
+    <div class="swatch-item">
+      <div class="swatch-block" style="background-color:${c.hex} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>
+      <div class="swatch-name">${esc(c.name)}</div>
+      <div class="swatch-hex">${esc(c.hex)}</div>
+    </div>`).join('');
+
+  const googleFontParam = [headingFont, bodyFont]
+    .filter(f => !['Georgia','serif','sans-serif','monospace','system-ui'].includes(f))
+    .map(f => f.replace(/ /g, '+'))
+    .join('&family=');
+  const fontImport = googleFontParam
+    ? `@import url('https://fonts.googleapis.com/css2?family=${googleFontParam}:wght@400;500;600;700;900&display=swap');`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${b.name} — Brand Blueprint</title>
+<title>${brandName} — Brand Guide</title>
 <style>
-  body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
-  h1 { font-size: 36px; margin-bottom: 8px; }
-  h2 { font-size: 22px; color: #b8860b; margin-top: 40px; border-bottom: 1px solid #e5e5e5; padding-bottom: 8px; }
-  h3 { font-size: 16px; color: #666; text-transform: uppercase; letter-spacing: 0.06em; font-family: sans-serif; margin-bottom: 4px; }
-  p { margin-bottom: 12px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .card { background: #f9f7f4; padding: 16px; border-radius: 8px; }
-  .color-dot { display: inline-block; width: 16px; height: 16px; border-radius: 4px; margin-right: 8px; vertical-align: middle; }
-  .starter-prompt { background: #1a1a1a; color: #f0ede8; padding: 24px; border-radius: 8px; font-family: monospace; font-size: 13px; white-space: pre-wrap; margin-top: 40px; }
-  .section { margin-bottom: 40px; }
-  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+${fontImport}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+
+:root {
+  --primary: ${primary};
+  --secondary: ${secondary};
+  --accent: ${accent};
+  --bg: ${bgColor};
+  --text: ${textColor};
+  --font-display: '${headingFont}', Georgia, serif;
+  --font-body: '${bodyFont}', system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: #fff;
+  color: var(--text);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── PAGE LAYOUT ── */
+.page {
+  width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  page-break-after: always;
+  background: #fff;
+}
+
+/* ── COVER ── */
+.cover {
+  background: var(--primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+}
+.cover-body {
+  padding: 1.2in 0.9in 0.6in;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.cover-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 40px;
+}
+.cover-name {
+  font-family: var(--font-display);
+  font-size: 72px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.05;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+.cover-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 22px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 48px;
+  max-width: 5.5in;
+  line-height: 1.5;
+}
+.cover-meta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.04em;
+}
+.cover-color-bar {
+  display: flex;
+  height: 60px;
+  width: 100%;
+}
+.cover-color-bar div {
+  flex: 1;
+}
+
+/* ── INNER PAGE LAYOUT ── */
+.inner-page {
+  padding: 0.75in 0.85in;
+}
+.page-rule {
+  width: 100%;
+  height: 5px;
+  background: var(--primary);
+  margin-bottom: 0;
+}
+.page-rule-accent {
+  width: 48px;
+  height: 5px;
+  background: var(--secondary);
+  display: inline-block;
+}
+.page-header {
+  padding: 0.4in 0.85in 0.35in;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-header-brand {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.02em;
+}
+.page-header-section {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.35);
+}
+
+/* ── TYPOGRAPHY ── */
+.section-number {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  display: block;
+  margin-bottom: 10px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.15;
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+.section-title em {
+  font-style: italic;
+  color: var(--secondary);
+}
+.section-intro {
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(0,0,0,0.7);
+  margin-bottom: 32px;
+  max-width: 6in;
+}
+.divider {
+  width: 44px;
+  height: 3px;
+  background: var(--secondary);
+  margin: 24px 0;
+}
+
+/* ── CARDS AND BLOCKS ── */
+.card {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin-bottom: 16px;
+}
+.card-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin-bottom: 8px;
+}
+.card-content {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.card-content strong {
+  color: var(--primary);
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── PULL QUOTE ── */
+.pull-quote {
+  border-left: 4px solid var(--secondary);
+  padding: 20px 28px;
+  margin: 24px 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.02), transparent);
+}
+.pull-quote p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1.55;
+  color: var(--primary);
+}
+.pull-quote cite {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.35);
+  margin-top: 12px;
+}
+
+/* ── OFFER CARDS ── */
+.offer-card {
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 10px;
+  padding: 24px;
+  position: relative;
+}
+.offer-card.featured {
+  border-color: var(--secondary);
+  background: linear-gradient(135deg, rgba(0,0,0,0.015), transparent);
+}
+.offer-tier {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin-bottom: 6px;
+}
+.offer-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+.offer-price {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--secondary);
+  margin-bottom: 10px;
+  font-family: var(--font-body);
+}
+.offer-desc {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(0,0,0,0.6);
+}
+
+/* ── COLOR SWATCHES ── */
+.swatches {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.swatch-item {
+  flex: 1;
+  text-align: center;
+}
+.swatch-block {
+  width: 100%;
+  height: 72px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+.swatch-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+.swatch-hex {
+  font-size: 10px;
+  font-family: monospace;
+  color: rgba(0,0,0,0.4);
+}
+
+/* ── FONT DISPLAY ── */
+.font-display {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 8px;
+  padding: 20px 24px;
+}
+.font-sample-heading {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.font-sample-body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.7);
+}
+.font-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 6px;
+}
+
+/* ── SITE BLUEPRINT SECTIONS ── */
+.site-section-card {
+  border-left: 3px solid var(--primary);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  background: var(--bg);
+  border-radius: 0 8px 8px 0;
+}
+.site-section-num {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--secondary);
+  margin-bottom: 4px;
+}
+.site-section-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+.site-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.site-section-field {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.site-section-field-label {
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.4);
+  display: block;
+  margin-bottom: 3px;
+}
+
+/* ── 90-DAY PLAN ── */
+.plan-month {
+  margin-bottom: 28px;
+}
+.plan-month-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.plan-month-label {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.plan-month-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--secondary);
+  letter-spacing: 0.03em;
+}
+.plan-item {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(0,0,0,0.7);
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+}
+.plan-item::before {
+  content: '→';
+  color: var(--secondary);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── CLAUDE STARTER ── */
+.starter-block {
+  background: var(--primary);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin-top: 8px;
+}
+.starter-block pre {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.75);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── BELIEF ITEM ── */
+.belief-item {
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--bg);
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+/* ── PRINT ── */
+@media print {
+  @page {
+    size: letter;
+    margin: 0;
+  }
+  body { margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .page {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+  .page.cover {
+    min-height: 100vh;
+  }
+  .swatch-block, .cover, .cover-color-bar div, .font-display, .starter-block, .pull-quote, .card {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .no-print { display: none !important; }
+}
+
+/* ── SCREEN ONLY ── */
+@media screen {
+  body { background: #e8e4de; padding: 32px 0; }
+  .page { box-shadow: 0 8px 48px rgba(0,0,0,0.18); margin-bottom: 24px; }
+}
 </style>
 </head>
 <body>
 
-<h1>${b.name}</h1>
-<p style="color:#666;font-family:sans-serif;font-size:14px">Brand Blueprint — Generated ${new Date().toLocaleDateString()}</p>
+<!-- PAGE 1: COVER -->
+<div class="page cover" style="background-color:${primary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+  <div class="cover-body">
+    <span class="cover-label">Brand Guide</span>
+    <div class="cover-name">${brandName}</div>
+    ${tagline ? `<div class="cover-tagline">"${tagline}"</div>` : ''}
+    <div class="cover-meta">Generated ${today} &nbsp;·&nbsp; Confidential</div>
+  </div>
+  <div class="cover-color-bar">
+    ${colors.length ? colors.map(c => `<div style="background-color:${c.hex} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>`).join('') : `<div style="background-color:${primary} !important;"></div><div style="background-color:${secondary} !important;"></div><div style="background-color:${accent} !important;"></div>`}
+  </div>
+</div>
 
-<h2>Part 1: Brand Foundation</h2>
-<div class="section">
-  <div class="grid">
-    <div class="card">
-      <h3>Brand Names</h3>
-      <p>${b.part1.brandNames.join('<br>')}</p>
+<!-- PAGE 2: BRAND ESSENCE -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Brand Essence</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part One</span>
+    <h2 class="section-title">Who You Are<br>and <em>What You Stand For</em></h2>
+    <div class="divider"></div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-label">Core Brand Promise</div>
+      <div class="card-content" style="font-size:17px;font-style:italic;font-family:var(--font-display);color:var(--primary);line-height:1.6;">"${p1.coreBrandPromise || nicheStatement}"</div>
     </div>
-    <div class="card">
-      <h3>Taglines</h3>
-      <p>${b.part1.taglines.join('<br>')}</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Brand Names</div>
+        <div class="card-content">${(p1.brandNames || [brandName]).map((n,i) => `<div style="margin-bottom:4px;${i===0?'font-weight:700;color:var(--primary)':''}">${i===0?'★ ':''} ${n}</div>`).join('')}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Taglines</div>
+        <div class="card-content">${(p1.taglines || [tagline]).filter(Boolean).map((t,i) => `<div style="margin-bottom:6px;font-style:italic;${i===0?'font-weight:600;':''}">${i===0?'★ ':''}"${t}"</div>`).join('')}</div>
+      </div>
     </div>
+
     <div class="card">
-      <h3>Color Palette</h3>
-      <p>${b.part1.visualDirection.colors.map(c => `<span class="color-dot" style="background:${c.hex}"></span>${c.name} ${c.hex}`).join('<br>')}</p>
+      <div class="card-label">Brand Voice</div>
+      <div class="card-content">${descriptors.length ? descriptors.join(', ') : (typeof p1.brandVoice === 'string' ? esc(p1.brandVoice) : 'Direct, warm, occasionally irreverent. Speaks like a smart friend with real expertise. Never corporate. Never generic.')}</div>
     </div>
-    <div class="card">
-      <h3>Core Brand Promise</h3>
-      <p>${b.part1.coreBrandPromise}</p>
+
+    ${p1.visualDirection?.aesthetic ? `<div class="card">
+      <div class="card-label">Visual Identity Direction</div>
+      <div class="card-content">${aesthetic}</div>
+    </div>` : ''}
+  </div>
+</div>
+
+<!-- PAGE 3: VISUAL IDENTITY -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Visual Identity</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part Two</span>
+    <h2 class="section-title">Colors, Type,<br>and <em>How You Look</em></h2>
+    <div class="divider"></div>
+
+    <div class="card-label" style="margin-bottom:12px;">Color Palette</div>
+    <div class="swatches">${colorSwatches || `<div class="swatch-item"><div class="swatch-block" style="background:${primary};"></div><div class="swatch-name">Primary</div><div class="swatch-hex">${primary}</div></div><div class="swatch-item"><div class="swatch-block" style="background:${secondary};"></div><div class="swatch-name">Secondary</div><div class="swatch-hex">${secondary}</div></div><div class="swatch-item"><div class="swatch-block" style="background:${accent};"></div><div class="swatch-name">Accent</div><div class="swatch-hex">${accent}</div></div>`}</div>
+
+    <div class="grid-2" style="margin-top:24px;">
+      <div>
+        <div class="card-label" style="margin-bottom:12px;">Typography</div>
+        <div class="font-display">
+          <div class="font-label">Display / Heading</div>
+          <div class="font-sample-heading">${headingFont}</div>
+          <div class="font-label" style="margin-top:16px;">Body / Interface</div>
+          <div class="font-sample-body">${bodyFont} — readable, purposeful, consistent.</div>
+        </div>
+      </div>
+      <div>
+        <div class="card-label" style="margin-bottom:12px;">Aesthetic Direction</div>
+        <div class="card" style="height:calc(100% - 30px);">
+          <div class="card-content" style="font-style:italic;font-family:var(--font-display);font-size:15px;line-height:1.8;color:var(--primary);">${aesthetic || 'A brand that feels premium without being unapproachable. Clean, intentional, and unmistakably human.'}</div>
+        </div>
+      </div>
+    </div>
+
+    ${p1.brandVoice ? `<div style="margin-top:24px;">
+      <div class="card-label" style="margin-bottom:12px;">Voice in Practice</div>
+      <div class="grid-2">
+        <div class="card" style="border-left:3px solid var(--secondary);">
+          <div class="card-label">Sounds Like</div>
+          <div class="card-content" style="font-size:13px;">${doSay.length ? doSay.join('. ') + '.' : 'Confident without arrogance. Direct without coldness. Uses plain language. Calls things what they are.'}</div>
+        </div>
+        <div class="card" style="border-left:3px solid rgba(0,0,0,0.15);">
+          <div class="card-label">Never Sounds Like</div>
+          <div class="card-content" style="font-size:13px;">${neverSay.length ? neverSay.join('. ') + '.' : 'Corporate jargon. Vague benefit language. Overly polished to the point of feeling distant. Generic coaches or consultants.'}</div>
+        </div>
+      </div>
+    </div>` : ''}
+  </div>
+</div>
+
+<!-- PAGE 4: YOUR PEOPLE -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Ideal Client Portrait</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part Three</span>
+    <h2 class="section-title">The Person<br>You Are <em>Built For</em></h2>
+    <div class="divider"></div>
+
+    <div class="card" style="background:var(--primary);margin-bottom:20px;">
+      <div class="card-label" style="color:rgba(255,255,255,0.5);">Who They Are</div>
+      <div class="card-content" style="color:#fff;font-size:16px;font-family:var(--font-display);font-style:italic;">${avatarName}${avatarAge ? ` · ${avatarAge}` : ''}${avatarSit ? ` · ${avatarSit}` : ''}</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">What They Are Trying to Achieve</div>
+        <div class="card-content" style="font-size:14px;">${p2.tryingToAchieve || 'Defined in your session notes.'}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">What Is Stopping Them</div>
+        <div class="card-content" style="font-size:14px;">${p2.whatIsStoppingThem || 'Defined in your session notes.'}</div>
+      </div>
+    </div>
+
+    ${exactWords.length ? `<div style="margin-top:8px;">
+      <div class="card-label" style="margin-bottom:12px;">Their Exact Words — Use These in Your Copy</div>
+      ${exactWords.slice(0,4).map(w => `<div class="pull-quote" style="margin-bottom:12px;"><p>"${w}"</p><cite>Your Ideal Client, in Their Own Words</cite></div>`).join('')}
+    </div>` : ''}
+
+    ${(p2.alreadyTried||[]).length ? `<div class="card" style="margin-top:8px;">
+      <div class="card-label">What They Have Already Tried</div>
+      <div class="card-content" style="font-size:14px;">${(p2.alreadyTried||[]).join('. ')}${p2.whyItDidNotWork ? '. '+p2.whyItDidNotWork : ''}</div>
+    </div>` : ''}
+  </div>
+</div>
+
+<!-- PAGE 5: POSITIONING -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Market Positioning</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part Four</span>
+    <h2 class="section-title">Your Niche,<br>Your <em>Unfair Advantage</em></h2>
+    <div class="divider"></div>
+
+    <div class="pull-quote" style="background:var(--primary);border-left:4px solid var(--secondary);padding:28px 32px;margin-bottom:24px;">
+      <p style="color:#fff;font-size:20px;">${nicheStatement}</p>
+      <cite style="color:rgba(255,255,255,0.4);">Your Niche Statement</cite>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">Your Unique Mechanism</div>
+        <div class="card-content">${mechanism}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Your Competitive Edge</div>
+        <div class="card-content">${compGap}</div>
+      </div>
+    </div>
+
+    ${beliefs.length ? `<div style="margin-top:20px;">
+      <div class="card-label" style="margin-bottom:12px;">What You Believe That Others Get Wrong</div>
+      ${beliefs.slice(0,4).map(bi => {
+        const bt = typeof bi === 'string' ? bi : (bi?.belief || bi?.gap || String(bi));
+        return `<div class="belief-item">${bt}</div>`;
+      }).join('')}
+    </div>` : ''}
+  </div>
+</div>
+
+<!-- PAGE 6: OFFERS -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Offer Suite</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part Five</span>
+    <h2 class="section-title">Three Ways In,<br><em>One Clear Place to Start</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro">Every business needs an ascension model. The goal is to make it easy to say yes at any commitment level, while creating a natural path to the highest-value offer.</p>
+
+    <div class="grid-3">
+      <div class="offer-card">
+        <div class="offer-tier">Entry Offer</div>
+        <div class="offer-name">${entryOffer.name || 'Entry Offer'}</div>
+        <div class="offer-price">${entryOffer.price || 'TBD'}</div>
+        <div class="offer-desc">${entryOffer.description || 'Low risk, high value. Designed to create trust and demonstrate your method before the bigger ask.'}</div>
+      </div>
+      <div class="offer-card featured">
+        <div class="offer-tier">Core Offer ★</div>
+        <div class="offer-name">${coreOffer.name || 'Core Offer'}</div>
+        <div class="offer-price">${coreOffer.price || 'TBD'}</div>
+        <div class="offer-desc">${coreOffer.description || 'The primary transformation. This is where your unique mechanism is fully deployed and real results happen.'}</div>
+      </div>
+      <div class="offer-card">
+        <div class="offer-tier">Premium Offer</div>
+        <div class="offer-name">${premiumOffer.name || 'Premium Offer'}</div>
+        <div class="offer-price">${premiumOffer.price || 'TBD'}</div>
+        <div class="offer-desc">${premiumOffer.description || 'For clients who want everything — maximum access, maximum support, maximum results.'}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;border-left:3px solid var(--secondary);">
+      <div class="card-label">The Ascension Logic</div>
+      <div class="card-content" style="font-size:14px;">
+        The entry offer creates trust and proves your method. The core offer is where the transformation actually happens — this is your main revenue driver. The premium offer serves your best clients and commands the highest fees. Most people start at entry, move to core within 90 days, and upgrade to premium when they see results.
+      </div>
     </div>
   </div>
 </div>
 
-<h2>Part 2: Ideal Customer Avatar</h2>
-<div class="section">
-  <p><strong>${b.part2.name}</strong>, ${b.part2.ageRange} — ${b.part2.lifeSituation}</p>
-  <div class="grid">
-    <div class="card">
-      <h3>What They Want</h3>
-      <p>${b.part2.tryingToAchieve}</p>
-    </div>
-    <div class="card">
-      <h3>What Stops Them</h3>
-      <p>${b.part2.whatIsStoppingThem}</p>
-    </div>
+<!-- PAGE 7: KEY MESSAGES -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Key Messaging</div>
   </div>
-  <div class="card" style="margin-top:16px">
-    <h3>Their Exact Words</h3>
-    <p>${b.part2.exactWords.map(w => `"${w}"`).join('<br>')}</p>
-  </div>
-</div>
+  <div class="inner-page">
+    <span class="section-number">Part Six</span>
+    <h2 class="section-title">The Words That<br><em>Make People Stop</em></h2>
+    <div class="divider"></div>
 
-<h2>Part 3: Niche Positioning</h2>
-<div class="section">
-  <p style="font-size:20px;font-weight:bold">${b.part3.nicheStatement}</p>
-  <div class="card">
-    <h3>Unique Mechanism</h3>
-    <p>${b.part3.uniqueMechanism}</p>
-    <h3 style="margin-top:12px">Competitive Edge</h3>
-    <p>${b.part3.competitorGap}</p>
-  </div>
-</div>
+    <div class="card-label" style="margin-bottom:14px;">Hero Headline Options</div>
+    ${headlines.map((h, i) => `<div class="pull-quote" style="margin-bottom:14px;${i===0?'border-left-color:var(--secondary);':''}" ><p style="${i===0?'font-size:22px;':''}">${h}</p>${i===0?'<cite>Recommended Primary Headline</cite>':''}</div>`).join('')}
 
-<h2>Part 4: Offer Suite</h2>
-<div class="section">
-  <div class="grid">
-    <div class="card">
-      <h3>Entry Offer</h3>
-      <p><strong>${b.part4.entryOffer.name}</strong><br>${b.part4.entryOffer.description}<br><strong>${b.part4.entryOffer.price}</strong></p>
-    </div>
-    <div class="card">
-      <h3>Core Offer</h3>
-      <p><strong>${b.part4.coreOffer.name}</strong><br>${b.part4.coreOffer.description}<br><strong>${b.part4.coreOffer.price}</strong></p>
-    </div>
-    <div class="card" style="grid-column:1/-1">
-      <h3>Premium Offer</h3>
-      <p><strong>${b.part4.premiumOffer.name}</strong><br>${b.part4.premiumOffer.description}<br><strong>${b.part4.premiumOffer.price}</strong></p>
-    </div>
+    ${exactWords.length ? `<div style="margin-top:24px;">
+      <div class="card-label" style="margin-bottom:12px;">Language From Their Mouths — Use Verbatim</div>
+      <div class="grid-2">
+        ${exactWords.slice(0,6).map(w => `<div class="card" style="padding:14px 18px;"><div class="card-content" style="font-style:italic;font-size:13px;">"${w}"</div></div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${(posWeb || posSocial || posPerson) ? `<div style="margin-top:24px;">
+      <div class="card-label" style="margin-bottom:12px;">Your Positioning Statement — Tailored by Context</div>
+      <div class="grid-3">
+        ${posWeb ? `<div class="card"><div class="card-label">Website</div><div class="card-content" style="font-size:13px;">${posWeb}</div></div>` : ''}
+        ${posSocial ? `<div class="card"><div class="card-label">Social Media</div><div class="card-content" style="font-size:13px;">${posSocial}</div></div>` : ''}
+        ${posPerson ? `<div class="card"><div class="card-label">In Person</div><div class="card-content" style="font-size:13px;">${posPerson}</div></div>` : ''}
+      </div>
+    </div>` : ''}
   </div>
 </div>
 
-<h2>Part 7: Headlines</h2>
-<div class="section">
-  ${b.part7.heroHeadlineOptions.map((h, i) => `<p>${i + 1}. ${h}</p>`).join('')}
+<!-- PAGE 7B: YOUR STORY + OUTREACH -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Story and Outreach</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Your Origin</span>
+    <h2 class="section-title">Your Story<br>in <em>3 Sentences</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro">Use this wherever you need a condensed origin story: bios, email signatures, podcast intros, speaker pages, or the first paragraph of your about page.</p>
+
+    <div class="pull-quote" style="background:var(--primary);border-left:4px solid var(--secondary);padding:28px 32px;margin-bottom:24px;">
+      <p style="color:#fff;font-size:17px;line-height:1.7;">
+        <strong style="color:var(--accent);">The Problem I Lived:</strong> ${avatarBlock || 'I was exactly where my clients are now — stuck, frustrated, and surrounded by advice that did not work.'}
+        <br><br><strong style="color:var(--accent);">The Breakthrough:</strong> ${mechanism || 'I discovered a different approach — one that actually worked — and I built my career around it.'}
+        <br><br><strong style="color:var(--accent);">The Mission:</strong> ${coreBrandPromise || nicheStatement || 'Now I help others do the same.'}
+      </p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-label">Short Bio (Copy and Paste Ready)</div>
+      <div class="card-content" style="font-size:14px;font-style:italic;">${brandName} helps ${(whoServe || 'people who are ready for change').toLowerCase()} ${avatarWant ? avatarWant.charAt(0).toLowerCase() + avatarWant.slice(1) : 'get real results'} through ${mechanism || 'a proven method'}.${tagline ? ' "' + tagline + '"' : ''}</div>
+    </div>
+
+    <span class="section-number" style="margin-top:28px;">First Contact</span>
+    <h2 class="section-title" style="font-size:28px;">Cold Outreach<br><em>Template</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro" style="font-size:14px;">Send this to warm contacts, past colleagues, or people who already know your name. Personalize the first line. Keep it short.</p>
+
+    <div class="starter-block" style="background:var(--bg);border:1.5px solid rgba(0,0,0,0.1);border-radius:10px;">
+      <pre style="color:var(--text);font-size:12px;line-height:1.8;">Hey [First Name],
+
+I have been thinking about you because [specific reason — something you noticed about their work, a post they shared, or a challenge you know they are facing].
+
+I recently launched ${brandName} — I help ${whoServe || '[your people]'} ${avatarWant ? avatarWant.toLowerCase() : 'get real results'} without ${avatarBlock ? avatarBlock.toLowerCase().substring(0, 80) : 'the usual frustration'}.
+
+${entryOffer.name ? 'Right now I am offering "' + entryOffer.name + '"' + (entryOffer.price ? ' at ' + entryOffer.price : '') + ' — it is a quick way to see if this is a fit.' : 'I am offering a free intro session to see if this is a fit.'}
+
+Would you be open to a 15 minute conversation? No pitch, just want to hear what you are working on.
+
+${p1.brandNames?.[0] || 'Your Name'}</pre>
+    </div>
+
+    ${credGaps.length ? `<div class="card" style="margin-top:20px;border-left:3px solid var(--accent);">
+      <div class="card-label">Credibility Gaps to Address</div>
+      <div class="card-content" style="font-size:13px;">${credGaps.join(' · ')}</div>
+    </div>` : ''}
+  </div>
 </div>
 
-<h2>Take This to Claude.ai</h2>
-<p style="font-family:sans-serif;font-size:14px;color:#666">Use the prompt below to continue building on your brand in any Claude conversation. All your context is already included.</p>
+<!-- PAGE 8: WEBSITE BLUEPRINT -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Website Blueprint</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part Seven</span>
+    <h2 class="section-title">Your Website,<br><em>Section by Section</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro" style="margin-bottom:20px;">This is not a template. This is a content brief — the story your site tells, the emotional job each section does, and exactly what belongs there. Hand this to any designer or developer and they can build something that actually converts.</p>
 
-<div class="starter-prompt">I have completed a deep work brand strategy session. Here is my complete brand blueprint:
+    ${siteSections.slice(0,5).map(s => `
+    <div class="site-section-card">
+      <div class="site-section-num">Section ${s.emoji}</div>
+      <div class="site-section-name">${s.name}</div>
+      <div class="site-section-grid">
+        <div class="site-section-field"><span class="site-section-field-label">Emotional Job</span>${s.purpose}</div>
+        <div class="site-section-field"><span class="site-section-field-label">Headline Direction</span>${s.headline}</div>
+        <div class="site-section-field"><span class="site-section-field-label">CTA</span>${s.cta}</div>
+      </div>
+    </div>`).join('')}
+  </div>
+</div>
 
-${JSON.stringify(b, null, 2)}
+<!-- PAGE 9: WEBSITE BLUEPRINT CONTINUED -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Website Blueprint (continued)</div>
+  </div>
+  <div class="inner-page" style="padding-top:0.5in;">
+    ${siteSections.slice(5).map(s => `
+    <div class="site-section-card">
+      <div class="site-section-num">Section ${s.emoji}</div>
+      <div class="site-section-name">${s.name}</div>
+      <div class="site-section-grid">
+        <div class="site-section-field"><span class="site-section-field-label">Emotional Job</span>${s.purpose}</div>
+        <div class="site-section-field"><span class="site-section-field-label">Headline Direction</span>${s.headline}</div>
+        <div class="site-section-field"><span class="site-section-field-label">CTA</span>${s.cta}</div>
+      </div>
+    </div>`).join('')}
 
-I want to continue building on this brand. Please act as my brand strategist and help me with whatever I ask next. You have full context on my positioning, offers, ideal client, and visual direction.</div>
+    <div class="card" style="margin-top:20px;background:var(--primary);">
+      <div class="card-label" style="color:rgba(255,255,255,0.5);">The One Rule for Your Site</div>
+      <div class="card-content" style="color:#fff;font-style:italic;font-family:var(--font-display);font-size:16px;line-height:1.7;">Every section should make your ideal client feel more seen than the last one. If a section does not do emotional work — cut it.</div>
+    </div>
+  </div>
+</div>
 
+<!-- PAGE 10: 90-DAY PLAN -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">90-Day Launch Plan</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Part Eight</span>
+    <h2 class="section-title">Your First<br><em>90 Days</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro">The goal is not to build the perfect brand. The goal is to get your first 3 paying clients inside 90 days and use those results to sharpen everything else.</p>
+
+    ${mktOpportunities.length ? `<div class="card" style="margin-bottom:20px;border-left:3px solid var(--accent);">
+      <div class="card-label">Marketing Opportunities Identified</div>
+      <div class="card-content" style="font-size:13px;">${mktOpportunities.join(' · ')}</div>
+    </div>` : ''}
+
+    ${plan90.map(m => `
+    <div class="plan-month">
+      <div class="plan-month-header">
+        <div class="plan-month-label">${m.month}</div>
+        <div class="plan-month-title">${m.title}</div>
+      </div>
+      ${m.items.map(item => `<div class="plan-item">${item}</div>`).join('')}
+    </div>`).join('')}
+  </div>
+</div>
+
+<!-- PAGE 11: CONTINUE IN CLAUDE -->
+<div class="page">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Continue Your Brand Work</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Take It Further</span>
+    <h2 class="section-title">Continue Building<br>in <em>Claude.ai</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro">Your brand blueprint is a living document — not a one-time exercise. Copy the prompt below into any Claude.ai conversation to pick up exactly where you left off, with all your brand context already loaded.</p>
+
+    <div class="starter-block">
+      <pre>I have completed a Deep Work brand strategy session. Here is my complete brand blueprint:
+
+Brand: ${brandName}
+Tagline: ${tagline}
+Niche: ${nicheStatement}
+Core Promise: ${p1.coreBrandPromise || ''}
+Unique Mechanism: ${mechanism}
+Ideal Client: ${avatarName}${avatarAge ? `, ${avatarAge}` : ''}
+Their Pain: ${p2.whatIsStoppingThem || ''}
+Entry Offer: ${entryOffer.name || ''} at ${entryOffer.price || ''}
+Core Offer: ${coreOffer.name || ''} at ${coreOffer.price || ''}
+Premium Offer: ${premiumOffer.name || ''} at ${premiumOffer.price || ''}
+Visual: ${aesthetic.substring(0, 120)}
+
+Full Blueprint JSON: ${JSON.stringify(b).substring(0, 800)}...
+
+I want to continue building on this brand. Please act as my senior brand strategist and help me with: [your question here]
+
+Some starting points you could ask about:
+- "Write my LinkedIn bio using my brand voice"
+- "Create my first 5 pieces of content for LinkedIn"
+- "Write the copy for my hero section"
+- "Help me craft my first outreach message to warm leads"
+- "Build me a 30-day content calendar"</pre>
+    </div>
+
+    <div class="card" style="margin-top:20px;border-left:3px solid var(--secondary);">
+      <div class="card-label">What to Work On Next</div>
+      <div class="card-content" style="font-size:14px;">
+        Your brand guide is ready. Your site blueprint is ready. Your 90-day plan is ready. The only thing left is execution. Start with the one thing that will get you in front of your ideal client the fastest — and do that one thing before you build anything else.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page cover" style="background-color:${secondary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+<div class="cover-body" style="text-align:center;align-items:center">
+<span class="cover-label" style="color:rgba(255,255,255,.6)">Your Next Step</span>
+<div class="cover-name" style="font-size:44px">Ready to Bring<br>This Brand to Life?</div>
+<div style="max-width:5in;color:rgba(255,255,255,.85);font-size:16px;line-height:1.8;font-family:var(--font-body);margin:0 auto">You have what most entrepreneurs spend months trying to figure out. Your brand strategy, messaging, visual identity, and website blueprint are all done. The only question is what you do next.</div>
+<div style="margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+  <a href="https://siteinsixty.com" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:16px;padding:18px 42px;border-radius:6px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2);">Build My Website with Site In Sixty</a>
+  <div style="color:rgba(255,255,255,.6);font-size:13px;max-width:4in;text-align:center;line-height:1.6;">We already know your brand. We built the blueprint. Now let us turn it into a live site. Most sites launch same day.</div>
+</div>
+<div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:center;gap:40px;color:rgba(255,255,255,.5);font-size:12px;">
+  <span>siteinsixty.com</span>
+  <span>Powered by Align Growth LLC</span>
+</div>
+</div></div>
+
+<button class="pdf-btn no-print" style="position:fixed;bottom:32px;right:32px;background:var(--primary);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:600;padding:14px 28px;border-radius:8px;border:none;cursor:pointer;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:1000" onclick="this.style.display='none';window.print();setTimeout(()=>{this.style.display=''},1000)">Save as PDF ↓</button>
 </body>
 </html>`;
 }
+
 
 
 // ════════════════════════════════════════════════════════
@@ -1649,12 +2709,11 @@ async function handleBlueprintPDF(request, env) {
   if (!raw) return json({ error: 'Session not found' }, 404);
   const session = JSON.parse(raw);
 
-  const exportHtml = buildExportHTML(session.blueprint, session);
+  const exportHtml = buildBrandGuideHTML(session.blueprint, session);
 
   return new Response(exportHtml, {
     headers: {
-      'Content-Type': 'text/html',
-      'Content-Disposition': 'attachment; filename="brand-blueprint.html"',
+      'Content-Type': 'text/html;charset=UTF-8',
       ...CORS
     }
   });
@@ -2861,40 +3920,68 @@ async function handleSystemHealthCheck(request, env) {
 }
 
 // ════════════════════════════════════════════════════════
-// ADMIN: MANUAL TEST TRIGGER
+// ADMIN: TOKEN USAGE & COST TRACKING
 // ════════════════════════════════════════════════════════
 
-async function handleAdminTestTrigger(request, env) {
+async function handleAdminUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin) return json({ error: 'Forbidden' }, 403);
+  const url = new URL(request.url);
+  const days = parseInt(url.searchParams.get('days') || '30');
+  const since = new Date(Date.now() - days * 86400000).toISOString();
 
-  const { event_type, email, name, phone, phase } = await request.json();
+  // All time totals
+  const allTime = await env.DB.prepare(`SELECT COUNT(*) as calls, SUM(input_tokens) as input, SUM(output_tokens) as output, SUM(cache_read_tokens) as cache_read, SUM(cache_write_tokens) as cache_write, SUM(cost_cents) as cost_cents, COUNT(DISTINCT session_id) as sessions, COUNT(DISTINCT user_id) as users FROM token_usage`).first();
 
-  if (!email || !event_type) {
-    return json({ error: 'email and event_type are required' }, 400);
-  }
+  // This month
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const monthly = await env.DB.prepare(`SELECT COUNT(*) as calls, SUM(input_tokens) as input, SUM(output_tokens) as output, SUM(cost_cents) as cost_cents, COUNT(DISTINCT session_id) as sessions, COUNT(DISTINCT user_id) as users FROM token_usage WHERE created_at >= ?`).bind(monthStart.toISOString()).first();
 
-  const validEvents = ['interview_started', 'interview_completed', 'interview_abandoned', 'call_booked'];
-  if (!validEvents.includes(event_type)) {
-    return json({ error: `event_type must be one of: ${validEvents.join(', ')}` }, 400);
-  }
+  // Per model breakdown
+  const byModel = await env.DB.prepare(`SELECT model, COUNT(*) as calls, SUM(input_tokens) as input, SUM(output_tokens) as output, SUM(cost_cents) as cost_cents FROM token_usage WHERE created_at >= ? GROUP BY model`).bind(since).all();
 
-  const ok = await fireEventToDripWorker(env, email, event_type, {
-    name: name || '',
-    phone: phone || '',
-    phase: phase || null,
-    test: true,
-  });
+  // Daily costs (last N days)
+  const daily = await env.DB.prepare(`SELECT DATE(created_at) as day, SUM(cost_cents) as cost_cents, COUNT(*) as calls, SUM(input_tokens+output_tokens) as total_tokens FROM token_usage WHERE created_at >= ? GROUP BY DATE(created_at) ORDER BY day DESC`).bind(since).all();
 
-  await logEvent(env, null, 'admin_test_trigger', { event_type, email, ok });
+  // Top users by cost
+  const topUsers = await env.DB.prepare(`SELECT t.user_id, u.email, u.name, COUNT(*) as calls, SUM(t.input_tokens) as input, SUM(t.output_tokens) as output, SUM(t.cost_cents) as cost_cents, COUNT(DISTINCT t.session_id) as sessions, MAX(t.created_at) as last_active FROM token_usage t LEFT JOIN users u ON t.user_id = u.id WHERE t.user_id IS NOT NULL GROUP BY t.user_id ORDER BY cost_cents DESC LIMIT 25`).all();
+
+  // Per user average
+  const avgPerUser = allTime.users > 0 ? { avgCostCents: Math.round((allTime.cost_cents || 0) / allTime.users * 100) / 100, avgCalls: Math.round((allTime.calls || 0) / allTime.users), avgTokens: Math.round(((allTime.input||0) + (allTime.output||0)) / allTime.users) } : { avgCostCents: 0, avgCalls: 0, avgTokens: 0 };
 
   return json({
-    ok,
-    event_type,
-    email,
-    message: ok
-      ? `Event "${event_type}" fired to drip worker for ${email}`
-      : `Drip worker call failed — check logs`,
+    allTime: { calls: allTime.calls, inputTokens: allTime.input, outputTokens: allTime.output, costCents: Math.round((allTime.cost_cents||0)*100)/100, costDollars: '$' + ((allTime.cost_cents||0)/100).toFixed(2), sessions: allTime.sessions, users: allTime.users },
+    thisMonth: { calls: monthly.calls, costCents: Math.round((monthly.cost_cents||0)*100)/100, costDollars: '$' + ((monthly.cost_cents||0)/100).toFixed(2), sessions: monthly.sessions, users: monthly.users },
+    avgPerUser,
+    byModel: byModel.results,
+    daily: daily.results,
+    topUsers: topUsers.results
   });
 }
 
+async function handleAdminUserUsage(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: 'Forbidden' }, 403);
+  const url = new URL(request.url);
+  const userId = url.searchParams.get('userId');
+  const sessionId = url.searchParams.get('sessionId');
+
+  if (userId) {
+    const usage = await env.DB.prepare(`SELECT t.session_id, t.model, t.endpoint, t.input_tokens, t.output_tokens, t.cost_cents, t.phase, t.created_at FROM token_usage t WHERE t.user_id = ? ORDER BY t.created_at DESC LIMIT 200`).bind(userId).all();
+    const summary = await env.DB.prepare(`SELECT COUNT(*) as calls, SUM(input_tokens) as input, SUM(output_tokens) as output, SUM(cost_cents) as cost_cents, COUNT(DISTINCT session_id) as sessions, MIN(created_at) as first_use, MAX(created_at) as last_use FROM token_usage WHERE user_id = ?`).bind(userId).first();
+    const user = await env.DB.prepare(`SELECT email, name, tier, created_at FROM users WHERE id = ?`).bind(userId).first();
+    return json({ user, summary: { ...summary, costDollars: '$' + ((summary.cost_cents||0)/100).toFixed(2) }, calls: usage.results });
+  }
+
+  if (sessionId) {
+    const usage = await env.DB.prepare(`SELECT model, endpoint, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, cost_cents, phase, created_at FROM token_usage WHERE session_id = ? ORDER BY created_at ASC`).bind(sessionId).all();
+    const summary = await env.DB.prepare(`SELECT COUNT(*) as calls, SUM(input_tokens) as input, SUM(output_tokens) as output, SUM(cost_cents) as cost_cents FROM token_usage WHERE session_id = ?`).bind(sessionId).first();
+    return json({ sessionId, summary: { ...summary, costDollars: '$' + ((summary.cost_cents||0)/100).toFixed(2) }, calls: usage.results });
+  }
+
+  return json({ error: 'Provide userId or sessionId query param' }, 400);
+}
+
+// ════════════════════════════════════════════════════════
+// ADMIN: MANUAL TEST TRIGGER
+// ════════════════════════════════════�

@@ -1,3 +1,7 @@
+// ============================================================
+// DEEP WORK APP — FRONTEND HTML
+// ============================================================
+
 export const getHTML = (config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -469,15 +473,16 @@ export const getHTML = (config) => `<!DOCTYPE html>
   .session-loading {
     display: none;
     position: fixed;
-    inset: 0;
-    background: rgba(253,252,250,0.97);
-    z-index: 9999;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #FDFCFA;
+    z-index: 99999;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 32px 24px;
     text-align: center;
     animation: loadFadeIn 0.35s ease;
+    overflow: hidden;
   }
 
   .session-loading.active { display: flex; }
@@ -876,16 +881,15 @@ export const getHTML = (config) => `<!DOCTYPE html>
   .blueprint-generating {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(253,252,250,0.97);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: #FDFCFA;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    z-index: 200;
+    z-index: 99999;
     padding: 32px 24px;
     text-align: center;
+    overflow: hidden;
   }
   .blueprint-generating.active { display: flex; }
   .blueprint-gen-icon {
@@ -1715,10 +1719,12 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <h2 id="bp-name">Your Brand Blueprint</h2>
     <p>Your complete brand foundation, ready to build on.</p>
   </div>
-  <div class="blueprint-actions">
-    <button class="btn btn-gold" onclick="downloadPDF()" style="width:auto;padding:14px 24px;">⬇ Download PDF</button>
-    <button class="btn btn-outline" id="build-site-btn" onclick="proceedToSite()" style="width:auto;padding:14px 24px;display:none">🚀 Build My Website</button>
-    <button class="btn btn-outline" onclick="exportPackage()" style="width:auto;padding:14px 24px;">📦 Take It With You</button>
+  <div class="blueprint-actions" style="flex-direction:column;align-items:center;gap:16px;padding:28px 40px;">
+    <button class="btn btn-gold" id="build-site-btn" onclick="handleBuildSite()" style="width:auto;padding:18px 40px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);letter-spacing:0.02em;">Build My Website</button>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn btn-outline" onclick="downloadPDF()" style="width:auto;padding:12px 22px;font-size:14px;">Download PDF</button>
+      <button class="btn btn-outline" onclick="exportPackage()" style="width:auto;padding:12px 22px;font-size:14px;">Take It With You</button>
+    </div>
   </div>
   <div class="blueprint-body" id="blueprint-body">
     <!-- populated by JS -->
@@ -1895,6 +1901,12 @@ export const getHTML = (config) => `<!DOCTYPE html>
   <div class="blueprint-gen-title" id="blueprint-gen-title">Building Your Blueprint</div>
   <div class="blueprint-gen-msg" id="blueprint-gen-msg">Synthesizing everything you shared into something you have never seen before...</div>
   <div class="blueprint-gen-progress"><div class="blueprint-gen-progress-bar" id="blueprint-gen-bar"></div></div>
+  <div id="blueprint-gen-timer" style="font-size:12px;color:rgba(0,0,0,0.35);margin-top:16px;font-weight:500;letter-spacing:0.04em;">This typically takes 4 to 6 minutes. Grab a coffee.</div>
+  <div id="blueprint-gen-retry" style="display:none;margin-top:24px;">
+    <p style="color:rgba(0,0,0,0.5);font-size:14px;margin-bottom:12px;">This is taking longer than expected. Your conversation is saved.</p>
+    <button onclick="retryBlueprint()" style="background:var(--gold,#C4703F);color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>
+    <button onclick="dismissBlueprintOverlay()" style="background:transparent;border:1.5px solid rgba(0,0,0,0.15);padding:14px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-left:8px;color:rgba(0,0,0,0.6);">Go Back to Chat</button>
+  </div>
 </div>
 
 <!-- ══ TOAST ══ -->
@@ -2518,9 +2530,6 @@ async function resumeSession() {
       hideLoadingOverlay();
       renderBlueprint(data.blueprint);
       showScreen('blueprint-screen');
-      if (STATE.tier === 'site') {
-        document.getElementById('build-site-btn').style.display = 'inline-flex';
-      }
       return;
     }
 
@@ -2700,13 +2709,20 @@ async function sendMessage() {
   showTyping();
 
   try {
+    const controller = new AbortController();
+    const fetchTimeout = setTimeout(() => controller.abort(), 120000); // 2 min client timeout
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId, message: text })
+      body: JSON.stringify({ sessionId: STATE.sessionId, message: text }),
+      signal: controller.signal
     });
+    clearTimeout(fetchTimeout);
 
-    if (!res.ok) throw new Error('API error');
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      throw new Error('API error ' + res.status + ': ' + errBody.substring(0, 200));
+    }
 
     removeTyping();
     const aiMsg = appendMessage('ai', '');
@@ -2715,10 +2731,21 @@ async function sendMessage() {
     const decoder = new TextDecoder();
     let fullText = '';
     let buffer = '';
+    let lastChunkTime = Date.now();
+    let streamError = null;
+
+    // Stall detector: if no data for 60s during streaming, abort
+    const stallCheck = setInterval(() => {
+      if (Date.now() - lastChunkTime > 60000) {
+        clearInterval(stallCheck);
+        reader.cancel();
+      }
+    }, 5000);
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      lastChunkTime = Date.now();
       buffer += decoder.decode(value, { stream: true });
 
       const lines = buffer.split('\\n');
@@ -2732,13 +2759,14 @@ async function sendMessage() {
             const ev = JSON.parse(raw);
             if (ev.type === 'delta') {
               fullText += ev.content;
-              // Strip METADATA line and blueprint JSON block before displaying
               const displayText = fullText
                 .replace(/METADATA:\\{.*\\}$/m, '')
                 .replace(/\u0060\u0060\u0060json[\s\S]*?\u0060\u0060\u0060/g, '')
                 .trim();
               updateBubble(aiMsg, displayText);
               scrollToBottom();
+            } else if (ev.type === 'error') {
+              streamError = ev.message || 'Something went wrong';
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
               if (ev.phase === 8 && !STATE.blueprintOverlayShown) {
@@ -2754,9 +2782,26 @@ async function sendMessage() {
         }
       }
     }
+    clearInterval(stallCheck);
+
+    // If the server sent an error event and no content was generated, show it
+    if (streamError && !fullText.trim()) {
+      updateBubble(aiMsg, streamError + ' Please try sending your message again.');
+    } else if (!fullText.trim()) {
+      updateBubble(aiMsg, 'No response received. Please try again.');
+    }
   } catch (e) {
     removeTyping();
-    appendMessage('ai', 'Something went wrong. Please try again.');
+    const isTimeout = e.name === 'AbortError';
+    const isStall = e.message && e.message.includes('cancel');
+    if (STATE.blueprintOverlayShown) {
+      hideBlueprintGenerating();
+    }
+    if (isTimeout || isStall) {
+      appendMessage('ai', 'The response took too long. This can happen with complex questions. Please try sending your message again — your conversation is saved.');
+    } else {
+      appendMessage('ai', 'Something went wrong (' + (e.message || 'unknown error').substring(0, 100) + '). Please try again.');
+    }
   } finally {
     STATE.isStreaming = false;
     document.getElementById('send-btn').disabled = false;
@@ -2811,17 +2856,31 @@ const THINKING_MESSAGES = {
     "What you have shared so far is really strong...",
     "One more second. This one is worth the wait...",
   ],
-  blueprint: [
-    "Synthesizing 7 phases of your story into one blueprint...",
+  blueprint_early: [
+    "Reading back through everything you shared...",
     "This is the part where everything comes together...",
+    "Reviewing your story, your people, and your positioning...",
+    "The AI is re-reading your entire conversation from the start...",
+    "Every answer you gave is being analyzed for patterns...",
+    "Identifying the through-line in your brand story...",
+  ],
+  blueprint_mid: [
     "Building your brand foundation, offer suite, and positioning...",
     "Turning your conversation into a comprehensive strategy document...",
+    "Designing your complete brand identity and offer structure...",
     "Creating something you have genuinely never seen before...",
     "Packaging your genius into a format that actually works...",
+    "Crafting your positioning statements and key messaging...",
+    "Structuring your offer ladder: entry, core, and premium...",
+    "Writing headlines that will stop your ideal client mid scroll...",
+  ],
+  blueprint_late: [
     "Every insight you shared is being woven into this...",
-    "Designing your complete brand identity and offer structure...",
-    "Almost there. The synthesis is the most important part...",
+    "Polishing the final details of your blueprint...",
+    "Running quality checks on your brand strategy...",
+    "Making sure nothing you said was left on the table...",
     "Your blueprint is going to be worth every minute you invested...",
+    "Finalizing your 7 part brand strategy document...",
   ]
 };
 
@@ -2896,45 +2955,106 @@ function showBlueprintGenerating() {
   const msgEl = document.getElementById('blueprint-gen-msg');
   const bar = document.getElementById('blueprint-gen-bar');
   const title = document.getElementById('blueprint-gen-title');
+  const timerEl = document.getElementById('blueprint-gen-timer');
 
   overlay.classList.add('active');
+  const startTime = Date.now();
 
-  const msgs = [...THINKING_MESSAGES.blueprint].sort(() => Math.random() - 0.5);
-  let idx = 0;
-  msgEl.textContent = msgs[0];
+  // 3 phases of messages mapped to the actual timeline
+  const earlyMsgs = [...THINKING_MESSAGES.blueprint_early].sort(() => Math.random() - 0.5);
+  const midMsgs = [...THINKING_MESSAGES.blueprint_mid].sort(() => Math.random() - 0.5);
+  const lateMsgs = [...THINKING_MESSAGES.blueprint_late].sort(() => Math.random() - 0.5);
+  let msgIdx = 0;
+  let currentPool = earlyMsgs;
+  msgEl.textContent = earlyMsgs[0];
 
-  // Animate progress slowly
-  let progress = 5;
+  // Progress: paced for ~6 min total
+  // 0-2 min: 0% to 30% (reading/analyzing)
+  // 2-4 min: 30% to 65% (building)
+  // 4-6 min: 65% to 90% (polishing)
+  // 6+ min: 90% to 95% (slow crawl)
   const progressInterval = setInterval(() => {
-    progress = Math.min(progress + Math.random() * 4 + 1, 92);
+    const elapsed = (Date.now() - startTime) / 1000; // seconds
+    let progress;
+    if (elapsed < 120) {
+      progress = (elapsed / 120) * 30;
+      if (currentPool !== earlyMsgs) { currentPool = earlyMsgs; msgIdx = 0; }
+      title.textContent = 'Reading Your Conversation';
+    } else if (elapsed < 240) {
+      progress = 30 + ((elapsed - 120) / 120) * 35;
+      if (currentPool !== midMsgs) { currentPool = midMsgs; msgIdx = 0; }
+      title.textContent = 'Crafting Your Strategy';
+    } else if (elapsed < 360) {
+      progress = 65 + ((elapsed - 240) / 120) * 25;
+      if (currentPool !== lateMsgs) { currentPool = lateMsgs; msgIdx = 0; }
+      title.textContent = 'Polishing the Details';
+    } else {
+      progress = Math.min(90 + (elapsed - 360) / 60, 97);
+      title.textContent = 'Finishing Up';
+    }
     bar.style.width = progress + '%';
-    // Update title at milestones
-    if (progress > 30 && progress < 35) title.textContent = 'Crafting Your Strategy';
-    if (progress > 60 && progress < 65) title.textContent = 'Polishing the Details';
-    if (progress > 85) title.textContent = 'Almost There';
-  }, 2000);
 
-  // Rotate messages
+    // Update timer
+    const mins = Math.floor(elapsed / 60);
+    const secs = Math.floor(elapsed % 60);
+    const timeStr = mins > 0 ? mins + 'm ' + secs + 's' : secs + 's';
+    if (elapsed < 30) {
+      timerEl.textContent = 'This typically takes 4 to 6 minutes. Grab a coffee.';
+    } else {
+      timerEl.textContent = timeStr + ' elapsed — your blueprint is being crafted with care';
+    }
+  }, 1000);
+
+  // Rotate messages every 6s (slower for longer wait)
   blueprintGenInterval = setInterval(() => {
-    idx = (idx + 1) % msgs.length;
+    msgIdx = (msgIdx + 1) % currentPool.length;
     msgEl.style.opacity = '0';
     setTimeout(() => {
-      msgEl.textContent = msgs[idx];
+      msgEl.textContent = currentPool[msgIdx];
       msgEl.style.opacity = '1';
     }, 400);
-  }, 4500);
+  }, 6000);
 
-  // Store progress interval to clear later
   overlay._progressInterval = progressInterval;
+
+  // Show retry button after 8 minutes
+  overlay._retryTimeout = setTimeout(() => {
+    const retryEl = document.getElementById('blueprint-gen-retry');
+    if (retryEl) retryEl.style.display = '';
+    title.textContent = 'Taking Longer Than Expected';
+    msgEl.textContent = 'Your conversation is saved. You can try again or go back.';
+  }, 480000);
+}
+
+function retryBlueprint() {
+  hideBlueprintGenerating();
+  STATE.blueprintOverlayShown = false;
+  // Re-send the last user message to trigger blueprint generation again
+  const lastUserMsg = (STATE.messages || []).filter(m => m.role === 'user').pop();
+  if (lastUserMsg) {
+    document.getElementById('msg-input').value = lastUserMsg.content || 'Please generate my blueprint now.';
+  } else {
+    document.getElementById('msg-input').value = 'Please generate my blueprint now.';
+  }
+  sendMessage();
+}
+
+function dismissBlueprintOverlay() {
+  hideBlueprintGenerating();
+  STATE.blueprintOverlayShown = false;
+  showToast('Back to chat. Your conversation is saved.');
 }
 
 function hideBlueprintGenerating() {
   const overlay = document.getElementById('blueprint-generating');
   const bar = document.getElementById('blueprint-gen-bar');
   const title = document.getElementById('blueprint-gen-title');
+  const retryEl = document.getElementById('blueprint-gen-retry');
 
   if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
+  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
+  if (retryEl) retryEl.style.display = 'none';
 
   // Finish the bar
   if (bar) bar.style.width = '100%';
@@ -3032,9 +3152,6 @@ function handleBlueprintReady(blueprint) {
   setTimeout(() => {
     renderBlueprint(blueprint);
     showScreen('blueprint-screen');
-    if (STATE.tier === 'site') {
-      document.getElementById('build-site-btn').style.display = 'inline-flex';
-    }
   }, 3000);
 }
 
@@ -3221,6 +3338,14 @@ async function addSiteUpgrade() {
   }
 }
 
+function handleBuildSite() {
+  if (STATE.tier === 'site') {
+    proceedToSite();
+  } else {
+    addSiteUpgrade();
+  }
+}
+
 // ── SITE GENERATION ───────────────────────────────────────
 async function proceedToSite() {
   showScreen('site-screen');
@@ -3392,21 +3517,31 @@ async function exportPackage() {
 }
 
 async function downloadPDF() {
-  showToast('Generating PDF...');
+  showToast('Building your brand guide...');
   try {
     const res = await fetch('/api/blueprint/pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: STATE.sessionId })
     });
-    const blob = await res.blob();
+    if (!res.ok) throw new Error('Server error');
+    const html = await res.text();
+    // Open in a new tab — the HTML auto-triggers window.print() for Save as PDF
+    const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'brand-blueprint.pdf';
-    a.click();
+    const tab = window.open(url, '_blank');
+    if (!tab) {
+      // If popup blocked, fall back to download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'brand-guide.html';
+      a.click();
+      showToast('Brand guide downloaded. Open it to print as PDF.');
+    } else {
+      showToast('Brand guide opening — use Print → Save as PDF');
+    }
   } catch (e) {
-    showToast('PDF generation failed.');
+    showToast('Brand guide generation failed. Please try again.');
   }
 }
 
@@ -3431,4 +3566,3 @@ function openUploadModal() {
 </script>
 </body>
 </html>`;
-
