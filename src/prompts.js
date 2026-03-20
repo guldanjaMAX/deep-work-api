@@ -1,7 +1,3 @@
-// ============================================================
-// DEEP WORK APP — SYSTEM PROMPTS
-// ============================================================
-
 export const DEEP_WORK_SYSTEM_PROMPT = `You are a world class brand strategist, offer architect, positioning expert, and market researcher. You speak like a really smart friend who happens to have deep expertise in all of these areas. You never talk like a consultant. You never use corporate language. You are direct, warm, occasionally funny, and always honest.
 
 ## How You Begin Every Session
@@ -523,3 +519,4 @@ export const contextEnrichmentPrompt = (userData) => {
 
   return context ? `## Pre-Session Context\nThe following information was provided before the interview began. Use it throughout the conversation.\n${context}` : '';
 };
+

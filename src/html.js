@@ -1,7 +1,3 @@
-// ============================================================
-// DEEP WORK APP — FRONTEND HTML
-// ============================================================
-
 export const getHTML = (config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1775,49 +1771,100 @@ export const getHTML = (config) => `<!DOCTYPE html>
 <!-- ══ DEPLOY SCREEN ══ -->
 <div id="deploy-screen" class="screen">
   <div class="deploy-inner">
-    <h2>Deploy to Cloudflare</h2>
-    <p>Create a free API token and your site goes live automatically. Takes about 90 seconds.</p>
+
+    <!-- Step 0: No account yet? -->
+    <div id="deploy-no-account" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;gap:16px;">
+      <div style="font-size:22px">☁️</div>
+      <div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:3px">Don't have a Cloudflare account yet?</div>
+        <div style="font-size:13px;color:var(--text2)">It's free and takes 2 minutes to sign up. Your website will be hosted on their global network at no cost.</div>
+      </div>
+      <a href="https://dash.cloudflare.com/sign-up" target="_blank" class="btn btn-outline" style="white-space:nowrap;flex-shrink:0;padding:10px 18px;font-size:13px;">Create Free Account →</a>
+    </div>
+
+    <h2>Connect Cloudflare &amp; Go Live</h2>
+    <p style="color:var(--text2);margin-bottom:28px">Your site is built and ready. The last step is giving it a home on the internet. Follow these steps exactly — it takes about 3 minutes.</p>
 
     <div class="token-steps">
       <div class="token-step">
         <div class="token-step-num">1</div>
         <div class="token-step-text">
-          Go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">dash.cloudflare.com/profile/api-tokens</a> and click <strong>Create Token</strong>.
+          <strong>Open the API Tokens page</strong><br>
+          <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--gold)">Click here to open Cloudflare API Tokens ↗</a>
+          <span style="color:var(--text2);font-size:13px;display:block;margin-top:4px">It will open in a new tab. Sign in if prompted.</span>
         </div>
       </div>
       <div class="token-step">
         <div class="token-step-num">2</div>
         <div class="token-step-text">
-          Choose the <strong>Edit Cloudflare Workers</strong> template. Under Permissions, make sure <strong>Cloudflare Pages: Edit</strong> is included.
+          <strong>Click "Create Token"</strong><br>
+          <span style="color:var(--text2);font-size:13px">You'll see a blue button at the top right of that page.</span>
         </div>
       </div>
       <div class="token-step">
         <div class="token-step-num">3</div>
         <div class="token-step-text">
-          Click Continue to Summary, then Create Token. Copy it and paste it below.
+          <strong>Choose "Edit Cloudflare Workers" template</strong><br>
+          <span style="color:var(--text2);font-size:13px">Scroll down to the template list. Click "Use template" next to <em>Edit Cloudflare Workers</em>.</span>
+        </div>
+      </div>
+      <div class="token-step">
+        <div class="token-step-num">4</div>
+        <div class="token-step-text">
+          <strong>Add one more permission: Cloudflare Pages</strong><br>
+          <span style="color:var(--text2);font-size:13px">On the permissions screen, click <strong>+ Add more</strong> and add: <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px">Cloudflare Pages — Edit</code>. This lets us publish your site.</span>
+        </div>
+      </div>
+      <div class="token-step">
+        <div class="token-step-num">5</div>
+        <div class="token-step-text">
+          <strong>Click "Continue to summary" → "Create Token"</strong><br>
+          <span style="color:var(--text2);font-size:13px">Cloudflare will show you your token <strong>once</strong>. Copy it immediately and paste it below.</span>
         </div>
       </div>
     </div>
 
-    <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:500;">Your Cloudflare API Token</label>
-    <div class="token-input-row">
-      <input type="text" id="cf-token" placeholder="Paste your token here..." style="margin:0;font-family:monospace;font-size:13px;">
-      <button class="btn btn-gold" onclick="deployToCloudflare()" style="width:auto;padding:14px 20px;flex-shrink:0;">Deploy →</button>
-    </div>
-
-    <div id="deploy-status" style="margin-top:20px;display:none;">
-      <div class="progress-step">
-        <div class="step-icon active" id="deploy-step-icon">⚡</div>
-        <div class="step-text"><strong id="deploy-step-text">Creating your Pages project...</strong></div>
+    <div style="background:var(--bg3);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;">
+      <div style="font-size:18px;margin-top:1px">🔒</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6">
+        Your token is used once to deploy your site and is never stored. Your Cloudflare account stays under your full control. You can revoke this token anytime from your Cloudflare dashboard.
       </div>
     </div>
 
-    <div id="deploy-success" style="margin-top:24px;display:none;text-align:center;">
-      <div style="font-size:48px;margin-bottom:16px;">🎉</div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:28px;margin-bottom:8px;">Your site is live.</h3>
-      <p style="color:var(--text2);margin-bottom:20px;">Your website has been deployed to Cloudflare Pages.</p>
-      <a id="live-url" href="#" target="_blank" class="btn btn-gold" style="width:auto;padding:14px 28px;text-decoration:none;">View Live Site →</a>
+    <label style="display:block;font-size:13px;color:var(--text2);margin-bottom:8px;font-weight:500;">Paste Your Cloudflare API Token</label>
+    <div class="token-input-row">
+      <input type="password" id="cf-token" placeholder="Paste your token here..." style="margin:0;font-family:monospace;font-size:13px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="btn btn-gold" onclick="deployToCloudflare()" id="deploy-btn-go" style="width:auto;padding:14px 20px;flex-shrink:0;">Deploy My Site →</button>
     </div>
+    <div id="token-error" style="display:none;color:#e05252;font-size:13px;margin-top:8px;"></div>
+
+    <div id="deploy-status" style="margin-top:24px;display:none;">
+      <div style="margin-bottom:12px;font-size:14px;font-weight:600">Deploying your site...</div>
+      <div class="progress-step" id="ds-step1">
+        <div class="step-icon" id="deploy-step-icon-1">⏳</div>
+        <div class="step-text" id="deploy-step-text-1">Verifying your Cloudflare token</div>
+      </div>
+      <div class="progress-step" id="ds-step2" style="opacity:0.4">
+        <div class="step-icon" id="deploy-step-icon-2">⏳</div>
+        <div class="step-text" id="deploy-step-text-2">Creating your Pages project</div>
+      </div>
+      <div class="progress-step" id="ds-step3" style="opacity:0.4">
+        <div class="step-icon" id="deploy-step-icon-3">⏳</div>
+        <div class="step-text" id="deploy-step-text-3">Publishing your website files</div>
+      </div>
+    </div>
+
+    <div id="deploy-success" style="margin-top:32px;display:none;text-align:center;">
+      <div style="font-size:52px;margin-bottom:16px;">🎉</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:30px;margin-bottom:8px;">Your site is live.</h3>
+      <p style="color:var(--text2);margin-bottom:8px;font-size:15px">Hosted on Cloudflare's global network. Free forever.</p>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:24px">You can connect a custom domain from your Cloudflare Pages dashboard anytime.</p>
+      <a id="live-url" href="#" target="_blank" class="btn btn-gold" style="width:auto;padding:16px 32px;text-decoration:none;font-size:15px;">View Your Live Site →</a>
+      <div style="margin-top:20px">
+        <a id="pages-dashboard-url" href="#" target="_blank" style="font-size:13px;color:var(--text2);text-decoration:underline">Open Cloudflare Pages Dashboard to connect a custom domain</a>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -3064,10 +3111,68 @@ function renderBlueprint(bp) {
         </div>
       </div>
     \`)}
+    \${b.part5 ? renderPart(5, b.part5.title, \`
+      <div class="bp-item">
+        <div class="bp-item-label">Hero Headlines</div>
+        <div class="bp-item-value">\${b.part5.heroHeadlines.map((h,i) => \`\${i+1}. \${h}\`).join('<br><br>')}</div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Hero Subheadline</div>
+        <div class="bp-item-value">\${b.part5.heroSubheadline}</div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Primary CTA</div>
+        <div class="bp-item-value" style="font-weight:600;color:var(--gold)">\${b.part5.heroCTA}</div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Page Sections (in order)</div>
+        <div class="bp-item-value">
+          \${b.part5.sections.map((s,i) => \`
+            <div style="margin-bottom:14px">
+              <strong>\${i+1}. \${s.name}</strong><br>
+              <span style="color:var(--text2);font-size:13px">\${s.purpose}</span><br>
+              <span style="font-size:13px">\${s.content || ''}</span>
+            </div>
+          \`).join('')}
+        </div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Testimonial Framing</div>
+        <div class="bp-item-value">\${b.part5.testimonialFraming}</div>
+      </div>
+    \`) : ''}
+    \${b.part6 ? renderPart(6, b.part6.title, \`
+      <div class="bp-item">
+        <div class="bp-item-label">Credibility Gaps to Close</div>
+        <div class="bp-item-value">
+          \${b.part6.credibilityGaps.map((g,i) => \`<div style="margin-bottom:12px"><strong>\${i+1}.</strong> \${g}</div>\`).join('')}
+        </div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Marketing Opportunities</div>
+        <div class="bp-item-value">
+          \${b.part6.marketingOpportunities.map((m,i) => \`<div style="margin-bottom:12px"><strong>\${i+1}.</strong> \${m}</div>\`).join('')}
+        </div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Your First Move</div>
+        <div class="bp-item-value" style="font-style:italic;font-size:15px;line-height:1.7">\${b.part6.firstMove}</div>
+      </div>
+    \`) : ''}
     \${renderPart(7, b.part7.title, \`
       <div class="bp-item">
         <div class="bp-item-label">Top 10 Headlines</div>
         <div class="bp-item-value">\${b.part7.heroHeadlineOptions.map((h,i) => \`\${i+1}. \${h}\`).join('<br><br>')}</div>
+      </div>
+      <div class="bp-item">
+        <div class="bp-item-label">Positioning Statements</div>
+        <div class="bp-item-value">
+          \${b.part7.positioningStatements ? \`
+            <strong>Website:</strong> \${b.part7.positioningStatements.website || ''}<br><br>
+            <strong>Social / Bio:</strong> \${b.part7.positioningStatements.social || ''}<br><br>
+            <strong>In Person:</strong> \${b.part7.positioningStatements.inPerson || ''}
+          \` : ''}
+        </div>
       </div>
     \`)}
   \`;
@@ -3171,12 +3276,27 @@ function setStep(num, state) {
 // ── CLOUDFLARE DEPLOY ─────────────────────────────────────
 async function deployToCloudflare() {
   const token = document.getElementById('cf-token').value.trim();
-  if (!token) { showToast('Please enter your API token.'); return; }
+  const errEl = document.getElementById('token-error');
+  errEl.style.display = 'none';
 
+  if (!token) {
+    errEl.textContent = 'Please paste your Cloudflare API token before clicking Deploy.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (token.length < 20) {
+    errEl.textContent = 'That doesn\u2019t look like a valid token. Cloudflare tokens are usually 40+ characters.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  document.getElementById('deploy-btn-go').disabled = true;
+  document.getElementById('deploy-btn-go').textContent = 'Deploying...';
   document.getElementById('deploy-status').style.display = 'block';
+  setDeployStep(1, 'active');
 
   try {
-    updateDeployStep('Creating your Pages project...');
+    setDeployStep(2, 'active');
     const res = await fetch('/api/deploy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3185,23 +3305,49 @@ async function deployToCloudflare() {
     const data = await res.json();
 
     if (data.url) {
-      updateDeployStep('Deployment complete!');
-      document.getElementById('deploy-step-icon').className = 'step-icon done';
-      document.getElementById('deploy-step-icon').textContent = '✓';
+      setDeployStep(1, 'done'); setDeployStep(2, 'done'); setDeployStep(3, 'done');
       document.getElementById('deploy-status').style.display = 'none';
       document.getElementById('deploy-success').style.display = 'block';
       document.getElementById('live-url').href = data.url;
       document.getElementById('live-url').textContent = data.url;
+      // Link to pages dashboard
+      const accountIdMatch = data.url.match(/pages\.dev/);
+      document.getElementById('pages-dashboard-url').href = 'https://dash.cloudflare.com/pages';
     } else {
-      showToast(data.error || 'Deployment failed. Check your token and try again.');
+      // Specific error guidance
+      document.getElementById('deploy-btn-go').disabled = false;
+      document.getElementById('deploy-btn-go').textContent = 'Try Again →';
+      document.getElementById('deploy-status').style.display = 'none';
+      let errMsg = data.error || 'Deployment failed.';
+      if (errMsg.toLowerCase().includes('auth') || errMsg.toLowerCase().includes('token') || errMsg.toLowerCase().includes('10000')) {
+        errMsg = 'Token was rejected by Cloudflare. Double-check that you copied the full token and that it includes Cloudflare Pages: Edit permission.';
+      } else if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('8000000')) {
+        errMsg = 'A site with that name already exists in your Cloudflare account. Your site was still deployed \u2014 check your Cloudflare Pages dashboard.';
+      }
+      errEl.textContent = errMsg;
+      errEl.style.display = 'block';
     }
   } catch (e) {
-    showToast('Deployment error. Please try again.');
+    document.getElementById('deploy-btn-go').disabled = false;
+    document.getElementById('deploy-btn-go').textContent = 'Try Again →';
+    document.getElementById('deploy-status').style.display = 'none';
+    errEl.textContent = 'Network error. Please check your internet connection and try again.';
+    errEl.style.display = 'block';
   }
 }
 
-function updateDeployStep(text) {
-  document.getElementById('deploy-step-text').textContent = text;
+function setDeployStep(num, state) {
+  const icon = document.getElementById('deploy-step-icon-' + num);
+  const row = document.getElementById('ds-step' + num);
+  if (!icon || !row) return;
+  if (state === 'active') {
+    row.style.opacity = '1';
+    icon.textContent = '\u23F3';
+    icon.className = 'step-icon active';
+  } else if (state === 'done') {
+    icon.textContent = '\u2713';
+    icon.className = 'step-icon done';
+  }
 }
 
 // ── IMAGEN 4 ──────────────────────────────────────────────
@@ -3285,3 +3431,4 @@ function openUploadModal() {
 </script>
 </body>
 </html>`;
+

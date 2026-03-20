@@ -1,23 +1,3 @@
-// ============================================================
-// DEEP WORK APP — CLOUDFLARE WORKER
-// ============================================================
-// Infra IDs:
-//   KV:  DEEP_WORK_SESSIONS  (ad823265a8944b9da7a561198f7f3782)
-//   R2:  deep-work-uploads
-//   D1:  deep-work-db        (92121f3b-dcfb-4fa8-8482-b827224b611d)
-//
-// Stripe Price IDs:
-//   Blueprint:  price_1TCXL7FArNSFW9mB5DDauxQg  ($67)
-//   Call:       price_1TCXL8FArNSFW9mBBtiWVRCb  ($197)
-//   Site:       price_1TCXL9FArNSFW9mBr189gJuC  ($197)
-//
-// Required secrets (set via wrangler secret put):
-//   ANTHROPIC_API_KEY
-//   STRIPE_SECRET_KEY
-//   STRIPE_WEBHOOK_SECRET
-//   CF_ACCOUNT_ID  (bd13f1dff62d4ccbea47440e45b48ec2)
-// ============================================================
-
 import { getHTML } from './html.js';
 import { getAdminHTML } from './admin.js';
 import { getLoginHTML } from './login.js';
@@ -501,7 +481,7 @@ async function handleFulfillPayment(request, env) {
 
     const tier = resolvedTiers[0] || 'blueprint';
 
-    // Create user account (if they don't already have one)
+    // Create user account if they don't already have one
     try {
       await createUser(env, email, null, { tier, source: 'payment', paymentIntentId });
     } catch (e) {
@@ -1369,11 +1349,20 @@ async function handleGenerateSite(request, env) {
   const bodyContent = await callClaudeSiteGen(env, prompt, 3000);
 
   // Assemble the final HTML: pre-built head + Claude's body
-  const bodyMatch = bodyContent.match(/<nav[\s\S]*/i);
-  let bodyHtml = bodyMatch ? bodyMatch[0] : bodyContent;
-
-  // Strip any stray closing tags Claude may have appended
-  bodyHtml = bodyHtml.replace(/<\/html>/gi, '').replace(/<\/body>/gi, '').trim();
+  // Strip any <style> blocks Claude may have written despite instructions
+  let bodyHtml = bodyContent.replace(/<style[\s\S]*?<\/style>/gi, '');
+  // Strip stray <html>, <head>, <body> wrappers
+  bodyHtml = bodyHtml
+    .replace(/<\/html>/gi, '')
+    .replace(/<\/body>/gi, '')
+    .replace(/<html[^>]*>/gi, '')
+    .replace(/<body[^>]*>/gi, '')
+    .replace(/<\/head>/gi, '')
+    .replace(/<head[\s\S]*?>/gi, '')
+    .trim();
+  // Trim everything before the first <nav (drop any leading whitespace/doctype)
+  const navIdx = bodyHtml.search(/<nav[\s>]/i);
+  if (navIdx > 0) bodyHtml = bodyHtml.slice(navIdx);
 
   // Footer fallback — inject if Claude ran out of tokens before writing one
   if (!/<footer[\s>]/i.test(bodyHtml)) {
@@ -1819,7 +1808,7 @@ async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6000) {
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
       system: systemPrompt,
-      messages: [{ role: 'user', content: 'Write the complete website body sections now. Start with <nav> and end with </html>.' }]
+      messages: [{ role: 'user', content: 'Write the HTML body sections now. Begin your response with the nav element. Do not include any CSS, style tags, or head elements.' }]
     })
   });
   if (!res.ok) {
@@ -2908,3 +2897,4 @@ async function handleAdminTestTrigger(request, env) {
       : `Drip worker call failed — check logs`,
   });
 }
+
