@@ -172,6 +172,15 @@ window.location.replace('/');
       if (path === '/api/checkout' && request.method === 'POST') {
         return handleCheckout(request, env);
       }
+      if (path === '/api/create-payment-intent' && request.method === 'POST') {
+        return handleCreatePaymentIntent(request, env);
+      }
+      if (path === '/api/fulfill-payment' && request.method === 'POST') {
+        return handleFulfillPayment(request, env);
+      }
+      if (path === '/api/payment-status' && request.method === 'GET') {
+        return handlePaymentStatus(request, env, url);
+      }
       if (path === '/api/webhook' && request.method === 'POST') {
         return handleWebhook(request, env);
       }
@@ -406,6 +415,130 @@ async function handleCheckout(request, env) {
   await logError(env, { endpoint: '/api/checkout', method: 'POST', statusCode: 500, errorType: 'stripe_checkout', errorMessage: JSON.stringify(session.error) });
   await trackFunnelEvent(env, 'payment_failed', { tier, error: session.error?.message });
   return json({ error: 'Failed to create checkout session', detail: session.error }, 500);
+}
+
+
+// ── Payment Intent handlers (Stripe Payment Element embedded flow) ────────
+
+function getStripeKeys(request, env) {
+  const origin = request.headers.get('Origin') || request.headers.get('Referer') || '';
+  const isTest = origin.includes('dev.') || origin.includes('localhost') || origin.includes('127.0.0.1');
+  return {
+    secretKey:      isTest ? (env.STRIPE_TEST_SECRET_KEY      || env.STRIPE_SECRET_KEY)      : env.STRIPE_SECRET_KEY,
+    publishableKey: isTest ? (env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY) : env.STRIPE_PUBLISHABLE_KEY,
+    testMode:       isTest,
+  };
+}
+
+async function handleCreatePaymentIntent(request, env) {
+  try {
+    const body = await request.json();
+    const { tiers } = body;
+    if (!Array.isArray(tiers) || tiers.length === 0) {
+      return json({ error: 'Invalid tiers' }, 400);
+    }
+    // Pricing: blueprint=$67 base, site=+$130 bump, call=+$130 bump
+    const PRICES = { blueprint: 6700, site: 13000, call: 13000 };
+    const amount = tiers.reduce((sum, t) => sum + (PRICES[t] || 0), 0);
+    if (amount === 0) return json({ error: 'Invalid tiers: no known products' }, 400);
+
+    const { secretKey, publishableKey, testMode } = getStripeKeys(request, env);
+    if (!secretKey) return json({ error: 'Stripe not configured' }, 500);
+
+    const params = new URLSearchParams({
+      amount:   amount.toString(),
+      currency: 'usd',
+      'metadata[tiers]': tiers.join(','),
+      'automatic_payment_methods[enabled]': 'true',
+    });
+
+    const res = await fetch('https://api.stripe.com/v1/payment_intents', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type':  'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
+
+    const pi = await res.json();
+    if (!pi.client_secret) {
+      return json({ error: pi.error?.message || 'Failed to create payment intent' }, 500);
+    }
+
+    return json({ clientSecret: pi.client_secret, publishableKey, amount, paymentIntentId: pi.id, testMode });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+async function handleFulfillPayment(request, env) {
+  try {
+    const { paymentIntentId, email, tiers } = await request.json();
+    if (!paymentIntentId || !email) {
+      return json({ error: 'Missing paymentIntentId or email' }, 400);
+    }
+
+    const { secretKey, testMode } = getStripeKeys(request, env);
+
+    // Verify payment with Stripe
+    let verified = false;
+    let resolvedTiers = tiers || ['blueprint'];
+    try {
+      const res = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
+        headers: { 'Authorization': `Bearer ${secretKey}` },
+      });
+      const pi = await res.json();
+      verified = pi.status === 'succeeded';
+      if (pi.metadata?.tiers) resolvedTiers = pi.metadata.tiers.split(',');
+    } catch (e) {
+      verified = testMode; // Allow through in test mode if Stripe unreachable
+    }
+
+    if (!verified) {
+      return json({ error: 'Payment not verified' }, 402);
+    }
+
+    const tier = resolvedTiers[0] || 'blueprint';
+
+    // Create user account (if they don't already have one)
+    try {
+      await createUser(env, email, null, { tier, source: 'payment', paymentIntentId });
+    } catch (e) {
+      // User may already exist — not an error
+    }
+
+    // Generate a magic login token so user lands directly in their session
+    let sessionUrl = 'https://app.jamesguldan.com';
+    try {
+      const token = await generateMagicToken();
+      await storeMagicToken(env, token, email);
+      sessionUrl = `https://app.jamesguldan.com/login?token=${token}`;
+    } catch (e) {
+      // Magic token generation failed — fallback URL is fine
+    }
+
+    return json({ success: true, sessionUrl });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+
+async function handlePaymentStatus(request, env, url) {
+  const piId = url.searchParams.get('pi');
+  if (!piId) return json({ error: 'Missing pi parameter' }, 400);
+
+  const { secretKey, testMode } = getStripeKeys(request, env);
+
+  try {
+    const res = await fetch(`https://api.stripe.com/v1/payment_intents/${piId}`, {
+      headers: { 'Authorization': `Bearer ${secretKey}` },
+    });
+    const pi = await res.json();
+    return json({ status: pi.status, testMode });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
 }
 
 async function handlePaymentSuccess(request, env, url) {
@@ -1236,20 +1369,11 @@ async function handleGenerateSite(request, env) {
   const bodyContent = await callClaudeSiteGen(env, prompt, 3000);
 
   // Assemble the final HTML: pre-built head + Claude's body
-  // Strip any <style> blocks Claude may have written despite instructions
-  let bodyHtml = bodyContent.replace(/<style[\s\S]*?<\/style>/gi, '');
-  // Strip stray <html>, <head>, <body> wrappers
-  bodyHtml = bodyHtml
-    .replace(/<\/html>/gi, '')
-    .replace(/<\/body>/gi, '')
-    .replace(/<html[^>]*>/gi, '')
-    .replace(/<body[^>]*>/gi, '')
-    .replace(/<\/head>/gi, '')
-    .replace(/<head[\s\S]*?>/gi, '')
-    .trim();
-  // Trim everything before the first <nav (drop any leading whitespace/doctype)
-  const navIdx = bodyHtml.search(/<nav[\s>]/i);
-  if (navIdx > 0) bodyHtml = bodyHtml.slice(navIdx);
+  const bodyMatch = bodyContent.match(/<nav[\s\S]*/i);
+  let bodyHtml = bodyMatch ? bodyMatch[0] : bodyContent;
+
+  // Strip any stray closing tags Claude may have appended
+  bodyHtml = bodyHtml.replace(/<\/html>/gi, '').replace(/<\/body>/gi, '').trim();
 
   // Footer fallback — inject if Claude ran out of tokens before writing one
   if (!/<footer[\s>]/i.test(bodyHtml)) {
@@ -1695,7 +1819,7 @@ async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6000) {
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
       system: systemPrompt,
-      messages: [{ role: 'user', content: 'Write the HTML body sections now. Begin your response with the nav element. Do not include any CSS, style tags, or head elements.' }]
+      messages: [{ role: 'user', content: 'Write the complete website body sections now. Start with <nav> and end with </html>.' }]
     })
   });
   if (!res.ok) {
