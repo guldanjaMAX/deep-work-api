@@ -1,3 +1,10 @@
+// ============================================================
+// DEEP WORK APP — MONITORING, HEALTH CHECKS & ALERTING
+// ============================================================
+// Tracks: errors, funnel drop-offs, API usage, dependency health
+// Alerts: via Resend email to james@jamesguldan.com
+// ============================================================
+
 const ALERT_EMAIL = 'james@jamesguldan.com';
 const ALERT_COOLDOWN_MINUTES = 60; // Don't re-send same alert type within this window
 
@@ -241,7 +248,7 @@ export async function checkFunnelHealth(env) {
 
 // ════════════════════════════════════════════════════════
 // ERROR RATE ANALYSIS
-// ══════════════════════════════════════════��═════════════
+// ════════════════════════════════════════════════════════
 
 async function checkErrorRate(env) {
   try {
@@ -671,4 +678,3 @@ export const ERROR_PAGES = {
   502: { title: 'Service Unavailable', message: "One of our services is temporarily unavailable. Please try again in a few minutes." },
   503: { title: 'Temporarily Down', message: "We're doing some quick maintenance. Please check back in a few minutes." },
 };
-

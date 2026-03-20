@@ -1,3 +1,7 @@
+// ============================================================
+// DEEP WORK APP — ADMIN PANEL
+// ============================================================
+
 export const getAdminHTML = () => `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1472,4 +1476,3 @@ async function runHealthCheck() {
 </script>
 </body>
 </html>`;
-

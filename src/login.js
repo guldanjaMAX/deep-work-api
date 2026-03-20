@@ -1,3 +1,10 @@
+// ============================================================
+// DEEP WORK APP — LOGIN PAGE
+// Brand: matches jamesguldan.com/deep-work exactly
+// Colors: #FDFCFA bg, #c4703f accent, #1a1a1a text
+// Fonts: Outfit (headings), Inter (body), Playfair Display (accent)
+// ============================================================
+
 export function getLoginHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -362,11 +369,11 @@ export function getLoginHTML() {
 
   <p class="footer-note" id="footerNote">Don't have access yet? <a href="https://jamesguldan.com/deep-work" target="_blank">Learn more →</a></p>
   <div class="legal-links">
-    <a href="/legal/terms" target="_blank">Terms</a>
+    <a href="/terms" target="_blank">Terms</a>
     &nbsp;&middot;&nbsp;
-    <a href="/legal/privacy" target="_blank">Privacy</a>
+    <a href="/privacy" target="_blank">Privacy</a>
     &nbsp;&middot;&nbsp;
-    &copy; 2025 Align Growth LLC
+    &copy; 2026 Align Growth LLC
   </div>
 </div>
 
@@ -513,4 +520,3 @@ function setBtnLoading(id, loading, label) {
 </body>
 </html>`;
 }
-

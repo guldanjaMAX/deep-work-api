@@ -1,3 +1,8 @@
+// ============================================================
+// DEEP WORK APP — AUTH MODULE
+// Password hashing, JWT tokens, magic links, middleware
+// ============================================================
+
 // ── PASSWORD HASHING (Web Crypto PBKDF2) ─────────────────
 
 export async function hashPassword(password) {
@@ -201,4 +206,3 @@ function toHex(bytes) {
 function fromHex(hex) {
   return new Uint8Array(hex.match(/.{2}/g).map(b => parseInt(b, 16)));
 }
-

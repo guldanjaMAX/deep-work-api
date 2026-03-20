@@ -21,13 +21,15 @@
 import { getHTML } from './html.js';
 import { getAdminHTML } from './admin.js';
 import { getLoginHTML } from './login.js';
+import { getPrivacyPolicyHTML, getTermsOfServiceHTML } from './legal.js';
 import {
   DEEP_WORK_SYSTEM_PROMPT,
   SITE_GENERATION_PROMPT,
   SITE_CSS_FOUNDATION,
   imagePrompts,
   contextEnrichmentPrompt,
-  buildImagenPrompt
+  buildImagenPrompt,
+  STRATEGIST_DEBRIEF_PROMPT
 } from './prompts.js';
 import {
   hashPassword, verifyPassword,
@@ -82,6 +84,91 @@ async function trackTokenUsage(env, { sessionId, userId, model, endpoint, inputT
     await env.DB.prepare(`INSERT INTO token_usage (session_id, user_id, model, endpoint, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, cost_cents, phase, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,datetime('now'))`)
       .bind(sessionId||'unknown', userId||null, model, endpoint, inputTokens||0, outputTokens||0, cacheRead||0, cacheWrite||0, Math.round(cost*100)/100, phase||null).run();
   } catch(e) { /* non-blocking */ }
+}
+
+// ── STRATEGIST DEBRIEF GENERATION (Opus) ─────────────────
+async function generateStrategistDebrief(env, session, blueprint, sessionId) {
+  try {
+    // Build a condensed version of the interview for context
+    const interviewMessages = (session.messages || [])
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .map(m => {
+        const clean = m.content
+          .replace(/METADATA:\{[^\n]*\}/g, '')
+          .replace(/```json[\s\S]*?```/g, '')
+          .trim();
+        return { role: m.role, content: clean.slice(0, 800) }; // cap each message
+      })
+      .slice(-30); // last 30 messages to keep context manageable
+
+    const bpSummary = blueprint?.blueprint || {};
+    const userContext = `
+## Blueprint Summary
+Name: ${bpSummary.name || 'Unknown'}
+Brand Promise: ${bpSummary.part1?.coreBrandPromise || 'N/A'}
+Ideal Client: ${bpSummary.part2?.name || 'N/A'} — ${bpSummary.part2?.lifeSituation || ''}
+Niche: ${bpSummary.part3?.nicheStatement || 'N/A'}
+First Move: ${bpSummary.part6?.firstMove || 'N/A'}
+Recommendation: ${bpSummary.part8?.recommendation || 'self_guided'}
+${bpSummary.part8?.personalizedMessage ? 'Part8 Message: ' + bpSummary.part8.personalizedMessage : ''}
+
+## Lead Intelligence
+${blueprint?.leadIntel ? JSON.stringify(blueprint.leadIntel, null, 2) : 'Not available'}
+`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: MODEL_OPUS,
+        max_tokens: 1024,
+        system: STRATEGIST_DEBRIEF_PROMPT,
+        messages: [
+          ...interviewMessages,
+          { role: 'user', content: `The interview is complete. Here is the blueprint and lead intelligence that was generated:\n\n${userContext}\n\nNow write the strategist debrief as a personal letter to this person. Return ONLY the JSON object.` }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Debrief API error:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+
+    // Track usage
+    trackTokenUsage(env, {
+      sessionId,
+      userId: session.userId,
+      model: MODEL_OPUS,
+      endpoint: '/debrief-generation',
+      inputTokens: data.usage?.input_tokens || 0,
+      outputTokens: data.usage?.output_tokens || 0,
+      cacheRead: 0,
+      cacheWrite: 0,
+      phase: 8
+    });
+
+    // Parse JSON from response (handle possible markdown fences)
+    let debrief = null;
+    const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/) || text.match(/\{[\s\S]*"reflection"[\s\S]*\}/);
+    if (jsonMatch) {
+      debrief = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+    } else {
+      debrief = JSON.parse(text);
+    }
+
+    return debrief;
+  } catch (e) {
+    console.error('Debrief generation failed:', e.message);
+    return null;
+  }
 }
 
 // ── CORS HEADERS ─────────────────────────────────────────
@@ -197,6 +284,10 @@ window.location.replace('/');
         });
       }
 
+      // ── Legal pages ──────────────────────────────────
+      if (path === '/privacy') return new Response(getPrivacyPolicyHTML(), { headers: htmlHeaders() });
+      if (path === '/terms')   return new Response(getTermsOfServiceHTML(), { headers: htmlHeaders() });
+
       // ── Admin API routes ──────────────────────────────
       if (path === '/api/admin/stats'                  && request.method === 'GET')  return handleAdminStats(request, env);
       if (path === '/api/admin/users'                  && request.method === 'GET')  return handleAdminListUsers(request, env);
@@ -208,6 +299,7 @@ window.location.replace('/');
       if (path === '/api/admin/settings'               && request.method === 'POST') return handleAdminSaveSettings(request, env);
       if (path === '/api/admin/prompt'                 && request.method === 'GET')  return handleAdminGetPrompt(request, env);
       if (path === '/api/admin/prompt'                 && request.method === 'POST') return handleAdminSavePrompt(request, env);
+      if (path === '/api/admin/generate-debrief'       && request.method === 'POST') return handleAdminGenerateDebrief(request, env);
 
       // ── API routes ────────────────────────────────────
       if (path === '/api/create-payment-intent' && request.method === 'POST') {
@@ -797,7 +889,39 @@ async function handleUserActiveSession(request, env) {
   if (!user) return json({ error: 'Not authenticated' }, 401);
 
   try {
-    // Check D1 for active sessions belonging to this user
+    // First check for completed sessions (blueprint already generated)
+    const completedRow = await env.DB.prepare(`
+      SELECT id, tier, phase, message_count, created_at, updated_at, blueprint_generated, status
+      FROM sessions
+      WHERE user_id = ? AND blueprint_generated = 1
+      ORDER BY created_at DESC
+      LIMIT 1
+    `).bind(user.id).first();
+
+    if (completedRow) {
+      // Verify it still exists in KV
+      const kvData = await env.SESSIONS.get(completedRow.id);
+      if (kvData) {
+        const session = JSON.parse(kvData);
+        return json({
+          hasActiveSession: true,
+          blueprintComplete: true,
+          session: {
+            id: completedRow.id,
+            tier: completedRow.tier,
+            phase: session.phase || completedRow.phase,
+            messageCount: session.messages ? session.messages.length : completedRow.message_count,
+            createdAt: completedRow.created_at,
+            updatedAt: completedRow.updated_at
+          }
+        });
+      } else {
+        // KV expired, mark session as expired in D1
+        await env.DB.prepare(`UPDATE sessions SET status = 'expired' WHERE id = ?`).bind(completedRow.id).run();
+      }
+    }
+
+    // Then check for in-progress sessions (not yet completed)
     const row = await env.DB.prepare(`
       SELECT id, tier, phase, message_count, created_at, updated_at, blueprint_generated, status
       FROM sessions
@@ -819,6 +943,7 @@ async function handleUserActiveSession(request, env) {
     const session = JSON.parse(kvData);
     return json({
       hasActiveSession: true,
+      blueprintComplete: false,
       session: {
         id: row.id,
         tier: row.tier,
@@ -870,7 +995,8 @@ async function handleSessionResume(request, env) {
       phase: session.phase || 1,
       messages: displayMessages.map(m => ({ role: m.role, content: m.role === 'assistant' ? stripMetadata(m.content) : m.content })),
       blueprintGenerated: session.blueprintGenerated || false,
-      blueprint: session.blueprint || null
+      blueprint: session.blueprint || null,
+      strategistDebrief: session.strategistDebrief || null
     });
   } catch (e) {
     return json({ error: 'Failed to resume session', detail: e.message }, 500);
@@ -1073,6 +1199,19 @@ async function handleTestBlueprint(request, env) {
       }
 
       session.messages.push({ role: 'assistant', content: fullContent });
+
+      // Generate strategist debrief (Opus) — runs after blueprint, before session save
+      if (blueprint) {
+        try {
+          await sendEvent({ type: 'debrief_status', message: 'Your strategist is writing you a personal note...' });
+          const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+          if (debrief) {
+            session.strategistDebrief = debrief;
+            await sendEvent({ type: 'debrief', debrief });
+          }
+        } catch (debriefErr) { /* non-blocking */ }
+      }
+
       await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 });
 
       await sendEvent({ type: 'metadata', phase: 8, phaseProgress: 100, sessionComplete: true, blueprint });
@@ -1361,6 +1500,18 @@ async function handleChat(request, env) {
 
       session.messages.push({ role: 'assistant', content: fullContent });
       if (metadata.phase) session.phase = metadata.phase;
+
+      // Generate strategist debrief if blueprint was just created (Opus)
+      if (blueprint) {
+        try {
+          await sendEvent({ type: 'debrief_status', message: 'Your strategist is writing you a personal note...' });
+          const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+          if (debrief) {
+            session.strategistDebrief = debrief;
+            await sendEvent({ type: 'debrief', debrief });
+          }
+        } catch (debriefErr) { /* non-blocking */ }
+      }
 
       await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
 
@@ -3349,45 +3500,9 @@ async function handleRequestMagic(request, env) {
           from: 'Deep Work App <noreply@jamesguldan.com>',
           to: [email],
           subject: 'Your Deep Work App login link',
-          html: `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-</head>
-<body style="margin:0;padding:0;background-color:#f0eeea;font-family:Arial,Helvetica,sans-serif;">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f0eeea;">
-<tr><td align="center" style="padding:40px 16px;">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#FDFCFA;border-radius:2px;">
-<tr><td style="padding:40px 48px 0 48px;">
-<p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:2.5px;color:#999;text-transform:uppercase;font-weight:600;margin:0;">JAMES GULDAN</p>
-</td></tr>
-<tr><td style="padding:16px 48px 0 48px;">
-<table role="presentation" cellpadding="0" cellspacing="0" border="0">
-<tr><td style="width:40px;height:2px;background-color:#c4703f;font-size:0;line-height:0;">&nbsp;</td></tr>
-</table>
-</td></tr>
-<tr><td style="padding:32px 48px 40px 48px;">
-<p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:26px;color:#1a1a1a;margin:0 0 24px 0;">Here is your sign in link for the Deep Work App. It expires in 24 hours.</p>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 32px 0;">
-<tr><td style="background-color:#1a1a1a;border-radius:6px;padding:14px 32px;">
-<a href="${magicUrl}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;letter-spacing:0.3px;display:inline-block;">Sign In to Deep Work &rarr;</a>
-</td></tr>
-</table>
-<p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:22px;color:#999;margin:0;">If you did not request this, you can safely ignore this email. The link will expire on its own.</p>
-</td></tr>
-</table>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
-<tr><td style="padding:24px 48px;text-align:center;">
-<p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#999;margin:0 0 4px 0;"><a href="https://jamesguldan.com" style="color:#999;text-decoration:none;">jamesguldan.com</a></p>
-<p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#bbb;margin:0;">&copy; 2026 James Guldan. All rights reserved.</p>
-</td></tr>
-</table>
-</td></tr>
-</table>
-</body>
-</html>`
+          html: `<p>Click the link below to log in. It expires in 24 hours.</p>
+<p><a href="${magicUrl}" style="font-size:18px;font-weight:bold;">Log In to Deep Work App</a></p>
+<p style="color:#888;font-size:12px;">If you did not request this, you can ignore this email.</p>`
         })
       });
     }
@@ -3831,6 +3946,33 @@ async function handleAdminCreateUser(request, env) {
     return json({ user }, 201);
   } catch (e) {
     return json({ error: 'Failed to create user', detail: e.message }, 500);
+  }
+}
+
+async function handleAdminGenerateDebrief(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: 'Forbidden' }, 403);
+
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: 'sessionId required' }, 400);
+
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: 'Session not found in KV' }, 404);
+
+    const session = JSON.parse(kvData);
+    if (!session.blueprint) return json({ error: 'No blueprint in this session' }, 400);
+
+    const debrief = await generateStrategistDebrief(env, session, session.blueprint, sessionId);
+    if (!debrief) return json({ error: 'Debrief generation failed' }, 500);
+
+    // Save back to KV
+    session.strategistDebrief = debrief;
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+
+    return json({ ok: true, debrief });
+  } catch (e) {
+    return json({ error: 'Failed to generate debrief', detail: e.message }, 500);
   }
 }
 

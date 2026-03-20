@@ -1657,6 +1657,15 @@ export const getHTML = (config) => `<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- Consent -->
+  <div class="consent-block" style="margin:24px auto 0;max-width:580px;text-align:left;">
+    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:#555;line-height:1.6;">
+      <input type="checkbox" id="consent-check" style="margin-top:4px;min-width:18px;min-height:18px;accent-color:#C4703F;">
+      <span>I understand that this session is conducted by an AI and that my responses will be processed to generate my brand blueprint. I agree to the <a href="/privacy" target="_blank" style="color:#C4703F;">Privacy Policy</a> and <a href="/terms" target="_blank" style="color:#C4703F;">Terms of Service</a>.</span>
+    </label>
+    <p id="consent-error" style="display:none;color:#c0392b;font-size:12px;margin-top:6px;margin-left:28px;">Please check the box above to continue.</p>
+  </div>
+
   <!-- CTA -->
   <div class="intake-cta">
     <button class="btn btn-gold" onclick="startSession()" id="start-btn">Begin My Deep Work Session</button>
@@ -1719,6 +1728,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <h2 id="bp-name">Your Brand Blueprint</h2>
     <p>Your complete brand foundation, ready to build on.</p>
   </div>
+  <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
   <div class="blueprint-actions" style="flex-direction:column;align-items:center;gap:16px;padding:28px 40px;">
     <button class="btn btn-gold" id="build-site-btn" onclick="handleBuildSite()" style="width:auto;padding:18px 40px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);letter-spacing:0.02em;">Build My Website</button>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
@@ -2000,14 +2010,21 @@ window.addEventListener('DOMContentLoaded', async () => {
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
           showScreen('intake');
 
-          // Check for active session to resume
+          // Check for active or completed session to resume
           try {
             const activeRes = await fetch('/api/user/active-session', {
               headers: { 'Authorization': 'Bearer ' + token }
             });
             const activeData = await activeRes.json();
             if (activeData.hasActiveSession && activeData.session) {
-              showResumeBanner(activeData.session);
+              if (activeData.blueprintComplete) {
+                // Blueprint already generated, go straight to it
+                pendingResumeSessionId = activeData.session.id;
+                localStorage.setItem('dw_active_session', activeData.session.id);
+                await resumeSession();
+              } else {
+                showResumeBanner(activeData.session);
+              }
             }
           } catch(_) {}
         }
@@ -2161,6 +2178,16 @@ function dismissLoadingError() {
 
 async function startSession() {
   const btn = document.getElementById('start-btn');
+
+  // ── Consent check ──
+  const consentBox = document.getElementById('consent-check');
+  const consentErr = document.getElementById('consent-error');
+  if (consentBox && !consentBox.checked) {
+    if (consentErr) consentErr.style.display = '';
+    consentBox.focus();
+    return;
+  }
+  if (consentErr) consentErr.style.display = 'none';
 
   // ── Validate inputs before starting ──
   const websiteVal = (document.getElementById('intake-website')?.value || '').trim();
@@ -2528,7 +2555,7 @@ async function resumeSession() {
       updateLoadingStage('Your blueprint is ready.', 100);
       await new Promise(r => setTimeout(r, 800));
       hideLoadingOverlay();
-      renderBlueprint(data.blueprint);
+      renderBlueprint(data.blueprint, data.strategistDebrief || null, true);
       showScreen('blueprint-screen');
       return;
     }
@@ -2767,6 +2794,16 @@ async function sendMessage() {
               scrollToBottom();
             } else if (ev.type === 'error') {
               streamError = ev.message || 'Something went wrong';
+            } else if (ev.type === 'debrief_status') {
+              // Show a status message while debrief generates
+              const bpOverlay = document.getElementById('blueprint-generating');
+              if (bpOverlay) {
+                const statusEl = bpOverlay.querySelector('.bp-gen-status');
+                if (statusEl) statusEl.textContent = ev.message || 'Personalizing your experience...';
+              }
+            } else if (ev.type === 'debrief') {
+              // Store debrief for rendering
+              STATE.strategistDebrief = ev.debrief;
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
               if (ev.phase === 8 && !STATE.blueprintOverlayShown) {
@@ -3150,14 +3187,107 @@ function handleBlueprintReady(blueprint) {
 
   // After a moment, transition to blueprint screen
   setTimeout(() => {
-    renderBlueprint(blueprint);
+    renderBlueprint(blueprint, STATE.strategistDebrief || null);
     showScreen('blueprint-screen');
   }, 3000);
 }
 
-function renderBlueprint(bp) {
+function renderBlueprint(bp, strategistDebrief, isReturning) {
   const b = bp.blueprint;
   document.getElementById('bp-name').textContent = b.name + "'s Brand Blueprint";
+
+  // ── Strategist Debrief ──
+  const debriefEl = document.getElementById('strategist-debrief');
+  if (debriefEl) {
+    const d = strategistDebrief;
+    const p8 = b.part8 || {};
+
+    if (d && d.reflection) {
+      // Opus-generated debrief exists — render the real thing
+      const returningNote = isReturning
+        ? \`<div style="font-size:13px;color:#C4703F;font-style:italic;margin-bottom:16px;">You came back. That tells me this matters to you. Everything below is exactly where you left it.</div>\`
+        : '';
+
+      debriefEl.innerHTML = \`
+        <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:32px 36px;box-shadow:0 2px 16px rgba(0,0,0,0.05);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">✦</div>
+            <div>
+              <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;">A Note From Your Strategist</div>
+              <div style="font-size:12px;color:#999;margin-top:2px;">Written after getting to know you</div>
+            </div>
+          </div>
+
+          \${returningNote}
+
+          \${d.quotedMoment ? \`<div style="font-size:16px;font-style:italic;color:#555;line-height:1.7;padding:16px 20px;border-left:3px solid #C4703F;background:rgba(196,112,63,0.04);border-radius:0 8px 8px 0;margin-bottom:20px;">"\${d.quotedMoment}"</div>\` : ''}
+
+          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:16px;">
+            \${d.reflection}
+          </div>
+
+          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:16px;">
+            \${d.insight}
+          </div>
+
+          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:20px;">
+            \${d.bridge}
+          </div>
+
+          <div style="padding:20px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.08), rgba(196,112,63,0.02));border:1.5px solid rgba(196,112,63,0.25);border-radius:12px;margin-bottom:20px;">
+            <div style="font-size:15px;line-height:1.85;color:#333;font-weight:500;">
+              \${d.motivation}
+            </div>
+          </div>
+
+          <div style="text-align:center;">
+            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Bring This To Life</button>
+            <div style="font-size:12px;color:#999;margin-top:8px;">Your blueprint becomes a website in about 60 seconds</div>
+          </div>
+        </div>
+      \`;
+      debriefEl.style.display = '';
+    } else {
+      // No Opus debrief yet — use smart fallback from blueprint data
+      const promise = b.part1 ? b.part1.coreBrandPromise : '';
+      const avatarName = b.part2 ? b.part2.name : '';
+      const niche = b.part3 ? b.part3.nicheStatement : '';
+      const firstMove = b.part6 ? b.part6.firstMove : '';
+
+      let bridgeText = '';
+      if (p8.personalizedMessage) {
+        bridgeText = p8.personalizedMessage;
+      } else if (firstMove) {
+        bridgeText = firstMove;
+      } else if (promise) {
+        bridgeText = 'Your brand promise is clear: ' + promise + '. The next step is turning that clarity into something your audience can experience.';
+      }
+
+      const contextParts = [];
+      if (niche) contextParts.push(niche);
+      else if (promise) contextParts.push(promise);
+      if (avatarName) contextParts.push('Your ideal client, ' + avatarName + ', is out there looking for exactly what you offer.');
+
+      debriefEl.innerHTML = \`
+        <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">✦</div>
+            <div style="font-size:18px;font-weight:700;font-family:'Outfit',sans-serif;">Your Strategist's Take</div>
+          </div>
+          <div style="font-size:15px;line-height:1.8;color:#333;">
+            After getting to know you, here is what stands out. \${contextParts.join(' ')} Below is your complete brand blueprint with everything we uncovered together. Scroll through each section, and when you are ready to bring this to life, the button below will get you there.
+          </div>
+          \${bridgeText ? \`
+            <div style="margin-top:20px;padding:20px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.08), rgba(196,112,63,0.02));border:1.5px solid rgba(196,112,63,0.25);border-radius:12px;">
+              <div style="font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#C4703F;font-weight:600;margin-bottom:8px;">Your Next Move</div>
+              <div style="font-size:14px;line-height:1.7;color:#444;">\${bridgeText}</div>
+            </div>
+          \` : ''}
+        </div>
+      \`;
+      debriefEl.style.display = '';
+    }
+  }
 
   const body = document.getElementById('blueprint-body');
   body.innerHTML = \`
