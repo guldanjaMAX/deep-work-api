@@ -1236,11 +1236,20 @@ async function handleGenerateSite(request, env) {
   const bodyContent = await callClaudeSiteGen(env, prompt, 3000);
 
   // Assemble the final HTML: pre-built head + Claude's body
-  const bodyMatch = bodyContent.match(/<nav[\s\S]*/i);
-  let bodyHtml = bodyMatch ? bodyMatch[0] : bodyContent;
-
-  // Strip any stray closing tags Claude may have appended
-  bodyHtml = bodyHtml.replace(/<\/html>/gi, '').replace(/<\/body>/gi, '').trim();
+  // Strip any <style> blocks Claude may have written despite instructions
+  let bodyHtml = bodyContent.replace(/<style[\s\S]*?<\/style>/gi, '');
+  // Strip stray <html>, <head>, <body> wrappers
+  bodyHtml = bodyHtml
+    .replace(/<\/html>/gi, '')
+    .replace(/<\/body>/gi, '')
+    .replace(/<html[^>]*>/gi, '')
+    .replace(/<body[^>]*>/gi, '')
+    .replace(/<\/head>/gi, '')
+    .replace(/<head[\s\S]*?>/gi, '')
+    .trim();
+  // Trim everything before the first <nav (drop any leading whitespace/doctype)
+  const navIdx = bodyHtml.search(/<nav[\s>]/i);
+  if (navIdx > 0) bodyHtml = bodyHtml.slice(navIdx);
 
   // Footer fallback — inject if Claude ran out of tokens before writing one
   if (!/<footer[\s>]/i.test(bodyHtml)) {
@@ -1686,7 +1695,7 @@ async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6000) {
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
       system: systemPrompt,
-      messages: [{ role: 'user', content: 'Write the complete website body sections now. Start with <nav> and end with </html>.' }]
+      messages: [{ role: 'user', content: 'Write the HTML body sections now. Begin your response with the nav element. Do not include any CSS, style tags, or head elements.' }]
     })
   });
   if (!res.ok) {

@@ -403,7 +403,7 @@ ${css}
 </head>`;
 
   // System prompt for Claude — brand data + body-only output instructions (no CSS)
-  const prompt = `You are writing HTML body content for a personal brand website. The CSS and <head> are already built — you ONLY write the HTML sections that go inside <body>. Do NOT write any CSS, any <html> tags, any <head> tags, or any <style> tags.
+  const prompt = `You are writing HTML body sections for a personal brand website. The complete CSS stylesheet and <head> are already finished and injected by the server — you must NOT write any CSS, <style> tags, <html> tags, <head> tags, or <!DOCTYPE>. Writing CSS will break the page. Output ONLY the HTML elements that belong inside <body>, starting with <nav>.
 
 Available CSS classes: .container, .container--narrow, .eyebrow, .divider, .divider--center, .btn .btn--primary .btn--outline .btn--ghost .btn--gold, nav/.nav-inner/.nav-logo/.nav-links/.nav-cta/.nav-hamburger/.nav-mobile, .hero/.hero-inner/.hero-sub/.hero-actions/.hero-stats/.hero-stat-num/.hero-stat-label/.hero-visual/.hero-img-frame/.hero-quote, section/section.dark, .section-header, .card-grid/.card-grid-2/.card/.card--border/.card--dark, .quote-block, .testimonial-grid/.testimonial/.testimonial-quote/.testimonial-author, .offer-card/.offer-card.featured/.offer-name/.offer-price/.offer-desc, .about-inner/.about-photo, .cta-section, .form-group, footer/.footer-inner/.footer-logo/.footer-copy/.footer-links, .text-center, .eyebrow, .divider, .color-accent, .color-gold.
 
@@ -456,12 +456,12 @@ TESTIMONIAL STYLE: ${testimonialFraming}
 - KEEP EACH SECTION TIGHT — 50 to 80 words of copy per section max
 
 ━━━ OUTPUT ━━━
-CRITICAL: You have a strict token budget. Write concise copy. Complete ALL sections.
-Start with <nav id="main-nav">.
-Work through every section in order. Keep copy tight.
+CRITICAL: You have a strict token budget. Keep copy tight. Complete ALL sections.
+The nav opening tag is already written. Continue directly from the nav's inner content.
+Work through every section in order. Keep each section to 50-80 words of copy.
 ALWAYS end with a <footer> containing .footer-inner > .footer-logo + .footer-copy + .footer-links.
-Last line must be </html>.
-No markdown. No explanation. Just the HTML.`;
+End your output with </footer>. Do NOT write </body> or </html>.
+No markdown. No explanation. Pure HTML only.`;
 
   return { prompt, head };
 };
