@@ -3292,6 +3292,17 @@ function renderBlueprint(bp) {
         </div>
       </div>
     \`)}
+    \${b.part8 && b.part8.personalizedMessage ? renderPart(8, 'Your Recommended Next Step', \`
+      <div class="bp-item" style="background:linear-gradient(135deg, rgba(196,112,63,0.08), transparent);border:1.5px solid var(--gold);border-radius:12px;padding:24px;">
+        <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;color:var(--text);margin-bottom:12px;">\${b.part8.headline || 'Your Next Move'}</div>
+        <div style="font-size:15px;line-height:1.8;color:var(--text);margin-bottom:16px;">\${b.part8.personalizedMessage}</div>
+        \${b.part8.whyNow ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:16px;padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">Why now:</strong> \${b.part8.whyNow}</div>\` : ''}
+        \${b.part8.specificBenefit ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">What you get:</strong> \${b.part8.specificBenefit}</div>\` : ''}
+        <div style="margin-top:20px;text-align:center;">
+          \${b.part8.recommendation === 'site_in_sixty' ? \`<button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:14px 32px;font-size:15px;">Build My Website Now</button>\` : b.part8.recommendation === 'coaching' ? \`<a href="https://jamesguldan.com" target="_blank" class="btn btn-gold" style="width:auto;padding:14px 32px;font-size:15px;text-decoration:none;">Book a Strategy Call</a>\` : ''}
+        </div>
+      </div>
+    \`) : ''}
   \`;
 }
 

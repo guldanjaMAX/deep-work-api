@@ -155,10 +155,49 @@ When you have completed all 7 phases and are ready to generate the blueprint, ou
         "social": "For use in social media bios",
         "inPerson": "For use when introducing yourself"
       }
+    },
+    "part8": {
+      "title": "Your Recommended Next Step",
+      "recommendation": "site_in_sixty OR coaching OR self_guided",
+      "headline": "A compelling one-line headline for their specific next step",
+      "personalizedMessage": "3 to 5 sentences explaining WHY this recommendation fits them specifically. Reference specific things they said during the interview. Be direct and honest. This is not a sales pitch, it is genuine strategic advice from someone who just spent time getting to know their situation.",
+      "whyNow": "1 to 2 sentences on why acting now matters for their specific situation. Use urgency that is real, not manufactured.",
+      "specificBenefit": "What they will walk away with if they take this next step. Be concrete."
+    },
+    "leadIntel": {
+      "estimatedRevenue": "Under 100K, 100K to 500K, 500K to 1M, 1M to 5M, 5M to 10M, 10M plus, or Unknown",
+      "industry": "Their specific industry or niche",
+      "yearsInBusiness": "Startup, 1 to 3, 3 to 7, 7 to 15, 15 plus, or Unknown",
+      "teamSize": "Solo, 2 to 5, 6 to 20, 20 plus, or Unknown",
+      "hasExistingBrand": true,
+      "hasExistingWebsite": true,
+      "hasInternalTeam": false,
+      "brandMaturity": "Starting fresh, Outgrown current brand, Rebrand needed, Refinement only",
+      "buyingTemperature": "Hot, Warm, Cool — based on urgency signals in conversation",
+      "biggestPainPoint": "The single biggest pain expressed in their own words",
+      "budgetSignals": "Any signals about budget or willingness to invest",
+      "bestFitService": "site_in_sixty, brand_diagnostic, coaching, brand_build, or partnership",
+      "bestFitReason": "1 sentence explaining why this service fits them",
+      "notableQuotes": ["Up to 3 direct quotes from the conversation that reveal buying intent or deep pain"],
+      "followUpAngle": "The most effective angle for a follow up conversation with this person"
     }
   }
 }
 \`\`\`
+
+CRITICAL INSTRUCTIONS FOR part8 (Your Recommended Next Step):
+
+You must choose the recommendation based on what you ACTUALLY learned about this person. Here are the three paths and when to recommend each:
+
+1. **"site_in_sixty"** — Recommend this when: they do NOT have an internal design/dev team, they are a solopreneur or small team, they need a website or their current one is broken/outdated, they expressed frustration with how long branding takes. Frame it as: "A designer is going to take 30 days and charge you thousands to do what we can make live in the next hour. Your brand strategy is done. Your blueprint is done. Let's not sit on it. Let's turn it into something the world can actually see."
+
+2. **"coaching"** — Recommend this when: they HAVE an internal team (designers, marketers, developers), they are already at meaningful revenue (500K+), their challenge is more about leadership alignment or strategic direction than execution. Frame it as: "Send this blueprint to your team. They can execute on it. But the deeper work — aligning your leadership, making sure every decision ladders up to this brand — that is where I come in. Let me be the strategist in your corner."
+
+3. **"self_guided"** — Recommend this when: they are early stage with very limited budget, or they explicitly said they want to DIY. Frame it warmly: "You have everything you need to get started. Your blueprint is your north star. When you are ready for the next level, I will be here."
+
+Always be genuine. Never recommend coaching to someone who clearly cannot afford it. Never recommend Site In Sixty to someone who already has a great website and an in house team. The recommendation should feel like honest advice from a friend who actually listened.
+
+For the leadIntel section: Extract every data point you can from the conversation. Be honest about what you do not know — use "Unknown" rather than guessing. The notableQuotes should be the most revealing things they said that would help a salesperson understand this person in 30 seconds.
 
 After the JSON, write a short warm message to the user (3 to 4 sentences) congratulating them and explaining what comes next.`;
 
@@ -166,6 +205,93 @@ After the JSON, write a short warm message to the user (3 to 4 sentences) congra
 // ============================================================
 // SITE GENERATION PROMPT
 // ============================================================
+
+// Aesthetic CSS override — adds personality on top of the foundation
+// Returns a CSS string injected after SITE_CSS_FOUNDATION in the <style> block
+export function getAestheticOverrides(aesthetic) {
+  const a = (aesthetic || '').toLowerCase();
+  if (/executive|corporate|finance|law|premium|luxury|elite/i.test(a)) {
+    return `
+  /* Executive / Premium aesthetic overrides */
+  .hero { padding: 160px 0 130px; }
+  .hero h1 { font-size: clamp(2.6rem, 4.8vw, 4rem); letter-spacing: -0.025em; font-weight: 700; }
+  .hero .hero-sub { font-size: 1.15rem; max-width: 600px; margin: 0 auto; }
+  section { padding: 110px 0; }
+  .section-header h2 { font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -0.02em; }
+  .card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.06); }
+  .testimonial { border-left: 3px solid var(--secondary); padding-left: 24px; }
+  .testimonial-quote { font-size: 1.1rem; font-style: italic; }
+  nav { background: rgba(255,255,255,0.96); }`;
+  } else if (/bold|energetic|dynamic|intense|power|aggressive|athlete|sport/i.test(a)) {
+    return `
+  /* Bold / Dynamic aesthetic overrides */
+  .hero { padding: 130px 0 110px; }
+  .hero h1 { font-size: clamp(3rem, 5.5vw, 4.8rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
+  section { padding: 100px 0; }
+  .section-header h2 { font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 800; }
+  .card { border-radius: 4px; border-top: 4px solid var(--accent); box-shadow: none; }
+  .card--dark { background: var(--primary); color: white; }
+  .offer-card { border-radius: 6px; }
+  .offer-card.featured { transform: scale(1.03); }
+  .btn--primary { letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.85rem; padding: 16px 36px; }`;
+  } else if (/warm|human|authentic|personal|soft|gentle|healing|wellness|coach/i.test(a)) {
+    return `
+  /* Warm / Human aesthetic overrides */
+  .hero { padding: 130px 0 110px; }
+  .hero h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1.2; font-style: italic; }
+  section { padding: 100px 0; }
+  .section-header h2 { font-size: clamp(1.9rem, 3.2vw, 2.8rem); }
+  .card { border-radius: 20px; border: none; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .testimonial { border-radius: 16px; padding: 28px; background: var(--bg); }
+  .testimonial-quote { font-size: 1.05rem; line-height: 1.8; }
+  .quote-block { font-size: 1.6rem; line-height: 1.5; font-style: italic; }
+  .btn--primary { border-radius: 50px; }
+  .btn--outline { border-radius: 50px; }`;
+  } else if (/modern|minimal|design|creative|studio|agency/i.test(a)) {
+    return `
+  /* Modern / Minimal aesthetic overrides */
+  .hero { padding: 150px 0 120px; }
+  .hero h1 { font-size: clamp(2.5rem, 5vw, 4.2rem); letter-spacing: -0.03em; line-height: 1.1; }
+  section { padding: 120px 0; }
+  .section-header h2 { font-size: clamp(2rem, 3.8vw, 3.2rem); letter-spacing: -0.02em; }
+  .card { border-radius: 2px; border: 1px solid rgba(0,0,0,0.08); box-shadow: none; }
+  .eyebrow { font-size: 0.7rem; letter-spacing: 0.15em; }
+  .btn--primary { border-radius: 2px; }`;
+  }
+  // Default — refined personal brand
+  return `
+  /* Default personal brand overrides */
+  .hero { padding: 140px 0 120px; }
+  .hero h1 { font-size: clamp(2.4rem, 4.5vw, 3.8rem); letter-spacing: -0.02em; }
+  section { padding: 100px 0; }
+  .section-header h2 { font-size: clamp(1.9rem, 3.2vw, 2.8rem); }`;
+}
+
+// Imagen 4 prompt builder — generates a brand-specific image prompt
+// Used for hero section background/visual generation
+export function buildImagenPrompt(p1, p3) {
+  const aesthetic = (p1.visualDirection?.aesthetic || '').toLowerCase();
+  const colors = p1.visualDirection?.colors || [];
+  const primaryColorName = (colors[0]?.name || 'deep navy').toLowerCase();
+  const secondaryColorName = (colors[1]?.name || 'warm gold').toLowerCase();
+  const mechanism = (p3.uniqueMechanism || 'transformation and growth').substring(0, 60);
+  const brandPromise = (p1.coreBrandPromise || '').substring(0, 80);
+
+  let styleWords = '';
+  if (/executive|corporate|premium|luxury|elite/i.test(aesthetic)) {
+    styleWords = 'cinematic editorial photography, sophisticated executive environment, dramatic natural light, architectural detail, still and powerful';
+  } else if (/bold|energetic|dynamic|athlete/i.test(aesthetic)) {
+    styleWords = 'bold editorial photography, strong directional light, dramatic shadows, motion and energy implied, high contrast';
+  } else if (/warm|human|authentic|wellness|healing/i.test(aesthetic)) {
+    styleWords = 'soft natural light photography, warm intimate atmosphere, genuine and human, golden hour tones, documentary feel';
+  } else if (/modern|minimal|design|creative/i.test(aesthetic)) {
+    styleWords = 'minimal editorial photography, clean geometric composition, architectural lines, negative space, monochromatic tones';
+  } else {
+    styleWords = 'premium editorial photography, professional personal brand, thoughtful composition, confident atmosphere';
+  }
+
+  return `${styleWords}. Color palette: ${primaryColorName} and ${secondaryColorName} tones. Abstract conceptual representation of: ${mechanism}. No people, no faces, no text, no logos. Ultra high quality, 16:9 aspect ratio. This image represents: ${brandPromise}`;
+}
 
 // Pre-built CSS foundation — Claude fills in HTML body only (no CSS to write)
 export const SITE_CSS_FOUNDATION = (colors, fonts, fontImport) => `
@@ -471,6 +597,7 @@ export const SITE_GENERATION_PROMPT = (blueprint) => {
   const designBrief = buildDesignBrief(p1, p2, p3, p5);
 
   const css = SITE_CSS_FOUNDATION(colorVars, fontsRaw, fontImport);
+  const aestheticOverrides = getAestheticOverrides(aesthetic);
 
   const brandName = (p1.brandNames || [])[0] || 'Brand';
 
@@ -486,6 +613,7 @@ export const SITE_GENERATION_PROMPT = (blueprint) => {
     :root {${cssVars}
     }
 ${css}
+${aestheticOverrides}
   </style>
 </head>`;
 
