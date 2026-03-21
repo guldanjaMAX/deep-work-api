@@ -2933,7 +2933,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     </div>
 
     <!-- Share & Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
       <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">
         \u2709\uFE0F &nbsp;Email My Site Link
       </button>
@@ -2941,6 +2941,10 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
         \u{1F4CB} &nbsp;Copy Link to Share
       </button>
     </div>
+    <button onclick="shareOnLinkedIn()" class="btn btn-outline" style="width:100%;padding:14px;font-size:14px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;gap:10px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Share on LinkedIn
+    </button>
 
     <!-- Strategy Call CTA (moved up: highest conversion moment is right after seeing the live site) -->
     <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.03));border:1.5px solid rgba(212,175,55,0.35);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;">
@@ -4843,8 +4847,16 @@ function emailMySite() {
 }
 
 function handleBookCall() {
-  // Redirect to strategy call checkout
-  handleCheckoutRedirect('call');
+  // Open Calendly booking page for strategy call
+  window.open('https://calendly.com/james-jamesguldan/60-minute-meeting-clone', '_blank');
+}
+function shareOnLinkedIn() {
+  const url = STATE.siteUrl || '';
+  const brandName = document.getElementById('mc-brand-name')?.textContent?.trim() || 'my brand';
+  const summary = encodeURIComponent(`I just built my complete brand strategy and website in one session. Check it out:`);
+  const encodedUrl = encodeURIComponent(url);
+  const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}&summary=${summary}`;
+  window.open(linkedInUrl, '_blank', 'width=600,height=600');
 }
 
 async function handleCheckoutRedirect(tier) {
@@ -10486,6 +10498,17 @@ async function handleDeploy(request, env) {
     session.seoOptimized = true;
     await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
     await logEvent(env, sessionId, "site_deployed", { url: liveUrl, slug, seoOptimized: true });
+    if (session.userId) {
+      getUserById(env, session.userId).then((user) => {
+        if (user?.email) {
+          fireEventToDripWorker(env, user.email, "site_deployed", {
+            name: user.name || "",
+            phone: session.phone || "",
+            site_url: liveUrl
+          }).catch(() => {});
+        }
+      }).catch(() => {});
+    }
     return json({ ok: true, url: liveUrl, slug, seoOptimized: true });
   } catch (e) {
     console.error("Deploy error:", e);
