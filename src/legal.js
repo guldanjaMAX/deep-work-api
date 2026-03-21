@@ -87,7 +87,7 @@ export function getPrivacyPolicyHTML() {
   <h1>Privacy Policy</h1>
   <p class="effective-date">Effective Date: March 20, 2026</p>
 
-  <p>This Privacy Policy describes how Align Growth LLC ("we," "us," or "our") collects, uses, and protects your personal information when you use the Deep Work brand strategy application at app.jamesguldan.com (the "Service").</p>
+  <p>This Privacy Policy describes how Align Growth LLC ("we," "us," or "our") collects, uses, and protects your personal information when you use the Deep Work brand strategy application at love.jamesguldan.com (the "Service").</p>
 
   <h2>1. Information We Collect</h2>
 
@@ -156,7 +156,7 @@ export function getTermsOfServiceHTML() {
   <h1>Terms of Service</h1>
   <p class="effective-date">Effective Date: March 20, 2026</p>
 
-  <p>These Terms of Service ("Terms") govern your use of the Deep Work brand strategy application at app.jamesguldan.com (the "Service"), operated by Align Growth LLC ("we," "us," or "our"). By creating an account or using the Service, you agree to be bound by these Terms.</p>
+  <p>These Terms of Service ("Terms") govern your use of the Deep Work brand strategy application at love.jamesguldan.com (the "Service"), operated by Align Growth LLC ("we," "us," or "our"). By creating an account or using the Service, you agree to be bound by these Terms.</p>
 
   <h2>1. Description of Service</h2>
 
