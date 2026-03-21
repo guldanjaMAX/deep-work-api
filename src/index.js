@@ -616,7 +616,7 @@ async function handleFulfillPayment(request, env) {
     try {
       const token = await generateMagicToken();
       await storeMagicToken(env, token, email);
-      sessionUrl = `${appOrigin}/login?token=${token}`;
+      sessionUrl = `${appOrigin}/magic?token=${token}&redirect=/app`;
     } catch (e) {
       // Magic token generation failed
     }
