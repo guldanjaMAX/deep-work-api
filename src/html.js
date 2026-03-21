@@ -2013,6 +2013,13 @@ export const getHTML = (config) => `<!DOCTYPE html>
 <div id="mission-control" class="screen">
   <div style="max-width:720px;margin:0 auto;padding:40px 20px;">
 
+    <!-- Back to Blueprint -->
+    <div style="margin-bottom:24px;">
+      <button onclick="showScreen('blueprint')" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:6px;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+        ← View Blueprint
+      </button>
+    </div>
+
     <!-- Header -->
     <div style="text-align:center;margin-bottom:36px;">
       <div style="font-size:48px;margin-bottom:12px;">🚀</div>
@@ -2160,7 +2167,8 @@ const STATE = {
   generatedSiteHtml: null,
   uploadedFiles: [],
   uploadedKeys: [],
-  blueprintOverlayShown: false
+  blueprintOverlayShown: false,
+  sessionJwt: null
 };
 
 const PHASE_NAMES = [
@@ -2231,14 +2239,36 @@ window.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session');
   const tier = params.get('tier');
+  const accessToken = params.get('access');
 
-  // Stripe redirect: ?session=X&tier=Y from checkout
+  // Stripe redirect: ?session=X&tier=Y&access=TOKEN from checkout
   const upgraded = params.get('upgraded');
   if (sessionId && tier) {
     STATE.sessionId = sessionId;
     STATE.tier = tier;
     localStorage.setItem('dw_active_session', sessionId);
     window.history.replaceState({}, '', '/app');
+
+    // Exchange one-time access token for a session JWT
+    if (accessToken) {
+      try {
+        const claimRes = await fetch('/api/session/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken, sessionId })
+        });
+        const claimData = await claimRes.json();
+        if (claimData.token) {
+          localStorage.setItem('dw_session_jwt', claimData.token);
+          STATE.sessionJwt = claimData.token;
+        }
+      } catch (_) {}
+    } else {
+      // No access token — restore JWT if we have one stored for this session
+      const stored = localStorage.getItem('dw_session_jwt');
+      if (stored) STATE.sessionJwt = stored;
+    }
+
     if (upgraded === 'true') {
       // Returning from site upgrade purchase — go straight to site builder
       showScreen('site-screen');
@@ -2247,6 +2277,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
     showScreen('intake');
   } else {
+    // Restore session JWT if present (for users who reload without URL params)
+    const storedJwt = localStorage.getItem('dw_session_jwt');
+    if (storedJwt) STATE.sessionJwt = storedJwt;
+
     // New auth flow: check dw_session token
     const token = localStorage.getItem('dw_session');
     if (token) {
@@ -3864,7 +3898,9 @@ async function downloadSite() {
   const originalText = btn ? btn.textContent : 'Download Site';
   try {
     if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
-    const res = await fetch('/api/export-site?sessionId=' + STATE.sessionId);
+    const exportHeaders = {};
+    if (STATE.sessionJwt) exportHeaders['Authorization'] = 'Bearer ' + STATE.sessionJwt;
+    const res = await fetch('/api/export-site?sessionId=' + STATE.sessionId, { headers: exportHeaders });
     if (!res.ok) throw new Error('status ' + res.status);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
@@ -3907,12 +3943,12 @@ function handleBookCall() {
   handleCheckoutRedirect('call');
 }
 
-async function handleCheckoutRedirect(product) {
+async function handleCheckoutRedirect(tier) {
   try {
     const res = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId, product })
+      body: JSON.stringify({ sessionId: STATE.sessionId, tier })
     });
     const data = await res.json();
     if (data.url) window.location.href = data.url;

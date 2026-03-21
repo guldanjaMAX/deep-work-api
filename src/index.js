@@ -327,6 +327,9 @@ window.location.replace('/');
       if (path === '/api/session/start' && request.method === 'POST') {
         return handleSessionStart(request, env);
       }
+      if (path === '/api/session/claim' && request.method === 'POST') {
+        return handleSessionClaim(request, env);
+      }
       if (path === '/api/session/resume' && request.method === 'POST') {
         return handleSessionResume(request, env);
       }
@@ -695,13 +698,22 @@ async function handlePaymentSuccess(request, env, url) {
 
   // Verify payment with Stripe
   let verified = false;
-  try {
-    const res = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`);
-    const session = await res.json();
-    verified = session.payment_status === 'paid';
-  } catch (e) {
-    // If Stripe key not set yet, allow through for testing
-    verified = true;
+  if (!env.STRIPE_SECRET_KEY) {
+    // No Stripe key — block unless origin is localhost/dev
+    const origin2 = new URL(request.url).origin;
+    const isLocal = origin2.includes('localhost') || origin2.includes('127.0.0.1') || origin2.includes('.dev');
+    if (!isLocal) {
+      return new Response('Payment processing is not configured. Please contact support.', { status: 503 });
+    }
+    verified = true; // allow through only on local/dev
+  } else {
+    try {
+      const res = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`);
+      const session = await res.json();
+      verified = session.payment_status === 'paid';
+    } catch (e) {
+      await logError(env, { endpoint: '/payment-success', method: 'GET', statusCode: 500, errorType: 'stripe_verify_error', errorMessage: e.message });
+    }
   }
 
   if (!verified) {
@@ -720,8 +732,9 @@ async function handlePaymentSuccess(request, env, url) {
       existingSession.stripeCheckoutId = checkoutSessionId;
       await env.SESSIONS.put(existingSessionId, JSON.stringify(existingSession), { expirationTtl: 60 * 60 * 24 * 30 });
       await logEvent(env, existingSessionId, 'tier_upgraded', { from: existingSession.tier, to: tier });
-      // Send them back to the app — upgraded=true triggers auto-proceed to site builder
-      return Response.redirect(`${origin}/?session=${existingSessionId}&tier=${tier}&upgraded=true`, 302);
+      // Generate a one-time access token for this session
+      const upgradeAccess = await generateSessionAccessToken(env, existingSessionId);
+      return Response.redirect(`${origin}/app?session=${existingSessionId}&tier=${tier}&upgraded=true&access=${upgradeAccess}`, 302);
     }
   }
 
@@ -741,14 +754,57 @@ async function handlePaymentSuccess(request, env, url) {
     createdAt: new Date().toISOString()
   }), { expirationTtl: 60 * 60 * 24 * 30 }); // 30 days
 
-  // Redirect to app with session token
-  return Response.redirect(`${origin}/?session=${sessionId}&tier=${tier}`, 302);
+  // Generate a one-time access token so only the buyer can claim this session
+  const accessToken = await generateSessionAccessToken(env, sessionId);
+
+  // Redirect to app — the client will exchange the access token for a session JWT
+  return Response.redirect(`${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`, 302);
+}
+
+// Generate and store a short-lived (4-hour) one-time access token for a session
+async function generateSessionAccessToken(env, sessionId) {
+  const token = Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, '0')).join('');
+  await env.SESSIONS.put(`session_access:${token}`, JSON.stringify({ sessionId, createdAt: Date.now() }), { expirationTtl: 60 * 60 * 4 }); // 4-hour TTL
+  return token;
+}
+
+// Exchange a one-time access token for a session JWT (30-day)
+async function handleSessionClaim(request, env) {
+  try {
+    const { accessToken, sessionId } = await request.json();
+    if (!accessToken || !sessionId) return json({ error: 'Missing accessToken or sessionId' }, 400);
+
+    const kvKey = `session_access:${accessToken}`;
+    const raw = await env.SESSIONS.get(kvKey);
+    if (!raw) return json({ error: 'Invalid or expired access token' }, 401);
+
+    const record = JSON.parse(raw);
+    if (record.sessionId !== sessionId) return json({ error: 'Token does not match session' }, 401);
+
+    // Consume the one-time token
+    await env.SESSIONS.delete(kvKey);
+
+    // Issue a 30-day session JWT
+    const jwt = await createSessionToken({ sessionId, type: 'session_access' }, env.JWT_SECRET || 'dev-secret-change-me', 60 * 60 * 24 * 30);
+    return json({ token: jwt, sessionId });
+  } catch (e) {
+    return json({ error: 'Claim failed', detail: e.message }, 500);
+  }
 }
 
 async function handleWebhook(request, env) {
-  // Stripe webhook - log events to D1
   const body = await request.text();
-  // Signature verification would use env.STRIPE_WEBHOOK_SECRET
+
+  // ── Stripe signature verification ───────────────────────
+  if (env.STRIPE_WEBHOOK_SECRET) {
+    const sigHeader = request.headers.get('stripe-signature') || '';
+    const valid = await verifyStripeSignature(body, sigHeader, env.STRIPE_WEBHOOK_SECRET);
+    if (!valid) {
+      await logError(env, { endpoint: '/api/webhook', method: 'POST', statusCode: 400, errorType: 'invalid_stripe_signature', errorMessage: 'Webhook signature mismatch' });
+      return json({ error: 'Invalid signature' }, 400);
+    }
+  }
+
   try {
     const event = JSON.parse(body);
     if (event.type === 'checkout.session.completed') {
@@ -761,6 +817,30 @@ async function handleWebhook(request, env) {
     }
   } catch (e) {}
   return json({ received: true });
+}
+
+// HMAC-SHA256 verification for Stripe webhook signatures
+async function verifyStripeSignature(payload, sigHeader, secret) {
+  try {
+    // sigHeader format: t=TIMESTAMP,v1=SIG1,v1=SIG2,...
+    const parts = Object.fromEntries(sigHeader.split(',').map(p => p.split('=')));
+    const timestamp = parts.t;
+    const signatures = sigHeader.split(',').filter(p => p.startsWith('v1=')).map(p => p.slice(3));
+    if (!timestamp || signatures.length === 0) return false;
+
+    // Reject webhooks older than 5 minutes
+    if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+
+    const signedPayload = `${timestamp}.${payload}`;
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(signedPayload));
+    const expected = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return signatures.some(s => s === expected);
+  } catch (_) {
+    return false;
+  }
 }
 
 
@@ -2245,6 +2325,17 @@ async function handleExportSite(request, env) {
   const url = new URL(request.url);
   const sessionId = url.searchParams.get('sessionId');
   if (!sessionId) return json({ error: 'Missing sessionId' }, 400);
+
+  // ── Verify caller owns this session ───────────────────────────
+  const authHeader = request.headers.get('Authorization') || '';
+  if (authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    const payload = await verifySessionToken(token, env.JWT_SECRET || 'dev-secret-change-me').catch(() => null);
+    if (!payload || payload.sessionId !== sessionId) {
+      return json({ error: 'Unauthorized' }, 401);
+    }
+  }
+  // (If no auth header is present we still allow — existing sessions without claim flow)
 
   const raw = await env.SESSIONS.get(sessionId);
   if (!raw) return json({ error: 'Session not found' }, 404);
