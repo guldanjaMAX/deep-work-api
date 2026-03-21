@@ -2803,7 +2803,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       </div>
     </div>
     <button class="btn btn-gold" onclick="closeBuildPopup();proceedToSite();" style="width:100%;padding:16px 24px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);margin-bottom:10px;">Let's Go</button>
-    <button class="btn btn-ghost" onclick="closeBuildPopup()" style="width:auto;padding:10px 20px;font-size:13px;color:var(--text3);">Maybe later</button>
+    <button class="btn btn-ghost" onclick="saveForLater()" style="width:auto;padding:10px 20px;font-size:13px;color:var(--text3);">Save for later</button>
   </div>
 </div>
 
@@ -2933,13 +2933,21 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     </div>
 
     <!-- Share & Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
       <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">
         \u2709\uFE0F &nbsp;Email My Site Link
       </button>
       <button onclick="copyMcUrl()" class="btn btn-outline" style="padding:14px;font-size:14px;">
         \u{1F4CB} &nbsp;Copy Link to Share
       </button>
+    </div>
+
+    <!-- Strategy Call CTA (moved up: highest conversion moment is right after seeing the live site) -->
+    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.03));border:1.5px solid rgba(212,175,55,0.35);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Next Step</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
+      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a strategy call. We will connect your domain, refine your content together, and build your traffic plan.</p>
+      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;box-shadow:0 4px 20px rgba(196,112,63,0.3);">Book Your Strategy Call</button>
     </div>
 
     <!-- 30-Day Preview Notice -->
@@ -2986,11 +2994,10 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       </div>
     </div>
 
-    <!-- Strategy Call CTA -->
-    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:28px 24px;">
-      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
-      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a 1:1 strategy call. We will connect your domain, refine your content, and build a traffic plan together.</p>
-      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>
+    <!-- Secondary CTA at bottom for scrollers -->
+    <div style="text-align:center;padding:20px 0 8px;">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Questions? Something feel off about your site?</p>
+      <a href="mailto:james@jamesguldan.com?subject=Deep Work Site Question" style="color:var(--gold);font-size:14px;font-weight:500;text-decoration:none;">Email James directly &rarr;</a>
     </div>
 
   </div>
@@ -3167,6 +3174,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const user = await res.json();
         if (user && user.id) {
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
+          STATE.email = user.email || '';
           showScreen('intake');
 
           // Check for active or completed session to resume
@@ -4342,11 +4350,10 @@ function handleBlueprintReady(blueprint) {
   if (!blueprint) return;
   STATE.blueprint = blueprint;
 
-  // Show order bump only for blueprint-tier users (not for site-tier who already have SIS)
-  if (STATE.tier !== 'site') {
-    setTimeout(() => {
-      document.getElementById('order-bump').style.display = 'flex';
-    }, 2000);
+  // Order bump (removed from HTML, guard against null reference)
+  const _bump = document.getElementById('order-bump');
+  if (_bump && STATE.tier !== 'site') {
+    setTimeout(() => { _bump.style.display = 'flex'; }, 2000);
   }
 
   // After a moment, transition to blueprint screen
@@ -4632,6 +4639,25 @@ function openBuildPopup() {
 
 function closeBuildPopup() {
   document.getElementById('build-site-popup').style.display = 'none';
+}
+
+async function saveForLater() {
+  closeBuildPopup();
+  const email = STATE.email || '';
+  if (email) {
+    try {
+      await fetch('/api/auth/request-magic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      showToast('We sent you a link — come back anytime to build your site.');
+    } catch(_) {
+      showToast('Your blueprint is saved. Log back in anytime to build your site.');
+    }
+  } else {
+    showToast('Your blueprint is saved. Log back in anytime to build your site.');
+  }
 }
 
 function handleBuildSite() {
