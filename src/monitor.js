@@ -555,7 +555,7 @@ function getAlertEmailHTML({ alertType, severity, title, message, isCritical }) 
       <strong>Time:</strong> ${new Date().toISOString().replace('T', ' ').slice(0, 19)} UTC
     </div>
     <div style="margin-top:24px;text-align:center;">
-      <a href="https://app.jamesguldan.com/admin" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 32px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:600;">Open Admin Dashboard →</a>
+      <a href="https://love.jamesguldan.com/admin" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 32px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:600;">Open Admin Dashboard →</a>
     </div>
   </div>
   <div style="padding:16px 32px;background:#FAFAF8;border-top:1px solid #EAE7E2;text-align:center;">
@@ -604,7 +604,7 @@ function getDigestEmailHTML(digest) {
     ${errorHTML}
 
     <div style="margin-top:24px;text-align:center;">
-      <a href="https://app.jamesguldan.com/admin" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 32px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:600;">Open Admin Dashboard →</a>
+      <a href="https://love.jamesguldan.com/admin" style="display:inline-block;background:#1a1a1a;color:#fff;padding:12px 32px;border-radius:100px;text-decoration:none;font-size:14px;font-weight:600;">Open Admin Dashboard →</a>
     </div>
   </div>
   <div style="padding:16px 32px;background:#FAFAF8;border-top:1px solid #EAE7E2;text-align:center;">

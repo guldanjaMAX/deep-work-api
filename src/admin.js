@@ -1453,7 +1453,7 @@ const CHECKLIST = {
     { id: 'p5', label: 'Magic login link is generated and delivered by email' },
   ],
   app: [
-    { id: 'a1', label: 'App loads at app.jamesguldan.com without errors' },
+    { id: 'a1', label: 'App loads at love.jamesguldan.com without errors' },
     { id: 'a2', label: 'Intake form collects name, email, and optional phone' },
     { id: 'a3', label: 'Phase 1 question appears after intake is submitted' },
     { id: 'a4', label: 'Microphone input works on mobile (test in Safari)' },

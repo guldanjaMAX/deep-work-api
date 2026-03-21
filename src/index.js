@@ -611,11 +611,12 @@ async function handleFulfillPayment(request, env) {
       // User may already exist
     }
 
-    let sessionUrl = 'https://app.jamesguldan.com';
+    const appOrigin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
+    let sessionUrl = appOrigin;
     try {
       const token = await generateMagicToken();
       await storeMagicToken(env, token, email);
-      sessionUrl = `https://app.jamesguldan.com/login?token=${token}`;
+      sessionUrl = `${appOrigin}/login?token=${token}`;
     } catch (e) {
       // Magic token generation failed
     }
@@ -2088,7 +2089,7 @@ async function handleDeploy(request, env) {
     : `site-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const liveUrl = `${origin}/s/${slug}`;
 
     // ── SEO + OG + FAVICON + SCHEMA OPTIMIZATION ──
@@ -3507,7 +3508,7 @@ ${recMessage ? `<!-- PAGE 10B: YOUR RECOMMENDED NEXT STEP -->
         <div style="background-color:${secondary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:10px;padding:32px;color:#fff;">
           <div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:12px;">Ready to Make This Live?</div>
           <div style="font-size:15px;line-height:1.7;opacity:0.85;max-width:5in;margin:0 auto 20px;">Your strategy is done. Your messaging is locked. Your visual identity is set. The only thing left is putting it in front of the people who need to see it.</div>
-          <a href="https://app.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:15px;padding:16px 36px;border-radius:6px;text-decoration:none;">Get Your Vision Live</a>
+          <a href="https://love.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:15px;padding:16px 36px;border-radius:6px;text-decoration:none;">Get Your Vision Live</a>
         </div>` : recType === 'coaching' ? `
         <div style="background-color:${primary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:10px;padding:32px;color:#fff;">
           <div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:12px;">Let's Work Together</div>
@@ -3577,11 +3578,11 @@ Some starting points you could ask about:
 <div class="cover-name" style="font-size:44px">Get Your<br>Vision Live</div>
 <div style="max-width:5in;color:rgba(255,255,255,.85);font-size:16px;line-height:1.8;font-family:var(--font-body);margin:0 auto">You did the deep work. Your brand strategy, messaging, and visual identity are locked in. Now it is time to put all of it in front of the people who need to see it. Go back to your blueprint and click the button. Your site can be live in 60 seconds.</div>
 <div style="margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-  <a href="https://app.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:16px;padding:18px 42px;border-radius:6px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2);">Get Your Vision Live</a>
+  <a href="https://love.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:16px;padding:18px 42px;border-radius:6px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2);">Get Your Vision Live</a>
   <div style="color:rgba(255,255,255,.6);font-size:13px;max-width:4in;text-align:center;line-height:1.6;">Your blueprint already has everything we need. One click and the AI turns your strategy into a real, live website.</div>
 </div>
 <div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:center;gap:40px;color:rgba(255,255,255,.5);font-size:12px;">
-  <span>app.jamesguldan.com</span>
+  <span>love.jamesguldan.com</span>
   <span>Powered by Align Growth LLC</span>
 </div>
 </div></div>
@@ -4119,7 +4120,7 @@ async function handleRequestMagic(request, env) {
     const token = generateMagicToken();
     await storeMagicToken(env, token, user.id, 'magic_login', 24);
 
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const magicUrl = `${origin}/magic?token=${token}`;
 
     // Send via Resend (or log in dev if no key)
@@ -4182,7 +4183,7 @@ async function handleForgotPassword(request, env) {
     const token = generateMagicToken();
     await storeMagicToken(env, token, user.id, 'password_reset', 2); // 2-hour expiry
 
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const resetUrl = `${origin}/reset-password?token=${token}`;
 
     if (env.RESEND_API_KEY) {
@@ -4275,7 +4276,7 @@ function getPasswordResetEmail(resetUrl, email) {
           <p style="margin:0;font-size:12px;color:#bbb;">Or copy this link: <a href="${resetUrl}" style="color:#c4703f;word-break:break-all;">${resetUrl}</a></p>
         </td></tr>
         <tr><td style="padding-top:24px;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#bbb;">&copy; 2025 Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://app.jamesguldan.com/legal/privacy" style="color:#bbb;">Privacy</a></p>
+          <p style="margin:0;font-size:12px;color:#bbb;">&copy; 2025 Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;">Privacy</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -4581,7 +4582,7 @@ async function handleAdminCreateUser(request, env) {
     const token = generateMagicToken();
     const linkType = user.role === 'admin' ? 'admin_magic' : 'magic_login';
     await storeMagicToken(env, token, user.id, linkType, 72);
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const magicLink = `${origin}/magic?token=${token}`;
 
     return json({ user, magicLink }, 201);
@@ -4702,7 +4703,7 @@ async function handleAdminMagicLink(request, env) {
     const linkType = type || (user.role === 'admin' ? 'admin_magic' : 'magic_login');
     await storeMagicToken(env, token, user.id, linkType, 72);
 
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const magicLink = `${origin}/magic?token=${token}`;
 
     return json({ magicLink, url: magicLink, token, expires_in_hours: 72 });
@@ -4799,7 +4800,7 @@ Return ONLY the JSON, no other text.`
     // Generate magic link for convenience
     const token = generateMagicToken();
     await storeMagicToken(env, token, user.id, 'magic_login', 72);
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const magicLink = `${origin}/magic?token=${token}`;
 
     return json({ ok: true, sessionId, magicLink, brandName: blueprint?.blueprint?.part1?.brandNames?.[0] || brandName });
@@ -4885,7 +4886,7 @@ async function handleAdminQuickTestSession(request, env) {
     // Generate magic link
     const magicToken = generateMagicToken();
     await storeMagicToken(env, magicToken, user.id, 'magic_login', 72);
-    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
     const magicLink = `${origin}/magic?token=${magicToken}`;
 
     return json({ ok: true, userId: user.id, sessionId, tier: tier || 'blueprint', hasBlueprint, magicLink });
@@ -5132,7 +5133,7 @@ async function runAbandonmentCheck(env) {
 async function runDailyHealthCheck(env) {
   const results = {};
   const checks = [
-    { name: 'deep_work_api',    url: 'https://app.jamesguldan.com/health' },
+    { name: 'deep_work_api',    url: 'https://love.jamesguldan.com/health' },
     { name: 'email_drip',       url: `${DRIP_WORKER_URL}/health` },
     { name: 'stripe_ghl',       url: 'https://stripe-ghl-webhook.james-d13.workers.dev/' },
     { name: 'product_access',   url: 'https://product-access-api.james-d13.workers.dev/health' },
