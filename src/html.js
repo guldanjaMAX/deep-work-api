@@ -1,7 +1,3 @@
-// ============================================================
-// DEEP WORK APP — FRONTEND HTML
-// ============================================================
-
 export const getHTML = (config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,7 +45,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     text-rendering: optimizeLegibility;
   }
 
-  /* ── LANDING PAGE (welcome for authenticated users) ── */
+  /* \u2500\u2500 LANDING PAGE (welcome for authenticated users) \u2500\u2500 */
   #landing {
     min-height: 100vh;
     flex-direction: column;
@@ -200,7 +196,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     font-style: italic;
   }
 
-  /* ── INTAKE SCREEN ── */
+  /* \u2500\u2500 INTAKE SCREEN \u2500\u2500 */
   #intake {
     display: none;
     min-height: 100vh;
@@ -296,20 +292,22 @@ export const getHTML = (config) => `<!DOCTYPE html>
     padding: 28px 28px 0;
   }
 
-  .step-number {
-    display: inline-flex;
+  .step-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fff5ee, #ffe8d6);
+    border: 1.5px solid rgba(196,112,63,.22);
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--bg3);
-    border: 1.5px solid var(--border2);
-    color: var(--text2);
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  .step-icon svg {
+    width: 26px;
+    height: 26px;
+    color: #c4703f;
   }
 
   .step-card h3 {
@@ -660,14 +658,14 @@ export const getHTML = (config) => `<!DOCTYPE html>
   }
 
   @media (max-width: 600px) {
-    /* ── INTAKE: strip the wall of text — show title + input only ── */
+    /* \u2500\u2500 INTAKE: strip the wall of text \u2014 show title + input only \u2500\u2500 */
     .intake-hero { padding: 28px 16px 20px; }
     .intake-hero > p { font-size: 15px; margin-bottom: 20px; }
     .promise-strip { gap: 10px; }
     .promise-item { font-size: 12px; }
     .promise-item .promise-icon { width: 26px; height: 26px; font-size: 13px; }
 
-    /* The big fix: hide long copy on mobile — inputs speak for themselves */
+    /* The big fix: hide long copy on mobile \u2014 inputs speak for themselves */
     .step-why { display: none; }
     .step-impact { display: none; }
     .step-card-header { padding: 18px 18px 0; }
@@ -677,7 +675,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     .step-number { width: 24px; height: 24px; font-size: 11px; margin-bottom: 8px; }
     .intake-steps { padding: 12px 14px 0; }
 
-    /* Sticky begin button — always reachable without scrolling to the bottom */
+    /* Sticky begin button \u2014 always reachable without scrolling to the bottom */
     .intake-cta {
       position: sticky;
       bottom: 0;
@@ -713,7 +711,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     .phase-label { display: none; }
   }
 
-  /* ── APP SCREEN ── */
+  /* \u2500\u2500 APP SCREEN \u2500\u2500 */
   #app {
     display: none;
     height: 100vh;
@@ -1199,7 +1197,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   .tool-btn:hover { color: var(--text2); }
 
-  /* ── BLUEPRINT SCREEN ── */
+  /* \u2500\u2500 BLUEPRINT SCREEN \u2500\u2500 */
   #blueprint-screen {
     display: none;
     flex-direction: column;
@@ -1299,7 +1297,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     margin-right: 8px;
   }
 
-  /* ── SITE GENERATION SCREEN ── */
+  /* \u2500\u2500 SITE GENERATION SCREEN \u2500\u2500 */
   #site-screen {
     display: none;
     flex-direction: column;
@@ -1358,7 +1356,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   .step-text strong { color: var(--text); display: block; margin-bottom: 2px; }
 
-  /* ── CF DEPLOY SCREEN ── */
+  /* \u2500\u2500 CF DEPLOY SCREEN \u2500\u2500 */
   #deploy-screen {
     display: none;
     flex-direction: column;
@@ -1411,7 +1409,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   .token-input-row input { margin: 0; flex: 1; }
 
-  /* ── ORDER BUMP ── */
+  /* \u2500\u2500 ORDER BUMP \u2500\u2500 */
   #order-bump {
     display: none;
     position: fixed;
@@ -1548,7 +1546,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     right: 16px;
   }
 
-  /* ── IMAGE GALLERY ── */
+  /* \u2500\u2500 IMAGE GALLERY \u2500\u2500 */
   .image-gallery {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1564,7 +1562,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     object-fit: cover;
   }
 
-  /* ── PHASE COMPLETION BANNER ── */
+  /* \u2500\u2500 PHASE COMPLETION BANNER \u2500\u2500 */
   .phase-complete-banner {
     max-width: 760px;
     width: 100%;
@@ -1618,7 +1616,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     white-space: nowrap;
   }
 
-  /* ── TOAST ── */
+  /* \u2500\u2500 TOAST \u2500\u2500 */
   #toast {
     position: fixed;
     bottom: 24px;
@@ -1637,7 +1635,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
   #toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* ── UTILS ── */
+  /* \u2500\u2500 UTILS \u2500\u2500 */
   .hidden { display: none !important; }
 
   .screen { display: none; }
@@ -1655,11 +1653,93 @@ export const getHTML = (config) => `<!DOCTYPE html>
     .blueprint-header { padding: 24px 20px; }
     .blueprint-actions { padding: 16px 20px; }
   }
+
+  /* \u2500\u2500 HELP WIDGET \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  #help-btn {
+    position: fixed; bottom: 90px; right: 20px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--bg); border: 1.5px solid var(--border2);
+    color: var(--text2); font-size: 15px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.14); z-index: 998;
+    transition: all 0.22s; font-family: 'Inter', sans-serif;
+  }
+  #help-btn:hover { background: var(--text); color: #fff; border-color: var(--text); transform: scale(1.08); }
+  #help-panel {
+    position: fixed; top: 0; right: 0; width: 340px; height: 100vh;
+    background: var(--bg); border-left: 1px solid var(--border);
+    box-shadow: -4px 0 40px rgba(0,0,0,0.12); z-index: 1000;
+    display: flex; flex-direction: column;
+    transform: translateX(360px);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+  }
+  #help-panel.open { transform: translateX(0); }
+  #help-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 999; cursor: pointer; }
+  #help-overlay.open { display: block; }
+  .help-hdr { display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 20px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .help-hdr-title { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .help-hdr-sub { font-size: 12px; color: var(--text3); }
+  .help-close-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--bg2); color: var(--text3);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; transition: all 0.2s; flex-shrink: 0;
+  }
+  .help-close-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+  .help-body { flex: 1; overflow-y: auto; padding-bottom: 8px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+  .help-sec { padding: 16px 20px 8px; }
+  .help-sec-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .help-faq { margin-bottom: 2px; }
+  .help-faq-q {
+    width: 100%; text-align: left; background: none;
+    border: none; border-bottom: 1px solid var(--border);
+    padding: 11px 0; font-size: 13px; font-weight: 500; color: var(--text);
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; font-family: 'Inter', sans-serif; line-height: 1.4; transition: color 0.15s;
+  }
+  .help-faq-q:hover { color: var(--gold); }
+  .help-faq-arrow { font-size: 9px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
+  .help-faq.open .help-faq-arrow { transform: rotate(180deg); }
+  .help-faq-a { display: none; font-size: 13px; color: var(--text2); line-height: 1.75; padding: 10px 0 14px; border-bottom: 1px solid var(--border); }
+  .help-faq.open .help-faq-a { display: block; }
+  .help-divider { height: 1px; background: var(--border); margin: 8px 20px 4px; }
+  .help-restart { margin: 10px 16px 4px; padding: 16px; background: var(--bg2); border-radius: 12px; border: 1px solid var(--border); }
+  .help-restart-title { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+  .help-restart-desc { font-size: 12px; color: var(--text3); line-height: 1.65; margin-bottom: 12px; }
+  .help-restart-btn {
+    width: 100%; padding: 10px 16px; border-radius: 50px;
+    border: 1.5px solid var(--border2); background: transparent; color: var(--text2);
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+  }
+  .help-restart-btn:hover { border-color: #e05252; color: #e05252; background: rgba(224,82,82,0.04); }
+  .help-confirm-box { display: none; }
+  .help-confirm-box.show { display: block; }
+  .help-confirm-txt { font-size: 13px; color: var(--text); line-height: 1.65; margin-bottom: 12px; }
+  .help-confirm-row { display: flex; gap: 8px; }
+  .help-confirm-yes { flex: 1; padding: 9px 14px; border-radius: 50px; border: none; background: #e05252; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity 0.2s; }
+  .help-confirm-yes:disabled { opacity: 0.6; cursor: default; }
+  .help-confirm-no { flex: 1; padding: 9px 14px; border-radius: 50px; border: 1.5px solid var(--border2); background: transparent; color: var(--text2); font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .help-ftr { padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; }
+  .help-ftr-lbl { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .help-email-cta { display: block; width: 100%; padding: 10px 16px; border-radius: 50px; border: 1.5px solid var(--border2); background: transparent; color: var(--text); font-size: 13px; font-weight: 500; text-align: center; text-decoration: none; transition: all 0.2s; margin-bottom: 6px; }
+  .help-email-cta:hover { border-color: var(--gold); color: var(--gold); }
+  .help-ftr-note { font-size: 11px; color: var(--text3); text-align: center; }
+  @media (max-width: 600px) {
+    #help-panel { width: 100%; transform: translateX(100%); }
+    #help-btn { bottom: 90px; right: 16px; }
+  }
+  /* Mobile: hide doc upload, keep only photo button */
+  @media (max-width: 600px) {
+    #doc-upload-btn { display: none !important; }
+    .tool-btn { padding: 6px 10px; font-size: 13px; }
+    .input-tools { gap: 4px; }
+    #doc-upload-status { font-size: 12px; padding: 6px 12px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- ══ LANDING SCREEN (fallback for unauthenticated) ══ -->
+<!-- \u2550\u2550 LANDING SCREEN (fallback for unauthenticated) \u2550\u2550 -->
 <div id="landing" class="screen active">
   <div class="landing-inner">
     <div class="eyebrow">Deep Work by James Guldan</div>
@@ -1679,25 +1759,25 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ INTAKE SCREEN ══ -->
+<!-- \u2550\u2550 INTAKE SCREEN \u2550\u2550 -->
 <div id="intake" class="screen">
 
   <!-- Hero section -->
   <div class="intake-hero">
     <div class="eyebrow">Your Session Is Ready</div>
     <h2>Let&rsquo;s Build Something<br><em>Only You</em> Could Build</h2>
-    <p>Eight conversations. One complete brand blueprint. Built around who you actually are — not a template, not a formula. The real thing.</p>
+    <p>Eight conversations. One complete brand blueprint. Built around who you actually are \u2014 not a template, not a formula. The real thing.</p>
     <div class="promise-strip">
       <div class="promise-item">
-        <div class="promise-icon">✦</div>
+        <div class="promise-icon">\u2726</div>
         <span>8 short conversations</span>
       </div>
       <div class="promise-item">
-        <div class="promise-icon">📄</div>
+        <div class="promise-icon">\u{1F4C4}</div>
         <span>Complete brand blueprint</span>
       </div>
       <div class="promise-item">
-        <div class="promise-icon">🎯</div>
+        <div class="promise-icon">\u{1F3AF}</div>
         <span>Custom to your story</span>
       </div>
     </div>
@@ -1720,7 +1800,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <!-- Step 1: Website -->
     <div class="step-card">
       <div class="step-card-header">
-        <div class="step-number">1</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-2.5 3-4 5.8-4 9s1.5 6 4 9M12 3c2.5 3 4 5.8 4 9s-1.5 6-4 9"/></svg></div>
         <h3>Where You Are Right Now</h3>
         <p class="step-why">If you have an existing website, paste it here. This is not about judging what you have built so far. This is about understanding your starting point so we can see the gap between where you are and where you are going. Most people who do this exercise are shocked at how much more clearly they can articulate their value afterward.</p>
         <p class="step-impact">This one input alone can save 20+ minutes of the interview.</p>
@@ -1734,7 +1814,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <!-- Step 2: LinkedIn -->
     <div class="step-card">
       <div class="step-card-header">
-        <div class="step-number">2</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12v5M8 8.5v.1M12 17v-5c0-1.5 1-2.5 2.5-2.5S17 10 17 12v5"/></svg></div>
         <h3>Your Professional Story</h3>
         <p class="step-why">Your LinkedIn profile holds a goldmine of positioning data you probably do not even realize. The way you describe your experience, the endorsements you have collected, the language you naturally use when you are not overthinking it. We will analyze all of it so the AI interviewer already understands your world before asking the first question.</p>
         <p class="step-impact">The AI reads your entire professional narrative before your session begins.</p>
@@ -1748,7 +1828,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <!-- Step 3: Competitors -->
     <div class="step-card">
       <div class="step-card-header">
-        <div class="step-number">3</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/></svg></div>
         <h3>The Landscape Around You</h3>
         <p class="step-why">Here is why this matters more than you think: your brand does not exist in a vacuum. The people you admire, the competitors you respect (or resent), the businesses in your space that seem to have it figured out. When we see what they are doing, we can find the white space. The gap where only you can stand. This is how you stop competing and start leading.</p>
         <p class="step-impact">Competitor analysis reveals the positioning gap only your brand can fill.</p>
@@ -1762,7 +1842,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <!-- Step 4: Testimonials -->
     <div class="step-card">
       <div class="step-card-header">
-        <div class="step-number">4</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r=".5" fill="currentColor"/><circle cx="12" cy="10" r=".5" fill="currentColor"/><circle cx="15" cy="10" r=".5" fill="currentColor"/></svg></div>
         <h3>The Words That Already Work</h3>
         <p class="step-why">This might be the most powerful input of all. When your best clients describe what you did for them, they use language that is pure gold. They say things you would never say about yourself. They capture the transformation in ways that feel authentic because they ARE authentic. The AI will mine these words and weave them into your brand messaging so your copy sounds like real humans raving about you, not like a marketing robot.</p>
         <p class="step-impact">Client language becomes your most persuasive brand copy.</p>
@@ -1776,7 +1856,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <!-- Step 5: Photos -->
     <div class="step-card">
       <div class="step-card-header">
-        <div class="step-number">5</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
         <h3>Put a Face to the Brand</h3>
         <p class="step-why">People buy from people. Your headshot, your team, your workspace, your product in action. These images tell a story that words alone cannot. Upload anything that represents you or your work. The AI will use these to understand your visual identity and, if you chose the website package, to build a site that actually looks and feels like you.</p>
         <p class="step-impact">Visuals make your blueprint and website uniquely, unmistakably yours.</p>
@@ -1784,7 +1864,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
       <div class="step-card-body">
         <div class="upload-zone" id="upload-zone">
           <input type="file" id="file-input" multiple accept="image/*">
-          <div class="upload-icon">📷</div>
+          <div class="upload-icon">\u{1F4F7}</div>
           <p>Drag photos here or click to browse</p>
           <span>JPG, PNG, WebP up to 10MB each (up to 10 files)</span>
         </div>
@@ -1792,21 +1872,27 @@ export const getHTML = (config) => `<!DOCTYPE html>
       </div>
     </div>
 
-  </div>
-
-  <!-- Phone (for session nudges) -->
-  <div class="nudge-card">
-    <div class="nudge-icon">📱</div>
-    <div class="nudge-content">
-      <div class="nudge-text">
-        <span class="nudge-title">Stay on track</span>
-        <span class="nudge-desc">Drop your number and we will text you a gentle nudge if you step away mid session. Totally optional.</span>
+    <!-- Step 6: Documents -->
+    <div class="step-card">
+      <div class="step-card-header">
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+        <h3>Your Story So Far</h3>
+        <p class="step-why">Maybe you have been journaling about this for months. Maybe you wrote a business plan, a manifesto, notes on your phone at 2am, a Google Doc you keep coming back to. Whatever it is, upload it here. The AI will read every word before your session begins, so it already understands your journey and where your thinking has been heading. Nothing is too rough or too raw.</p>
+        <p class="step-impact">Your past thinking becomes the foundation for deeper, more personal strategy.</p>
       </div>
-      <div class="nudge-input-wrap">
-        <input type="tel" id="intake-phone" placeholder="+1 (555) 000-0000" autocomplete="tel" class="nudge-input">
+      <div class="step-card-body">
+        <div class="upload-zone" id="doc-upload-zone">
+          <input type="file" id="doc-file-input" multiple accept=".pdf,.txt,.md,.doc,.docx">
+          <div class="upload-icon">\u{1F4DD}</div>
+          <p>Drag documents here or click to browse</p>
+          <span>PDF, Word, TXT up to 5MB each (up to 5 files)</span>
+        </div>
+        <div class="uploaded-files" id="uploaded-docs"></div>
       </div>
     </div>
+
   </div>
+
 
   <!-- Consent -->
   <div class="consent-block" style="margin:24px auto 0;max-width:580px;text-align:left;">
@@ -1825,7 +1911,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
 </div>
 
-<!-- ══ APP SCREEN ══ -->
+<!-- \u2550\u2550 APP SCREEN \u2550\u2550 -->
 <div id="app" class="screen">
   <div class="phase-bar">
     <div class="phase-label">Phase</div>
@@ -1866,16 +1952,16 @@ export const getHTML = (config) => `<!DOCTYPE html>
     </div>
     <div class="voice-status" id="voice-status"></div>
     <div class="input-tools">
-      <button class="tool-btn" onclick="openUploadModal()">📎 Add photos</button>
-      <button class="tool-btn" onclick="openDocUpload()">📄 Upload document</button>
-      <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none">✨ Generate brand images</button>
+      <button class="tool-btn" onclick="openUploadModal()">\u{1F4CE} Add photos</button>
+      <button class="tool-btn" id="doc-upload-btn" onclick="openDocUpload()">\u{1F4C4} Upload document</button>
+      <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none">\u2728 Generate brand images</button>
       <input type="file" id="doc-upload-input" accept=".pdf,.txt,.md" style="display:none" onchange="handleDocUpload(this)">
     </div>
     <div id="doc-upload-status" style="display:none;padding:8px 16px;font-size:13px;color:var(--text2);background:var(--bg2);border-radius:8px;margin-top:6px;"></div>
   </div>
 </div>
 
-<!-- ══ BLUEPRINT SCREEN ══ -->
+<!-- \u2550\u2550 BLUEPRINT SCREEN \u2550\u2550 -->
 <div id="blueprint-screen" class="screen">
   <div class="blueprint-header">
     <div class="eyebrow">Session Complete</div>
@@ -1895,76 +1981,85 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ BUILD SITE POPUP ══ -->
+<!-- \u2550\u2550 BUILD SITE POPUP \u2550\u2550 -->
 <div id="build-site-popup" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn 0.3s ease;">
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:20px;max-width:520px;width:92%;padding:36px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="font-size:42px;margin-bottom:12px;">✨</div>
+    <div style="font-size:42px;margin-bottom:12px;">\u2728</div>
     <h3 style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;color:var(--text);">Get Your Vision Live</h3>
     <p style="font-size:15px;color:var(--text2);line-height:1.65;margin-bottom:8px;">You just did the hard part. Your strategy, messaging, and visual identity are locked in. In the next 60 seconds, all of it becomes a real website you can share with the world.</p>
     <div style="background:var(--bg);border-radius:12px;padding:16px 20px;margin:16px 0 24px;text-align:left;">
       <div style="font-size:13px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Here is what happens next</div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">⚡</span>
+        <span style="font-size:16px;">\u26A1</span>
         <span style="font-size:14px;color:var(--text2);line-height:1.5;">Your brand strategy, colors, and voice get structured into a page</span>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">🎨</span>
-        <span style="font-size:14px;color:var(--text2);line-height:1.5;">Custom images are generated to match your visual identity</span>
+        <span style="font-size:16px;">\u{1F3A8}</span>
+        <span style="font-size:14px;color:var(--text2);line-height:1.5;">Your photos are placed on the site, or custom images are generated to match your visual identity</span>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">💻</span>
+        <span style="font-size:16px;">\u{1F4BB}</span>
         <span style="font-size:14px;color:var(--text2);line-height:1.5;">A complete branded website is written from everything you shared</span>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">🔍</span>
+        <span style="font-size:16px;">\u{1F50D}</span>
         <span style="font-size:14px;color:var(--text2);line-height:1.5;">SEO meta tags, Open Graph previews, favicon, and AI schema are injected automatically</span>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;">
-        <span style="font-size:16px;">🚀</span>
+        <span style="font-size:16px;">\u{1F680}</span>
         <span style="font-size:14px;color:var(--text2);line-height:1.5;">It goes live at a shareable URL, fully optimized for search and social sharing</span>
       </div>
     </div>
+    <div id="site-photo-upload" style="background:var(--bg);border-radius:12px;padding:16px 20px;margin:0 0 20px;text-align:left;">
+      <div style="font-size:13px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Have professional photos?</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px;">Upload your headshots, team photos, or brand imagery. We will use your real photos on the site instead of generating AI images. Real photos convert dramatically better.</p>
+      <div style="position:relative;border:2px dashed var(--border2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:border-color 0.2s;" onclick="document.getElementById('site-photo-input').click()">
+        <input type="file" id="site-photo-input" multiple accept="image/*" style="display:none" onchange="handleSitePhotoUpload(this)">
+        <span style="font-size:13px;color:var(--text3);">\u{1F4F7} Click to add photos (JPG, PNG, WebP)</span>
+      </div>
+      <div id="site-photo-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+    </div>
     <button class="btn btn-gold" onclick="closeBuildPopup();proceedToSite();" style="width:100%;padding:16px 24px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);margin-bottom:10px;">Let's Go</button>
-    <button class="btn btn-ghost" onclick="closeBuildPopup()" style="width:auto;padding:10px 20px;font-size:13px;color:var(--text3);">Maybe later</button>
+    <button class="btn btn-ghost" onclick="saveForLater()" style="width:auto;padding:10px 20px;font-size:13px;color:var(--text3);">Save for later</button>
   </div>
 </div>
 
-<!-- ══ SITE GENERATION SCREEN ══ -->
+<!-- \u2550\u2550 SITE GENERATION SCREEN \u2550\u2550 -->
 <div id="site-screen" class="screen">
   <div class="site-progress">
     <h2>Building Your Website</h2>
     <p>Your brand blueprint is being turned into a real, branded website. This takes about 60 seconds.</p>
     <div class="progress-steps" id="gen-steps">
       <div class="progress-step">
-        <div class="step-icon active" id="step-1-icon">⚡</div>
+        <div class="step-icon active" id="step-1-icon">\u26A1</div>
         <div class="step-text"><strong>Preparing your brand context</strong>Structuring blueprint data for generation</div>
       </div>
       <div class="progress-step">
-        <div class="step-icon pending" id="step-2-icon">🎨</div>
+        <div class="step-icon pending" id="step-2-icon">\u{1F3A8}</div>
         <div class="step-text"><strong>Generating brand images</strong>Creating custom hero imagery via Imagen 4</div>
       </div>
       <div class="progress-step">
-        <div class="step-icon pending" id="step-3-icon">💻</div>
+        <div class="step-icon pending" id="step-3-icon">\u{1F4BB}</div>
         <div class="step-text"><strong>Writing your website</strong>Building pages from your blueprint</div>
       </div>
       <div class="progress-step">
-        <div class="step-icon pending" id="step-4-icon">🔍</div>
+        <div class="step-icon pending" id="step-4-icon">\u{1F50D}</div>
         <div class="step-text"><strong>SEO &amp; launch optimization</strong>Meta tags, Open Graph, favicon, schema markup, and search indexing</div>
       </div>
       <div class="progress-step">
-        <div class="step-icon pending" id="step-5-icon">🚀</div>
+        <div class="step-icon pending" id="step-5-icon">\u{1F680}</div>
         <div class="step-text"><strong>Deploying to a live URL</strong>Publishing your optimized site to the web</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══ DEPLOY SCREEN ══ -->
+<!-- \u2550\u2550 DEPLOY SCREEN \u2550\u2550 -->
 <div id="deploy-screen" class="screen" style="display:none;">
   <!-- Legacy deploy screen kept hidden; Mission Control replaces it -->
 </div>
 
-<!-- ══ SITE REVEAL + GUIDED SECTION REVIEW ══ -->
+<!-- \u2550\u2550 SITE REVEAL + GUIDED SECTION REVIEW \u2550\u2550 -->
 <div id="site-reveal" class="screen">
  <div style="max-width:760px;margin:0 auto;padding:32px 20px;">
   <div id="review-progress" style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
@@ -1990,8 +2085,8 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
   <div id="review-actions" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;" id="review-btns">
-    <button class="reaction-btn" onclick="sectionReaction('approve')"><span class="reaction-icon">👍</span><span class="reaction-label">Looks good</span></button>
-    <button class="reaction-btn" onclick="sectionReaction('refine')"><span class="reaction-icon">✏️</span><span class="reaction-label">Refine this</span></button>
+    <button class="reaction-btn" onclick="sectionReaction('approve')"><span class="reaction-icon">\u{1F44D}</span><span class="reaction-label">Looks good</span></button>
+    <button class="reaction-btn" onclick="sectionReaction('refine')"><span class="reaction-icon">\u270F\uFE0F</span><span class="reaction-label">Refine this</span></button>
    </div>
    <div id="section-refine-input" style="display:none;margin-top:12px;">
     <textarea id="section-refine-text" rows="3" placeholder="What would you change about this section?" style="width:100%;padding:12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-sm);resize:vertical;font-family:inherit;line-height:1.5;box-sizing:border-box;margin-bottom:10px;"></textarea>
@@ -2003,7 +2098,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
    </div>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
-   <button id="review-prev-btn" class="btn btn-outline" onclick="prevReviewSection()" style="padding:10px 20px;font-size:13px;visibility:hidden;">← Previous</button>
+   <button id="review-prev-btn" class="btn btn-outline" onclick="prevReviewSection()" style="padding:10px 20px;font-size:13px;visibility:hidden;">\u2190 Previous</button>
    <button onclick="skipReview()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;text-decoration:underline;">Skip review</button>
    <div style="width:100px;"></div>
   </div>
@@ -2016,13 +2111,13 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <!-- Back to Blueprint -->
     <div style="margin-bottom:24px;">
       <button onclick="showScreen('blueprint')" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:6px;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-        ← View Blueprint
+        \u2190 View Blueprint
       </button>
     </div>
 
     <!-- Header -->
     <div style="text-align:center;margin-bottom:36px;">
-      <div style="font-size:48px;margin-bottom:12px;">🚀</div>
+      <div style="font-size:48px;margin-bottom:12px;">\u{1F680}</div>
       <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:6px;">
         <span id="mc-brand-name">Your Brand</span> is Live
       </h2>
@@ -2031,7 +2126,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
     <!-- Live URL bar -->
     <div id="mc-live-url" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:18px;">🌐</div>
+      <div style="font-size:18px;">\u{1F310}</div>
       <a id="mc-url-link" href="#" target="_blank" style="color:var(--gold);font-size:15px;font-weight:500;text-decoration:none;flex:1;word-break:break-all;"></a>
       <button id="mc-copy-btn" onclick="copyMcUrl()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">Copy Link</button>
       <a id="mc-visit-btn" href="#" target="_blank" class="btn btn-gold" style="padding:8px 18px;font-size:13px;text-decoration:none;white-space:nowrap;">Visit Site</a>
@@ -2055,18 +2150,26 @@ export const getHTML = (config) => `<!DOCTYPE html>
     </div>
 
     <!-- Share & Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
       <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">
-        ✉️ &nbsp;Email My Site Link
+        \u2709\uFE0F &nbsp;Email My Site Link
       </button>
       <button onclick="copyMcUrl()" class="btn btn-outline" style="padding:14px;font-size:14px;">
-        📋 &nbsp;Copy Link to Share
+        \u{1F4CB} &nbsp;Copy Link to Share
       </button>
+    </div>
+
+    <!-- Strategy Call CTA (moved up: highest conversion moment is right after seeing the live site) -->
+    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.03));border:1.5px solid rgba(212,175,55,0.35);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Next Step</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
+      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a strategy call. We will connect your domain, refine your content together, and build your traffic plan.</p>
+      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;box-shadow:0 4px 20px rgba(196,112,63,0.3);">Book Your Strategy Call</button>
     </div>
 
     <!-- 30-Day Preview Notice -->
     <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;">
-      <div style="font-size:22px;margin-top:2px;">📅</div>
+      <div style="font-size:22px;margin-top:2px;">\u{1F4C5}</div>
       <div>
         <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Your Site is Live for 30 Days</div>
         <div style="font-size:13px;color:var(--text2);line-height:1.6;">Your preview is hosted here for 30 days at no extra cost. Download your site file or self-deploy to Cloudflare Pages (free) to keep it live permanently.</div>
@@ -2075,14 +2178,14 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
     <!-- Download Site -->
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;">
-      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">📥 Download Your Site File</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">A single HTML file with everything built in — your copy, styles, and layout. Works anywhere. No dependencies.</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">\u{1F4E5} Download Your Site File</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">A single HTML file with everything built in \u2014 your copy, styles, and layout. Works anywhere. No dependencies.</div>
       <button id="download-site-btn" class="btn btn-gold" onclick="downloadSite()" style="width:auto;padding:12px 28px;font-size:14px;">Download Site</button>
     </div>
 
     <!-- Self-Deploy Guide -->
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;">
-      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">🌐 Self-Deploy to Cloudflare Pages — Free Forever</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">\u{1F310} Self-Deploy to Cloudflare Pages \u2014 Free Forever</div>
       <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">Cloudflare Pages hosts your site permanently on their free tier. Takes about 5 minutes.</div>
       <div style="display:flex;flex-direction:column;gap:0;">
         <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
@@ -2108,11 +2211,10 @@ export const getHTML = (config) => `<!DOCTYPE html>
       </div>
     </div>
 
-    <!-- Strategy Call CTA -->
-    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:28px 24px;">
-      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
-      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a 1:1 strategy call. We will connect your domain, refine your content, and build a traffic plan together.</p>
-      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>
+    <!-- Secondary CTA at bottom for scrollers -->
+    <div style="text-align:center;padding:20px 0 8px;">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Questions? Something feel off about your site?</p>
+      <a href="mailto:james@jamesguldan.com?subject=Deep Work Site Question" style="color:var(--gold);font-size:14px;font-weight:500;text-decoration:none;">Email James directly &rarr;</a>
     </div>
 
   </div>
@@ -2120,7 +2222,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
 
 <!-- order bump removed -->
 
-<!-- ══ SESSION LOADING OVERLAY ══ -->
+<!-- \u2550\u2550 SESSION LOADING OVERLAY \u2550\u2550 -->
 <div class="session-loading" id="session-loading">
   <div id="loading-content">
     <div class="loading-spinner"></div>
@@ -2137,7 +2239,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ BLUEPRINT GENERATION OVERLAY ══ -->
+<!-- \u2550\u2550 BLUEPRINT GENERATION OVERLAY \u2550\u2550 -->
 <div class="blueprint-generating" id="blueprint-generating">
   <div class="blueprint-gen-icon">
     <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -2153,11 +2255,11 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
+<!-- \u2550\u2550 TOAST \u2550\u2550 -->
 <div id="toast"></div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────
+// \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const STATE = {
   sessionId: null,
   tier: null,
@@ -2168,7 +2270,8 @@ const STATE = {
   uploadedFiles: [],
   uploadedKeys: [],
   blueprintOverlayShown: false,
-  sessionJwt: null
+  sessionJwt: null,
+  uploadedDocs: []
 };
 
 const PHASE_NAMES = [
@@ -2183,7 +2286,7 @@ const PRICES = {
   call: '${config.STRIPE_PRICE_CALL}'
 };
 
-// ── SCREEN MANAGEMENT ────────────────────────────────────
+// \u2500\u2500 SCREEN MANAGEMENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -2201,7 +2304,7 @@ function showToast(msg) {
   el._toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-// ── TIER SELECTION & CHECKOUT ────────────────────────────
+// \u2500\u2500 TIER SELECTION & CHECKOUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function selectTier(tier) {
   STATE.tier = tier;
   // Check for existing paid session in URL
@@ -2264,13 +2367,13 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
       } catch (_) {}
     } else {
-      // No access token — restore JWT if we have one stored for this session
+      // No access token \u2014 restore JWT if we have one stored for this session
       const stored = localStorage.getItem('dw_session_jwt');
       if (stored) STATE.sessionJwt = stored;
     }
 
     if (upgraded === 'true') {
-      // Returning from site upgrade purchase — go straight to site builder
+      // Returning from site upgrade purchase \u2014 go straight to site builder
       showScreen('site-screen');
       runSiteGeneration();
       return;
@@ -2289,6 +2392,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         const user = await res.json();
         if (user && user.id) {
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
+          STATE.email = user.email || '';
           showScreen('intake');
 
           // Check for active or completed session to resume
@@ -2298,7 +2402,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
             const activeData = await activeRes.json();
             if (activeData.hasActiveSession && activeData.session) {
-              // Always auto-resume — drop user right where they left off
+              // Always auto-resume \u2014 drop user right where they left off
               pendingResumeSessionId = activeData.session.id;
               localStorage.setItem('dw_active_session', activeData.session.id);
               await resumeSession();
@@ -2313,6 +2417,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // File upload setup
   setupFileUpload();
+  setupDocUpload();
 
   // Voice input setup
   initVoiceInput();
@@ -2322,7 +2427,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   if (ta) ta.addEventListener('input', () => autoResize(ta));
 });
 
-// ── INTAKE & SESSION START ────────────────────────────────
+// \u2500\u2500 INTAKE & SESSION START \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function setupFileUpload() {
   const zone = document.getElementById('upload-zone');
   const input = document.getElementById('file-input');
@@ -2353,8 +2458,8 @@ function renderUploadedFiles() {
   if (!container) return;
   container.innerHTML = STATE.uploadedFiles.map((f, i) => \`
     <div class="file-chip">
-      📷 \${f.name}
-      <button onclick="removeFile(\${i})">×</button>
+      \u{1F4F7} \${f.name}
+      <button onclick="removeFile(\${i})">\xD7</button>
     </div>
   \`).join('');
 }
@@ -2364,7 +2469,53 @@ function removeFile(i) {
   renderUploadedFiles();
 }
 
-// ── LOADING MESSAGES ──────────────────────────────────────
+// ── DOCUMENT UPLOAD (Onboarding) ──────────────────────────────────────
+function setupDocUpload() {
+  const zone = document.getElementById('doc-upload-zone');
+  const input = document.getElementById('doc-file-input');
+  if (!zone || !input) return;
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handleDocFiles(Array.from(e.dataTransfer.files));
+  });
+  input.addEventListener('change', () => handleDocFiles(Array.from(input.files)));
+}
+
+function handleDocFiles(files) {
+  const DOC_EXTS = ['pdf','txt','md','doc','docx'];
+  const existing = STATE.uploadedDocs.map(f => f.name);
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (DOC_EXTS.includes(ext) && !existing.includes(f.name) && STATE.uploadedDocs.length < 5) {
+      if (f.size <= 5 * 1024 * 1024) {
+        STATE.uploadedDocs.push(f);
+      }
+    }
+  });
+  renderUploadedDocs();
+}
+
+function renderUploadedDocs() {
+  const container = document.getElementById('uploaded-docs');
+  if (!container) return;
+  container.innerHTML = STATE.uploadedDocs.map((f, i) => \`
+    <div class="file-chip">
+      \u{1F4C4} \${f.name}
+      <button onclick="removeDoc(\${i})">\xD7</button>
+    </div>
+  \`).join('');
+}
+
+function removeDoc(i) {
+  STATE.uploadedDocs.splice(i, 1);
+  renderUploadedDocs();
+}
+
+// \u2500\u2500 LOADING MESSAGES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const LOADING_MESSAGES = [
   "Brewing something strong for your brand...",
   "Reading between your lines...",
@@ -2456,7 +2607,7 @@ function dismissLoadingError() {
 async function startSession() {
   const btn = document.getElementById('start-btn');
 
-  // ── Consent check ──
+  // \u2500\u2500 Consent check \u2500\u2500
   const consentBox = document.getElementById('consent-check');
   const consentErr = document.getElementById('consent-error');
   if (consentBox && !consentBox.checked) {
@@ -2466,7 +2617,7 @@ async function startSession() {
   }
   if (consentErr) consentErr.style.display = 'none';
 
-  // ── Validate inputs before starting ──
+  // \u2500\u2500 Validate inputs before starting \u2500\u2500
   const websiteVal = (document.getElementById('intake-website')?.value || '').trim();
   const linkedinVal = (document.getElementById('intake-linkedin')?.value || '').trim();
   const competitorsVal = (document.getElementById('intake-competitors')?.value || '').trim();
@@ -2508,13 +2659,13 @@ async function startSession() {
     }
   }
 
-  // ── Start loading ──
+  // \u2500\u2500 Start loading \u2500\u2500
   btn.textContent = 'Preparing...';
   btn.disabled = true;
   showLoadingOverlay();
 
   try {
-    // ── Step 1: Upload files ──
+    // \u2500\u2500 Step 1: Upload files \u2500\u2500
     if (STATE.uploadedFiles.length > 0) {
       updateLoadingStage('Uploading your files', 10);
 
@@ -2580,13 +2731,43 @@ async function startSession() {
       }
     }
 
-    // ── Step 2: Generate session ID ──
+    // ── Step 1b: Upload documents ──
+    if (STATE.uploadedDocs.length > 0) {
+      updateLoadingStage('Reading your documents', 30);
+
+      if (!STATE.sessionId) {
+        STATE.sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      }
+
+      for (let i = 0; i < STATE.uploadedDocs.length; i++) {
+        const file = STATE.uploadedDocs[i];
+        updateLoadingStage('Reading ' + file.name, 30 + Math.round((i / STATE.uploadedDocs.length) * 10));
+
+        if (file.size > 5 * 1024 * 1024) continue;
+
+        try {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('sessionId', STATE.sessionId);
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 30000);
+          const r = await fetch('/api/upload', { method: 'POST', body: fd, signal: controller.signal });
+          clearTimeout(timeout);
+          if (r.ok) {
+            const d = await r.json();
+            if (d.key) STATE.uploadedKeys.push(d.key);
+          }
+        } catch (_) {}
+      }
+    }
+
+    // \u2500\u2500 Step 2: Generate session ID \u2500\u2500
     updateLoadingStage('Setting up your session', 35);
     if (!STATE.sessionId) {
       STATE.sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     }
 
-    // ── Step 3: Gather and validate intake data ──
+    // \u2500\u2500 Step 3: Gather and validate intake data \u2500\u2500
     updateLoadingStage('Gathering your context', 45);
     const intakeData = {
       sessionId: STATE.sessionId,
@@ -2596,10 +2777,9 @@ async function startSession() {
       competitorUrls: competitorsVal ? competitorsVal.split('\\n').map(s => s.trim()).filter(Boolean) : [],
       testimonials: (document.getElementById('intake-testimonials')?.value || '').trim(),
       uploadedKeys: STATE.uploadedKeys,
-      phone: (document.getElementById('intake-phone')?.value || '').trim()
     };
 
-    // ── Step 4: Start the session (the big one) ──
+    // \u2500\u2500 Step 4: Start the session (the big one) \u2500\u2500
     updateLoadingStage('Starting your Deep Work session', 55);
 
     const controller = new AbortController();
@@ -2687,7 +2867,7 @@ async function startSession() {
       const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
       if (isMobile && !localStorage.getItem('dw_voice_hint_seen')) {
         setTimeout(() => {
-          showToast('Tip: tap the mic and just speak — most people find it easier than typing');
+          showToast('Tip: tap the mic and just speak \u2014 most people find it easier than typing');
           localStorage.setItem('dw_voice_hint_seen', '1');
         }, 4000);
       }
@@ -2722,7 +2902,7 @@ async function startSession() {
   }
 }
 
-// ── SESSION RESUME ────────────────────────────────────────
+// \u2500\u2500 SESSION RESUME \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let pendingResumeSessionId = null;
 
 function showResumeBanner(sessionInfo) {
@@ -2737,7 +2917,7 @@ function showResumeBanner(sessionInfo) {
   const PHASE_LABELS = ['', 'Your Story', 'Your Expertise', 'Your Beliefs', 'Your People', 'Your Voice & Identity', 'Your Market', 'Your Offers', 'Synthesis'];
   const phaseName = PHASE_LABELS[phase] || 'Phase ' + phase;
 
-  meta.textContent = 'Phase ' + phase + ' of 8: ' + phaseName + '  ·  ' + msgCount + ' messages so far';
+  meta.textContent = 'Phase ' + phase + ' of 8: ' + phaseName + '  \xB7  ' + msgCount + ' messages so far';
   banner.style.display = '';
 
   // Store in localStorage for persistence
@@ -2852,7 +3032,7 @@ async function resumeSession() {
   }
 }
 
-// ── VOICE INPUT (Web Speech API) ─────────────────────────
+// \u2500\u2500 VOICE INPUT (Web Speech API) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 window._voiceRecognition = null;
 window._voiceIsRecording = false;
 window._voiceFinalTranscript = '';
@@ -2945,7 +3125,7 @@ async function startVoice() {
   // Explicitly request microphone permission first (Chrome requirement)
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    // Stop the stream immediately — we just needed the permission grant
+    // Stop the stream immediately \u2014 we just needed the permission grant
     stream.getTracks().forEach(t => t.stop());
   } catch (permErr) {
     console.log('Mic permission error:', permErr);
@@ -2996,7 +3176,7 @@ function setVoiceStatus(text) {
   if (el) el.textContent = text;
 }
 
-// ── CHAT ─────────────────────────────────────────────────
+// \u2500\u2500 CHAT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
@@ -3074,7 +3254,7 @@ async function sendMessage() {
               fullText += ev.content;
               const displayText = fullText
                 .replace(/METADATA:\\{.*\\}$/m, '')
-                .replace(/\u0060\u0060\u0060json[\s\S]*?\u0060\u0060\u0060/g, '')
+                .replace(/\`\`\`json[sS]*?\`\`\`/g, '')
                 .trim();
               updateBubble(aiMsg, displayText);
               scrollToBottom();
@@ -3121,7 +3301,7 @@ async function sendMessage() {
       hideBlueprintGenerating();
     }
     if (isTimeout || isStall) {
-      appendMessage('ai', 'The response took too long. This can happen with complex questions. Please try sending your message again — your conversation is saved.');
+      appendMessage('ai', 'The response took too long. This can happen with complex questions. Please try sending your message again \u2014 your conversation is saved.');
     } else {
       appendMessage('ai', 'Something went wrong (' + (e.message || 'unknown error').substring(0, 100) + '). Please try again.');
     }
@@ -3131,6 +3311,84 @@ async function sendMessage() {
     document.getElementById('msg-input').focus();
   }
 }
+
+// ── Photo & document upload ──────────────────────────────────────────────────
+function openUploadModal() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  input.accept = 'image/*';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.onchange = async function() {
+    if (this.files && this.files.length > 0) {
+      await handlePhotoFiles(Array.from(this.files));
+    }
+    document.body.removeChild(input);
+  };
+  input.click();
+}
+
+async function handlePhotoFiles(files) {
+  if (!files.length || !STATE.sessionId) return;
+  const toUpload = files.slice(0, 5);
+  const statusEl = document.getElementById('doc-upload-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...'; }
+  let succeeded = 0;
+  for (const file of toUpload) {
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('sessionId', STATE.sessionId);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.ok) succeeded++;
+    } catch (e) {}
+  }
+  if (statusEl) {
+    statusEl.textContent = succeeded > 0 ? '✓ ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' added to your session.' : 'Upload failed. Please try again.';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+  }
+  if (succeeded > 0) {
+    const msg = 'I just uploaded ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' to my session.';
+    const input = document.getElementById('msg-input');
+    if (input) {
+      input.value = msg;
+      sendMessage();
+    }
+  }
+}
+
+function openDocUpload() {
+  const input = document.getElementById('doc-upload-input');
+  if (input) input.click();
+}
+
+async function handleDocUpload(inputEl) {
+  if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
+  const file = inputEl.files[0];
+  const statusEl = document.getElementById('doc-upload-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Reading ' + file.name + '...'; }
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('sessionId', STATE.sessionId);
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (statusEl) {
+      statusEl.textContent = '✓ ' + file.name + ' added. The AI will reference it in your session.';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  } catch (e) {
+    if (statusEl) {
+      statusEl.textContent = 'Could not upload: ' + e.message;
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  }
+  inputEl.value = '';
+}
+
 
 function appendMessage(role, text) {
   const msgs = document.getElementById('messages');
@@ -3152,7 +3410,7 @@ function updateBubble(bubble, text) {
   bubble.innerHTML = formatText(text);
 }
 
-// ── THINKING MESSAGES (shown while waiting for Claude) ──
+// \u2500\u2500 THINKING MESSAGES (shown while waiting for Claude) \u2500\u2500
 const THINKING_MESSAGES = {
   early: [
     "Thinking about what you just said...",
@@ -3270,7 +3528,7 @@ function removeTyping() {
   }
 }
 
-// ── BLUEPRINT GENERATION OVERLAY ──
+// \u2500\u2500 BLUEPRINT GENERATION OVERLAY \u2500\u2500
 let blueprintGenInterval = null;
 
 function showBlueprintGenerating() {
@@ -3324,7 +3582,7 @@ function showBlueprintGenerating() {
     if (elapsed < 30) {
       timerEl.textContent = 'This typically takes 4 to 6 minutes. Grab a coffee.';
     } else {
-      timerEl.textContent = timeStr + ' elapsed — your blueprint is being crafted with care';
+      timerEl.textContent = timeStr + ' elapsed \u2014 your blueprint is being crafted with care';
     }
   }, 1000);
 
@@ -3405,7 +3663,7 @@ function formatText(text) {
     .join('');
 }
 
-// ── PHASE TRACKING ────────────────────────────────────────
+// \u2500\u2500 PHASE TRACKING \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function showPhaseComplete(completedPhase) {
   if (completedPhase < 1 || completedPhase > 7) return;
   const msgs = document.getElementById('messages');
@@ -3413,7 +3671,7 @@ function showPhaseComplete(completedPhase) {
   div.className = 'phase-complete-banner';
   div.innerHTML = \`
     <div class="phase-complete-inner">
-      <div class="phase-complete-check">✓</div>
+      <div class="phase-complete-check">\u2713</div>
       <div>
         <div class="phase-complete-label">Phase \${completedPhase} Complete</div>
         <div class="phase-complete-name">\${PHASE_NAMES[completedPhase]}</div>
@@ -3438,7 +3696,7 @@ function updatePhase(phase) {
   // Mark previous phases complete
   for (let i = 1; i < phase; i++) {
     const dot = document.getElementById(\`pd\${i}\`);
-    if (dot) { dot.classList.remove('active'); dot.classList.add('complete'); dot.textContent = '✓'; }
+    if (dot) { dot.classList.remove('active'); dot.classList.add('complete'); dot.textContent = '\u2713'; }
   }
 
   // Set current phase active
@@ -3459,16 +3717,15 @@ function updatePhase(phase) {
   }
 }
 
-// ── BLUEPRINT ─────────────────────────────────────────────
+// \u2500\u2500 BLUEPRINT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function handleBlueprintReady(blueprint) {
   if (!blueprint) return;
   STATE.blueprint = blueprint;
 
-  // Show order bump only for blueprint-tier users (not for site-tier who already have SIS)
-  if (STATE.tier !== 'site') {
-    setTimeout(() => {
-      document.getElementById('order-bump').style.display = 'flex';
-    }, 2000);
+  // Order bump (removed from HTML, guard against null reference)
+  const _bump = document.getElementById('order-bump');
+  if (_bump && STATE.tier !== 'site') {
+    setTimeout(() => { _bump.style.display = 'flex'; }, 2000);
   }
 
   // After a moment, transition to blueprint screen
@@ -3482,14 +3739,14 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
   const b = bp.blueprint;
   document.getElementById('bp-name').textContent = b.name + "'s Brand Blueprint";
 
-  // ── Strategist Debrief ──
+  // \u2500\u2500 Strategist Debrief \u2500\u2500
   const debriefEl = document.getElementById('strategist-debrief');
   if (debriefEl) {
     const d = strategistDebrief;
     const p8 = b.part8 || {};
 
     if (d && d.reflection) {
-      // Opus-generated debrief exists — render the real thing
+      // Opus-generated debrief exists \u2014 render the real thing
       const returningNote = isReturning
         ? \`<div style="font-size:13px;color:#C4703F;font-style:italic;margin-bottom:16px;">You came back. That tells me this matters to you. Everything below is exactly where you left it.</div>\`
         : '';
@@ -3497,7 +3754,7 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
       debriefEl.innerHTML = \`
         <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:32px 36px;box-shadow:0 2px 16px rgba(0,0,0,0.05);">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">✦</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">\u2726</div>
             <div>
               <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;">A Note From Your Strategist</div>
               <div style="font-size:12px;color:#999;margin-top:2px;">Written after getting to know you</div>
@@ -3534,7 +3791,7 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
       \`;
       debriefEl.style.display = '';
     } else {
-      // No Opus debrief yet — use smart fallback from blueprint data
+      // No Opus debrief yet \u2014 use smart fallback from blueprint data
       const promise = b.part1 ? b.part1.coreBrandPromise : '';
       const avatarName = b.part2 ? b.part2.name : '';
       const niche = b.part3 ? b.part3.nicheStatement : '';
@@ -3557,7 +3814,7 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
       debriefEl.innerHTML = \`
         <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,0.04);">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">✦</div>
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">\u2726</div>
             <div style="font-size:18px;font-weight:700;font-family:'Outfit',sans-serif;">Your Strategist's Take</div>
           </div>
           <div style="font-size:15px;line-height:1.8;color:#333;">
@@ -3747,7 +4004,36 @@ function renderOffer(label, offer) {
   \`;
 }
 
-// ── ORDER BUMP UPGRADE ─────────────────────────────────────
+// \u2500\u2500 ORDER BUMP UPGRADE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+async function handleSitePhotoUpload(inputEl) {
+  if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
+  const listEl = document.getElementById('site-photo-list');
+  const toUpload = Array.from(inputEl.files).slice(0, 10);
+  if (listEl) listEl.innerHTML = '<span style="font-size:12px;color:var(--text3);">Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...</span>';
+
+  let succeeded = 0;
+  for (const file of toUpload) {
+    if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) continue;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('sessionId', STATE.sessionId);
+      const r = await fetch('/api/upload', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) { succeeded++; STATE.uploadedKeys.push(d.key); }
+    } catch (_) {}
+  }
+
+  if (listEl) {
+    if (succeeded > 0) {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--green);">\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' uploaded. These will be used on your site.</span>';
+    } else {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--red);">Upload failed. You can continue without photos.</span>';
+    }
+  }
+  inputEl.value = '';
+}
+
 function openBuildPopup() {
   document.getElementById('build-site-popup').style.display = 'block';
 }
@@ -3756,11 +4042,30 @@ function closeBuildPopup() {
   document.getElementById('build-site-popup').style.display = 'none';
 }
 
+async function saveForLater() {
+  closeBuildPopup();
+  const email = STATE.email || '';
+  if (email) {
+    try {
+      await fetch('/api/auth/request-magic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      showToast('We sent you a link \u2014 come back anytime to build your site.');
+    } catch(_) {
+      showToast('Your blueprint is saved. Log back in anytime to build your site.');
+    }
+  } else {
+    showToast('Your blueprint is saved. Log back in anytime to build your site.');
+  }
+}
+
 function handleBuildSite() {
   openBuildPopup();
 }
 
-// ── SITE GENERATION ───────────────────────────────────────
+// \u2500\u2500 SITE GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function proceedToSite() {
   showScreen('site-screen');
   await runSiteGeneration();
@@ -3773,7 +4078,7 @@ async function runSiteGeneration() {
     setStep(1, 'done');
     setStep(2, 'active');
 
-    // Generate images (non-blocking — site can work without images)
+    // Generate images (non-blocking \u2014 site can work without images)
     let imgOk = false;
     try {
       const imgRes = await fetch('/api/generate/images', {
@@ -3784,7 +4089,7 @@ async function runSiteGeneration() {
       const imgData = await imgRes.json();
       imgOk = imgData.ok;
     } catch (_) {
-      // Images failed — continue without them
+      // Images failed \u2014 continue without them
     }
 
     setStep(2, imgOk ? 'done' : 'done');
@@ -3917,7 +4222,7 @@ async function downloadSite() {
     showToast('Download started!');
     if (btn) { btn.textContent = originalText; btn.disabled = false; }
   } catch (e) {
-    showToast('Download failed — please try again.');
+    showToast('Download failed \u2014 please try again.');
     if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
 }
@@ -3962,10 +4267,10 @@ function setStep(num, state) {
   const el = document.getElementById(\`step-\${num}-icon\`);
   if (!el) return;
   el.className = \`step-icon \${state}\`;
-  if (state === 'done') el.textContent = '✓';
+  if (state === 'done') el.textContent = '\u2713';
 }
 
-// ── SECTION-BY-SECTION GUIDED REVIEW ──────────────────────
+// \u2500\u2500 SECTION-BY-SECTION GUIDED REVIEW \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let REVIEW_STATE = {
   sections: [],
   currentIndex: 0,
@@ -4257,7 +4562,7 @@ function finishReview() {
   summary += '. Your site is looking great.';
   if (desc) desc.textContent = summary;
 
-  if (btns) btns.innerHTML = '<button class="btn btn-gold" onclick="launchAndGoLive()" style="padding:14px 32px;font-size:16px;">🚀 Go Live!</button>';
+  if (btns) btns.innerHTML = '<button class="btn btn-gold" onclick="launchAndGoLive()" style="padding:14px 32px;font-size:16px;">\u{1F680} Go Live!</button>';
   if (refineInput) refineInput.style.display = 'none';
   if (prevBtn) prevBtn.style.visibility = 'hidden';
 
@@ -4297,7 +4602,7 @@ function launchConfetti() {
   }
 }
 
-// ── CLOUDFLARE DEPLOY ─────────────────────────────────────
+// \u2500\u2500 CLOUDFLARE DEPLOY \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function deployToCloudflare() {
   const token = document.getElementById('cf-token').value.trim();
   const errEl = document.getElementById('token-error');
@@ -4344,10 +4649,181 @@ async function deployToCloudflare() {
 
 function setDeployStep(n, s) {
   const el = document.getElementById('deploy-step-' + n + '-icon');
-  if (el) { el.className = 'step-icon ' + s; if (s==='done') el.textContent='✓'; }
+  if (el) { el.className = 'step-icon ' + s; if (s==='done') el.textContent='\u2713'; }
 }
 
-// ── HELP BOT (GHL Chat Widget with Rate Limiting + Oversight) ──
+// \u2500\u2500 CUSTOM HELP PANEL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+(function() {
+  var HW_CONTENT = {
+    landing: {
+      title: 'Getting Started',
+      faqs: [
+        { q: "How do I get access?", a: 'Visit <a href="https://jamesguldan.com/deep-work" style="color:var(--gold)">jamesguldan.com/deep-work</a> to purchase your session. You will receive a magic login link by email immediately after checkout.' },
+        { q: "I purchased but cannot log in", a: "Check your email including spam for a message from james@jamesguldan.com. Your login link is in that email. If you cannot find it, use the email support button below." }
+      ]
+    },
+    intake: {
+      title: 'About Your Session',
+      faqs: [
+        { q: "Do I need an existing website?", a: "Not at all. The website field is optional. If you have one, it helps the AI understand your starting point. If not, we build from scratch using what you share in the interview." },
+        { q: "What goes in the optional fields?", a: "The more context you give upfront, the less you explain in the interview. Even one good testimonial or a LinkedIn profile meaningfully improves your blueprint quality." },
+        { q: "How long does the full session take?", a: "Most people complete all 8 phases in 60 to 90 minutes. You can type your answers or use the microphone, and you can pause and come back any time." },
+        { q: "Can I pause and come back later?", a: "Yes. Close the tab whenever you need to. When you return and log in, you will pick up exactly where you left off. Your session is saved automatically for 30 days." }
+      ]
+    },
+    app: {
+      title: 'Interview Help',
+      faqs: [
+        { q: "I am not sure how to answer this question", a: "There are no wrong answers. Just say whatever comes to mind, even if it feels incomplete or messy. The AI draws out the good stuff through follow-up questions. Authentic always beats polished." },
+        { q: "Can I skip a question?", a: "Yes. Just type 'skip' or 'I would rather move on' and the interview continues." },
+        { q: "How many phases are there?", a: "Eight phases: your story, expertise, beliefs, audience, voice, market position, offers, and your recommended next step. Each one is a focused conversation." },
+        { q: "Is my progress saved if I close the tab?", a: "Yes. Your session is saved automatically. Come back any time, log in, and you will pick up exactly where you left off." },
+        { q: "The response seems stuck", a: "If nothing appears after 30 seconds, scroll down first. If you are genuinely stuck, refresh the page. Your conversation will still be there." }
+      ],
+      showRestart: true
+    },
+    'blueprint-screen': {
+      title: 'Your Blueprint',
+      faqs: [
+        { q: "Can I save or download my blueprint?", a: "Yes. Use the Download PDF button at the top of this page. Your blueprint is also permanently saved to your account." },
+        { q: "What do the 8 sections mean?", a: "Each section covers a different element: your story, what you are best at, what you stand for, who you serve, how you communicate, your market position, your offer structure, and your recommended next move." },
+        { q: "I want to build my website now", a: "Click the Build My Site button at the top of the blueprint screen to add the Site In Sixty build onto your purchase." }
+      ],
+      showRestart: true
+    },
+    'site-screen': {
+      title: 'Site Generation',
+      faqs: [
+        { q: "How long does this take?", a: "Usually 2 to 4 minutes. Your site is being built from scratch based on your brand strategy. Each step updates as it completes." },
+        { q: "What if something goes wrong?", a: "A Try Again button will appear if generation fails. Your blueprint is not affected, only the site step needs to restart." }
+      ]
+    },
+    'site-reveal': {
+      title: 'Your Site is Ready',
+      faqs: [
+        { q: "Can I add a custom domain?", a: "Yes. Your site is hosted on Cloudflare Pages. You can connect a custom domain from your Cloudflare dashboard, or email james@jamesguldan.com for help setting it up." },
+        { q: "How do I make changes?", a: "Use the section review tools on this screen to refine individual sections. For bigger changes email james@jamesguldan.com." }
+      ]
+    },
+    'mission-control': {
+      title: 'Mission Control',
+      faqs: [
+        { q: "Can I add a custom domain?", a: "Yes. Your site lives on Cloudflare Pages. Connect a custom domain from your Cloudflare dashboard, or email us and we will help." },
+        { q: "How do I update my site later?", a: "For content updates email james@jamesguldan.com. For a full rebuild with your evolved brand, consider the Site In Sixty upgrade." },
+        { q: "I want to share my site", a: "Use the Copy Link button to grab your live URL, or Email It to Myself to send it straight to your inbox." }
+      ]
+    }
+  };
+
+  var HW = {
+    getScreen: function() {
+      var el = document.querySelector('.screen.active');
+      return el ? el.id : 'landing';
+    },
+    getContent: function() {
+      return HW_CONTENT[HW.getScreen()] || HW_CONTENT.intake;
+    },
+    buildBody: function() {
+      var c = HW.getContent();
+      var html = '<div class="help-sec"><div class="help-sec-lbl">' + c.title + '</div>';
+      (c.faqs || []).forEach(function(faq, i) {
+        html += '<div class="help-faq" id="hf' + i + '">';
+        html += '<button class="help-faq-q" onclick="HW.toggle(' + i + ')">';
+        html += '<span>' + faq.q + '</span><span class="help-faq-arrow">&#9660;</span></button>';
+        html += '<div class="help-faq-a">' + faq.a + '</div></div>';
+      });
+      html += '</div>';
+      if (c.showRestart) {
+        html += '<div class="help-divider"></div>';
+        html += '<div class="help-restart">';
+        html += '<div class="help-restart-title">Fresh Start</div>';
+        html += '<div class="help-restart-desc">Need to redo your interview from scratch? You get one complimentary fresh start included with your purchase.</div>';
+        html += '<div id="hr-default"><button class="help-restart-btn" onclick="HW.showConfirm()">Start Over (fresh session)</button></div>';
+        html += '<div id="hr-confirm" class="help-confirm-box">';
+        html += '<div class="help-confirm-txt">Your current session will be cleared and cannot be recovered. You only get one fresh start included. Are you sure?</div>';
+        html += '<div class="help-confirm-row">';
+        html += '<button class="help-confirm-yes" id="hr-yes-btn" onclick="HW.doRestart()">Yes, start over</button>';
+        html += '<button class="help-confirm-no" onclick="HW.cancelConfirm()">Cancel</button></div></div>';
+        html += '<div id="hr-done" class="help-confirm-box"><div class="help-confirm-txt" style="color:var(--success)">&#10003; Done. Reloading your session\u2026</div></div>';
+        html += '<div id="hr-used" class="help-confirm-box"><div class="help-confirm-txt">You have already used your one fresh start. Email James directly and he will sort it out for you.</div></div>';
+        html += '</div>';
+      }
+      return html;
+    },
+    open: function() {
+      var panel = document.getElementById('help-panel');
+      var overlay = document.getElementById('help-overlay');
+      var body = document.getElementById('help-body');
+      if (!panel) return;
+      if (body) body.innerHTML = HW.buildBody();
+      panel.classList.add('open');
+      if (overlay) overlay.classList.add('open');
+    },
+    close: function() {
+      var panel = document.getElementById('help-panel');
+      var overlay = document.getElementById('help-overlay');
+      if (panel) panel.classList.remove('open');
+      if (overlay) overlay.classList.remove('open');
+    },
+    toggle: function(i) {
+      var el = document.getElementById('hf' + i);
+      if (!el) return;
+      var wasOpen = el.classList.contains('open');
+      document.querySelectorAll('.help-faq.open').forEach(function(x) { x.classList.remove('open'); });
+      if (!wasOpen) el.classList.add('open');
+    },
+    showConfirm: function() {
+      var d = document.getElementById('hr-default');
+      var c2 = document.getElementById('hr-confirm');
+      if (d) d.style.display = 'none';
+      if (c2) c2.classList.add('show');
+    },
+    cancelConfirm: function() {
+      var d = document.getElementById('hr-default');
+      var c2 = document.getElementById('hr-confirm');
+      if (d) d.style.display = '';
+      if (c2) c2.classList.remove('show');
+    },
+    doRestart: async function() {
+      var btn = document.getElementById('hr-yes-btn');
+      var confirmEl = document.getElementById('hr-confirm');
+      var doneEl = document.getElementById('hr-done');
+      var usedEl = document.getElementById('hr-used');
+      if (btn) { btn.textContent = 'Restarting\u2026'; btn.disabled = true; }
+      try {
+        var token = localStorage.getItem('dw_session');
+        var res = await fetch('/api/session/restart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': token ? 'Bearer ' + token : '' }
+        });
+        var data = await res.json();
+        if (data.ok) {
+          localStorage.removeItem('dw_active_session');
+          if (confirmEl) confirmEl.classList.remove('show');
+          if (doneEl) doneEl.classList.add('show');
+          setTimeout(function() { window.location.href = '/app'; }, 1800);
+        } else if (data.error === 'restart_limit_reached') {
+          if (confirmEl) confirmEl.classList.remove('show');
+          if (usedEl) usedEl.classList.add('show');
+          var emailLink = document.getElementById('help-email-cta');
+          if (emailLink) {
+            var em = (typeof STATE !== 'undefined' && STATE.email) ? STATE.email : '';
+            emailLink.href = 'mailto:james@jamesguldan.com?subject=Deep%20Work%20%E2%80%93%20Need%20Another%20Fresh%20Start&body=Hi%20James%2C%20I%20already%20used%20my%20one%20fresh%20start%20and%20need%20help.%20My%20account%20email%20is%3A%20' + encodeURIComponent(em);
+          }
+        } else {
+          if (btn) { btn.textContent = 'Yes, start over'; btn.disabled = false; }
+          if (typeof showToast === 'function') showToast('Could not restart right now. Please try again or email james@jamesguldan.com');
+        }
+      } catch (e) {
+        if (btn) { btn.textContent = 'Yes, start over'; btn.disabled = false; }
+        if (typeof showToast === 'function') showToast('Connection error. Please try again.');
+      }
+    }
+  };
+  window.HW = HW;
+})();
+
+// \u2500\u2500 HELP BOT (GHL Chat Widget with Rate Limiting + Oversight) \u2500\u2500
 (function initHelpBot() {
   var HELP_BOT = {
     maxOpensPerHour: 8,
@@ -4481,7 +4957,28 @@ function setDeployStep(n, s) {
   waitForApp();
 })();
 
-</script>
+<\/script>
+
+<!-- \u2550\u2550 HELP WIDGET \u2550\u2550 -->
+<button id="help-btn" onclick="HW.open()" aria-label="Help and support" title="Need help?">?</button>
+<div id="help-overlay" onclick="HW.close()"></div>
+<div id="help-panel" role="dialog" aria-label="Help center">
+  <div class="help-hdr">
+    <div>
+      <div class="help-hdr-title">Need help?</div>
+      <div class="help-hdr-sub">Quick answers for wherever you are</div>
+    </div>
+    <button class="help-close-btn" onclick="HW.close()" aria-label="Close">&#10005;</button>
+  </div>
+  <div class="help-body" id="help-body"></div>
+  <div class="help-ftr">
+    <div class="help-ftr-lbl">Still stuck? Reach out directly.</div>
+    <a href="mailto:james@jamesguldan.com?subject=Deep Work Help" class="help-email-cta" id="help-email-cta">Email James directly</a>
+    <div class="help-ftr-note">Usually replies within a few hours</div>
+  </div>
+</div>
+
 </body>
 </html>
+
 `;
