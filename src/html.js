@@ -356,6 +356,76 @@ export const getHTML = (config) => `<!DOCTYPE html>
     margin-left: 6px;
   }
 
+  /* Nudge card (phone input) */
+  .nudge-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: linear-gradient(135deg, #faf7f4 0%, #f5f0eb 100%);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 8px auto 24px;
+    max-width: 640px;
+  }
+  .nudge-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .nudge-content {
+    flex: 1;
+    min-width: 0;
+  }
+  .nudge-text {
+    margin-bottom: 12px;
+  }
+  .nudge-title {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .nudge-desc {
+    display: block;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .nudge-input-wrap {
+    max-width: 280px;
+  }
+  .nudge-input {
+    width: 100%;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin: 0;
+  }
+  .nudge-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(196,112,63,0.1);
+  }
+  .nudge-input::placeholder {
+    color: var(--text3);
+  }
+  @media (max-width: 600px) {
+    .nudge-card {
+      padding: 16px 18px;
+    }
+    .nudge-input-wrap {
+      max-width: 100%;
+    }
+  }
+
   input[type="text"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], textarea {
     width: 100%;
     background: var(--bg);
@@ -1361,6 +1431,77 @@ export const getHTML = (config) => `<!DOCTYPE html>
     to { transform: translateY(0); }
   }
 
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Reaction buttons */
+  .reaction-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 16px 28px; border-radius: var(--radius); border: 2px solid var(--border);
+    background: #fff; cursor: pointer; transition: all 0.2s ease;
+    min-width: 120px;
+  }
+  .reaction-btn:hover {
+    border-color: var(--gold); background: rgba(196,112,63,0.04);
+    transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .reaction-btn:active { transform: translateY(0); }
+  .reaction-btn.selected {
+    border-color: var(--gold); background: rgba(196,112,63,0.08);
+    box-shadow: 0 0 0 3px rgba(196,112,63,0.15);
+  }
+  .reaction-icon { font-size: 28px; }
+  .reaction-label { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* Refinement cards */
+  .refine-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .refine-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 20px; border-radius: var(--radius); border: 1px solid var(--border);
+    background: #fff; cursor: pointer; transition: all 0.2s ease;
+  }
+  .refine-card:hover {
+    border-color: var(--gold); background: rgba(196,112,63,0.03);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06); transform: translateY(-1px);
+  }
+  .refine-card-icon { font-size: 24px; flex-shrink: 0; }
+  .refine-card-body { flex: 1; text-align: left; }
+  .refine-card-title { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+  .refine-card-desc { font-size: 13px; color: var(--text2); line-height: 1.4; }
+  .refine-card-arrow { font-size: 18px; color: var(--text2); flex-shrink: 0; }
+
+  /* Refine option pills */
+  .refine-option {
+    display: inline-block; padding: 10px 18px; border-radius: 24px;
+    border: 1.5px solid var(--border); background: #fff; cursor: pointer;
+    font-size: 14px; transition: all 0.2s ease; margin: 4px;
+  }
+  .refine-option:hover { border-color: var(--gold); background: rgba(196,112,63,0.04); }
+  .refine-option.selected { border-color: var(--gold); background: rgba(196,112,63,0.1); font-weight: 600; }
+
+  /* Celebration confetti */
+  @keyframes confettiFall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  .confetti-piece {
+    position: fixed; width: 10px; height: 10px; top: -10px; z-index: 9999;
+    animation: confettiFall 3s ease-in forwards;
+  }
+
+  /* Refine spinner */
+  @keyframes refine-spin { to { transform: rotate(360deg); } }
+  .refine-spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid var(--border); border-top-color: var(--gold);
+    border-radius: 50%; animation: refine-spin 0.8s linear infinite;
+    vertical-align: middle; margin-right: 8px;
+  }
+
   .order-bump-inner {
     max-width: 760px;
     margin: 0 auto;
@@ -1654,15 +1795,16 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 
   <!-- Phone (for session nudges) -->
-  <div class="step-card">
-    <div class="step-card-header">
-      <div class="step-number">✆</div>
-      <h3>Get Nudged Back In</h3>
-      <p class="step-impact">If life gets in the way, we will send you a quick text reminder so you do not lose momentum.</p>
-    </div>
-    <div class="step-card-body">
-      <label>Your mobile number <span class="step-optional">(optional, US numbers only)</span></label>
-      <input type="tel" id="intake-phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
+  <div class="nudge-card">
+    <div class="nudge-icon">📱</div>
+    <div class="nudge-content">
+      <div class="nudge-text">
+        <span class="nudge-title">Stay on track</span>
+        <span class="nudge-desc">Drop your number and we will text you a gentle nudge if you step away mid session. Totally optional.</span>
+      </div>
+      <div class="nudge-input-wrap">
+        <input type="tel" id="intake-phone" placeholder="+1 (555) 000-0000" autocomplete="tel" class="nudge-input">
+      </div>
     </div>
   </div>
 
@@ -1742,7 +1884,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
   <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
   <div class="blueprint-actions" style="flex-direction:column;align-items:center;gap:16px;padding:28px 40px;">
-    <button class="btn btn-gold" id="build-site-btn" onclick="handleBuildSite()" style="width:auto;padding:18px 40px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);letter-spacing:0.02em;">Build My Website</button>
+    <button class="btn btn-gold" id="build-site-btn" onclick="handleBuildSite()" style="width:auto;padding:18px 40px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);letter-spacing:0.02em;">Make This Real</button>
     <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
       <button class="btn btn-outline" onclick="downloadPDF()" style="width:auto;padding:12px 22px;font-size:14px;">Download PDF</button>
       <button class="btn btn-outline" onclick="exportPackage()" style="width:auto;padding:12px 22px;font-size:14px;">Take It With You</button>
@@ -1753,19 +1895,37 @@ export const getHTML = (config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- ══ ORDER BUMP (shown after blueprint) ══ -->
-<div id="order-bump" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--gold);padding:20px 24px;z-index:999;animation:slideUp 0.4s ease;">
-  <div class="order-bump-inner">
-    <div class="order-bump-text">
-      <div class="bump-label">Your Blueprint Is Ready</div>
-      <h3>Turn this into a live website, right here.</h3>
-      <p>We'll walk you through building a complete, branded website from your blueprint. You'll connect your free Cloudflare account and have a real site live in minutes.</p>
+<!-- ══ BUILD SITE POPUP ══ -->
+<div id="build-site-popup" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn 0.3s ease;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:20px;max-width:520px;width:92%;padding:36px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
+    <div style="font-size:42px;margin-bottom:12px;">✨</div>
+    <h3 style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;color:var(--text);">Get Your Vision Live</h3>
+    <p style="font-size:15px;color:var(--text2);line-height:1.65;margin-bottom:8px;">You just did the hard part. Your strategy, messaging, and visual identity are locked in. In the next 60 seconds, all of it becomes a real website you can share with the world.</p>
+    <div style="background:var(--bg);border-radius:12px;padding:16px 20px;margin:16px 0 24px;text-align:left;">
+      <div style="font-size:13px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Here is what happens next</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+        <span style="font-size:16px;">⚡</span>
+        <span style="font-size:14px;color:var(--text2);line-height:1.5;">Your brand strategy, colors, and voice get structured into a page</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+        <span style="font-size:16px;">🎨</span>
+        <span style="font-size:14px;color:var(--text2);line-height:1.5;">Custom images are generated to match your visual identity</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+        <span style="font-size:16px;">💻</span>
+        <span style="font-size:14px;color:var(--text2);line-height:1.5;">A complete branded website is written from everything you shared</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+        <span style="font-size:16px;">🔍</span>
+        <span style="font-size:14px;color:var(--text2);line-height:1.5;">SEO meta tags, Open Graph previews, favicon, and AI schema are injected automatically</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:16px;">🚀</span>
+        <span style="font-size:14px;color:var(--text2);line-height:1.5;">It goes live at a shareable URL, fully optimized for search and social sharing</span>
+      </div>
     </div>
-    <div class="bump-actions">
-      <span class="bump-price">+ $130</span>
-      <button class="btn btn-gold" onclick="addSiteUpgrade()" style="width:auto;padding:14px 24px;">Build My Website</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('order-bump').style.display='none'" style="width:auto;padding:14px 24px;font-size:13px;color:var(--text2);">Not right now</button>
-    </div>
+    <button class="btn btn-gold" onclick="closeBuildPopup();proceedToSite();" style="width:100%;padding:16px 24px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);margin-bottom:10px;">Let's Go</button>
+    <button class="btn btn-ghost" onclick="closeBuildPopup()" style="width:auto;padding:10px 20px;font-size:13px;color:var(--text3);">Maybe later</button>
   </div>
 </div>
 
@@ -1781,15 +1941,19 @@ export const getHTML = (config) => `<!DOCTYPE html>
       </div>
       <div class="progress-step">
         <div class="step-icon pending" id="step-2-icon">🎨</div>
-        <div class="step-text"><strong>Generating brand images</strong>Creating hero and mood board images via Imagen 4</div>
+        <div class="step-text"><strong>Generating brand images</strong>Creating custom hero imagery via Imagen 4</div>
       </div>
       <div class="progress-step">
         <div class="step-icon pending" id="step-3-icon">💻</div>
-        <div class="step-text"><strong>Writing your website</strong>Building HTML from your blueprint</div>
+        <div class="step-text"><strong>Writing your website</strong>Building pages from your blueprint</div>
       </div>
       <div class="progress-step">
-        <div class="step-icon pending" id="step-4-icon">🚀</div>
-        <div class="step-text"><strong>Deploying your site</strong>Publishing to a live URL</div>
+        <div class="step-icon pending" id="step-4-icon">🔍</div>
+        <div class="step-text"><strong>SEO &amp; launch optimization</strong>Meta tags, Open Graph, favicon, schema markup, and search indexing</div>
+      </div>
+      <div class="progress-step">
+        <div class="step-icon pending" id="step-5-icon">🚀</div>
+        <div class="step-text"><strong>Deploying to a live URL</strong>Publishing your optimized site to the web</div>
       </div>
     </div>
   </div>
@@ -1798,6 +1962,52 @@ export const getHTML = (config) => `<!DOCTYPE html>
 <!-- ══ DEPLOY SCREEN ══ -->
 <div id="deploy-screen" class="screen" style="display:none;">
   <!-- Legacy deploy screen kept hidden; Mission Control replaces it -->
+</div>
+
+<!-- ══ SITE REVEAL + GUIDED SECTION REVIEW ══ -->
+<div id="site-reveal" class="screen">
+ <div style="max-width:760px;margin:0 auto;padding:32px 20px;">
+  <div id="review-progress" style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
+   <div style="flex:1;height:4px;background:var(--bg3);border-radius:4px;overflow:hidden;">
+    <div id="review-progress-bar" style="height:100%;width:0%;background:var(--gold);border-radius:4px;transition:width 0.4s ease;"></div>
+   </div>
+   <span id="review-progress-label" style="font-size:12px;color:var(--text2);white-space:nowrap;">Section 1</span>
+  </div>
+  <div id="review-header" style="text-align:center;margin-bottom:20px;">
+   <div id="review-badge" style="display:inline-block;padding:4px 14px;background:rgba(196,112,63,0.1);color:var(--gold);font-size:12px;font-weight:600;border-radius:20px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Above the fold</div>
+   <h2 id="review-title" style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:6px;">First Impressions</h2>
+   <p id="review-desc" style="color:var(--text2);font-size:14px;margin:0;max-width:480px;margin-left:auto;margin-right:auto;">This is what visitors see the moment they land. Does it grab attention and represent your brand?</p>
+  </div>
+  <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;background:var(--bg1);box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+   <div style="background:var(--bg3);padding:8px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e05252;"></span>
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8a838;"></span>
+    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3cc43c;"></span>
+    <span style="flex:1;text-align:center;font-family:monospace;font-size:11px;color:var(--text2);" id="reveal-domain"></span>
+   </div>
+   <iframe id="reveal-preview" src="" style="width:100%;height:480px;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
+   <div id="reveal-loading" style="height:480px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;">Loading your site...</div>
+  </div>
+  <div id="review-actions" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
+   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;" id="review-btns">
+    <button class="reaction-btn" onclick="sectionReaction('approve')"><span class="reaction-icon">👍</span><span class="reaction-label">Looks good</span></button>
+    <button class="reaction-btn" onclick="sectionReaction('refine')"><span class="reaction-icon">✏️</span><span class="reaction-label">Refine this</span></button>
+   </div>
+   <div id="section-refine-input" style="display:none;margin-top:12px;">
+    <textarea id="section-refine-text" rows="3" placeholder="What would you change about this section?" style="width:100%;padding:12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-sm);resize:vertical;font-family:inherit;line-height:1.5;box-sizing:border-box;margin-bottom:10px;"></textarea>
+    <div style="display:flex;gap:10px;">
+     <button class="btn btn-gold" onclick="submitSectionRefine()" id="section-refine-btn" style="flex:1;padding:12px;font-size:14px;">Apply Change</button>
+     <button class="btn btn-outline" onclick="sectionReaction('approve')" style="padding:12px 18px;font-size:14px;">Skip</button>
+    </div>
+    <div id="section-refine-status" style="display:none;text-align:center;margin-top:10px;font-size:13px;color:var(--text2);"></div>
+   </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
+   <button id="review-prev-btn" class="btn btn-outline" onclick="prevReviewSection()" style="padding:10px 20px;font-size:13px;visibility:hidden;">← Previous</button>
+   <button onclick="skipReview()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;text-decoration:underline;">Skip review</button>
+   <div style="width:100px;"></div>
+  </div>
+ </div>
 </div>
 
 <div id="mission-control" class="screen">
@@ -1847,38 +2057,54 @@ export const getHTML = (config) => `<!DOCTYPE html>
       </button>
     </div>
 
-    <!-- What's Next -->
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;margin-bottom:24px;">
-      <h3 style="font-family:'Playfair Display',serif;font-size:20px;margin-bottom:16px;">What's Next</h3>
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-size:18px;margin-top:1px;">🔗</div>
-          <div>
-            <div style="font-weight:600;font-size:14px;margin-bottom:2px;">Connect a Custom Domain</div>
-            <div style="font-size:13px;color:var(--text2);line-height:1.5;">Point your own domain (like yourbrand.com) to your new site. We can walk you through it on a strategy call.</div>
-          </div>
+    <!-- 30-Day Preview Notice -->
+    <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;">
+      <div style="font-size:22px;margin-top:2px;">📅</div>
+      <div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Your Site is Live for 30 Days</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;">Your preview is hosted here for 30 days at no extra cost. Download your site file or self-deploy to Cloudflare Pages (free) to keep it live permanently.</div>
+      </div>
+    </div>
+
+    <!-- Download Site -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">📥 Download Your Site File</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">A single HTML file with everything built in — your copy, styles, and layout. Works anywhere. No dependencies.</div>
+      <button id="download-site-btn" class="btn btn-gold" onclick="downloadSite()" style="width:auto;padding:12px 28px;font-size:14px;">Download Site</button>
+    </div>
+
+    <!-- Self-Deploy Guide -->
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;">
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">🌐 Self-Deploy to Cloudflare Pages — Free Forever</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">Cloudflare Pages hosts your site permanently on their free tier. Takes about 5 minutes.</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">1</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Download your site file above, then go to <a href="https://dash.cloudflare.com/sign-up/pages" target="_blank" style="color:var(--gold);font-weight:500;">dash.cloudflare.com</a> and create a free account.</div>
         </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-size:18px;margin-top:1px;">✏️</div>
-          <div>
-            <div style="font-weight:600;font-size:14px;margin-bottom:2px;">Refine Your Content</div>
-            <div style="font-size:13px;color:var(--text2);line-height:1.5;">Want to tweak your copy, swap images, or add sections? A strategy call includes hands on refinement time.</div>
-          </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">2</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Click <strong>Workers &amp; Pages</strong> in the left menu, then <strong>Create</strong> and choose <strong>Pages</strong>.</div>
         </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <div style="font-size:18px;margin-top:1px;">📈</div>
-          <div>
-            <div style="font-weight:600;font-size:14px;margin-bottom:2px;">Launch Your Growth Engine</div>
-            <div style="font-size:13px;color:var(--text2);line-height:1.5;">Your blueprint has a full positioning strategy. Let's build a plan to drive traffic and convert visitors into clients.</div>
-          </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">3</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Select <strong>Direct Upload</strong>, name your project (your brand name works great), then upload your HTML file.</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">4</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Click <strong>Deploy</strong>. Your site goes live at <code style="background:var(--bg2);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px;">your-project.pages.dev</code> within seconds.</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;">
+          <div style="min-width:24px;height:24px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">5</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Optional: Go to <strong>Custom Domains</strong> in the dashboard to connect your own domain (like yourbrand.com).</div>
         </div>
       </div>
     </div>
 
     <!-- Strategy Call CTA -->
     <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:28px 24px;">
-      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Ready to Take It Further?</h3>
-      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a 1:1 strategy call to connect your domain, refine your site, and build a launch plan.</p>
+      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
+      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a 1:1 strategy call. We will connect your domain, refine your content, and build a traffic plan together.</p>
       <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>
     </div>
 
@@ -1955,6 +2181,8 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
 }
+
+function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
 // ── TIER SELECTION & CHECKOUT ────────────────────────────
 function selectTier(tier) {
@@ -3256,8 +3484,8 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
           </div>
 
           <div style="text-align:center;">
-            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Build Your Website Now</button>
-            <div style="font-size:12px;color:#999;margin-top:8px;">Your blueprint has everything we need. Let's make it real.</div>
+            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Get Your Vision Live</button>
+            <div style="font-size:12px;color:#999;margin-top:8px;">Everything you need is already in this blueprint. Let's bring it to life.</div>
           </div>
         </div>
       \`;
@@ -3444,7 +3672,7 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
         \${b.part8.whyNow ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:16px;padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">Why now:</strong> \${b.part8.whyNow}</div>\` : ''}
         \${b.part8.specificBenefit ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">What you get:</strong> \${b.part8.specificBenefit}</div>\` : ''}
         <div style="margin-top:20px;text-align:center;">
-          \${b.part8.recommendation === 'site_in_sixty' ? \`<button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:14px 32px;font-size:15px;">Build My Website Now</button>\` : b.part8.recommendation === 'coaching' ? \`<a href="https://jamesguldan.com" target="_blank" class="btn btn-gold" style="width:auto;padding:14px 32px;font-size:15px;text-decoration:none;">Book a Strategy Call</a>\` : ''}
+          \${b.part8.recommendation === 'site_in_sixty' ? \`<button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:14px 32px;font-size:15px;">Get Your Vision Live</button>\` : b.part8.recommendation === 'coaching' ? \`<a href="https://jamesguldan.com" target="_blank" class="btn btn-gold" style="width:auto;padding:14px 32px;font-size:15px;text-decoration:none;">Book a Strategy Call</a>\` : ''}
         </div>
       </div>
     \`) : ''}
@@ -3477,29 +3705,16 @@ function renderOffer(label, offer) {
 }
 
 // ── ORDER BUMP UPGRADE ─────────────────────────────────────
-async function addSiteUpgrade() {
-  document.getElementById('order-bump').style.display = 'none';
-  // Initiate Stripe checkout for site upgrade
-  const token = localStorage.getItem('dw_session');
-  const resp = await fetch('/api/checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-    body: JSON.stringify({ tier: 'site', sessionId: STATE.sessionId })
-  });
-  const data = await resp.json();
-  if (data.url) {
-    window.location.href = data.url;
-  } else {
-    alert('Could not start checkout. Please try again.');
-  }
+function openBuildPopup() {
+  document.getElementById('build-site-popup').style.display = 'block';
+}
+
+function closeBuildPopup() {
+  document.getElementById('build-site-popup').style.display = 'none';
 }
 
 function handleBuildSite() {
-  if (STATE.tier === 'site') {
-    proceedToSite();
-  } else {
-    addSiteUpgrade();
-  }
+  openBuildPopup();
 }
 
 // ── SITE GENERATION ───────────────────────────────────────
@@ -3515,15 +3730,21 @@ async function runSiteGeneration() {
     setStep(1, 'done');
     setStep(2, 'active');
 
-    // Generate images
-    const imgRes = await fetch('/api/generate/images', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
-    await imgRes.json();
+    // Generate images (non-blocking — site can work without images)
+    let imgOk = false;
+    try {
+      const imgRes = await fetch('/api/generate/images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: STATE.sessionId })
+      });
+      const imgData = await imgRes.json();
+      imgOk = imgData.ok;
+    } catch (_) {
+      // Images failed — continue without them
+    }
 
-    setStep(2, 'done');
+    setStep(2, imgOk ? 'done' : 'done');
     setStep(3, 'active');
 
     // Generate site HTML
@@ -3532,6 +3753,12 @@ async function runSiteGeneration() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: STATE.sessionId })
     });
+
+    if (!siteRes.ok) {
+      const errData = await siteRes.json().catch(() => ({}));
+      throw new Error(errData.error || 'Site generation failed (status ' + siteRes.status + ')');
+    }
+
     const siteData = await siteRes.json();
 
     if (siteData.html) {
@@ -3539,28 +3766,51 @@ async function runSiteGeneration() {
     }
 
     setStep(3, 'done');
+
+    // Step 4: SEO + Launch Optimization (happens during deploy)
     setStep(4, 'active');
+    await delay(600);
 
-    // Step 4: Auto-deploy (no customer Cloudflare account needed)
-    const deployRes = await fetch('/api/deploy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
-    const deployData = await deployRes.json();
+    // Step 5: Deploy (SEO injection happens server side in handleDeploy)
+    setStep(4, 'done');
+    setStep(5, 'active');
 
-    if (deployData.url) {
-      setStep(4, 'done');
-      STATE.liveUrl = deployData.url;
-      STATE.projectName = deployData.projectName;
-      await delay(1200);
-      showMissionControl(deployData.url, deployData.projectName);
-    } else {
-      setStep(4, 'done');
-      showMissionControl(null, null);
+    let deployUrl = null;
+    let deployProject = null;
+    try {
+      const deployRes = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: STATE.sessionId })
+      });
+      const deployData = await deployRes.json();
+      if (deployData.url) {
+        deployUrl = deployData.url;
+        deployProject = deployData.slug || deployData.projectName;
+      } else if (deployData.error) {
+        console.error('Deploy error:', deployData.error);
+      }
+    } catch (deployErr) {
+      console.error('Deploy network error:', deployErr);
     }
+
+    setStep(5, 'done');
+
+    if (deployUrl) {
+      STATE.liveUrl = deployUrl;
+      STATE.projectName = deployProject;
+      await delay(1200);
+    }
+
+    showSiteReveal(deployUrl);
+
   } catch (e) {
-    showToast('Site generation encountered an error. Please try again.');
+    console.error('Site generation error:', e);
+    // Show error in the generation screen instead of just a toast
+    const stepsEl = document.getElementById('gen-steps');
+    if (stepsEl) {
+      stepsEl.innerHTML += '<div style="margin-top:24px;padding:16px 20px;background:#fdf2f2;border:1.5px solid #e74c3c;border-radius:10px;color:#c0392b;font-size:14px;line-height:1.6;"><strong>Something went wrong</strong><br>' + (e.message || 'An unexpected error occurred.') + '<br><br><button class="btn btn-gold" onclick="location.reload()" style="padding:10px 20px;font-size:14px;">Try Again</button></div>';
+    }
   }
 }
 
@@ -3597,6 +3847,33 @@ function showMissionControl(liveUrl, projectName) {
     if (noUrl) noUrl.style.display = '';
     if (previewFrame) previewFrame.style.display = 'none';
     if (previewPlaceholder) previewPlaceholder.textContent = 'Deploy is processing...';
+  }
+}
+
+async function downloadSite() {
+  const btn = document.getElementById('download-site-btn');
+  const originalText = btn ? btn.textContent : 'Download Site';
+  try {
+    if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
+    const res = await fetch('/api/export-site?sessionId=' + STATE.sessionId);
+    if (!res.ok) throw new Error('status ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const bp = STATE.blueprint?.blueprint || {};
+    const brandName = bp.part1?.brandNames?.[0] || 'my-site';
+    const safeName = brandName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'my-site';
+    a.download = safeName + '.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Download started!');
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
+  } catch (e) {
+    showToast('Download failed — please try again.');
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
   }
 }
 
@@ -3643,6 +3920,338 @@ function setStep(num, state) {
   if (state === 'done') el.textContent = '✓';
 }
 
+// ── SECTION-BY-SECTION GUIDED REVIEW ──────────────────────
+let REVIEW_STATE = {
+  sections: [],
+  currentIndex: 0,
+  refinementCount: 0,
+  approved: [],
+  refined: []
+};
+
+function showSiteReveal(liveUrl) {
+  showScreen('site-reveal');
+  STATE.liveUrl = liveUrl;
+  const domain = document.getElementById('reveal-domain');
+  const preview = document.getElementById('reveal-preview');
+  const loading = document.getElementById('reveal-loading');
+
+  if (liveUrl && domain) domain.textContent = liveUrl.replace('https://','');
+  if (liveUrl && preview) {
+    preview.src = liveUrl;
+    preview.onload = function() {
+      preview.style.display = '';
+      if (loading) loading.style.display = 'none';
+      // Detect sections once iframe loads
+      setTimeout(() => detectSections(), 800);
+    };
+  }
+}
+
+function detectSections() {
+  // Define the sections we expect based on the site generation template
+  // These match the structure from prompts.js: nav, hero, problem, solution, offers, about, testimonials, CTA, footer
+  const bp = STATE.blueprint?.blueprint || STATE.blueprint || {};
+  const bpSections = bp.part5?.sections || [];
+
+  REVIEW_STATE.sections = [
+    { id: 'hero', badge: 'Above the fold', title: 'First Impressions', desc: 'This is what visitors see the moment they land. Does it grab attention and represent your brand?', selector: '.hero, [class*="hero"], section:first-of-type, header + section' }
+  ];
+
+  // Add each blueprint section
+  bpSections.forEach(function(s, i) {
+    const name = (s.name || 'Section ' + (i + 2));
+    REVIEW_STATE.sections.push({
+      id: 'section-' + i,
+      badge: 'Section ' + (i + 2),
+      title: name,
+      desc: s.purpose || 'Review this section and decide if it works for your brand.',
+      selector: 'section:nth-of-type(' + (i + 2) + ')'
+    });
+  });
+
+  // If no blueprint sections, detect generically from the iframe
+  if (bpSections.length === 0) {
+    try {
+      const iframeDoc = document.getElementById('reveal-preview').contentDocument || document.getElementById('reveal-preview').contentWindow.document;
+      const allSections = iframeDoc.querySelectorAll('section');
+      // Skip first (hero already covered), add the rest
+      for (let i = 1; i < allSections.length && i < 10; i++) {
+        const heading = allSections[i].querySelector('h1, h2, h3');
+        const headText = heading ? heading.textContent.trim().substring(0, 40) : 'Section ' + (i + 1);
+        REVIEW_STATE.sections.push({
+          id: 'section-' + i,
+          badge: 'Section ' + (i + 1),
+          title: headText,
+          desc: 'Review this section and make sure it represents your brand well.',
+          selector: 'section:nth-of-type(' + (i + 1) + ')'
+        });
+      }
+    } catch(e) {
+      // Cross-origin iframe, fall back to generic sections
+      for (let i = 1; i <= 5; i++) {
+        REVIEW_STATE.sections.push({
+          id: 'section-' + i,
+          badge: 'Section ' + (i + 1),
+          title: 'Section ' + (i + 1),
+          desc: 'Review this section of your site.',
+          selector: 'section:nth-of-type(' + (i + 1) + ')'
+        });
+      }
+    }
+  }
+
+  // Always add footer as last
+  REVIEW_STATE.sections.push({
+    id: 'footer',
+    badge: 'Footer',
+    title: 'Footer & Contact',
+    desc: 'The bottom of your site with contact info, links, and final impressions.',
+    selector: 'footer'
+  });
+
+  REVIEW_STATE.currentIndex = 0;
+  REVIEW_STATE.approved = [];
+  REVIEW_STATE.refined = [];
+  showReviewSection(0);
+}
+
+function showReviewSection(index) {
+  if (index < 0 || index >= REVIEW_STATE.sections.length) return;
+  REVIEW_STATE.currentIndex = index;
+  const section = REVIEW_STATE.sections[index];
+  const total = REVIEW_STATE.sections.length;
+
+  // Update progress bar
+  const pct = Math.round(((index) / total) * 100);
+  const bar = document.getElementById('review-progress-bar');
+  const label = document.getElementById('review-progress-label');
+  if (bar) bar.style.width = pct + '%';
+  if (label) label.textContent = (index + 1) + ' of ' + total;
+
+  // Update section info
+  const badge = document.getElementById('review-badge');
+  const title = document.getElementById('review-title');
+  const desc = document.getElementById('review-desc');
+  if (badge) badge.textContent = section.badge;
+  if (title) title.textContent = section.title;
+  if (desc) desc.textContent = section.desc;
+
+  // Reset UI state
+  const refineInput = document.getElementById('section-refine-input');
+  const refineText = document.getElementById('section-refine-text');
+  const refineStatus = document.getElementById('section-refine-status');
+  const refineBtn = document.getElementById('section-refine-btn');
+  const btns = document.getElementById('review-btns');
+  if (refineInput) refineInput.style.display = 'none';
+  if (refineText) refineText.value = '';
+  if (refineStatus) refineStatus.style.display = 'none';
+  if (refineBtn) { refineBtn.disabled = false; refineBtn.textContent = 'Apply Change'; }
+  if (btns) btns.style.display = '';
+
+  // Show/hide previous button
+  const prevBtn = document.getElementById('review-prev-btn');
+  if (prevBtn) prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+
+  // Scroll iframe to this section
+  scrollIframeToSection(section.selector);
+}
+
+function scrollIframeToSection(selector) {
+  try {
+    const iframe = document.getElementById('reveal-preview');
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const el = iframeDoc.querySelector(selector);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Add a subtle highlight pulse
+      el.style.outline = '3px solid rgba(196,112,63,0.4)';
+      el.style.outlineOffset = '4px';
+      el.style.transition = 'outline-color 0.6s ease';
+      setTimeout(function() {
+        el.style.outlineColor = 'transparent';
+        setTimeout(function() { el.style.outline = 'none'; }, 600);
+      }, 1500);
+    }
+  } catch(e) {
+    // Cross-origin: can't scroll, that's OK, user sees full site
+  }
+}
+
+function sectionReaction(reaction) {
+  const section = REVIEW_STATE.sections[REVIEW_STATE.currentIndex];
+
+  if (reaction === 'approve') {
+    REVIEW_STATE.approved.push(section.id);
+    // Hide refine input if open
+    const refineInput = document.getElementById('section-refine-input');
+    if (refineInput) refineInput.style.display = 'none';
+    advanceToNextSection();
+  } else if (reaction === 'refine') {
+    // Show the refine textarea
+    const refineInput = document.getElementById('section-refine-input');
+    if (refineInput) {
+      refineInput.style.display = '';
+      document.getElementById('section-refine-text').focus();
+    }
+  }
+}
+
+async function submitSectionRefine() {
+  const section = REVIEW_STATE.sections[REVIEW_STATE.currentIndex];
+  const text = document.getElementById('section-refine-text')?.value?.trim();
+  if (!text) {
+    showToast('Please describe what you would like changed');
+    return;
+  }
+
+  const btn = document.getElementById('section-refine-btn');
+  const status = document.getElementById('section-refine-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="refine-spinner"></span> Rebuilding...';
+  if (status) { status.style.display = ''; status.textContent = 'Updating this section (30 to 60 seconds)...'; }
+
+  try {
+    // Build a section-specific refinement instruction
+    const instruction = 'Focus ONLY on the ' + section.title + ' section (' + section.badge + '). User feedback: ' + text;
+
+    const res = await fetch('/api/refine-site', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: STATE.sessionId,
+        category: 'custom',
+        option: null,
+        customText: instruction
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(function() { return {}; });
+      throw new Error(err.error || 'Refinement failed');
+    }
+
+    await res.json();
+    REVIEW_STATE.refinementCount++;
+
+    // Redeploy
+    if (status) status.textContent = 'Deploying updated site...';
+    const deployRes = await fetch('/api/deploy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    const deployData = await deployRes.json();
+    if (deployData.url) STATE.liveUrl = deployData.url;
+
+    // Refresh preview
+    refreshSitePreview();
+    REVIEW_STATE.refined.push(section.id);
+
+    // Wait for iframe to reload before scrolling
+    const preview = document.getElementById('reveal-preview');
+    preview.onload = function() {
+      setTimeout(function() { scrollIframeToSection(section.selector); }, 500);
+    };
+
+    // Reset the refine UI and show approve/refine buttons again
+    btn.disabled = false;
+    btn.textContent = 'Apply Change';
+    document.getElementById('section-refine-text').value = '';
+    if (status) { status.style.display = ''; status.textContent = 'Updated! Review the change above, then approve or refine again.'; }
+
+  } catch (e) {
+    if (status) { status.style.display = ''; status.textContent = 'Something went wrong: ' + e.message; }
+    btn.textContent = 'Try Again';
+    btn.disabled = false;
+  }
+}
+
+function advanceToNextSection() {
+  const next = REVIEW_STATE.currentIndex + 1;
+  if (next >= REVIEW_STATE.sections.length) {
+    // All sections reviewed! Show completion
+    finishReview();
+  } else {
+    showReviewSection(next);
+  }
+}
+
+function prevReviewSection() {
+  if (REVIEW_STATE.currentIndex > 0) {
+    showReviewSection(REVIEW_STATE.currentIndex - 1);
+  }
+}
+
+function skipReview() {
+  finishReview();
+}
+
+function finishReview() {
+  // Update progress to 100%
+  const bar = document.getElementById('review-progress-bar');
+  const label = document.getElementById('review-progress-label');
+  if (bar) bar.style.width = '100%';
+  if (label) label.textContent = 'Complete!';
+
+  // Show completion message in the review area
+  const badge = document.getElementById('review-badge');
+  const title = document.getElementById('review-title');
+  const desc = document.getElementById('review-desc');
+  const btns = document.getElementById('review-btns');
+  const refineInput = document.getElementById('section-refine-input');
+  const prevBtn = document.getElementById('review-prev-btn');
+
+  if (badge) badge.textContent = 'All done';
+  if (title) title.textContent = 'Your site is ready!';
+
+  const approvedCount = REVIEW_STATE.approved.length;
+  const refinedCount = REVIEW_STATE.refined.length;
+  let summary = 'You reviewed every section';
+  if (refinedCount > 0) summary += ' and refined ' + refinedCount + ' of them';
+  summary += '. Your site is looking great.';
+  if (desc) desc.textContent = summary;
+
+  if (btns) btns.innerHTML = '<button class="btn btn-gold" onclick="launchAndGoLive()" style="padding:14px 32px;font-size:16px;">🚀 Go Live!</button>';
+  if (refineInput) refineInput.style.display = 'none';
+  if (prevBtn) prevBtn.style.visibility = 'hidden';
+
+  // Scroll iframe back to top
+  try {
+    const iframe = document.getElementById('reveal-preview');
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.documentElement.scrollTop = 0;
+  } catch(e) {}
+}
+
+function launchAndGoLive() {
+  launchConfetti();
+  setTimeout(function() {
+    showMissionControl(STATE.liveUrl, STATE.projectName);
+  }, 1800);
+}
+
+function refreshSitePreview() {
+  const preview = document.getElementById('reveal-preview');
+  if (preview && STATE.liveUrl) {
+    preview.src = STATE.liveUrl + '?v=' + Date.now();
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#c4703f','#d4855a','#FFD700','#e05252','#3cc43c','#4a90d9','#9b59b6'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = (Math.random() * 1.5) + 's';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+  }
+}
+
 // ── CLOUDFLARE DEPLOY ─────────────────────────────────────
 async function deployToCloudflare() {
   const token = document.getElementById('cf-token').value.trim();
@@ -3664,7 +4273,6 @@ async function deployToCloudflare() {
   document.getElementById('deploy-btn-go').textContent = 'Deploying...';
   document.getElementById('deploy-status').style.display = 'block';
   setDeployStep(1, 'active');
-
   try {
     setDeployStep(2, 'active');
     const res = await fetch('/api/deploy', {
@@ -3673,197 +4281,162 @@ async function deployToCloudflare() {
       body: JSON.stringify({ sessionId: STATE.sessionId, cfToken: token })
     });
     const data = await res.json();
-
     if (data.url) {
       setDeployStep(1, 'done'); setDeployStep(2, 'done'); setDeployStep(3, 'done');
       document.getElementById('deploy-status').style.display = 'none';
       document.getElementById('deploy-success').style.display = 'block';
-      document.getElementById('live-url').href = data.url;
-      document.getElementById('live-url').textContent = data.url;
-      // Link to pages dashboard
-      const accountIdMatch = data.url.match(/pages\.dev/);
-      document.getElementById('pages-dashboard-url').href = 'https://dash.cloudflare.com/pages';
+      const liveUrlEl = document.getElementById('live-url');
+      if (liveUrlEl) { liveUrlEl.href = data.url; liveUrlEl.textContent = data.url; }
     } else {
-      // Specific error guidance
-      document.getElementById('deploy-btn-go').disabled = false;
-      document.getElementById('deploy-btn-go').textContent = 'Try Again →';
-      document.getElementById('deploy-status').style.display = 'none';
-      let errMsg = data.error || 'Deployment failed.';
-      if (errMsg.toLowerCase().includes('auth') || errMsg.toLowerCase().includes('token') || errMsg.toLowerCase().includes('10000')) {
-        errMsg = 'Token was rejected by Cloudflare. Double-check that you copied the full token and that it includes Cloudflare Pages: Edit permission.';
-      } else if (errMsg.toLowerCase().includes('already exists') || errMsg.toLowerCase().includes('8000000')) {
-        errMsg = 'A site with that name already exists in your Cloudflare account. Your site was still deployed \u2014 check your Cloudflare Pages dashboard.';
-      }
-      errEl.textContent = errMsg;
-      errEl.style.display = 'block';
+      throw new Error(data.error || 'Deployment failed');
     }
   } catch (e) {
     document.getElementById('deploy-btn-go').disabled = false;
-    document.getElementById('deploy-btn-go').textContent = 'Try Again →';
-    document.getElementById('deploy-status').style.display = 'none';
-    errEl.textContent = 'Network error. Please check your internet connection and try again.';
-    errEl.style.display = 'block';
+    document.getElementById('deploy-btn-go').textContent = 'Try Again';
+    showToast('Deploy error: ' + e.message);
   }
 }
 
-function setDeployStep(num, state) {
-  const icon = document.getElementById('deploy-step-icon-' + num);
-  const row = document.getElementById('ds-step' + num);
-  if (!icon || !row) return;
-  if (state === 'active') {
-    row.style.opacity = '1';
-    icon.textContent = '\u23F3';
-    icon.className = 'step-icon active';
-  } else if (state === 'done') {
-    icon.textContent = '\u2713';
-    icon.className = 'step-icon done';
-  }
+function setDeployStep(n, s) {
+  const el = document.getElementById('deploy-step-' + n + '-icon');
+  if (el) { el.className = 'step-icon ' + s; if (s==='done') el.textContent='✓'; }
 }
 
-// ── IMAGEN 4 ──────────────────────────────────────────────
-async function generateBrandImages() {
-  showToast('Generating brand images...');
-  try {
-    const res = await fetch('/api/generate/images', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
-    const data = await res.json();
+// ── HELP BOT (GHL Chat Widget with Rate Limiting + Oversight) ──
+(function initHelpBot() {
+  var HELP_BOT = {
+    maxOpensPerHour: 8,
+    maxOpensPerDay: 25,
+    storageKey: 'dw_help_bot_usage',
+    loaded: false
+  };
 
-    if (data.images && data.images.length > 0) {
-      const gallery = \`<div class="image-gallery">\${data.images.map(img => \`<img src="\${img}" alt="Brand image">\`).join('')}</div>\`;
-      appendMessage('ai', 'Here are your brand images generated from your blueprint. These are ready to use on your website.\\n\\n' + gallery);
+  function getUsage() {
+    try {
+      var raw = sessionStorage.getItem(HELP_BOT.storageKey);
+      if (!raw) return { opens: [], dailyOpens: 0, dayKey: '' };
+      return JSON.parse(raw);
+    } catch(e) { return { opens: [], dailyOpens: 0, dayKey: '' }; }
+  }
+
+  function saveUsage(usage) {
+    try { sessionStorage.setItem(HELP_BOT.storageKey, JSON.stringify(usage)); } catch(e) {}
+  }
+
+  function checkRateLimit() {
+    var usage = getUsage();
+    var now = Date.now();
+    var oneHourAgo = now - (60 * 60 * 1000);
+    var today = new Date().toISOString().slice(0, 10);
+
+    // Clean old opens (older than 1 hour)
+    usage.opens = (usage.opens || []).filter(function(t) { return t > oneHourAgo; });
+
+    // Reset daily counter if new day
+    if (usage.dayKey !== today) {
+      usage.dayKey = today;
+      usage.dailyOpens = 0;
     }
-  } catch (e) {
-    showToast('Image generation failed. Please try again.');
-  }
-}
 
-// ── EXPORT ────────────────────────────────────────────────
-async function exportPackage() {
-  showToast('Preparing your export package...');
-  try {
-    const res = await fetch('/api/export', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'deep-work-blueprint.zip';
-    a.click();
-    showToast('Export downloaded.');
-  } catch (e) {
-    showToast('Export failed. Please try again.');
-  }
-}
-
-async function downloadPDF() {
-  showToast('Building your brand guide...');
-  try {
-    const res = await fetch('/api/blueprint/pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
-    if (!res.ok) throw new Error('Server error');
-    const html = await res.text();
-    // Open in a new tab — the HTML auto-triggers window.print() for Save as PDF
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const tab = window.open(url, '_blank');
-    if (!tab) {
-      // If popup blocked, fall back to download
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'brand-guide.html';
-      a.click();
-      showToast('Brand guide downloaded. Open it to print as PDF.');
-    } else {
-      showToast('Brand guide opening — use Print → Save as PDF');
+    if (usage.opens.length >= HELP_BOT.maxOpensPerHour) {
+      return { allowed: false, reason: 'You have reached the hourly limit for help requests. Please try again in a bit, or email james@jamesguldan.com for immediate assistance.' };
     }
-  } catch (e) {
-    showToast('Brand guide generation failed. Please try again.');
-  }
-}
-
-// ── ORDER BUMP ────────────────────────────────────────────
-function addStrategyCall() {
-  initiateCheckout('call');
-}
-
-// ── UTILS ─────────────────────────────────────────────────
-function showToast(msg, duration = 3000) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
-}
-
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function openUploadModal() {
-  document.getElementById('file-input')?.click();
-}
-
-function openDocUpload() {
-  document.getElementById('doc-upload-input')?.click();
-}
-
-async function handleDocUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-
-  const statusEl = document.getElementById('doc-upload-status');
-
-  // Security: validate file type client-side
-  const ext = file.name.split('.').pop().toLowerCase();
-  const allowed = ['pdf', 'txt', 'md'];
-  if (!allowed.includes(ext)) {
-    showToast('Only PDF, TXT, and MD files are supported.');
-    input.value = '';
-    return;
-  }
-
-  // Security: validate file size (5MB max)
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('Document must be under 5MB.');
-    input.value = '';
-    return;
-  }
-
-  statusEl.style.display = '';
-  statusEl.textContent = 'Uploading and reading ' + file.name + '...';
-
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('sessionId', STATE.sessionId);
-
-    const res = await fetch('/api/upload', { method: 'POST', body: formData });
-    const data = await res.json();
-
-    if (data.ok && data.textExtracted) {
-      statusEl.textContent = '✓ ' + file.name + ' uploaded and added to your session context.';
-      appendMessage('system', '📄 Document uploaded: ' + file.name + '. The AI can now reference this content.');
-      setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
-    } else if (data.ok) {
-      statusEl.textContent = '✓ ' + file.name + ' uploaded (could not extract text, but file is saved).';
-      setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
-    } else {
-      statusEl.textContent = 'Upload failed: ' + (data.error || 'Unknown error');
-      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    if (usage.dailyOpens >= HELP_BOT.maxOpensPerDay) {
+      return { allowed: false, reason: 'You have reached the daily limit for help requests. Please email james@jamesguldan.com for further assistance.' };
     }
-  } catch (e) {
-    statusEl.textContent = 'Upload failed. Please try again.';
-    setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+
+    return { allowed: true };
   }
 
-  input.value = '';
-}
+  function recordOpen() {
+    var usage = getUsage();
+    var now = Date.now();
+    var today = new Date().toISOString().slice(0, 10);
+    usage.opens = (usage.opens || []);
+    usage.opens.push(now);
+    if (usage.dayKey !== today) { usage.dayKey = today; usage.dailyOpens = 0; }
+    usage.dailyOpens = (usage.dailyOpens || 0) + 1;
+    saveUsage(usage);
+  }
+
+  function logToAdmin(action, detail) {
+    try {
+      var token = localStorage.getItem('dw_token');
+      fetch('/api/log-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token ? 'Bearer ' + token : '' },
+        body: JSON.stringify({
+          type: 'help_bot',
+          action: action,
+          detail: detail || '',
+          sessionId: STATE.sessionId || '',
+          email: STATE.email || '',
+          timestamp: new Date().toISOString()
+        })
+      }).catch(function() {});
+    } catch(e) {}
+  }
+
+  // Inject the GHL widget script
+  function loadWidget() {
+    if (HELP_BOT.loaded) return;
+    HELP_BOT.loaded = true;
+    var s = document.createElement('script');
+    s.src = 'https://widgets.leadconnectorhq.com/loader.js';
+    s.setAttribute('data-resources-url', 'https://widgets.leadconnectorhq.com/chat-widget/loader.js');
+    s.setAttribute('data-widget-id', '69b8c7cec0c16f06497b8408');
+    document.body.appendChild(s);
+  }
+
+  // Monitor widget open/close via DOM observation
+  function monitorWidget() {
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(m) {
+        m.addedNodes.forEach(function(node) {
+          if (node.nodeType === 1) {
+            // GHL widget adds an iframe; detect it opening
+            var frames = node.querySelectorAll ? node.querySelectorAll('iframe[src*="leadconnectorhq"], iframe[src*="msgsndr"]') : [];
+            if (node.tagName === 'IFRAME' && (node.src || '').indexOf('leadconnector') > -1) {
+              frames = [node];
+            }
+            if (frames.length > 0) {
+              var check = checkRateLimit();
+              if (!check.allowed) {
+                // Rate limited: hide the widget and show a toast
+                showToast(check.reason);
+                logToAdmin('rate_limited', check.reason);
+                // Try to close/hide the widget
+                try { frames[0].parentElement.style.display = 'none'; } catch(e) {}
+                return;
+              }
+              recordOpen();
+              logToAdmin('opened', 'User opened help chat');
+            }
+          }
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  // Only load widget after user is authenticated and on the app screen
+  function waitForApp() {
+    var checkInterval = setInterval(function() {
+      if (STATE.sessionId || document.querySelector('.screen.active')) {
+        clearInterval(checkInterval);
+        loadWidget();
+        monitorWidget();
+        logToAdmin('widget_loaded', 'Help bot widget initialized');
+      }
+    }, 3000);
+    // Timeout: load after 15s regardless
+    setTimeout(function() { clearInterval(checkInterval); loadWidget(); monitorWidget(); }, 15000);
+  }
+
+  waitForApp();
+})();
+
 </script>
 </body>
-</html>`;
+</html>
+`;

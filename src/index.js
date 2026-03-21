@@ -228,6 +228,11 @@ export default {
         return new Response(getLoginHTML(), { headers: htmlHeaders() });
       }
 
+      // ── Generated site serving (/s/{slug}) ──────────────
+      if (path.startsWith('/s/')) {
+        return handleServeSite(path, env);
+      }
+
       // ── Main app (authenticated users, post-payment) ──
       if (path === '/app') {
         const html = getHTML({
@@ -343,14 +348,23 @@ window.location.replace('/');
       if (path === '/api/deploy' && request.method === 'POST') {
         return handleDeploy(request, env);
       }
+      if (path === '/api/refine-site' && request.method === 'POST') {
+        return handleRefineSite(request, env);
+      }
       if (path === '/api/export' && request.method === 'POST') {
         return handleExport(request, env);
+      }
+      if (path === '/api/export-site' && request.method === 'GET') {
+        return handleExportSite(request, env);
       }
       if (path === '/api/blueprint/pdf' && request.method === 'POST') {
         return handleBlueprintPDF(request, env);
       }
       if (path === '/api/feedback' && request.method === 'POST') {
         return handleFeedback(request, env);
+      }
+      if (path === '/api/log-event' && request.method === 'POST') {
+        return handleLogEvent(request, env);
       }
       if (path === '/api/test/blueprint' && request.method === 'POST') {
         return handleTestBlueprint(request, env);
@@ -1834,12 +1848,140 @@ async function handleGenerateSite(request, env) {
 
 
 // ════════════════════════════════════════════════════════
-// CLOUDFLARE PAGES DEPLOY
+// SEO + OG + FAVICON + SCHEMA OPTIMIZATION
 // ════════════════════════════════════════════════════════
+
+function injectSEO(html, blueprint, liveUrl, slug) {
+  const p1 = blueprint.part1 || {};
+  const p2 = blueprint.part2 || {};
+  const p3 = blueprint.part3 || {};
+  const p5 = blueprint.part5 || {};
+
+  const brandName = p1.brandNames?.[0] || 'Brand';
+  const tagline = p1.tagline || p1.coreBrandPromise || '';
+  const description = (p3.nicheStatement || p1.coreBrandPromise || tagline || '').substring(0, 160);
+  const avatarName = p2.name || '';
+  const keywords = [
+    brandName,
+    ...(p1.brandVoice?.doSay || []).slice(0, 3),
+    p3.uniqueMechanism || '',
+    avatarName ? `for ${avatarName}` : ''
+  ].filter(Boolean).join(', ').substring(0, 255);
+
+  // Extract primary color for favicon and theme
+  const colors = p1.visualDirection?.colors || [];
+  const primaryColor = colors.find(c => c.name?.toLowerCase().includes('primary') || c.name?.toLowerCase().includes('dark'))?.hex || colors[0]?.hex || '#1C2B3A';
+  const accentColor = colors.find(c => c.name?.toLowerCase().includes('gold') || c.name?.toLowerCase().includes('accent'))?.hex || colors[1]?.hex || '#C9A96E';
+
+  // Generate SVG favicon from brand initials
+  const initials = brandName.split(/\s+/).map(w => w[0]).join('').substring(0, 2).toUpperCase();
+  const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${primaryColor}"/><text x="32" y="42" font-family="system-ui,sans-serif" font-size="28" font-weight="700" fill="${accentColor}" text-anchor="middle">${initials}</text></svg>`;
+  const faviconDataUri = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`;
+
+  // Build JSON-LD Schema
+  const schemaType = (p5.businessModel?.toLowerCase() || '').includes('coaching') ? 'Person' :
+    (p5.businessModel?.toLowerCase() || '').includes('agency') ? 'Organization' : 'Organization';
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': schemaType,
+    name: brandName,
+    url: liveUrl,
+    description: description,
+    ...(p1.contactEmail ? { email: p1.contactEmail } : {}),
+    ...(tagline ? { slogan: tagline } : {}),
+    ...(p3.nicheStatement ? { knowsAbout: p3.nicheStatement } : {}),
+    sameAs: []
+  };
+
+  // Build meta tags block
+  const seoBlock = `
+  <!-- SEO Optimization -->
+  <meta name="description" content="${esc(description)}" />
+  <meta name="keywords" content="${esc(keywords)}" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="${esc(brandName)}" />
+  <link rel="canonical" href="${esc(liveUrl)}" />
+  <meta name="theme-color" content="${primaryColor}" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="${esc(brandName + (tagline ? ' | ' + tagline : ''))}" />
+  <meta property="og:description" content="${esc(description)}" />
+  <meta property="og:url" content="${esc(liveUrl)}" />
+  <meta property="og:site_name" content="${esc(brandName)}" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${esc(brandName + (tagline ? ' | ' + tagline : ''))}" />
+  <meta name="twitter:description" content="${esc(description)}" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="${faviconDataUri}" />
+  <link rel="apple-touch-icon" href="${faviconDataUri}" />
+
+  <!-- JSON-LD Schema -->
+  <script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+
+  // Remove any existing duplicate meta tags before injecting
+  let cleaned = html
+    .replace(/<meta\s+name="description"[^>]*>/gi, '')
+    .replace(/<meta\s+property="og:title"[^>]*>/gi, '')
+    .replace(/<meta\s+property="og:description"[^>]*>/gi, '')
+    .replace(/<meta\s+name="robots"[^>]*>/gi, '')
+    .replace(/<link\s+rel="canonical"[^>]*>/gi, '')
+    .replace(/<link\s+rel="icon"[^>]*>/gi, '')
+    .replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
+
+  // Inject before </head>
+  cleaned = cleaned.replace('</head>', seoBlock + '\n</head>');
+
+  return cleaned;
+}
+
+// ════════════════════════════════════════════════════════
+// DEPLOY TO SITE SERVER
+// ════════════════════════════════════════════════════════
+
+async function handleServeSite(path, env) {
+  // Serve generated sites from R2 at /s/{slug} or /s/{slug}/file
+  const parts = path.replace(/^\/s\//, '').split('/');
+  const slug = parts[0];
+  const filePath = parts.slice(1).join('/') || 'index.html';
+
+  if (!slug || slug.length < 2) {
+    return new Response('Not found', { status: 404 });
+  }
+
+  const r2Key = `sites/${slug}/${filePath}`;
+  const obj = await env.UPLOADS.get(r2Key);
+
+  if (!obj) {
+    return new Response(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Site Not Found</title>
+<style>body{font-family:system-ui,sans-serif;max-width:500px;margin:80px auto;padding:0 20px;color:#333;text-align:center;}
+h1{font-size:1.4rem;}code{background:#eee;padding:2px 8px;border-radius:4px;}</style></head>
+<body><h1>Site Not Found</h1><p>No site exists at <code>${slug.replace(/[<>"'&]/g, '')}</code>.</p></body></html>`,
+      { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  }
+
+  const ext = filePath.split('.').pop().toLowerCase();
+  const types = { html:'text/html; charset=utf-8', css:'text/css', js:'application/javascript',
+    json:'application/json', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg',
+    gif:'image/gif', svg:'image/svg+xml', webp:'image/webp', ico:'image/x-icon',
+    woff2:'font/woff2', woff:'font/woff', ttf:'font/ttf', pdf:'application/pdf' };
+  const ct = types[ext] || 'application/octet-stream';
+
+  const headers = { 'Content-Type': ct, 'Cache-Control': 'public, max-age=3600', 'Access-Control-Allow-Origin': '*' };
+  if (ext === 'html') {
+    headers['X-Content-Type-Options'] = 'nosniff';
+  }
+
+  return new Response(obj.body, { headers });
+}
 
 async function handleDeploy(request, env) {
   const body = await request.json();
-  const { sessionId, cfToken } = body;
+  const { sessionId } = body;
 
   const raw = await env.SESSIONS.get(sessionId);
   if (!raw) return json({ error: 'Session not found' }, 404);
@@ -1852,7 +1994,7 @@ async function handleDeploy(request, env) {
   if (!siteObj) return json({ error: 'Site file not found' }, 404);
   const siteHtml = await siteObj.text();
 
-  // Generate a clean project name from blueprint brand name
+  // Generate a clean slug from blueprint brand name
   const bp = session.blueprint?.blueprint || session.blueprint || {};
   const rawBrand = bp.part1?.brandNames?.[0] || '';
   const cleanBrand = rawBrand
@@ -1861,67 +2003,31 @@ async function handleDeploy(request, env) {
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 28);
-  const projectName = cleanBrand
-    ? `dw-${cleanBrand}-${Math.random().toString(36).slice(2, 6)}`
-    : `dw-site-${Math.random().toString(36).slice(2, 8)}`;
-
-  // Use James's infrastructure token (CF_DEPLOY_TOKEN secret) OR a customer-provided token
-  const deployToken = cfToken || env.CF_DEPLOY_TOKEN;
-  const accountId = env.CF_ACCOUNT_ID || 'bd13f1dff62d4ccbea47440e45b48ec2';
-
-  if (!deployToken) {
-    return json({ error: 'Deployment not configured. Contact support.' }, 500);
-  }
+  const slug = cleanBrand
+    ? `${cleanBrand}-${Math.random().toString(36).slice(2, 6)}`
+    : `site-${Math.random().toString(36).slice(2, 8)}`;
 
   try {
-    // Step 1: Create Pages project
-    const createRes = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${deployToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: projectName,
-        production_branch: 'main'
-      })
+    const origin = env.APP_ORIGIN || 'https://app.jamesguldan.com';
+    const liveUrl = `${origin}/s/${slug}`;
+
+    // ── SEO + OG + FAVICON + SCHEMA OPTIMIZATION ──
+    const optimizedHtml = injectSEO(siteHtml, bp, liveUrl, slug);
+
+    // Write optimized site HTML to R2
+    await env.UPLOADS.put(`sites/${slug}/index.html`, optimizedHtml, {
+      httpMetadata: { contentType: 'text/html; charset=utf-8' }
     });
-    const createData = await createRes.json();
-
-    if (!createData.success && !createData.result?.name) {
-      const errMsg = createData.errors?.[0]?.message || 'Could not create Pages project.';
-      return json({ error: errMsg }, 400);
-    }
-
-    // Step 2: Deploy via direct upload
-    const formData = new FormData();
-    formData.append('index.html', new Blob([siteHtml], { type: 'text/html' }), 'index.html');
-
-    const deployRes = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}/deployments`,
-      {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${deployToken}` },
-        body: formData
-      }
-    );
-    const deployData = await deployRes.json();
-
-    if (!deployData.success) {
-      return json({ error: deployData.errors?.[0]?.message || 'Deployment upload failed.' }, 500);
-    }
-
-    const liveUrl = `https://${projectName}.pages.dev`;
 
     session.cfDeployed = true;
-    session.pagesUrl = liveUrl;
-    session.projectName = projectName;
-    session.hostedOnJamesInfra = !cfToken; // Track if hosted on our infra vs customer's
+    session.siteUrl = liveUrl;
+    session.siteSlug = slug;
+    session.seoOptimized = true;
     await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
 
-    await logEvent(env, sessionId, 'site_deployed', { url: liveUrl, projectName, hostedOnJamesInfra: !cfToken });
+    await logEvent(env, sessionId, 'site_deployed', { url: liveUrl, slug, seoOptimized: true });
 
-    return json({ ok: true, url: liveUrl, projectName });
+    return json({ ok: true, url: liveUrl, slug, seoOptimized: true });
 
   } catch (e) {
     console.error('Deploy error:', e);
@@ -1929,6 +2035,179 @@ async function handleDeploy(request, env) {
   }
 }
 
+
+// ════════════════════════════════════════════════════════
+// SITE REFINEMENT
+// ════════════════════════════════════════════════════════
+
+async function handleRefineSite(request, env) {
+  const body = await request.json();
+  const { sessionId, category, option, customText } = body;
+
+  const raw = await env.SESSIONS.get(sessionId);
+  if (!raw) return json({ error: 'Session not found' }, 404);
+  const session = JSON.parse(raw);
+
+  // Get current site HTML from R2
+  const siteObj = await env.UPLOADS.get(`sessions/${sessionId}/site.html`);
+  if (!siteObj) return json({ error: 'No site to refine' }, 404);
+  const currentHtml = await siteObj.text();
+
+  // Build refinement instruction
+  const instruction = buildRefineInstruction(category, option, customText);
+
+  // Send to Claude for refinement
+  const refinedBody = await callClaudeRefine(env, currentHtml, instruction);
+
+  if (!refinedBody || refinedBody.length < 200) {
+    return json({ error: 'Refinement produced empty result' }, 500);
+  }
+
+  // Extract <head> from current HTML and combine with refined body
+  const headMatch = currentHtml.match(/<head[\s\S]*?<\/head>/i);
+  const headHtml = headMatch ? headMatch[0] : '<head><meta charset="UTF-8"><title>Site</title></head>';
+
+  // Clean the refined output
+  let cleanBody = refinedBody
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<\/html>/gi, '').replace(/<\/body>/gi, '')
+    .replace(/<html[^>]*>/gi, '').replace(/<body[^>]*>/gi, '')
+    .replace(/<\/head>/gi, '').replace(/<head[\s\S]*?>/gi, '')
+    .trim();
+
+  const finalHtml = `<!DOCTYPE html>\n<html lang="en">\n${headHtml}\n<body>\n${cleanBody}\n</body>\n</html>`;
+
+  // Save to R2
+  await env.UPLOADS.put(`sessions/${sessionId}/site.html`, finalHtml, {
+    httpMetadata: { contentType: 'text/html' }
+  });
+
+  // Track refinement
+  if (!session.refinements) session.refinements = [];
+  session.refinements.push({ category, option, customText, at: new Date().toISOString() });
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+
+  await logEvent(env, sessionId, 'site_refined', { category, option });
+
+  return json({ ok: true, refinementCount: session.refinements.length });
+}
+
+function buildRefineInstruction(category, option, customText) {
+  const instructions = {
+    colors: {
+      warmer: 'Shift the color palette to warmer tones: golds, burnt oranges, terracotta, warm browns. Update all background colors, gradients, and accent colors.',
+      cooler: 'Shift the color palette to cooler tones: navy blues, teals, steel grays, icy whites. Update all background colors, gradients, and accent colors.',
+      bolder: 'Make the color palette bolder and higher contrast. Use more vivid, saturated colors. Increase contrast between text and backgrounds.',
+      softer: 'Make the color palette softer and more muted. Use pastels, soft grays, and gentle tones. Reduce harsh contrasts.',
+      dark: 'Convert to a dark mode design. Dark backgrounds (#0f0f0f to #1a1a2e), light text (#e0e0e0 to #ffffff), and adjust accent colors to work on dark.',
+      minimal: 'Convert to a minimal monochrome palette. Primarily black, white, and various grays. Keep only ONE accent color for CTAs and highlights.',
+    },
+    headlines: {
+      shorter: 'Make all headlines and copy significantly shorter and punchier. Cut unnecessary words. Each headline should be under 8 words. Paragraphs should be 1 to 2 sentences max.',
+      storytelling: 'Rewrite headlines and body copy with more narrative and storytelling. Add emotional hooks, paint vivid pictures, use "you" language.',
+      professional: 'Rewrite copy to be more professional and authoritative. Formal tone, credibility markers, industry language. Think consulting firm.',
+      conversational: 'Rewrite copy to be more casual and conversational. Like talking to a friend. Use contractions, simple words, warmth.',
+      benefit: 'Rewrite all headlines to lead with benefits. Every heading should answer "what does the reader get?" Start with outcomes, not features.',
+      urgency: 'Add more urgency and momentum to the copy. Use power words, time sensitivity, scarcity framing. Make the reader feel they should act now.',
+    },
+    layout: {
+      compact: 'Reduce all padding and margins by roughly 40%. Tighter spacing between sections. More content visible without scrolling.',
+      spacious: 'Increase padding and margins by roughly 50%. Add generous whitespace between sections. Give the design room to breathe.',
+      'single-column': 'Convert to a clean single column layout. Remove side-by-side grids. Stack everything vertically for a focused reading experience.',
+      magazine: 'Make the layout more editorial / magazine style. Use multi-column grids, larger hero images, pull quotes, and varied section widths.',
+      'sections-reorder': 'Move the primary CTA section to be the second section (right after the hero). Make the CTA prominent and above the fold.',
+      'add-testimonials': 'Add a testimonials section with 3 placeholder testimonials. Style it as a card grid with quote marks, names, and roles.',
+    },
+    imagery: {
+      abstract: 'Update imagery styling: use abstract, painterly, artistic images. Add CSS gradients and organic shapes as decorative elements.',
+      photographic: 'Update imagery styling: use clean, realistic photography style. Remove any abstract backgrounds. Crisp, professional photo aesthetic.',
+      'minimal-img': 'Remove large images. Use simple line icons and small accent graphics instead. Typography focused design.',
+      nature: 'Update the visual mood to nature and organic. Earth tones, leaf textures, natural photography. Organic, grounded feel.',
+      geometric: 'Update the visual mood to geometric and modern. Sharp shapes, tech gradients, crisp edges. Futuristic, polished feel.',
+      'remove-images': 'Remove all images and background images. Make it a pure typography focused design. Use color and whitespace for visual interest.',
+    }
+  };
+
+  if (category === 'custom' && customText) {
+    return `The user has requested the following specific change to their website:\n\n"${customText}"\n\nApply this change while keeping the overall structure and content intact.`;
+  }
+
+  const catInstructions = instructions[category];
+  if (catInstructions && catInstructions[option]) {
+    return catInstructions[option];
+  }
+
+  return customText || 'Make the site feel more polished and professional.';
+}
+
+async function callClaudeRefine(env, currentHtml, instruction) {
+  // Strip base64 data URIs to drastically reduce size (1.5MB → ~30KB)
+  // Replace with placeholder markers we can restore later
+  const imageMap = {};
+  let imgIndex = 0;
+  const stripped = currentHtml.replace(/url\(['"]?(data:[^)'"]+)['"]?\)/gi, (match, dataUri) => {
+    const key = `__IMG_PLACEHOLDER_${imgIndex}__`;
+    imageMap[key] = dataUri;
+    imgIndex++;
+    return `url('${key}')`;
+  }).replace(/src="(data:[^"]+)"/gi, (match, dataUri) => {
+    const key = `__IMG_PLACEHOLDER_${imgIndex}__`;
+    imageMap[key] = dataUri;
+    imgIndex++;
+    return `src="${key}"`;
+  });
+
+  // Extract just the body content
+  const bodyMatch = stripped.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  const bodyOnly = bodyMatch ? bodyMatch[1].trim() : stripped;
+
+  // Truncate if still too large
+  const truncated = bodyOnly.length > 60000 ? bodyOnly.substring(0, 60000) + '\n<!-- truncated -->' : bodyOnly;
+
+  const systemPrompt = `You are a website designer refining an existing HTML page. Apply ONLY the requested change while keeping everything else intact.
+
+RULES:
+- Return ONLY the body content (no <html>, <head>, <body>, <style> tags)
+- Keep ALL existing sections, content, and structure unless the instruction says to change them
+- Preserve all inline styles, classes, data attributes, and image placeholder markers (__IMG_PLACEHOLDER_N__)
+- If about colors: update inline style color values, backgrounds, gradients throughout
+- If about copy: rewrite text content but keep HTML structure
+- If about layout: adjust structural elements and spacing
+- Start response with the first HTML element (typically <nav>)`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8000,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: `Current website body HTML:\n\n${truncated}\n\n---\n\nREFINEMENT: ${instruction}\n\nReturn the updated body content now. Begin with the first element.`
+      }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => 'unknown');
+    throw new Error(`Claude API error ${res.status}: ${err.substring(0, 200)}`);
+  }
+
+  const data = await res.json();
+  const text = data.content?.[0]?.text || '';
+
+  // Re-inject base64 images that were stripped before sending to Claude
+  let restored = text;
+  for (const [key, dataUri] of Object.entries(imageMap)) {
+    restored = restored.split(key).join(dataUri);
+  }
+  return restored;
+}
 
 // ════════════════════════════════════════════════════════
 // EXPORT (TAKE IT WITH YOU ZIP)
@@ -1961,6 +2240,36 @@ async function handleExport(request, env) {
 function buildExportHTML(blueprint, session) {
   return buildBrandGuideHTML(blueprint, session);
 }
+// ── EXPORT SITE (download generated site HTML) ────────────────
+async function handleExportSite(request, env) {
+  const url = new URL(request.url);
+  const sessionId = url.searchParams.get('sessionId');
+  if (!sessionId) return json({ error: 'Missing sessionId' }, 400);
+
+  const raw = await env.SESSIONS.get(sessionId);
+  if (!raw) return json({ error: 'Session not found' }, 404);
+  const session = JSON.parse(raw);
+
+  const siteObj = await env.UPLOADS.get('sessions/' + sessionId + '/site.html');
+  if (!siteObj) return json({ error: 'Site not generated yet. Build your website first.' }, 404);
+
+  const siteHtml = await siteObj.text();
+
+  const bp = session.blueprint?.blueprint || {};
+  const brandName = bp.part1?.brandNames?.[0] || 'my-site';
+  const safeName = brandName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'my-site';
+
+  await logEvent(env, sessionId, 'site_downloaded', {});
+
+  return new Response(siteHtml, {
+    headers: {
+      'Content-Type': 'text/html',
+      'Content-Disposition': 'attachment; filename="' + safeName + '.html"',
+      ...CORS
+    }
+  });
+}
+
 
 function buildBrandGuideHTML(blueprint, session) {
   const b = blueprint?.blueprint;
@@ -2208,12 +2517,21 @@ body {
 /* ── PAGE LAYOUT ── */
 .page {
   width: 8.5in;
-  min-height: 11in;
   margin: 0 auto;
   position: relative;
+  background: #fff;
+}
+.page.cover {
+  min-height: 11in;
   overflow: hidden;
   page-break-after: always;
-  background: #fff;
+}
+.page.content-page {
+  padding-bottom: 40px;
+  page-break-inside: auto;
+}
+.page.force-break {
+  page-break-before: always;
 }
 
 /* ── COVER ── */
@@ -2631,13 +2949,31 @@ body {
   body { margin: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .page {
     width: 100%;
-    min-height: 100vh;
     margin: 0;
-    page-break-after: always;
-    break-after: page;
   }
   .page.cover {
     min-height: 100vh;
+    page-break-after: always;
+    break-after: page;
+  }
+  .page.content-page {
+    page-break-inside: auto;
+  }
+  .page.force-break {
+    page-break-before: always;
+    break-before: page;
+  }
+  .card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .part-header {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .two-col {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
   .swatch-block, .cover, .cover-color-bar div, .font-display, .starter-block, .pull-quote, .card {
     -webkit-print-color-adjust: exact !important;
@@ -2650,6 +2986,7 @@ body {
 @media screen {
   body { background: #e8e4de; padding: 32px 0; }
   .page { box-shadow: 0 8px 48px rgba(0,0,0,0.18); margin-bottom: 24px; }
+  .page.content-page { min-height: auto; }
 }
 </style>
 </head>
@@ -2669,7 +3006,7 @@ body {
 </div>
 
 <!-- PAGE 2: BRAND ESSENCE -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2709,7 +3046,7 @@ body {
 </div>
 
 <!-- PAGE 3: VISUAL IDENTITY -->
-<div class="page">
+<div class="page content-page">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2758,7 +3095,7 @@ body {
 </div>
 
 <!-- PAGE 4: YOUR PEOPLE -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2798,7 +3135,7 @@ body {
 </div>
 
 <!-- PAGE 5: POSITIONING -->
-<div class="page">
+<div class="page content-page">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2836,7 +3173,7 @@ body {
 </div>
 
 <!-- PAGE 6: OFFERS -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2879,7 +3216,7 @@ body {
 </div>
 
 <!-- PAGE 7: KEY MESSAGES -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2912,7 +3249,7 @@ body {
 </div>
 
 <!-- PAGE 7B: YOUR STORY + OUTREACH -->
-<div class="page">
+<div class="page content-page">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2964,7 +3301,7 @@ ${p1.brandNames?.[0] || 'Your Name'}</pre>
 </div>
 
 <!-- PAGE 8: WEBSITE BLUEPRINT -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -2990,7 +3327,7 @@ ${p1.brandNames?.[0] || 'Your Name'}</pre>
 </div>
 
 <!-- PAGE 9: WEBSITE BLUEPRINT CONTINUED -->
-<div class="page">
+<div class="page content-page">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -3016,7 +3353,7 @@ ${p1.brandNames?.[0] || 'Your Name'}</pre>
 </div>
 
 <!-- PAGE 10: 90-DAY PLAN -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -3045,7 +3382,7 @@ ${p1.brandNames?.[0] || 'Your Name'}</pre>
 </div>
 
 ${recMessage ? `<!-- PAGE 10B: YOUR RECOMMENDED NEXT STEP -->
-<div class="page">
+<div class="page content-page">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -3078,8 +3415,8 @@ ${recMessage ? `<!-- PAGE 10B: YOUR RECOMMENDED NEXT STEP -->
       ${recType === 'site_in_sixty' ? `
         <div style="background-color:${secondary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:10px;padding:32px;color:#fff;">
           <div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:12px;">Ready to Make This Live?</div>
-          <div style="font-size:15px;line-height:1.7;opacity:0.85;max-width:5in;margin:0 auto 20px;">Your blueprint is complete. A designer would take 30 days. With Site In Sixty, we can have your branded site live today.</div>
-          <a href="https://siteinsixty.com" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:15px;padding:16px 36px;border-radius:6px;text-decoration:none;">Build My Site Now</a>
+          <div style="font-size:15px;line-height:1.7;opacity:0.85;max-width:5in;margin:0 auto 20px;">Your strategy is done. Your messaging is locked. Your visual identity is set. The only thing left is putting it in front of the people who need to see it.</div>
+          <a href="https://app.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:15px;padding:16px 36px;border-radius:6px;text-decoration:none;">Get Your Vision Live</a>
         </div>` : recType === 'coaching' ? `
         <div style="background-color:${primary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:10px;padding:32px;color:#fff;">
           <div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:12px;">Let's Work Together</div>
@@ -3095,7 +3432,7 @@ ${recMessage ? `<!-- PAGE 10B: YOUR RECOMMENDED NEXT STEP -->
 </div>` : ''}
 
 <!-- PAGE 11: CONTINUE IN CLAUDE -->
-<div class="page">
+<div class="page content-page force-break">
   <div class="page-rule"></div>
   <div class="page-header">
     <div class="page-header-brand">${brandName}</div>
@@ -3146,14 +3483,14 @@ Some starting points you could ask about:
 <div class="page cover" style="background-color:${secondary} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
 <div class="cover-body" style="text-align:center;align-items:center">
 <span class="cover-label" style="color:rgba(255,255,255,.6)">Your Next Step</span>
-<div class="cover-name" style="font-size:44px">Ready to Bring<br>This Brand to Life?</div>
-<div style="max-width:5in;color:rgba(255,255,255,.85);font-size:16px;line-height:1.8;font-family:var(--font-body);margin:0 auto">You have what most entrepreneurs spend months trying to figure out. Your brand strategy, messaging, visual identity, and website blueprint are all done. The only question is what you do next.</div>
+<div class="cover-name" style="font-size:44px">Get Your<br>Vision Live</div>
+<div style="max-width:5in;color:rgba(255,255,255,.85);font-size:16px;line-height:1.8;font-family:var(--font-body);margin:0 auto">You did the deep work. Your brand strategy, messaging, and visual identity are locked in. Now it is time to put all of it in front of the people who need to see it. Go back to your blueprint and click the button. Your site can be live in 60 seconds.</div>
 <div style="margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-  <a href="https://siteinsixty.com" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:16px;padding:18px 42px;border-radius:6px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2);">Build My Website with Site In Sixty</a>
-  <div style="color:rgba(255,255,255,.6);font-size:13px;max-width:4in;text-align:center;line-height:1.6;">We already know your brand. We built the blueprint. Now let us turn it into a live site. Most sites launch same day.</div>
+  <a href="https://app.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:16px;padding:18px 42px;border-radius:6px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2);">Get Your Vision Live</a>
+  <div style="color:rgba(255,255,255,.6);font-size:13px;max-width:4in;text-align:center;line-height:1.6;">Your blueprint already has everything we need. One click and the AI turns your strategy into a real, live website.</div>
 </div>
 <div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:center;gap:40px;color:rgba(255,255,255,.5);font-size:12px;">
-  <span>siteinsixty.com</span>
+  <span>app.jamesguldan.com</span>
   <span>Powered by Align Growth LLC</span>
 </div>
 </div></div>
@@ -3206,6 +3543,34 @@ async function handleFeedback(request, env) {
     console.error('Feedback save error:', e);
   }
 
+  return json({ ok: true });
+}
+
+async function handleLogEvent(request, env) {
+  try {
+    const body = await request.json();
+    const { type, action, detail, sessionId, email, timestamp } = body;
+
+    // Only accept known event types
+    if (!['help_bot', 'site_review', 'refinement'].includes(type)) {
+      return json({ ok: true }); // silently ignore unknown types
+    }
+
+    await env.DB.prepare(`
+      INSERT INTO event_log (type, action, detail, session_id, email, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(
+      type || 'unknown',
+      action || '',
+      (detail || '').slice(0, 500),
+      sessionId || '',
+      email || '',
+      timestamp || new Date().toISOString()
+    ).run();
+  } catch (e) {
+    // Don't fail the request if logging fails
+    console.error('Event log error:', e);
+  }
   return json({ ok: true });
 }
 
@@ -3548,7 +3913,7 @@ function sanitizeDocumentText(text) {
 
 // ════════════════════════════════════════════════════════
 // UTILS
-// ════════════════════════════════════════════════════════
+// ═══════════���════════════════════════════════════════════
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -4336,8 +4701,8 @@ Return ONLY the JSON, no other text.`
     // Save blueprint to R2
     await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
 
-    // Update D1
-    await env.DB.prepare('UPDATE sessions SET status = ?, phase = ? WHERE id = ?')
+    // Update D1 — MUST set blueprint_generated = 1 so active-session query finds it
+    await env.DB.prepare('UPDATE sessions SET status = ?, phase = ?, blueprint_generated = 1 WHERE id = ?')
       .bind('blueprint_complete', 8, sessionId).run();
 
     // Generate magic link for convenience
