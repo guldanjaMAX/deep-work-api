@@ -694,7 +694,8 @@ async function handlePaymentSuccess(request, env, url) {
   const tier = url.searchParams.get('tier') || 'blueprint';
 
   if (!checkoutSessionId) {
-    return Response.redirect(new URL('/').toString(), 302);
+    const origin = new URL(request.url).origin;
+    return Response.redirect(`${origin}/`, 302);
   }
 
   // Verify payment with Stripe
