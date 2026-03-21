@@ -2471,13 +2471,14 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
   #help-btn:hover { background: var(--text); color: #fff; border-color: var(--text); transform: scale(1.08); }
   #help-panel {
-    position: fixed; top: 0; right: -360px; width: 340px; height: 100vh;
+    position: fixed; top: 0; right: 0; width: 340px; height: 100vh;
     background: var(--bg); border-left: 1px solid var(--border);
     box-shadow: -4px 0 40px rgba(0,0,0,0.12); z-index: 1000;
     display: flex; flex-direction: column;
-    transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+    transform: translateX(360px);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
   }
-  #help-panel.open { right: 0; }
+  #help-panel.open { transform: translateX(0); }
   #help-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 999; cursor: pointer; }
   #help-overlay.open { display: block; }
   .help-hdr { display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 20px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -2529,7 +2530,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   .help-email-cta:hover { border-color: var(--gold); color: var(--gold); }
   .help-ftr-note { font-size: 11px; color: var(--text3); text-align: center; }
   @media (max-width: 600px) {
-    #help-panel { width: 100%; right: -100%; }
+    #help-panel { width: 100%; transform: translateX(100%); }
     #help-btn { bottom: 90px; right: 16px; }
   }
 </style>
