@@ -12326,12 +12326,10 @@ async function handleRequestMagic(request, env) {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          from: "Deep Work App <noreply@jamesguldan.com>",
+          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
           to: [email],
-          subject: "Your Deep Work App login link",
-          html: `<p>Click the link below to log in. It expires in 24 hours.</p>
-<p><a href="${magicUrl}" style="font-size:18px;font-weight:bold;">Log In to Deep Work App</a></p>
-<p style="color:#888;font-size:12px;">If you did not request this, you can ignore this email.</p>`
+          subject: "Your Deep Work session is ready",
+          html: getMagicLinkEmail(magicUrl, email)
         })
       });
     }
@@ -12457,7 +12455,7 @@ function getPasswordResetEmail(resetUrl, email) {
           <p style="margin:0;font-size:12px;color:#bbb;">Or copy this link: <a href="${resetUrl}" style="color:#c4703f;word-break:break-all;">${resetUrl}</a></p>
         </td></tr>
         <tr><td style="padding-top:24px;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#bbb;">&copy; 2025 Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;">Privacy</a></p>
+          <p style="margin:0;font-size:12px;color:#bbb;">&copy; ${new Date().getFullYear()} Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;">Privacy</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -12466,6 +12464,60 @@ function getPasswordResetEmail(resetUrl, email) {
 </html>`;
 }
 __name(getPasswordResetEmail, "getPasswordResetEmail");
+
+function getMagicLinkEmail(magicUrl, email) {
+  const year = new Date().getFullYear();
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="x-apple-disable-message-reformatting">
+</head>
+<body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#FDFCFA;padding:40px 20px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+
+      <!-- Wordmark -->
+      <tr><td style="padding-bottom:28px;">
+        <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1a1a1a;">JAMES GULDAN</p>
+      </td></tr>
+
+      <!-- Dark hero block -->
+      <tr><td style="background:#1a1a1a;border-radius:20px 20px 0 0;padding:40px 40px 36px;">
+        <p style="margin:0 0 14px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p>
+        <h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">Your session is ready.</h1>
+        <p style="margin:0;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.75;">You are one click away from your complete brand blueprint. Eight conversations. One complete strategy. Built around who you actually are.</p>
+      </td></tr>
+
+      <!-- CTA block -->
+      <tr><td style="background:#ffffff;border-left:1px solid #EAE7E2;border-right:1px solid #EAE7E2;border-bottom:1px solid #EAE7E2;border-radius:0 0 20px 20px;padding:36px 40px 40px;">
+        <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+          <tr><td style="border-radius:50px;background:#1a1a1a;">
+            <a href="${magicUrl}" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Begin My Deep Work Session &rarr;</a>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 24px;font-size:13px;color:#999;line-height:1.7;">This link is for <strong style="color:#555;">${email}</strong> and expires in 24 hours. Do not share it with anyone.</p>
+        <hr style="border:none;border-top:1px solid #EAE7E2;margin:0 0 24px;">
+        <p style="margin:0 0 6px;font-size:12px;color:#bbb;">Button not working? Paste this into your browser:</p>
+        <p style="margin:0;font-size:11px;"><a href="${magicUrl}" style="color:#c4703f;word-break:break-all;">${magicUrl}</a></p>
+      </td></tr>
+
+      <!-- Footer -->
+      <tr><td style="padding-top:24px;text-align:center;">
+        <p style="margin:0 0 6px;font-size:12px;color:#bbb;">Didn&rsquo;t request this? You can safely ignore it.</p>
+        <p style="margin:0;font-size:12px;color:#bbb;">&copy; ${year} Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;text-decoration:none;">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="mailto:james@jamesguldan.com" style="color:#bbb;text-decoration:none;">Support</a></p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
+__name(getMagicLinkEmail, "getMagicLinkEmail");
+
 function getResetPasswordHTML(token) {
   return `<!DOCTYPE html>
 <html lang="en">
