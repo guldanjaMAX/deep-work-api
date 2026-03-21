@@ -2184,6 +2184,15 @@ function showScreen(id) {
 
 function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._toastTimer);
+  el._toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
 // ── TIER SELECTION & CHECKOUT ────────────────────────────
 function selectTier(tier) {
   STATE.tier = tier;
