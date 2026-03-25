@@ -6769,6 +6769,119 @@ function handleBlueprintReady(blueprint) {
   }, 3000);
 }
 
+
+function downloadBlueprintPDF() {
+  const bp = STATE.blueprint;
+  if (!bp) return;
+  const p1 = bp.part1 || {};
+  const p2 = bp.part2 || {};
+  const p3 = bp.part3 || {};
+  const p4 = bp.part4 || {};
+  const p5 = bp.part5 || {};
+  const p6 = bp.part6 || {};
+  const p7 = bp.part7 || {};
+  const p8 = bp.part8 || {};
+  const safe = (v, f) => v || f || '';
+  const list = (arr) => Array.isArray(arr) ? arr.map(i => typeof i === 'string' ? i : i.text || i.name || i.description || '').filter(Boolean).join(' / ') : safe(arr);
+
+  const brandName = (p1.brandNames && p1.brandNames[0]) || p1.brandName || bp.name || 'Your Brand';
+  const tagline = p1.taglines && p1.taglines[0] ? (typeof p1.taglines[0] === 'string' ? p1.taglines[0] : p1.taglines[0].text || p1.taglines[0].tagline || '') : '';
+
+  function section(eyebrow, title, body) {
+    return '<div class="pdf-section"><div class="pdf-eyebrow">' + eyebrow + '</div><div class="pdf-section-title">' + title + '</div><div class="pdf-body">' + body + '</div></div>';
+  }
+  function card(label, content) {
+    if (!content) return '';
+    return '<div class="pdf-card"><div class="pdf-card-label">' + label + '</div><div class="pdf-card-body">' + content + '</div></div>';
+  }
+  function offerBlock(offer, tier) {
+    if (!offer) return '';
+    return '<div class="pdf-offer"><div class="pdf-offer-tier">' + tier + '</div><div class="pdf-offer-name">' + safe(offer.name || offer.title) + '</div><div class="pdf-offer-price">' + safe(offer.price || offer.pricePoint) + '</div><div class="pdf-offer-desc">' + safe(offer.description) + '</div></div>';
+  }
+
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Deep Work Blueprint: ' + brandName + '</title><style>' +
+    '@import url(\'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500&family=Playfair+Display:ital@0;1&display=swap\');' +
+    '* { box-sizing: border-box; margin: 0; padding: 0; }' +
+    'body { font-family: Inter, sans-serif; color: #1D1D1F; background: #fff; padding: 48px; max-width: 720px; margin: 0 auto; }' +
+    '.pdf-cover { text-align: center; padding: 48px 0 56px; border-bottom: 2px solid #1D1D1F; margin-bottom: 48px; }' +
+    '.pdf-cover-eyebrow { font-family: Outfit, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C4703F; margin-bottom: 20px; }' +
+    '.pdf-cover-name { font-family: Outfit, sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }' +
+    '.pdf-cover-tagline { font-family: Playfair Display, serif; font-size: 18px; font-style: italic; color: #555; }' +
+    '.pdf-cover-meta { font-family: Inter, sans-serif; font-size: 12px; color: #86868B; margin-top: 24px; }' +
+    '.pdf-section { margin-bottom: 36px; page-break-inside: avoid; }' +
+    '.pdf-eyebrow { font-family: Outfit, sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C4703F; margin-bottom: 8px; }' +
+    '.pdf-section-title { font-family: Outfit, sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 12px; }' +
+    '.pdf-body { font-size: 13px; line-height: 1.75; color: #444; }' +
+    '.pdf-card { background: #FAFAFA; border: 1px solid #F0F0F0; border-radius: 8px; padding: 16px; margin-bottom: 10px; }' +
+    '.pdf-card-label { font-family: Outfit, sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #C4703F; margin-bottom: 6px; }' +
+    '.pdf-card-body { font-size: 13px; color: #444; line-height: 1.65; }' +
+    '.pdf-quote { font-family: Playfair Display, serif; font-size: 16px; font-style: italic; border-left: 3px solid #C4703F; padding: 16px 20px; margin: 20px 0; color: #1D1D1F; background: #FAFAFA; border-radius: 0 8px 8px 0; }' +
+    '.pdf-offer { border: 1px solid #F0F0F0; border-radius: 8px; padding: 20px; margin-bottom: 12px; }' +
+    '.pdf-offer-tier { font-family: Outfit, sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #C4703F; margin-bottom: 6px; }' +
+    '.pdf-offer-name { font-family: Outfit, sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }' +
+    '.pdf-offer-price { font-family: Outfit, sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 8px; }' +
+    '.pdf-offer-desc { font-size: 13px; color: #555; line-height: 1.65; }' +
+    '.pdf-divider { height: 1px; background: #F0F0F0; margin: 32px 0; }' +
+    '.pdf-h2 { font-family: Outfit, sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #1D1D1F; margin: 40px 0 20px; padding-bottom: 8px; border-bottom: 1px solid #F0F0F0; page-break-after: avoid; }' +
+    '@media print { body { padding: 0; } @page { margin: 24mm 20mm; } }' +
+    '</style></head><body>' +
+    '<div class="pdf-cover">' +
+    '<div class="pdf-cover-eyebrow">Deep Work Blueprint</div>' +
+    '<div class="pdf-cover-name">' + brandName + '</div>' +
+    (tagline ? '<div class="pdf-cover-tagline">\"' + tagline.replace(/^\"|^\"/, '').replace(/\"$|\u201d$/, '') + '\"</div>' : '') +
+    '<div class="pdf-cover-meta">Generated by Deep Work Interview &nbsp;&middot;&nbsp; deepwork.jamesguldan.com</div>' +
+    '</div>' +
+
+    '<div class="pdf-h2">Brand Story</div>' +
+    (p1.coreBrandPromise ? '<div class="pdf-quote">' + p1.coreBrandPromise + '</div>' : '') +
+    section('Brand Foundation', 'Your Brand Identity',
+      card('Brand Voice', list(p1.brandVoice)) +
+      card('Visual Aesthetic', safe(p1.visualDirection && p1.visualDirection.aesthetic)) +
+      card('Recommended Fonts', p1.visualDirection && Array.isArray(p1.visualDirection.fonts) ? p1.visualDirection.fonts.join(', ') : safe(p1.visualDirection && p1.visualDirection.fonts))
+    ) +
+    section('Your Ideal Client', safe(p2.name) + (p2.ageRange ? ', ' + p2.ageRange : ''),
+      safe(p2.lifeSituation) +
+      '<br><br>' +
+      card('What They Want', list(p2.goals)) +
+      card('What Keeps Them Up', list(p2.painPoints)) +
+      card('What They Have Tried', list(p2.alreadyTried)) +
+      card('Why It Did Not Work', list(p2.whyItDidNotWork))
+    ) +
+
+    '<div class="pdf-h2">Positioning</div>' +
+    (p3.nicheStatement ? '<div class="pdf-quote">' + p3.nicheStatement + '</div>' : '') +
+    section('Market Position', 'Niche and Mechanism',
+      card('Who You Serve', list(p3.whoTheyServe)) +
+      card('Who You Do Not Serve', list(p3.whoTheyDoNotServe)) +
+      card('Your Unique Mechanism', typeof p3.uniqueMechanism === 'object' ? safe(p3.uniqueMechanism && (p3.uniqueMechanism.name || p3.uniqueMechanism.title)) + ': ' + safe(p3.uniqueMechanism && p3.uniqueMechanism.description) : safe(p3.uniqueMechanism)) +
+      card('Competitor Gap', list(p3.competitorGap))
+    ) +
+    section('Headlines and Copy', 'Words That Convert',
+      (p7.heroHeadlineOptions || []).map((h, i) => card('Headline ' + (i+1), typeof h === 'string' ? h : safe(h.text || h.headline))).join('')
+    ) +
+
+    '<div class="pdf-h2">Offers</div>' +
+    (p4.ascensionLogic ? '<p style="font-size:13px;color:#444;line-height:1.75;margin-bottom:20px;">' + p4.ascensionLogic + '</p>' : '') +
+    offerBlock(p4.entryOffer, 'Entry Offer') +
+    offerBlock(p4.coreOffer, 'Core Offer') +
+    offerBlock(p4.premiumOffer, 'Premium Offer') +
+
+    '<div class="pdf-h2">Next Steps</div>' +
+    section('', safe(p8.headline, 'Make This Real'),
+      safe(p8.personalizedMessage) +
+      '<br><br>' +
+      card('Self-Guided Path', safe(p8.selfGuidedPath && p8.selfGuidedPath.description)) +
+      card('Work With James', safe(p8.guidedPath && p8.guidedPath.description) + (p8.guidedPath && p8.guidedPath.calendlyUrl ? '<br><a href=\"' + p8.guidedPath.calendlyUrl + '\">' + p8.guidedPath.calendlyUrl + '</a>' : ''))
+    ) +
+
+    '</body></html>';
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.onload = () => w.print();
+}
+
 function renderBlueprintV2(blueprint, userName) {
   const { part1, part2, part3, part4, part5, part6, part7, part8, debrief } = blueprint;
   const safe = (val, fallback = '') => val || fallback;
