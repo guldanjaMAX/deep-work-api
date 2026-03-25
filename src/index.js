@@ -16639,7 +16639,11 @@ async function handleChat(request, env) {
               if (user?.email) {
                 fireEventToDripWorker(env, user.email, "interview_completed", {
                   name: user.name || "",
-                  phone: session.phone || session.userData?.phone || ""
+                  phone: session.phone || session.userData?.phone || "",
+                  highlight_quote: blueprint?.blueprint?.debrief?.paragraph3_quote || (blueprint?.blueprint?.leadIntel?.notableQuotes?.[0]) || "",
+                  niche_statement: blueprint?.blueprint?.part3?.nicheStatement || "",
+                  brand_name: (blueprint?.blueprint?.part1?.brandNames?.[0]) || blueprint?.blueprint?.part1?.brandName || "",
+                  next_step: blueprint?.blueprint?.part8?.recommendation || "self_guided"
                 }).catch(() => {
                 });
               }
