@@ -5941,14 +5941,14 @@ async function resumeSession() {
         updateLoadingStage('Your site is ready.', 100);
         await new Promise(r => setTimeout(r, 200));
         hideLoadingOverlay();
-        renderBlueprint(data.blueprint, data.strategistDebrief || null, true);
+        renderBlueprintV2(data.blueprint, data.strategistDebrief || null, true);
         showMissionControl(data.siteUrl, data.siteSlug || '');
         return;
       }
       updateLoadingStage('Your blueprint is ready.', 100);
       await new Promise(r => setTimeout(r, 200));
       hideLoadingOverlay();
-      renderBlueprint(data.blueprint, data.strategistDebrief || null, true);
+      renderBlueprintV2(data.blueprint, data.strategistDebrief || null, true);
       // Check if user was mid-picker or on reveal \u2014 restore them there
       var _sn2 = dwGetSavedNav(STATE.sessionId);
       if (_sn2 && _sn2.screen === 'site-reveal' && _sn2.liveUrl) {
@@ -6764,7 +6764,7 @@ function handleBlueprintReady(blueprint) {
 
   // After a moment, transition to blueprint screen
   setTimeout(() => {
-    renderBlueprint(blueprint, STATE.strategistDebrief || null);
+    renderBlueprintV2(blueprint, STATE.strategistDebrief || null);
     showScreen('blueprint-screen');
   }, 3000);
 }
@@ -10749,7 +10749,7 @@ var DT = {
         STATE.blueprint = DT.getMockBlueprint();
         STATE.tier = 'site';
         STATE.sessionId = STATE.sessionId || 'dt_test_' + Date.now();
-        renderBlueprint(STATE.blueprint, {
+        renderBlueprintV2(STATE.blueprint, {
           quotedMoment: "I realized this was what I was meant to do when I watched her transform.",
           reflection: "Alex, in our conversation something became very clear very quickly. You are not building a coaching business because it seemed like a good career move. You are building it because you have spent 15 years watching people struggle with the exact problem you know how to solve.",
           insight: "What makes your positioning genuinely strong is that you are not teaching leadership from theory. You lived it. Every framework you use was forged in the same pressure your clients face right now. That is an unfair advantage most coaches would kill for.",
