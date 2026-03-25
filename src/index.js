@@ -1,19 +1,25 @@
 var __defProp = Object.defineProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-};
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
 
-// src/prompts.js
+// src/index.js
+var __defProp2 = Object.defineProperty;
+var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var __name22 = /* @__PURE__ */ __name2((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var __defProp22 = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __name222 = /* @__PURE__ */ __name22((target, value) => __defProp22(target, "name", { value, configurable: true }), "__name");
+var __esm = /* @__PURE__ */ __name22((fn, res) => /* @__PURE__ */ __name22(/* @__PURE__ */ __name2(/* @__PURE__ */ __name(function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+}, "__init"), "__init"), "__init"), "__esm");
+var __export = /* @__PURE__ */ __name22((target, all) => {
+  for (var name in all)
+    __defProp22(target, name, { get: all[name], enumerable: true });
+}, "__export");
 var prompts_exports = {};
 __export(prompts_exports, {
   DEEP_WORK_SYSTEM_PROMPT: () => DEEP_WORK_SYSTEM_PROMPT,
-  SITE_CSS_FOUNDATION: () => SITE_CSS_FOUNDATION,
+  getThemeCSS: () => getThemeCSS,
+  selectTheme: () => selectTheme,
   SITE_GENERATION_PROMPT: () => SITE_GENERATION_PROMPT,
   STRATEGIST_DEBRIEF_PROMPT: () => STRATEGIST_DEBRIEF_PROMPT,
   buildImagenPrompt: () => buildImagenPrompt,
@@ -26,8 +32,8 @@ function getAestheticOverrides(aesthetic) {
   if (/executive|corporate|finance|law|premium|luxury|elite/i.test(a)) {
     return `
   /* Executive / Premium aesthetic overrides */
-  .hero { padding: 160px 0 130px; }
-  .hero h1 { font-size: clamp(2.6rem, 4.8vw, 4rem); letter-spacing: -0.025em; font-weight: 700; }
+  .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: clamp(100px, 14vh, 140px) 0 clamp(60px, 10vh, 100px); }
+  .hero h1 { font-size: clamp(2rem, 3.6vw, 3.2rem); letter-spacing: -0.025em; font-weight: 700; line-height: 1.15; }
   .hero .hero-sub { font-size: 1.15rem; max-width: 600px; margin: 0 auto; }
   section { padding: 110px 0; }
   .section-header h2 { font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -0.02em; }
@@ -38,9 +44,9 @@ function getAestheticOverrides(aesthetic) {
   } else if (/bold|energetic|dynamic|intense|power|aggressive|athlete|sport/i.test(a)) {
     return `
   /* Bold / Dynamic aesthetic overrides */
-  .hero { padding: 130px 0 110px; }
-  .hero h1 { font-size: clamp(3rem, 5.5vw, 4.8rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
-  section { padding: 100px 0; }
+  .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: clamp(80px, 12vh, 120px) 0 clamp(60px, 10vh, 100px); }
+  .hero h1 { font-size: clamp(2rem, 3.8vw, 3.2rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
+  section { padding: 80px 0; }
   .section-header h2 { font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 800; }
   .card { border-radius: 4px; border-top: 4px solid var(--accent); box-shadow: none; }
   .card--dark { background: var(--primary); color: white; }
@@ -50,9 +56,9 @@ function getAestheticOverrides(aesthetic) {
   } else if (/warm|human|authentic|personal|soft|gentle|healing|wellness|coach/i.test(a)) {
     return `
   /* Warm / Human aesthetic overrides */
-  .hero { padding: 130px 0 110px; }
-  .hero h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1.2; font-style: italic; }
-  section { padding: 100px 0; }
+  .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: clamp(80px, 12vh, 120px) 0 clamp(60px, 10vh, 100px); }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); line-height: 1.15; font-style: italic; }
+  section { padding: 80px 0; }
   .section-header h2 { font-size: clamp(1.9rem, 3.2vw, 2.8rem); }
   .card { border-radius: 20px; border: none; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
   .testimonial { border-radius: 16px; padding: 28px; background: var(--bg); }
@@ -63,8 +69,8 @@ function getAestheticOverrides(aesthetic) {
   } else if (/modern|minimal|design|creative|studio|agency/i.test(a)) {
     return `
   /* Modern / Minimal aesthetic overrides */
-  .hero { padding: 150px 0 120px; }
-  .hero h1 { font-size: clamp(2.5rem, 5vw, 4.2rem); letter-spacing: -0.03em; line-height: 1.1; }
+  .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: clamp(80px, 12vh, 120px) 0 clamp(60px, 10vh, 100px); }
+  .hero h1 { font-size: clamp(2rem, 3.5vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.1; }
   section { padding: 120px 0; }
   .section-header h2 { font-size: clamp(2rem, 3.8vw, 3.2rem); letter-spacing: -0.02em; }
   .card { border-radius: 2px; border: 1px solid rgba(0,0,0,0.08); box-shadow: none; }
@@ -73,18 +79,24 @@ function getAestheticOverrides(aesthetic) {
   }
   return `
   /* Default personal brand overrides */
-  .hero { padding: 140px 0 120px; }
-  .hero h1 { font-size: clamp(2.4rem, 4.5vw, 3.8rem); letter-spacing: -0.02em; }
-  section { padding: 100px 0; }
+  .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: clamp(80px, 12vh, 120px) 0 clamp(60px, 10vh, 100px); }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); letter-spacing: -0.02em; }
+  section { padding: 80px 0; }
   .section-header h2 { font-size: clamp(1.9rem, 3.2vw, 2.8rem); }`;
 }
-function buildImagenPrompt(p1, p3) {
+__name(getAestheticOverrides, "getAestheticOverrides");
+__name2(getAestheticOverrides, "getAestheticOverrides");
+__name22(getAestheticOverrides, "getAestheticOverrides");
+function buildImagenPrompt(p1, p3, heroImageTheme) {
   const aesthetic = (p1.visualDirection?.aesthetic || "").toLowerCase();
   const colors = p1.visualDirection?.colors || [];
   const primaryColorName = (colors[0]?.name || "deep navy").toLowerCase();
   const secondaryColorName = (colors[1]?.name || "warm gold").toLowerCase();
   const mechanism = (p3.uniqueMechanism || "transformation and growth").substring(0, 60);
   const brandPromise = (p1.coreBrandPromise || "").substring(0, 80);
+  if (heroImageTheme && heroImageTheme.length > 20) {
+    return `Premium editorial photography. ${heroImageTheme}. Color palette: ${primaryColorName} and ${secondaryColorName} tones. No people, no faces, no text, no logos, no words. Ultra high quality, 16:9 aspect ratio.`;
+  }
   let styleWords = "";
   if (/executive|corporate|premium|luxury|elite/i.test(aesthetic)) {
     styleWords = "cinematic editorial photography, sophisticated executive environment, dramatic natural light, architectural detail, still and powerful";
@@ -99,6 +111,9 @@ function buildImagenPrompt(p1, p3) {
   }
   return `${styleWords}. Color palette: ${primaryColorName} and ${secondaryColorName} tones. Abstract conceptual representation of: ${mechanism}. No people, no faces, no text, no logos. Ultra high quality, 16:9 aspect ratio. This image represents: ${brandPromise}`;
 }
+__name(buildImagenPrompt, "buildImagenPrompt");
+__name2(buildImagenPrompt, "buildImagenPrompt");
+__name22(buildImagenPrompt, "buildImagenPrompt");
 function buildDesignBrief(p1, p2, p3, p5) {
   const aesthetic = (p1.visualDirection?.aesthetic || "").toLowerCase();
   const brandPromise = p1.coreBrandPromise || "";
@@ -145,8 +160,17 @@ function buildDesignBrief(p1, p2, p3, p5) {
     }
     return `  "${s.name}": ${intent}`;
   }).join("\n");
+  const pageNarrative = p5.pageNarrative || "";
   return `\u2501\u2501\u2501 CREATIVE DIRECTOR'S BRIEF \u2501\u2501\u2501
 This is a site for ${brandName}. Do not design a template. Design a story.
+
+STORY ARC: Every site follows this emotional journey:
+1. OPEN: The client's world (hero section). Headline speaks to THEIR pain, not the expert's credentials. The visitor must see themselves in the first 5 seconds.${p2.internalProblem ? ' Lead with this emotional hook: "' + p2.internalProblem + '"' : ''}${p5.storyArc && p5.storyArc.openWith ? ' Narrative direction: "' + p5.storyArc.openWith + '"' : ''}
+2. DEEPEN: Why what they have tried has not worked (problem section). Name the real obstacle. Be specific.${p5.storyArc && p5.storyArc.deepenWith ? ' Direction: "' + p5.storyArc.deepenWith + '"' : ''}
+3. GUIDE: Introduce the expert as someone who understands, not someone who lectures (about section). Lead with empathy, then credentials.${p5.storyArc && p5.storyArc.introduceGuide ? ' Direction: "' + p5.storyArc.introduceGuide + '"' : ''}
+4. PATH: Show the clear plan (methodology section). 3 steps maximum. Numbered. Simple.${p5.storyArc && p5.storyArc.revealPath ? ' Direction: "' + p5.storyArc.revealPath + '"' : ''}
+5. PROOF: Let transformed clients speak (testimonials). Real names, specific outcomes, emotional language.${p5.storyArc && p5.storyArc.proveIt ? ' Direction: "' + p5.storyArc.proveIt + '"' : ''}
+6. INVITE: One clear next step (CTA section). A specific action: "Book a 30-minute clarity call" or "Start your blueprint."${p5.storyArc && p5.storyArc.inviteTo ? ' Direction: "' + p5.storyArc.inviteTo + '"' : ''}${p2.successVision ? '\nTRANSFORMATION VISION (anchor the after sections): "' + p2.successVision + '"' : ''}
 
 THE CORE TENSION THIS SITE MUST RESOLVE:
 "${avatarPain}..." \u2192 "${brandPromise.substring(0, 80)}"
@@ -172,7 +196,16 @@ WHAT MAKES THIS SITE DIFFERENT FROM EVERY OTHER COACHING SITE:
 The mechanism is "${mechanism}" \u2014 it has a name and a reason. Use it once, early, with confidence.
 This person's story is not a liability or a detour. It IS the product. Let it take up space.`;
 }
-var DEEP_WORK_SYSTEM_PROMPT, SITE_CSS_FOUNDATION, SITE_GENERATION_PROMPT, imagePrompts, contextEnrichmentPrompt, STRATEGIST_DEBRIEF_PROMPT;
+__name(buildDesignBrief, "buildDesignBrief");
+__name2(buildDesignBrief, "buildDesignBrief");
+__name22(buildDesignBrief, "buildDesignBrief");
+var DEEP_WORK_SYSTEM_PROMPT;
+var getThemeCSS;
+var selectTheme;
+var SITE_GENERATION_PROMPT;
+var imagePrompts;
+var contextEnrichmentPrompt;
+var STRATEGIST_DEBRIEF_PROMPT;
 var init_prompts = __esm({
   "src/prompts.js"() {
     DEEP_WORK_SYSTEM_PROMPT = `You are a world class brand strategist, offer architect, positioning expert, and market researcher. You speak like a really smart friend who happens to have deep expertise in all of these areas. You never talk like a consultant. You never use corporate language. You are direct, warm, occasionally funny, and always honest.
@@ -239,6 +272,8 @@ Goal: Find the origin narrative that is uniquely theirs and cannot be fabricated
 
 **Phase 2: Your Expertise** (10 to 15 minutes)
 Goal: Map their skills, credentials, proof points, and real results. Run a credibility audit. Find the gaps between what they claim and what they can actually prove. Be honest about this.
+
+During Phase 2, explicitly surface and record four things that will power their website: (1) Three specific proof numbers \u2014 years of experience, total clients or people served, and one measurable outcome metric like a success rate, average result, or revenue generated. Push for real numbers. "A lot of clients" is not a number. (2) ONE specific before-and-after client transformation story \u2014 real names if they are comfortable, real numbers, real timeline. "My client Sarah was stuck at $40k a year. Eight months later she had her first $200k year." That level of specificity. (3) Any press, podcast, or media appearances \u2014 Forbes, Inc., a well-known podcast, a TED talk, a book. Anything that would impress their ideal client. (4) Their single strongest client testimonial, as close to verbatim as possible, with attribution. These four things will be injected directly into the website and must be real.
 
 **Phase 3: Your Beliefs** (20 to 25 minutes)
 Goal: Uncover their worldview and the things they believe that most people in their industry get wrong. These unpopular opinions become their most powerful messaging. Push hard here. The best positioning comes from genuine conviction, not consensus.
@@ -320,13 +355,33 @@ When you have completed all 7 phases and are ready to generate the blueprint, ou
     },
     "part5": {
       "title": "Website Blueprint",
+      "pageNarrative": "2 to 3 sentences describing the emotional journey the page takes the visitor on, from first impression to final CTA. What is the story arc?",
       "heroHeadlines": ["Option 1", "Option 2", "Option 3"],
       "heroSubheadline": "One sentence",
       "heroCTA": "Button text",
+      "heroImageTheme": "A specific, evocative image description for the hero background photo. Not generic. Describe the mood, setting, lighting, and subject matter that reinforces the headline. Example: 'Aerial view of a calm ocean at sunrise with soft golden light reflecting off still water' or 'Close-up of hands shaping clay on a pottery wheel, warm studio lighting, shallow depth of field'",
       "sections": [
-        {"name": "Section name", "purpose": "What this section accomplishes", "content": "What should go here"}
+        {
+          "name": "Section name",
+          "purpose": "What this section accomplishes in the visitor's emotional journey",
+          "content": "Specific copy direction and key messages for this section",
+          "rationale": "Why this section exists here in this order. What would be lost if it were removed? How does it connect to the section before and after it?",
+          "confidence": 85,
+          "imageTheme": "If this section benefits from a background image or visual, describe it specifically. If the section works better with clean whitespace, write 'none'. The image must reinforce the emotional intent of the section, not just be decorative.",
+          "visualMood": "light or dark or accent. Whether this section should feel open and airy (light), dramatic and immersive (dark), or highlighted with the brand accent color (accent)"
+        }
       ],
-      "testimonialFraming": "How testimonials should be presented"
+      "testimonialFraming": "How testimonials should be presented \u2014 style, tone, attribution format",
+      "proofNumbers": [
+        {"stat": "15", "label": "Years of experience", "context": "in executive coaching"},
+        {"stat": "400+", "label": "Leaders coached", "context": "at Fortune 500 companies"},
+        {"stat": "94%", "label": "Client retention rate", "context": "renew for a second engagement"}
+      ],
+      "bestClientStory": "Before: [specific situation \u2014 who they were, what they were stuck on, exact numbers if possible]. After: [specific outcome \u2014 what changed, real numbers, timeframe]. Example: Before: Jane was a VP stuck at $180k convinced she had hit her ceiling. After: 4 months of coaching she was promoted to SVP. That was 3 years ago and she has since doubled her comp.",
+      "mediaCredentials": ["Forbes", "Inc. Magazine", "The Tim Ferriss Show"],
+      "bestTestimonial": {"quote": "Verbatim quote from a real client, as close to their exact words as possible", "attribution": "First name Last initial, their role or situation, company or context \u2014 e.g. Sarah K., VP of Product, Series B startup"},
+      "socialHandles": {"linkedin": "https://linkedin.com/in/handle or empty string", "instagram": "@handle or empty string", "twitter": "@handle or empty string", "youtube": "https://youtube.com/channel or empty string"},
+      "contraryBelief": "The one unconventional thing they genuinely believe that most people in their industry get wrong \u2014 pulled from Phase 3 conversation. Must be specific and opinionated, not generic. Example: Most leadership coaches will tell you mindset is the problem. I believe it is never mindset. It is always structure. Mindset work without structural change is expensive journaling."
     },
     "part6": {
       "title": "Gap Analysis",
@@ -373,6 +428,35 @@ When you have completed all 7 phases and are ready to generate the blueprint, ou
 }
 \`\`\`
 
+CRITICAL INSTRUCTIONS FOR visualDirection (Web Design Quality Check):
+
+Before finalizing your color palette, run through these rules internally. Poor choices will make the site look generic or broken. Great choices will make it feel like it was designed specifically for this person.
+
+**What each color slot actually does on the website:**
+- Primary: Used as the background for dark hero sections and dramatic feature blocks. Must be rich and intentional. Good choices: deep navy #0f1b2e, warm charcoal #1c1917, deep forest #0d1f12, burgundy #1a0a12, slate #1a1f2e. Never use pure #000000.
+- Secondary: Pairs with Primary for alternating dark sections. Should harmonize with Primary, not clash.
+- Accent: The single most important color. Used for CTA buttons, highlighted phrases, and visual anchors. Must be warm and energetic, visible on both light and dark backgrounds. For personal brands: warm copper, amber, terracotta, antique gold. For modern/tech brands: electric blue, teal, coral. Avoid: neon, pastels, colors that blend into Background.
+- Background: The light page background. Almost never pure white. Use off-whites with warmth: #faf8f6, #f9f7f4, #fdfcfb, #f8f5f0. Should feel clean and premium, not clinical.
+- Text: Body text color. Must achieve at minimum 4.5:1 contrast ratio against Background for accessibility. Use a deep near-black: #1a1a1a, #1d1d1f, #111827, #1c1917. Never pure #000000.
+
+**Quick self-check before you output the palette:**
+(1) Does Text color contrast clearly against Background? (2) Does Accent pop and look clickable on top of Background? (3) Does Primary work as a dramatic dark section behind white text? (4) Is the palette cohesive \u2014 do all 5 colors feel like they belong to the same brand story you just built? If any answer is no, revise.
+
+**Font rules \u2014 both fonts MUST be available on Google Fonts:**
+The site loads fonts via fonts.googleapis.com. If a font is not on Google Fonts, it will not load and the site will break.
+
+Heading fonts by brand personality:
+- Authority / luxury / personal brand: Playfair Display, Cormorant Garamond, Fraunces, Libre Baskerville, DM Serif Display
+- Modern / clean / tech-forward: Space Grotesk, Syne, Plus Jakarta Sans, Outfit, Manrope
+- Warm / human / storytelling: Lora, Merriweather, Spectral, Bitter
+
+Body fonts (must be highly legible at 14-16px): Inter, Outfit, DM Sans, Nunito, Source Sans 3, Lato, Open Sans, Karla
+
+Pairing rule: heading and body fonts should contrast in personality. A decorative or serif heading pairs with a clean sans-serif body. Two sans-serifs only work if they have clearly different visual weight. Never use a novelty or display font as the body font.
+
+**The final visual test:**
+Before outputting the JSON, picture the full website in your mind: a dark Primary-colored hero section with the heading font in white and the Accent-colored CTA button, then a light Background section with the body font in Text color. Does it look cohesive, premium, and true to the personality of the person you just spent an hour talking to? If something feels off, fix it now. The customer cannot change these colors themselves. What you choose here is what their website will look like.
+
 CRITICAL INSTRUCTIONS FOR part8 (Your Recommended Next Step):
 
 You must choose the recommendation based on what you ACTUALLY learned about this person. Here are the three paths and when to recommend each:
@@ -388,149 +472,285 @@ Always be genuine. Never recommend coaching to someone who clearly cannot afford
 For the leadIntel section: Extract every data point you can from the conversation. Be honest about what you do not know \u2014 use "Unknown" rather than guessing. The notableQuotes should be the most revealing things they said that would help a salesperson understand this person in 30 seconds.
 
 After the JSON, write a short warm message to the user (3 to 4 sentences) congratulating them and explaining what comes next.`;
-    __name(getAestheticOverrides, "getAestheticOverrides");
-    __name(buildImagenPrompt, "buildImagenPrompt");
-    SITE_CSS_FOUNDATION = /* @__PURE__ */ __name((colors, fonts, fontImport) => `
-  ${fontImport}
+    __name222(getAestheticOverrides, "getAestheticOverrides");
+    __name222(buildImagenPrompt, "buildImagenPrompt");
+    getThemeCSS = /* @__PURE__ */ __name222((template, colorVars, fontsRaw, fontImport) => {
+      const themeImports = {
+        luminary: fontImport,
+        catalyst: `@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,600&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');`,
+        signal: `@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');`,
+        architect: `@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=DM+Sans:wght@400;500;600&display=swap');`,
+        neighbor: `@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap');`
+      };
+      const activeImport = themeImports[template] || fontImport;
+      const baseCss = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  body { font-family: var(--font-body); background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
-  h1,h2,h3,h4 { font-family: var(--font-display); line-height: 1.2; }
+  body { font-family: var(--font-body); background: #fff; color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; font-size: 17px; }
+  h1,h2,h3,h4 { font-family: var(--font-display); line-height: 1.15; letter-spacing: -0.02em; }
   a { color: inherit; text-decoration: none; }
   img { max-width: 100%; display: block; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
-  .container--narrow { max-width: 740px; margin: 0 auto; padding: 0 32px; }
-  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--secondary); font-family: var(--font-body); }
-  .divider { width: 44px; height: 2px; background: var(--secondary); margin: 20px 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+  .container--narrow { max-width: 720px; margin: 0 auto; padding: 0 40px; }
+  .eyebrow { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--secondary); font-family: var(--font-body); padding: 5px 14px; border: 1px solid rgba(0,0,0,.1); border-radius: 100px; }
+  .divider { width: 40px; height: 2px; background: var(--secondary); margin: 20px 0; }
   .divider--center { margin: 20px auto; }
-  /* Buttons */
-  .btn { display: inline-block; font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: .04em; padding: 15px 34px; border-radius: 3px; cursor: pointer; transition: all .2s ease; border: none; text-align: center; }
-  .btn--primary { background: var(--accent); color: #fff; }
-  .btn--primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
-  .btn--outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn { display: inline-block; font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: .01em; padding: 14px 32px; border-radius: 50px; cursor: pointer; transition: all .22s ease; border: none; text-align: center; }
+  .btn--primary { background: var(--text); color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+  .btn--primary:hover { background: #2d2d2d; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,0,0,.22); }
+  .btn--outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 50px; }
   .btn--outline:hover { background: var(--primary); color: #fff; }
-  .btn--ghost { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.5); }
+  .btn--ghost { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.5); border-radius: 50px; }
   .btn--ghost:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.8); }
-  .btn--gold { background: var(--secondary); color: var(--primary); }
+  .btn--accent { background: var(--accent-btn); color: #fff; border-radius: 50px; }
+  .btn--accent:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+  .btn--gold { background: var(--secondary); color: var(--primary); border-radius: 50px; }
   .btn--gold:hover { filter: brightness(.93); transform: translateY(-1px); }
-  /* Nav */
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(var(--bg-rgb),.95); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,.08); transition: box-shadow .3s; }
-  nav.scrolled { box-shadow: 0 4px 24px rgba(0,0,0,.1); }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-  .nav-logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--primary); }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.96); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(0,0,0,.07); transition: box-shadow .3s; }
+  nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,.08); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; padding: 0 clamp(24px, 5vw, 64px); }
+  .nav-logo { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--primary); letter-spacing: -0.01em; }
   .nav-logo span { color: var(--secondary); }
-  .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
-  .nav-links a { font-size: 13px; font-weight: 500; color: var(--text-muted); transition: color .2s; }
+  .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 13px; font-weight: 500; color: #86868b; transition: color .2s; }
   .nav-links a:hover { color: var(--primary); }
-  .nav-cta { font-size: 13px; font-weight: 600; background: var(--accent); color: #fff; padding: 10px 22px; border-radius: 3px; transition: all .2s; }
-  .nav-cta:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .nav-cta { font-size: 13px; font-weight: 600; background: var(--text); color: #fff; padding: 10px 22px; border-radius: 50px; transition: all .2s; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  .nav-cta:hover { background: #2d2d2d; transform: translateY(-1px); }
   .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
-  .nav-hamburger span { display: block; width: 24px; height: 2px; background: var(--primary); transition: all .2s; }
-  .nav-mobile { display: none; position: fixed; top: 72px; left: 0; right: 0; background: var(--bg); border-bottom: 1px solid rgba(0,0,0,.1); padding: 24px 32px; z-index: 99; flex-direction: column; gap: 20px; }
+  .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--primary); transition: all .2s; }
+  .nav-mobile { display: none; position: fixed; top: 68px; left: 0; right: 0; background: #fff; border-bottom: 1px solid rgba(0,0,0,.08); padding: 24px 32px; z-index: 99; flex-direction: column; gap: 20px; }
   .nav-mobile.open { display: flex; }
   .nav-mobile a { font-size: 16px; font-weight: 500; color: var(--text); }
-  /* Hero */
-  .hero { background: var(--primary); padding: 160px 0 120px; position: relative; overflow: hidden; }
-  .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent); }
-  .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-  .hero h1 { font-size: clamp(36px,4.5vw,56px); font-weight: 500; color: #fff; margin-bottom: 24px; }
+  .hero { background: var(--primary); padding: 140px 0 100px; position: relative; overflow: hidden; background-size: cover; background-position: center top; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(165deg, rgba(0,0,0,0.52) 0%, rgba(0,0,0,0.30) 100%); pointer-events: none; z-index: 0; }
+  .hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent); z-index: 0; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero-inner { max-width: 780px; text-align: center; margin: 0 auto; }
+  .hero h1 { font-size: clamp(32px,3.6vw,52px); font-weight: 600; color: #fff; margin-bottom: 24px; line-height: 1.08; letter-spacing: -0.025em; }
   .hero h1 em { font-style: italic; color: var(--secondary); }
-  .hero-sub { font-size: 17px; line-height: 1.8; color: rgba(255,255,255,.72); margin-bottom: 40px; max-width: 500px; }
-  .hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .hero-stats { margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,.12); display: flex; gap: 48px; }
-  .hero-stat-num { font-family: var(--font-display); font-size: 34px; font-weight: 600; color: var(--secondary); line-height: 1; }
-  .hero-stat-label { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 4px; letter-spacing: .03em; }
-  .hero-visual { position: relative; }
-  .hero-img-frame { width: 100%; aspect-ratio: 4/5; background: linear-gradient(145deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 100%); border: 1px solid rgba(255,255,255,.15); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-  .hero-quote { position: absolute; bottom: -24px; left: -32px; background: #fff; padding: 22px 26px; border-radius: 4px; box-shadow: 0 20px 60px rgba(0,0,0,.15); max-width: 280px; }
-  .hero-quote p { font-family: var(--font-display); font-style: italic; font-size: 14px; line-height: 1.6; color: var(--primary); }
-  .hero-quote cite { display: block; font-family: var(--font-body); font-size: 11px; font-style: normal; color: #aaa; letter-spacing: .06em; text-transform: uppercase; margin-top: 10px; }
-  /* Sections */
-  section { padding: 100px 0; }
+  .hero-sub { font-size: 18px; line-height: 1.75; color: rgba(255,255,255,.82); margin-bottom: 40px; max-width: 580px; margin-left: auto; margin-right: auto; }
+  .hero-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .hero-stats { margin-top: 64px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,.15); display: flex; gap: 56px; justify-content: center; }
+  .hero-stat-num { font-family: var(--font-display); font-size: 36px; font-weight: 600; color: var(--secondary); line-height: 1; }
+  .hero-stat-label { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 5px; letter-spacing: .05em; text-transform: uppercase; }
+  .hero-visual { display: none; }
+  .hero-img-frame { display: none; }
+  .hero-quote { display: none; }
+  section { padding: 88px 0; background: #fff; }
+  section.warm { background: var(--bg); }
   section.dark { background: var(--primary); }
-  section.dark h2, section.dark h3, section.dark p { color: #fff; }
+  section.dark h2, section.dark h3 { color: #fff; }
   section.dark p { color: rgba(255,255,255,.72); }
+  section.dark .eyebrow { border-color: rgba(255,255,255,.2); }
   .section-header { text-align: center; margin-bottom: 64px; }
-  .section-header h2 { font-size: clamp(30px,3.5vw,46px); color: var(--primary); margin-bottom: 16px; font-weight: 500; }
+  .section-header h2 { font-size: clamp(30px,3.5vw,48px); color: var(--primary); margin-bottom: 14px; font-weight: 500; letter-spacing: -0.02em; }
   .section-header h2 em { font-style: italic; color: var(--accent); }
-  .section-header p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
-  /* Cards */
-  .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .section-header p { font-size: 17px; color: #86868b; max-width: 580px; margin: 0 auto; line-height: 1.7; }
+  .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .card-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; align-items: start; }
-  .card { background: #fff; border-radius: 8px; padding: 36px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-  .card--border { border-left: 3px solid var(--secondary); border-radius: 0 8px 8px 0; }
-  .card--dark { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 32px; }
-  .card h3 { font-size: 20px; margin-bottom: 12px; color: var(--primary); }
+  .card { background: #fff; border-radius: 14px; padding: 32px; border: 1px solid #f0ede8; transition: border-color .2s, transform .2s; }
+  .card:hover { border-color: var(--secondary); transform: translateY(-2px); }
+  .card--border { border-left: 3px solid var(--secondary); border-radius: 0 14px 14px 0; }
+  .card--dark { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 32px; }
+  .card h3 { font-size: 18px; margin-bottom: 10px; color: var(--primary); font-weight: 600; }
   .card--dark h3 { color: #fff; }
-  .card p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
+  .card p { font-size: 15px; color: #86868b; line-height: 1.7; }
   .card--dark p { color: rgba(255,255,255,.65); }
   .card-icon { font-size: 28px; margin-bottom: 16px; }
-  /* Quotes / testimonials */
-  .quote-block { font-family: var(--font-display); font-style: italic; font-size: 22px; line-height: 1.6; color: var(--primary); border-left: 4px solid var(--secondary); padding-left: 28px; margin: 0; }
+  .card i[data-lucide] { width: 24px; height: 24px; color: var(--accent-btn); margin-bottom: 16px; stroke-width: 1.5; }
+  section.dark .card i[data-lucide] { color: var(--secondary); }
+  .quote-block { font-family: var(--font-display); font-style: italic; font-size: 24px; line-height: 1.55; color: var(--primary); border-left: 3px solid var(--secondary); padding-left: 28px; margin: 0; }
   .quote-block.dark { color: #fff; }
-  .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .testimonial { background: #fff; border-radius: 8px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-  .testimonial-quote { font-size: 15px; line-height: 1.8; color: var(--text); margin-bottom: 20px; font-style: italic; }
-  .testimonial-author { font-size: 13px; font-weight: 600; color: var(--primary); letter-spacing: .02em; text-transform: uppercase; }
-  /* Offers */
-  .offer-card { background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 4px 24px rgba(0,0,0,.08); position: relative; }
-  .offer-card.featured { border: 2px solid var(--accent); }
-  .offer-card.featured::before { content: 'MOST POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .12em; padding: 4px 14px; border-radius: 20px; }
-  .offer-name { font-family: var(--font-display); font-size: 22px; color: var(--primary); margin-bottom: 8px; }
-  .offer-price { font-size: 32px; font-weight: 700; color: var(--accent); margin-bottom: 16px; }
-  .offer-desc { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 24px; }
-  /* About */
-  .about-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-  .about-photo { width: 100%; aspect-ratio: 3/4; background: linear-gradient(145deg, var(--secondary) 0%, rgba(0,0,0,.1) 100%); border-radius: 4px; opacity: .2; }
-  /* CTA / Contact */
-  .cta-section { background: var(--primary); text-align: center; padding: 120px 0; }
-  .cta-section h2 { font-size: clamp(30px,4vw,50px); color: #fff; margin-bottom: 20px; font-weight: 500; }
+  .testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .testimonial { background: var(--bg); border-radius: 14px; padding: 32px; border: 1px solid #f0ede8; }
+  .testimonial-quote { font-size: 15px; line-height: 1.8; color: #1a1a1a; margin-bottom: 20px; font-style: italic; }
+  .testimonial-author { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: .06em; text-transform: uppercase; }
+  section.dark .testimonial { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.1); }
+  section.dark .testimonial .testimonial-quote { color: rgba(255,255,255,.88); }
+  section.dark .testimonial .testimonial-author { color: var(--secondary); }
+  section.dark .testimonial p { color: rgba(255,255,255,.7); }
+  .offer-card { background: #fff; border-radius: 14px; padding: 40px 36px; border: 1px solid #f0ede8; position: relative; transition: border-color .2s, transform .2s; }
+  .offer-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .offer-card.featured { border: 2px solid var(--accent-btn); }
+  .offer-card.featured::before { content: 'MOST POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent-btn); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .1em; padding: 4px 14px; border-radius: 20px; }
+  .offer-name { font-family: var(--font-display); font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 600; }
+  .offer-price { font-size: 32px; font-weight: 700; color: var(--accent-price); margin-bottom: 14px; }
+  .offer-desc { font-size: 15px; color: #86868b; line-height: 1.7; margin-bottom: 24px; }
+  section.dark .offer-card { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.1); }
+  section.dark .offer-card h2, section.dark .offer-card h3, section.dark .offer-card h4, section.dark .offer-card p, section.dark .offer-card li { color: rgba(255,255,255,.85); }
+  section.dark .offer-name { color: #fff !important; }
+  section.dark .offer-price { color: var(--secondary) !important; }
+  section.dark .offer-desc { color: rgba(255,255,255,.65) !important; }
+  .about-inner { display: grid; grid-template-columns: 1fr 1.1fr; gap: 72px; align-items: center; }
+  .about-photo { width: 100%; aspect-ratio: 4/5; background: linear-gradient(145deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 70%, #888) 100%); border-radius: 16px; overflow: hidden; position: relative; }
+  .about-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .about-photo-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .about-photo-placeholder svg { opacity: 0.3; }
+  .cta-section { background: var(--primary); text-align: center; padding: 100px 0; }
+  .cta-section h2 { font-size: clamp(32px,4.5vw,54px); color: #fff; margin-bottom: 18px; font-weight: 500; letter-spacing: -0.02em; }
   .cta-section h2 em { font-style: italic; color: var(--secondary); }
-  .cta-section p { font-size: 17px; color: rgba(255,255,255,.7); margin-bottom: 36px; max-width: 560px; margin-left: auto; margin-right: auto; }
-  /* Contact form */
-  .form-group { margin-bottom: 16px; }
-  .form-group input, .form-group textarea { width: 100%; padding: 14px 18px; border: 1.5px solid rgba(0,0,0,.12); border-radius: 4px; font-family: var(--font-body); font-size: 15px; background: #fff; transition: border-color .2s; }
-  .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+  .cta-section p { font-size: 17px; color: rgba(255,255,255,.7); margin-bottom: 36px; max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+  .form-group { margin-bottom: 14px; }
+  .form-group input, .form-group textarea { width: 100%; padding: 14px 18px; border: 1.5px solid #e8e4df; border-radius: 10px; font-family: var(--font-body); font-size: 15px; background: #fff; transition: border-color .2s; outline: none; }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
   .form-group textarea { height: 120px; resize: vertical; }
-  /* Footer */
-  footer { background: var(--primary); border-top: 1px solid rgba(255,255,255,.08); padding: 40px 0; }
-  .footer-inner { display: flex; align-items: center; justify-content: space-between; }
-  .footer-logo { font-family: var(--font-display); font-size: 16px; color: rgba(255,255,255,.6); }
-  .footer-copy { font-size: 13px; color: rgba(255,255,255,.4); }
+  footer { background: var(--primary); border-top: 1px solid rgba(255,255,255,.06); padding: 44px 0; }
+  .footer-inner { display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 5vw, 64px); }
+  .footer-logo { font-family: var(--font-display); font-size: 16px; color: rgba(255,255,255,.55); }
+  .footer-copy { font-size: 12px; color: rgba(255,255,255,.35); }
   .footer-links { display: flex; gap: 24px; }
-  .footer-links a { font-size: 13px; color: rgba(255,255,255,.4); transition: color .2s; }
-  .footer-links a:hover { color: rgba(255,255,255,.8); }
-  /* Utility */
+  .footer-links a { font-size: 12px; color: rgba(255,255,255,.35); transition: color .2s; }
+  .footer-links a:hover { color: rgba(255,255,255,.75); }
   .text-center { text-align: center; }
-  .mt-8 { margin-top: 8px; }
-  .mt-16 { margin-top: 16px; }
-  .mt-24 { margin-top: 24px; }
-  .mt-32 { margin-top: 32px; }
-  .mb-8 { margin-bottom: 8px; }
-  .mb-16 { margin-bottom: 16px; }
-  .mb-24 { margin-bottom: 24px; }
+  .mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; } .mt-32 { margin-top: 32px; }
+  .mb-8 { margin-bottom: 8px; } .mb-16 { margin-bottom: 16px; } .mb-24 { margin-bottom: 24px; }
   .color-accent { color: var(--accent); }
   .color-gold { color: var(--secondary); }
-  /* Responsive */
-  @media (max-width: 900px) {
-    .hero-inner, .about-inner, .card-grid-2 { grid-template-columns: 1fr; gap: 48px; }
+  @media (max-width: 960px) {
+    .about-inner, .card-grid-2 { grid-template-columns: 1fr; gap: 40px; }
+    .about-photo { max-width: 380px; margin: 0 auto; }
     .hero-visual { display: none; }
-    .hero-stats { gap: 32px; flex-wrap: wrap; }
-    .card-grid, .testimonial-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 28px; flex-wrap: wrap; }
+    .card-grid, .testimonial-grid { grid-template-columns: repeat(2, 1fr); }
     .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
   }
   @media (max-width: 768px) {
     .nav-links, .nav-cta { display: none; }
     .nav-hamburger { display: flex; }
-    .container { padding: 0 20px; }
-    section { padding: 72px 0; }
-    .hero { padding: 120px 0 80px; }
+    .container, .container--narrow { padding: 0 20px; }
+    section { padding: 64px 0; }
+    .hero { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: clamp(80px, 12vh, 120px) 0 clamp(60px, 10vh, 100px); }
+    .section-header { margin-bottom: 44px; }
+    .card-grid, .testimonial-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 24px; flex-wrap: wrap; }
+    .hero-stat-num { font-size: 28px; }
+    .about-photo { max-width: 100%; }
   }
-  /* Scroll nav effect */
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-`, "SITE_CSS_FOUNDATION");
-    __name(buildDesignBrief, "buildDesignBrief");
-    SITE_GENERATION_PROMPT = /* @__PURE__ */ __name((blueprint) => {
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .card i[data-lucide], .offer-card i[data-lucide] { width: 28px; height: 28px; color: var(--accent-btn); margin-bottom: 16px; stroke-width: 1.5; }
+  section.dark .card i[data-lucide] { color: var(--secondary); }
+  /* Scroll reveal */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.55s ease, transform 0.55s ease; }
+  .reveal.revealed { opacity: 1; transform: none; }
+  /* Testimonial decorative opening quote mark */
+  .testimonial { position: relative; overflow: hidden; }
+  .testimonial::before { content: '\u201C'; font-family: var(--font-display); font-size: 6rem; line-height: 1; color: var(--secondary); opacity: 0.15; position: absolute; top: 8px; left: 18px; pointer-events: none; }
+  /* Brand-matched text selection */
+  ::selection { background: var(--secondary); color: var(--primary); }
+  ::-moz-selection { background: var(--secondary); color: var(--primary); }
+  /* Nav hamburger open state */
+  .nav-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .nav-hamburger.active span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+  /* Media logo strip */
+  .media-strip { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; padding: 8px 0; opacity: 0.45; font-family: var(--font-body); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+  /* Contrary belief pull quote */
+  .contrary-quote { font-family: var(--font-display); font-size: clamp(1.15rem, 2.4vw, 1.6rem); font-style: italic; line-height: 1.55; color: var(--primary); padding: 32px 40px; border-left: 4px solid var(--secondary); background: linear-gradient(to right, rgba(var(--bg-rgb),.7), transparent); border-radius: 0 12px 12px 0; margin: 32px 0; }
+  /* Social links in footer */
+  .footer-social { display: flex; gap: 16px; align-items: center; }
+  .footer-social a { font-size: 12px; color: rgba(255,255,255,.35); transition: color .2s; }
+  .footer-social a:hover { color: rgba(255,255,255,.75); }
+`;
+      const themeOverrides = {
+        catalyst: `
+  /* \u2550\u2550 THE CATALYST \u2014 Speaker / Stage Presence \u2550\u2550 */
+  :root { --font-display: 'Fraunces', Georgia, serif; --font-body: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  h1,h2,h3,h4 { font-family: 'Fraunces', Georgia, serif; }
+  .hero { min-height: 100vh; padding: 180px 0 140px; }
+  .hero-inner { max-width: 860px; }
+  .hero h1 { font-size: clamp(2rem, 3.6vw, 3.2rem); font-weight: 600; letter-spacing: -0.03em; font-style: italic; }
+  .hero h1 em { font-style: normal; color: var(--secondary); }
+  .hero-sub { font-size: 19px; max-width: 640px; }
+  .quote-band { padding: 40px 0; text-align: center; background: rgba(0,0,0,0.25); border-top: 1px solid rgba(255,255,255,0.12); border-bottom: 1px solid rgba(255,255,255,0.12); margin-top: 40px; }
+  .quote-band blockquote { font-family: 'Fraunces', serif; font-style: italic; font-size: clamp(1.1rem, 2.5vw, 1.5rem); color: rgba(255,255,255,0.92); max-width: 720px; margin: 0 auto; line-height: 1.55; padding: 0 40px; }
+  .quote-band cite { display: block; margin-top: 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-style: normal; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--secondary); }
+  .logo-strip { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 16px 0; filter: grayscale(1); opacity: 0.5; }
+  .logo-strip span { font-size: 13px; font-weight: 600; color: #666; letter-spacing: 0.05em; text-transform: uppercase; }`,
+        signal: `
+  /* \u2550\u2550 THE SIGNAL \u2014 Creator / Newsletter / Community \u2550\u2550 */
+  :root { --font-display: 'Space Grotesk', system-ui, sans-serif; --font-body: 'Inter', system-ui, sans-serif; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #FAF8F5; }
+  section { background: #fff; }
+  section.warm { background: #FAF8F5; }
+  h1,h2,h3,h4 { font-family: 'Space Grotesk', system-ui, sans-serif; letter-spacing: -0.03em; font-weight: 700; }
+  .hero-inner { max-width: 1080px; text-align: left; display: grid; grid-template-columns: 1.25fr 1fr; gap: 80px; align-items: center; }
+  .hero h1 { font-size: clamp(2rem, 3.5vw, 3rem); text-align: left; font-weight: 700; }
+  .hero-sub { text-align: left; margin-left: 0; margin-right: 0; font-size: 16px; }
+  .hero-actions { justify-content: flex-start; }
+  .hero-stats { flex-direction: column; gap: 24px; margin-top: 0; padding-top: 0; border-top: none; justify-content: flex-start; align-items: flex-start; }
+  .hero-stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; letter-spacing: -0.04em; }
+  .hero-stat-label { font-size: 13px; letter-spacing: 0; text-transform: none; color: rgba(255,255,255,.6); }
+  .hero-stat + .hero-stat { padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.12); }
+  .pub-strip { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 12px 0; opacity: 0.4; }
+  .pub-strip span { font-size: 12px; font-weight: 700; color: #666; letter-spacing: 0.06em; text-transform: uppercase; }
+  @media (max-width: 860px) { .hero-inner { grid-template-columns: 1fr; gap: 40px; } .hero-stats { flex-direction: row; gap: 28px; margin-top: 24px; } }`,
+        architect: `
+  /* \u2550\u2550 THE ARCHITECT \u2014 Consultant / B2B / Thought Leader \u2550\u2550 */
+  :root { --font-display: 'Source Serif 4', Georgia, serif; --font-body: 'DM Sans', system-ui, sans-serif; }
+  body { font-family: 'DM Sans', system-ui, sans-serif; background: #F7F5F0; }
+  section { background: #fff; }
+  section.warm { background: #F7F5F0; }
+  h1,h2,h3,h4 { font-family: 'Source Serif 4', Georgia, serif; font-weight: 400; letter-spacing: -0.01em; }
+  .hero { min-height: 78vh; padding: 160px 0 120px; }
+  .hero-inner { max-width: 820px; }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 300; letter-spacing: -0.02em; font-style: italic; }
+  .hero h1 em { font-style: normal; color: var(--secondary); }
+  .hero-authority { display: flex; gap: 56px; justify-content: center; margin-bottom: 48px; padding-bottom: 48px; border-bottom: 1px solid rgba(255,255,255,0.15); flex-wrap: wrap; }
+  .hero-authority-item { text-align: center; }
+  .hero-authority-n { display: block; font-family: 'Source Serif 4', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 300; color: var(--secondary); line-height: 1; letter-spacing: -0.03em; }
+  .hero-authority-l { display: block; font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .card { border-radius: 4px; border-left: 3px solid var(--secondary); border-top: none; border-right: none; border-bottom: none; padding: 28px 28px 28px 24px; }
+  .card:hover { transform: none; border-color: var(--primary); }
+  .section-header h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 400; }
+  section p, .section-header p { font-size: 17px; line-height: 1.85; }
+  .client-strip { display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; padding: 20px 0; opacity: 0.4; }
+  .client-strip span { font-size: 13px; font-weight: 600; color: #666; letter-spacing: 0.08em; text-transform: uppercase; }`,
+        neighbor: `
+  /* \u2550\u2550 THE NEIGHBOR \u2014 Local Business / Service / Practitioner \u2550\u2550 */
+  :root { --font-display: 'Nunito', system-ui, sans-serif; --font-body: 'Inter', system-ui, sans-serif; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #F2F7F2; }
+  section { background: #fff; }
+  section.warm { background: #F2F7F2; }
+  h1,h2,h3,h4 { font-family: 'Nunito', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.01em; }
+  .btn { border-radius: 10px; }
+  .btn--primary { background: var(--primary); border-radius: 10px; }
+  .card { border-radius: 18px; }
+  .offer-card { border-radius: 18px; }
+  .testimonial { border-radius: 18px; }
+  .hero { min-height: 72vh; padding: 140px 0 100px; }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); font-weight: 800; }
+  .hero-trust { display: inline-flex; align-items: center; gap: 12px; margin-top: 32px; padding: 12px 24px; background: rgba(255,255,255,0.14); backdrop-filter: blur(8px); border-radius: 50px; border: 1px solid rgba(255,255,255,0.22); }
+  .hero-trust-stars { color: #FFD700; font-size: 16px; letter-spacing: 2px; }
+  .hero-trust-text { font-size: 14px; color: rgba(255,255,255,0.92); font-weight: 600; }
+  .section-header { text-align: left; }
+  .section-header .divider--center { margin-left: 0; }
+  .btn--accent { background: #1a3d1a; color: #fff; border-radius: 10px; }
+  .btn--accent:hover { background: #0f2b0f; }
+  .service-price { font-size: 22px; font-weight: 700; color: var(--accent-price); margin-top: 8px; }`
+      };
+      const activeOverrides = themeOverrides[template] || "";
+      return activeImport + "\n" + baseCss + "\n" + activeOverrides;
+    }, "getThemeCSS");
+    selectTheme = /* @__PURE__ */ __name222((segment, aesthetic) => {
+      const aes = (aesthetic || "").toLowerCase();
+      if (segment === "speaker")
+        return "catalyst";
+      if (segment === "creator")
+        return "signal";
+      if (segment === "local")
+        return "neighbor";
+      if (segment === "service") {
+        if (aes.includes("consult") || aes.includes("strateg") || aes.includes("b2b") || aes.includes("corporate") || aes.includes("executive"))
+          return "architect";
+        return "neighbor";
+      }
+      if (aes.includes("consult") || aes.includes("strateg") || aes.includes("b2b") || aes.includes("corporate") || aes.includes("executive") || aes.includes("minimal") || aes.includes("academic"))
+        return "architect";
+      return "luminary";
+    }, "selectTheme");
+    __name222(buildDesignBrief, "buildDesignBrief");
+    SITE_GENERATION_PROMPT = /* @__PURE__ */ __name222((blueprint, theme = "luminary") => {
       const b = blueprint;
       const p1 = b.part1 || {};
       const p2 = b.part2 || {};
@@ -559,10 +779,18 @@ After the JSON, write a short warm message to the user (3 to 4 sentences) congra
       }
       const googleFontsUrl = `https://fonts.googleapis.com/css2?family=${displayFont.replace(/ /g, "+")}:ital,wght@0,400;0,500;0,700;1,400;1,500&family=${bodyFont.replace(/ /g, "+")}:wght@300;400;500;600&display=swap`;
       const fontImport = `@import url('${googleFontsUrl}');`;
+      const hexLum = /* @__PURE__ */ __name((h) => {
+        const r = parseInt(h.slice(1, 3), 16) / 255, g = parseInt(h.slice(3, 5), 16) / 255, b2 = parseInt(h.slice(5, 7), 16) / 255;
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b2;
+      }, "hexLum");
+      const accentBtnColor = hexLum(accent) > 0.55 ? primary : accent;
+      const offerPriceColor = hexLum(accent) > 0.55 ? primary : accent;
       const cssVars = `
     --primary: ${primary};
     --secondary: ${secondary};
     --accent: ${accent};
+    --accent-btn: ${accentBtnColor};
+    --accent-price: ${offerPriceColor};
     --bg: ${bg};
     --bg-rgb: ${parseInt(bg.slice(1, 3), 16)}, ${parseInt(bg.slice(3, 5), 16)}, ${parseInt(bg.slice(5, 7), 16)};
     --text: ${text};
@@ -589,12 +817,29 @@ After the JSON, write a short warm message to the user (3 to 4 sentences) congra
       const heroSub = p5.heroSubheadline || "";
       const heroCTA = p5.heroCTA || "Get Started";
       const altHeadlines = (p7.heroHeadlineOptions || []).slice(1, 3).join(" | ");
-      const sections = (p5.sections || []).map((s, i) => `  ${i + 1}. ${s.name}: ${s.purpose}${s.content ? " \u2014 " + s.content.substring(0, 200) : ""}`).join("\n");
+      const pageNarrative = p5.pageNarrative || "";
+      const heroImageTheme = p5.heroImageTheme || "";
+      const sections = (p5.sections || []).map((s, i) => {
+        let line = `  ${i + 1}. ${s.name}: ${s.purpose}${s.content ? " \u2014 " + s.content.substring(0, 200) : ""}`;
+        if (s.visualMood)
+          line += ` [mood: ${s.visualMood}]`;
+        if (s.imageTheme && s.imageTheme !== "none")
+          line += ` [image: ${s.imageTheme.substring(0, 100)}]`;
+        if (s.confidence)
+          line += ` [confidence: ${s.confidence}%]`;
+        return line;
+      }).join("\n");
       const testimonialFraming = p5.testimonialFraming || "";
+      const proofNumbers = (p5.proofNumbers || []).filter((n) => n && n.stat && n.label).slice(0, 3);
+      const bestClientStory = p5.bestClientStory || "";
+      const mediaCredentials = (p5.mediaCredentials || []).filter(Boolean).slice(0, 6);
+      const bestTestimonial = p5.bestTestimonial || null;
+      const socialHandles = p5.socialHandles || {};
+      const contraryBelief = p5.contraryBelief || "";
       const tagline = (p7.taglineOptions || [])[0] || "";
       const positioning = p7.positioningStatements || {};
       const designBrief = buildDesignBrief(p1, p2, p3, p5);
-      const css = SITE_CSS_FOUNDATION(colorVars, fontsRaw, fontImport);
+      const css = getThemeCSS(theme, colorVars, fontsRaw, fontImport);
       const aestheticOverrides = getAestheticOverrides(aesthetic);
       const brandName = (p1.brandNames || [])[0] || "Brand";
       const head = `<head>
@@ -602,6 +847,7 @@ After the JSON, write a short warm message to the user (3 to 4 sentences) congra
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${brandName} | ${tagline}</title>
   <meta name="description" content="${nicheStatement.substring(0, 155)}" />
+  <script src="https://unpkg.com/lucide@latest"><\/script>
   <meta property="og:title" content="${brandName} | ${tagline}" />
   <meta property="og:description" content="${nicheStatement.substring(0, 155)}" />
   <style>
@@ -609,7 +855,208 @@ After the JSON, write a short warm message to the user (3 to 4 sentences) congra
     }
 ${css}
 ${aestheticOverrides}
-  </style>
+  /* \u2550\u2550\u2550 REBRAND: Updated global variables \u2550\u2550\u2550 */
+  /* Overrides already applied via :root block above */
+
+  /* \u2550\u2550\u2550 MAGIC LINK \u2550\u2550\u2550 */
+  #magic-link-email:focus {
+    border-color: #c4703f;
+    background: #fff;
+  }
+
+  /* \u2550\u2550\u2550 SITE GENERATION \u2014 2C Split Reveal \u2550\u2550\u2550 */
+  #site-screen {
+    flex-direction: row;
+    min-height: 100vh;
+    align-items: stretch;
+  }
+
+  #site-gen-left {
+    overflow-y: auto;
+  }
+
+  .gen-step .gen-step-title { transition: color 0.3s; }
+  .gen-step .gen-step-desc { transition: color 0.3s; }
+
+  /* \u2550\u2550\u2550 SITE GEN \u2014 The Atelier step dots \u2550\u2550\u2550 */
+  .step-icon.active {
+    background: #c4703f !important;
+    animation: atelierPulse 2s infinite;
+    border: none !important;
+  }
+  .step-icon.done {
+    background: #c4703f !important;
+    border: none !important;
+  }
+  .step-icon.pending {
+    background: #e8e4df !important;
+    border: none !important;
+  }
+
+  @keyframes atelierPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(196,112,63,0.5); }
+    50% { box-shadow: 0 0 0 5px rgba(196,112,63,0); }
+  }
+
+  /* \u2550\u2550\u2550 SITE GEN \u2014 Atelier right panel \u2550\u2550\u2550 */
+  #gen-code-stream { display: none; }
+  #gen-progress-ring { display: none; }
+  #gen-status-label { display: none; }
+
+  @media (max-width: 768px) {
+    #site-screen { flex-direction: column; }
+    #site-gen-left { width: 100% !important; min-width: unset !important; padding: 36px 24px 24px !important; border-right: none !important; border-bottom: 1px solid #f0ece6 !important; }
+    #site-gen-right { min-height: 260px; }
+    #gen-pct { font-size: 60px !important; }
+  }
+
+  /* \u2550\u2550\u2550 SECTION REVIEW \u2014 Brand-aligned \u2550\u2550\u2550 */
+  .reaction-btn { transition: all 0.2s; }
+  .reaction-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .reaction-btn:active { transform: translateY(0); }
+
+  /* \u2550\u2550\u2550 GALLERIST REVEAL PANEL \u2550\u2550\u2550 */
+  #site-reveal.screen { padding: 0 !important; overflow: hidden; }
+  @keyframes galleristRowIn { from { opacity:0; transform:translateX(-5px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes galleristFadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .gallerist-row {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 9px 14px 9px 16px; cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.18s, border-color 0.18s;
+    font-family: 'Outfit', sans-serif;
+    color: #aaa9a5; user-select: none;
+    animation: galleristRowIn 0.28s ease both;
+  }
+  .gallerist-row:hover { background: rgba(196,112,63,0.05); }
+  .gallerist-row.g-active { border-left-color: #c4703f; background: rgba(196,112,63,0.07); }
+  .gallerist-row.g-approved { border-left-color: #22c55e; }
+  .gallerist-row.g-refined { border-left-color: #f59e0b; }
+  .gallerist-thumb {
+    width: 52px; height: 36px; border-radius: 5px; flex-shrink: 0;
+    overflow: hidden; border: 1px solid rgba(0,0,0,0.1);
+    position: relative; background: #e8e4e0;
+  }
+  .gallerist-thumb-inner {
+    width: 100%; height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px; overflow: hidden;
+  }
+  .gallerist-thumb-line { height: 2px; border-radius: 1px; background: rgba(255,255,255,0.45); }
+  .gallerist-row-info { flex: 1; min-width: 0; padding-top: 1px; }
+  .gallerist-row-title {
+    font-size: 11.5px; font-weight: 600; color: #3d3d3d;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.3; margin-bottom: 3px;
+  }
+  .gallerist-row.g-active .gallerist-row-title { color: #1d1d1f; }
+  .gallerist-row-meta { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .gallerist-conf-badge {
+    font-size: 8.5px; font-weight: 700; padding: 1px 4px;
+    border-radius: 3px; letter-spacing: 0.04em; font-family: 'Outfit',sans-serif; flex-shrink: 0;
+  }
+  .gallerist-conf-high { background: rgba(34,197,94,0.12); color: #16a34a; }
+  .gallerist-conf-mid  { background: rgba(196,112,63,0.12); color: #c4703f; }
+  .gallerist-conf-low  { background: rgba(107,114,128,0.1); color: #6b7280; }
+  .gallerist-mood-tag { font-size: 9px; color: #b0a89e; font-family: 'Outfit',sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+  .gallerist-status-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+    background: #ddd; transition: background 0.2s; min-width: 6px;
+  }
+  .gallerist-row.g-active .gallerist-status-dot { background: #c4703f; }
+  .gallerist-row.g-approved .gallerist-status-dot { background: #22c55e; }
+  .gallerist-row.g-refined .gallerist-status-dot { background: #f59e0b; }
+  .gallerist-approve-btn:hover { background: #333 !important; transform: translateY(-1px); }
+  .gallerist-approve-btn:active { transform: translateY(0); background: #1d1d1f !important; }
+  /* Mobile phone bezel overlay */
+  #mobile-phone-bezel {
+    position: absolute; pointer-events: none; z-index: 8;
+    display: none;
+    width: 422px; height: 878px;
+    border: 15px solid #1c1c1e; border-radius: 54px; box-sizing: border-box;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 28px 72px rgba(0,0,0,0.45);
+  }
+  #mobile-phone-bezel .bezel-notch {
+    position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+    width: 108px; height: 28px; background: #1c1c1e; border-radius: 0 0 20px 20px;
+  }
+  #mobile-phone-bezel .bezel-home {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 88px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
+  }
+  #mobile-phone-bezel .bezel-btn-l1 { position:absolute; left:-4px; top:86px; width:4px; height:30px; background:#222; border-radius:3px 0 0 3px; }
+  #mobile-phone-bezel .bezel-btn-l2 { position:absolute; left:-4px; top:130px; width:4px; height:50px; background:#222; border-radius:3px 0 0 3px; }
+  #mobile-phone-bezel .bezel-btn-l3 { position:absolute; left:-4px; top:195px; width:4px; height:50px; background:#222; border-radius:3px 0 0 3px; }
+  #mobile-phone-bezel .bezel-btn-r { position:absolute; right:-4px; top:108px; width:4px; height:68px; background:#222; border-radius:0 3px 3px 0; }
+  .gallerist-golive-btn { transition: all 0.2s; }
+  .gallerist-golive-btn:hover { background: #2d2d2d !important; transform: translateY(-1px); }
+  .gallerist-golive-btn:active { transform: translateY(0) !important; }
+
+  /* \u2550\u2550\u2550 BLUEPRINT \u2014 hide old top action block \u2550\u2550\u2550 */
+  .blueprint-actions { display: none !important; }
+
+  /* \u2550\u2550\u2550 BUILD POPUP \u2550\u2550\u2550 */
+  #site-photo-upload:hover { border-color: #e0e0e0; background: #fafafa; }
+
+  /* \u2550\u2550\u2550 BUILD POPUP extra \u2550\u2550\u2550 */
+
+  /* \u2550\u2550\u2550 LANDING \u2550\u2550\u2550 */
+  .landing-inner h1 em {
+    font-style: normal;
+    color: var(--gold);
+  }
+
+  /* Lucide icons in cards */
+  .card i[data-lucide], .offer-card i[data-lucide] { width: 28px; height: 28px; color: var(--accent-btn); margin-bottom: 16px; stroke-width: 1.5; }
+  section.dark .card i[data-lucide] { color: var(--secondary); }
+
+</style>
+<script>
+(function(){
+  function init(){
+    // Lucide icons
+    if(typeof lucide!=='undefined') lucide.createIcons();
+    // Mobile nav toggle
+    var ham=document.querySelector('.nav-hamburger'),mob=document.querySelector('.nav-mobile');
+    if(ham&&mob){ham.addEventListener('click',function(){mob.classList.toggle('open');ham.classList.toggle('active');});}
+    // Nav scroll shadow
+    var nav=document.querySelector('nav');
+    if(nav){window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',window.scrollY>20);},{passive:true});}
+    // Animated number counters for hero stats
+    function animateCounters(){
+      document.querySelectorAll('.hero-stat-num,.hero-authority-n').forEach(function(el){
+        var raw=el.textContent.trim();
+        var m=raw.match(/^([^0-9]*)([0-9][0-9,]*)([^0-9]*)$/);
+        if(!m)return;
+        var pre=m[1],num=parseInt(m[2].replace(/,/g,'')),suf=m[3];
+        if(isNaN(num)||num<2)return;
+        var dur=1200,s=null,fmt=function(n){return n>=10000?n.toLocaleString():n.toString();};
+        var ease=function(t){return t<.5?2*t*t:-1+(4-2*t)*t;};
+        (function tick(ts){if(!s)s=ts;var p=Math.min((ts-s)/dur,1);el.textContent=pre+fmt(Math.round(ease(p)*num))+suf;if(p<1)requestAnimationFrame(tick);else el.textContent=pre+fmt(num)+suf;})(0);
+      });
+    }
+    // Scroll reveal with IntersectionObserver
+    var revealTargets='.section-header,.card,.testimonial,.offer-card,.about-inner>*,.hero-authority,.quote-band,.hero-trust';
+    if('IntersectionObserver' in window){
+      var io=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('revealed');io.unobserve(e.target);}});
+      },{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+      document.querySelectorAll(revealTargets).forEach(function(el,i){
+        el.classList.add('reveal');
+        el.style.transitionDelay=(i%4)*55+'ms';
+        io.observe(el);
+      });
+    } else {
+      document.querySelectorAll(revealTargets).forEach(function(el){el.classList.add('reveal','revealed');});
+    }
+    // Staggered card reveal \u2014 reset delays so sibling cards stagger nicely
+    document.querySelectorAll('.card-grid,.testimonial-grid').forEach(function(grid){
+      Array.from(grid.children).forEach(function(el,i){el.style.transitionDelay=i*70+'ms';});
+    });
+    animateCounters();
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();
+<\/script>
 </head>`;
       const prompt = `You are a senior brand designer and copywriter producing HTML body sections for a personal brand website. The complete CSS and <head> are already built by the server. You must NOT write any CSS, <style> tags, <html>, <head>, or <!DOCTYPE>. Writing CSS will break the page. Output ONLY the HTML that belongs inside <body>, starting with <nav>.
 
@@ -618,15 +1065,18 @@ ${designBrief}
 \u2501\u2501\u2501 AVAILABLE CSS CLASSES \u2501\u2501\u2501
 Layout: .container, .container--narrow
 Nav: nav, .nav-inner, .nav-logo, .nav-links, .nav-cta, .nav-hamburger, .nav-mobile
-Hero: .hero, .hero-inner, .hero-sub, .hero-actions, .hero-stats, .hero-stat-num, .hero-stat-label, .hero-visual, .hero-quote
-Sections: section, section.dark (dark bg), .section-header, .eyebrow, .divider, .divider--center
+NAV RULE: The .nav-links div MUST contain 3-4 <a class="nav-link"> elements with href pointing to section IDs. Always include: About (#about), Work With Me (#offers), and one content section (#method or #results). The .nav-cta must link to #contact. NEVER leave .nav-links empty.
+Hero: .hero, .hero-inner, .hero-sub, .hero-actions, .hero-stats, .hero-stat-num, .hero-stat-label
+Sections: section (white bg default), section.warm (warm off-white alternate \u2014 use for every other section), section.dark (dark bg \u2014 ONLY for the final CTA section), .section-header, .eyebrow, .divider, .divider--center
 Cards: .card-grid, .card-grid-2, .card, .card--border, .card--dark
 Testimonials: .testimonial-grid, .testimonial, .testimonial-quote, .testimonial-author
 Offers: .offer-card, .offer-card.featured, .offer-name, .offer-price, .offer-desc
+Icons: Lucide icons are loaded. Use <i data-lucide="icon-name"></i> in feature cards and offer cards. Pick from: target, zap, heart, shield, clock, users, trending-up, award, check-circle, star, brain, sparkles, compass, layers, rocket, refresh-cw, sun, leaf, activity, bar-chart
 About: .about-inner, .about-photo
-Quote: .quote-block
+Quote: .quote-block, .contrary-quote (for the contrarian belief pull quote \u2014 larger italic styled quote with brand-color left border)
+Media/Social proof strip: .media-strip (flex row of publication names \u2014 grayscale, subtle \u2014 wrap in a section or sub-div)
 CTA/Form: .cta-section, .form-group
-Footer: footer, .footer-inner, .footer-logo, .footer-copy, .footer-links
+Footer: footer, .footer-inner, .footer-logo, .footer-copy, .footer-links, .footer-social (for social handle links)
 Utilities: .text-center, .color-accent, .color-gold, .btn, .btn--primary, .btn--outline, .btn--ghost, .btn--gold
 
 \u2501\u2501\u2501 BRAND \u2501\u2501\u2501
@@ -658,27 +1108,92 @@ PREMIUM: ${premiumOffer.name} | ${premiumOffer.description} | ${premiumOffer.pri
 ASCENSION LOGIC: ${ascension}
 
 \u2501\u2501\u2501 SITE STRUCTURE \u2501\u2501\u2501
-HERO HEADLINE: ${heroHeadline}
+${pageNarrative ? `PAGE NARRATIVE: ${pageNarrative}
+` : ""}HERO HEADLINE: ${heroHeadline}
 HERO SUBHEADLINE: ${heroSub}
 PRIMARY CTA: ${heroCTA}
 ALTERNATE HEADLINES: ${altHeadlines}
-
-SECTIONS \u2014 include ALL of these in order:
+${heroImageTheme ? `HERO IMAGE THEME: ${heroImageTheme} (the server applies the hero background image, but use this theme to inform the tone and energy of the hero copy)
+` : ""}
+SECTIONS \u2014 include ALL of these in order. Each section includes its emotional purpose, visual mood (light/dark/accent), and image direction. Follow the mood tags to decide which sections get class="dark":
 ${sections}
 
 TESTIMONIAL STYLE: ${testimonialFraming}
 
+\u2501\u2501\u2501 DATA SIGNALS \u2501\u2501\u2501
+${proofNumbers.length > 0 ? `PROOF NUMBERS (use these exact numbers in hero stats and about section \u2014 never invent different ones):
+${proofNumbers.map((n) => `\u2022 ${n.stat} \u2014 ${n.label}${n.context ? " (" + n.context + ")" : ""}`).join("\n")}` : "PROOF NUMBERS: Not explicitly provided \u2014 derive 3 real numbers from the interview context (years experience, clients served, a result metric). Make them conservative and true to what was discussed."}
+${bestClientStory ? `
+BEST CLIENT STORY (use verbatim or near-verbatim in About or Testimonials section):
+${bestClientStory}` : ""}
+${mediaCredentials.length > 0 ? `
+MEDIA CREDENTIALS (show these in a "As Seen In" or "Featured In" strip, as plain text spans inside .media-strip):
+${mediaCredentials.join(" \xB7 ")}` : ""}
+${bestTestimonial ? `
+STRONGEST TESTIMONIAL (use this verbatim \u2014 do not rewrite or paraphrase):
+"${bestTestimonial.quote}"
+\u2014 ${bestTestimonial.attribution}` : ""}
+${contraryBelief ? `
+CONTRARY BELIEF (build one section \u2014 ideally pos 2 or 3 \u2014 around this tension. Write it as a .contrary-quote pullquote block):
+${contraryBelief}` : ""}
+${Object.values(socialHandles).filter(Boolean).length > 0 ? `
+SOCIAL HANDLES (use in .footer-social div in footer):
+${Object.entries(socialHandles).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" | ")}` : ""}
+
 \u2501\u2501\u2501 COPY RULES \u2501\u2501\u2501
-- Use the avatar's exact words naturally in the hero and first problem section
-- Write real, specific copy \u2014 no filler, no generic statements
-- Write 2 testimonials max following the testimonial style guidance above
-- About section: 3-4 sentences, human story not a resume
+- PROOF NUMBERS: Use the exact stats from DATA SIGNALS in the hero stats bar and About section. Never fabricate numbers that aren't grounded in the data above or the interview context. CRITICAL: Write the ACTUAL number directly inside each .hero-stat-num span — NEVER write 0 as a placeholder. The counter animation reads this number and counts UP to it. If you write 0, the visitor sees 0. Write "40+" not "0". Write "$5,000" not "$0". Write "200+" not "0%".
+- AVATAR'S EXACT WORDS: The first 200 words of the site must contain at least one phrase from the exactWords list above. Use them verbatim in the hero sub or first problem section.
+- SECTION HEADLINE FORMULA: Every section h2 must be a VALUE PROMISE or a TENSION \u2014 never a label. "About Me" is a label. "Why I Left a $400k Job to Build This" is a tension. "What Changes When You Work With Me" is a value promise. The only exception is the nav.
+- ABOUT SECTION ARC: Write the about section copy in this exact arc: "I used to [their before state \u2014 specific]. Then [the pivotal moment \u2014 specific]. Now I help [who they serve] [achieve what outcome]. [One sentence credential or proof]." Four sentences maximum.
+- TESTIMONIAL ATTRIBUTION: Always attribute testimonials in this format: [Full name or First + Last initial], [their role or situation], [result they achieved or company]. Example: "Sarah K., startup founder, went from $80k to $220k in 8 months." Never attribute as just a name.
+- CTA COPY: Every button must be outcome-focused. "Get Your Free Strategy Call" not "Contact Me." "Join 12,000+ Weekly Readers" not "Subscribe." "Book James to Speak" not "Get In Touch." The button text must answer the visitor's unspoken question: "What do I get if I click this?"
+- WRITE 2 testimonials max following the testimonial style guidance above. If bestTestimonial is provided above, use it verbatim as one of them.
+- HEADLINE SPACING: Every sentence within a heading must have a space after the period. Never write "frameworks.I" — always write "frameworks. I". This applies to every h1, h2, h3, and .eyebrow element.
+- VISUAL VARIETY: At least one body section (not the hero, not the about section) must use a 2-column layout using .card-grid-2 or two side-by-side divs. At least one section must use a .quote-block or .contrary-quote pullquote for visual rhythm.
+- SECTION ORDER: Follow this segment-specific section structure exactly:
+  Speaker/Catalyst: hero → problem-reframe section → contrary-quote section → about-2col → methodology/speaking-topics cards → testimonials → offers → CTA
+  Coach/Luminary: hero → problem-from-client-POV section (use their exact words) → transformation-arc section → about-2col → results/testimonials → offers → CTA
+  Consultant/Architect: hero → authority-and-problem section → methodology (numbered steps, .card-grid) → client-results section → offers → CTA
+  Default: hero → problem section → about-2col → how-it-works (3 steps) → testimonials → offers → CTA
+- COPY CEILING: Each section must have exactly ONE prose block. That block is 3 sentences maximum and 50 words maximum. If you need more content, use cards, not more prose. Never write two paragraphs in a single section.
+- HERO FONT CEILING: If you write a custom <style> block, the hero h1 font-size clamp max must never exceed 3.2rem (about 51px). The hero must fit entirely in the viewport with stats and CTAs visible on first load.
+- NAV SIMPLICITY: Nav must contain exactly 3 anchor links on desktop. On mobile keep only the logo and the CTA button. Never let nav items touch the screen edge.
+- BUTTON ACCESSIBILITY: Every .btn element must have style="min-height:44px" for mobile touch targets.
+- CURRENT YEAR: The footer must use the actual current year (2026), never a past year like 2024.
+- About section: The .about-photo div already has the user's real photo injected by the server \u2014 leave it completely empty (no text, no placeholder, no img tag).
+- Offer cards: ALWAYS include real price text in .offer-price. If price is unknown write "Book a Call" instead of leaving it empty. NEVER leave .offer-price blank.
 - Every CTA links to #contact
-- Numbers and specifics make it real (years, percentages, client outcomes)
-- KEEP EACH SECTION TIGHT \u2014 50 to 80 words of copy per section max
+- KEEP EACH SECTION TIGHT \u2014 40 to 60 words of copy per section max. Maximum 3 sentences per body paragraph. Prefer punchy and confident language over long explanations.\n- STAT LABELS: Hero stat labels must be 2\u20145 words maximum. Never write a full sentence as a label. "Engineers Coached" not "Years of panic attacks resolved for one client." "Client Success Rate" not "Achieved a measurable outcome in the past year."
+- SECTION BACKGROUNDS: Alternate section (white) and section.warm (warm off-white) for visual rhythm. Use section.dark ONLY on the final CTA section.
+- MEDIA STRIP: If media credentials are provided above, include a section or sub-section with class="media-strip" containing text spans of each publication name. Write it as: <div class="media-strip"><span>Forbes</span><span>Inc.</span></div>
+- SOCIAL FOOTER: If social handles are provided, add a <div class="footer-social"> inside .footer-inner with anchor links to each platform.
+- GRACEFUL FALLBACK: If theme-specific data is missing (no quote for quote-band, no reviews for trust panel, no subscriber count for stats), substitute the STRONGEST available proof signal. No quote? Use the best testimonial. No reviews count? Use years in business. No subscriber count? Use clients helped or content pieces published.
+- Feature/method cards: Start each .card with a Lucide icon using <i data-lucide="icon-name"></i>. Pick an icon that matches the card's topic.
+- Offer cards: Start each .offer-card with a Lucide icon using <i data-lucide="icon-name"></i>.
+
+\u2501\u2501\u2501 THEME LAYOUT \u2501\u2501\u2501
+${theme === "catalyst" ? `THEME: THE CATALYST (Speaker / Stage Presence)
+HERO: Full-height hero (100vh). Use large italic Fraunces h1. ONE powerful CTA: "Book [Name] to Speak". After .hero-actions, add a .quote-band div: <div class="quote-band"><blockquote>"[Quote from real event organizer or their best testimonial]"</blockquote><cite>[Person Name, Event/Organization]</cite></div>
+SECTION ORDER: hero (with .quote-band) \u2014 section.warm (media/events "Has Spoken At" with .logo-strip listing event names as text) \u2014 section (speaking topics card grid, 3 topics) \u2014 section.warm (social proof: 2 event organizer testimonials) \u2014 section (about with photo) \u2014 section.dark (booking CTA)
+CRITICAL: NO generic offers section. ONE offer = booking availability. CTA text must be "Book [Name] to Speak" or "Check Availability".` : theme === "signal" ? `THEME: THE SIGNAL (Creator / Newsletter)
+HERO: TWO-COLUMN layout using .hero-inner. Left column: headline + .hero-sub + .hero-actions (email capture CTA). Right column: .hero-stats div with 3 stacked stat items. EMBED PROOF IN BUTTON TEXT: "Join [N]+ readers" not just "Subscribe".
+AVAILABLE EXTRA CLASSES: .pub-strip (publication logo strip \u2014 use text spans, not images), .hero-stat + .hero-stat (auto-dividers between stats)
+SECTION ORDER: hero (2-col) \u2014 section.warm (publication/media .pub-strip "Featured In") \u2014 section (problem section: numbered list of 3 pain points, no card grid) \u2014 section.warm (method/system: 3 cards) \u2014 section (results: 3 testimonial cards) \u2014 section.warm (offers: 3 products/tiers) \u2014 section.dark (final CTA)` : theme === "architect" ? `THEME: THE ARCHITECT (Consultant / B2B)
+HERO: AUTHORITY NUMBERS FIRST (Seth Godin pattern). BEFORE the h1, write: <div class="hero-authority"><div class="hero-authority-item"><span class="hero-authority-n">[Number]</span><span class="hero-authority-l">[Label]</span></div>...(3 items)</div><hr style="border:none;border-top:1px solid rgba(255,255,255,.15);max-width:400px;margin:0 auto 48px;"> THEN the h1 in italic.
+AVAILABLE EXTRA CLASSES: .client-strip (client logo strip \u2014 use text spans for company names), .hero-authority, .hero-authority-item, .hero-authority-n, .hero-authority-l
+SECTION ORDER: hero (authority-first) \u2014 section.warm (client logos .client-strip "Trusted By") \u2014 section (problem: long-form paragraph narrative, NO card grid) \u2014 section.warm (methodology: 3 steps) \u2014 section (case studies / results: 2-col grid) \u2014 section.warm (about: credentials-first) \u2014 section.dark (engagement CTA)
+COPY TONE: Measured, precise. Think Harvard Business Review. No exclamation points. Numbers with context ("17 years", "47 organizations").` : theme === "neighbor" ? `THEME: THE NEIGHBOR (Local / Service Business)
+HERO: Standard centered. After .hero-actions, add: <div class="hero-trust"><span class="hero-trust-stars">\u2605\u2605\u2605\u2605\u2605</span><span class="hero-trust-text">4.9 stars \xB7 [N] verified reviews</span></div>
+AVAILABLE EXTRA CLASSES: .hero-trust, .hero-trust-stars, .hero-trust-text, .service-price (for service card pricing)
+SECTION ORDER: hero (trust panel) \u2014 section.warm (services grid with prices: use .service-price for each price) \u2014 section (3-step process: "You call / We show up / You relax" \u2014 3 steps max) \u2014 section.warm (reviews: 3 testimonials) \u2014 section (about: community angle, years in business) \u2014 section.dark (contact CTA with phone/address in footer)
+PRICES: ALWAYS show prices or "From $X". Never "Contact for pricing". Friction killer.
+COPY TONE: Plain English. Warm. Specific. Local references. No corporate jargon.` : `THEME: THE LUMINARY (Expert / Coach / Author)
+HERO: Centered .hero-inner (max 780px). Standard headline + sub + CTA buttons. Add .hero-stats below actions with 3 authority numbers (years experience, clients coached, results achieved).
+SECTION ORDER: hero \u2014 section.warm (value prop / methodology teaser \u2014 NOT social proof) \u2014 section (media/press logos row as text or inline spans "As seen in") \u2014 section.warm (social proof: 3 testimonials) \u2014 section (offers: 3 tiers) \u2014 section.warm (about with .about-inner split, leave .about-photo div empty) \u2014 section.dark (final CTA)
+TYPOGRAPHY: Use <em> tags in h1 and h2 for italic Playfair Display accent words. Body copy 17px, line-height 1.75.`}
 
 \u2501\u2501\u2501 OUTPUT \u2501\u2501\u2501
-CRITICAL: You have a strict token budget. Keep copy tight. Complete ALL sections.
+CRITICAL: You have a generous token budget. Complete ALL sections fully before stopping.
 The nav opening tag is already written. Continue directly from the nav's inner content.
 Work through every section in order. Keep each section to 50-80 words of copy.
 ALWAYS end with a <footer> containing .footer-inner > .footer-logo + .footer-copy + .footer-links.
@@ -709,7 +1224,7 @@ No markdown. No explanation. Pure HTML only.`;
         return moods[index % moods.length];
       }
     };
-    contextEnrichmentPrompt = /* @__PURE__ */ __name((userData) => {
+    contextEnrichmentPrompt = /* @__PURE__ */ __name222((userData) => {
       let context = "";
       if (userData.existingWebsiteAnalysis) {
         context += `
@@ -803,9 +1318,7 @@ Return ONLY valid JSON, no markdown code fences:
 }`;
   }
 });
-
-// src/html.js
-var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
+var getHTML = /* @__PURE__ */ __name222((config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -816,27 +1329,27 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
 <meta name="description" content="A 90-minute AI-powered brand strategy session that produces a complete brand blueprint, offer structure, and website-ready copy.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:          #FDFCFA;
-    --bg2:         #F5F2EF;
-    --bg3:         #ECEAE6;
-    --border:      #E8E5E1;
-    --border2:     #D4D0CB;
+    --bg:          #FFFFFF;
+    --bg2:         #FAFAFA;
+    --bg3:         #F0F0F0;
+    --border:      #F0F0F0;
+    --border2:     #E8E8E8;
     --gold:        #c4703f;
     --gold2:       #d4855a;
-    --text:        #111111;
-    --text2:       #555555;
-    --text3:       #9A9A9A;
-    --user-bubble: #ECEAE6;
-    --ai-bubble:   #FFFFFF;
+    --text:        #1D1D1F;
+    --text2:       #86868B;
+    --text3:       #C0C0C0;
+    --user-bubble: #c4703f;
+    --ai-bubble:   #FAFAFA;
     --accent:      #c4703f;
     --success:     #2d7a4f;
-    --radius:      12px;
-    --radius-sm:   8px;
+    --radius:      16px;
+    --radius-sm:   10px;
   }
 
   html { font-size: 16px; scroll-behavior: smooth; }
@@ -1003,358 +1516,472 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     font-style: italic;
   }
 
-  /* \u2500\u2500 INTAKE SCREEN \u2500\u2500 */
+  /* \u2500\u2500 INTAKE SCREEN (Magazine Editorial) \u2500\u2500 */
   #intake {
     display: none;
     min-height: 100vh;
-    padding: 0 0 80px 0;
+    padding: 0 0 0 0;
     margin: 0 auto;
   }
 
-  /* Intake hero */
+  /* Timeline dot animations on scroll */
+  @keyframes timelineScaleIn {
+    from {
+      transform: scale(0.7);
+      opacity: 0.4;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .step-node-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    animation: timelineScaleIn 0.5s ease-out forwards;
+    animation-play-state: paused;
+  }
+
+  .step-card.in-view .step-node-dot {
+    animation-play-state: running;
+  }
+
   .intake-hero {
     text-align: center;
-    padding: 52px 20px 40px;
+    padding: 80px 24px 48px;
     position: relative;
-  }
-
-  .intake-hero .eyebrow { margin-bottom: 20px; }
-
-  .intake-hero h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(28px, 5vw, 44px);
-    font-weight: 700;
-    line-height: 1.15;
-    margin-bottom: 16px;
-    color: var(--text);
-  }
-
-  .intake-hero h2 em {
-    font-style: italic;
-    font-family: 'Playfair Display', serif;
-    color: var(--gold);
-  }
-
-  .intake-hero > p {
-    font-size: 17px;
-    color: var(--text2);
-    line-height: 1.7;
-    max-width: 520px;
-    margin: 0 auto 32px;
-  }
-
-  /* Promise strip */
-  .promise-strip {
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    flex-wrap: wrap;
-    padding: 0 20px;
-  }
-
-  .promise-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--text2);
-  }
-
-  .promise-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(196,112,63,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  /* Step cards */
-  .intake-steps {
-    max-width: 640px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 40px 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .intake-hero .eyebrow { margin-bottom: 20px; border: none; padding: 0; background: none; font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.14em; }
+  .intake-hero h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 20px;
+    color: var(--text);
+    font-style: italic;
+  }
+  .intake-hero > p {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.75;
+    max-width: 520px;
+    margin: 0 auto 40px;
   }
 
-  .step-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 0;
-    margin-bottom: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.03);
-    overflow: hidden;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  .intake-hero-explanation {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .intake-hero-explanation p {
+    margin: 0;
+    font-weight: 500;
   }
 
-  .step-card:hover {
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transform: translateY(-1px);
-  }
-
-  .step-card-header {
-    padding: 28px 28px 0;
-  }
-
-  .step-number {
-    display: inline-flex;
-    align-items: center;
+  .intake-timeline-preview {
+    display: flex;
     justify-content: center;
+    align-items: center;
+    gap: 0;
+    padding: 0 20px;
+    margin-top: 32px;
+    order: 2;
+  }
+  .timeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 120px;
+  }
+  .timeline-num {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--bg3);
-    border: 1.5px solid var(--border2);
-    color: var(--text2);
-    font-size: 13px;
+    background: rgba(196,112,63,0.08);
+    border: 1.5px solid rgba(196,112,63,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
     font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    margin-bottom: 12px;
+    color: var(--gold);
   }
+  .timeline-text {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Outfit', sans-serif;
+  }
+  .timeline-line {
+    width: 40px;
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 20px;
+  }
+
+  .intake-card {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  @media (min-width: 769px) {
+    .intake-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+  }
+
+  .intake-steps {
+    max-width: 100%;
+    margin: 0;
+    padding: 48px 20px 0;
+    position: relative;
+  }
+  .intake-steps::before {
+    content: '';
+    position: absolute;
+    left: 39px;
+    top: 48px;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold), var(--gold) 40%, var(--border) 85%, var(--border));
+  }
+
+  .step-card {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 40px 0;
+    margin-bottom: 0;
+    box-shadow: none;
+    overflow: visible;
+    transition: none;
+    border-bottom: none;
+    position: relative;
+    padding-left: 56px;
+  }
+  .step-card:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .step-card:hover { box-shadow: none; transform: none; }
+  @media (min-width: 769px) {
+    .step-card .step-card-header h3 { transition: color 0.2s ease; }
+    .step-card:hover .step-card-header h3 { color: var(--gold); }
+    .step-card:hover .step-node-dot { border-color: var(--gold); }
+
+    /* Two-column layout for quick URL fields */
+    .intake-url-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 32px;
+      position: relative;
+      padding-left: 56px;
+    }
+    .intake-url-row .step-card {
+      padding-left: 0;
+      padding-bottom: 32px;
+    }
+    .intake-url-row .step-card .step-node { display: none; }
+    .intake-url-row::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      z-index: 2;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .intake-url-row.filled::before {
+      border-color: var(--gold);
+      background: var(--gold);
+    }
+
+    /* Upload zones left-aligned to match form flow */
+    .upload-zone {
+      padding: 14px 18px;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      border-bottom: 1px solid var(--border2);
+      background: var(--bg2);
+      justify-content: flex-start;
+      flex-direction: row;
+      align-items: center;
+      text-align: left;
+      gap: 12px;
+      min-height: 52px;
+      transition: border-color 0.2s ease;
+    }
+    .upload-zone:hover { border-color: var(--gold); }
+    .upload-zone p { display: none !important; }
+    .upload-zone span { display: none !important; }
+    .upload-browse-btn { text-decoration: none !important; font-size: 14px !important; color: var(--text2) !important; }
+    .upload-browse-btn:hover { color: var(--gold) !important; }
+
+    /* Better heading size on desktop */
+    .intake-hero h2 { font-size: 44px; }
+    .intake-hero { padding: 56px 24px 24px; }
+    .intake-hero > p { font-size: 15px; margin-bottom: 20px; }
+    .step-card h3 { font-size: 14px; }
+    .step-card .step-why { font-size: 14px; }
+
+    /* Hide floating CTA on desktop */
+    .intake-floating-cta { display: none !important; }
+
+    /* Desktop form spacing within the card */
+    .intake-steps {
+      padding: 36px 48px 8px 64px !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+    .intake-steps::before {
+      left: 63px;
+      top: 36px;
+    }
+
+    /* More space under "Start wherever feels natural" */
+    .intake-hero-explanation {
+      padding-left: 56px;
+      margin-bottom: 32px;
+    }
+    .intake-hero-explanation p {
+      font-size: 18px !important;
+    }
+
+    /* Bonus divider aligns with dot rail */
+    .intake-bonus-divider { padding-left: 56px !important; margin-bottom: 28px !important; margin-top: 8px !important; }
+  }
+
+  .step-node {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Merged step-node-dot - has both animation and dimensions */
+  .step-card.filled .step-node-dot { background: var(--gold); }
+
+  .step-card-header { padding: 0; display: block; }
+  .step-icon { display: none; }
 
   .step-card h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 8px;
-    line-height: 1.3;
-  }
-
-  .step-card .step-why {
-    font-size: 15px;
-    color: var(--text2);
-    line-height: 1.65;
-    margin-bottom: 4px;
-  }
-
-  .step-card .step-impact {
-    font-size: 13px;
-    color: var(--gold);
-    font-weight: 500;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-
-  .step-card-body {
-    padding: 20px 28px 28px;
-  }
-
-  .step-card label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text2);
-    margin-bottom: 6px;
-  }
-
-  .step-optional {
-    display: inline-block;
-    font-size: 11px;
-    color: var(--text3);
-    font-weight: 400;
-    margin-left: 6px;
-  }
-
-  /* Nudge card (phone input) */
-  .nudge-card {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    background: linear-gradient(135deg, #faf7f4 0%, #f5f0eb 100%);
-    border: 1.5px solid var(--border);
-    border-radius: 16px;
-    padding: 20px 24px;
-    margin: 8px auto 24px;
-    max-width: 640px;
-  }
-  .nudge-icon {
-    font-size: 24px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .nudge-content {
-    flex: 1;
-    min-width: 0;
-  }
-  .nudge-text {
-    margin-bottom: 12px;
-  }
-  .nudge-title {
-    display: block;
-    font-family: 'Outfit', sans-serif;
     font-size: 15px;
     font-weight: 600;
     color: var(--text);
     margin-bottom: 4px;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
-  .nudge-desc {
-    display: block;
+  .step-card .step-why {
     font-size: 13px;
     color: var(--text2);
     line-height: 1.5;
+    margin-bottom: 0;
   }
-  .nudge-input-wrap {
-    max-width: 280px;
-  }
-  .nudge-input {
-    width: 100%;
-    background: #fff;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 14px;
+  .step-card .step-impact { display: none; }
+  .step-card-body { padding: 12px 0 0 0; }
+  .step-card-body input, .step-card-body textarea {
     font-family: 'Inter', sans-serif;
+    width: 100%;
+    padding: 14px 18px;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg2);
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    margin: 0;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+    line-height: 1.5;
   }
-  .nudge-input:focus {
+  .step-card-body input:focus, .step-card-body textarea:focus {
     border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.1);
   }
-  .nudge-input::placeholder {
+  .step-card-body input::placeholder, .step-card-body textarea::placeholder {
     color: var(--text3);
   }
-  @media (max-width: 600px) {
-    .nudge-card {
-      padding: 16px 18px;
-    }
-    .nudge-input-wrap {
-      max-width: 100%;
-    }
-  }
-
-  input[type="text"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], textarea {
-    width: 100%;
-    background: var(--bg);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    color: var(--text);
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    margin-bottom: 12px;
-    resize: vertical;
-  }
-
-  input:focus, textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.1);
-  }
-
-  input::placeholder, textarea::placeholder { color: var(--text3); }
+  .step-card-body textarea { resize: vertical; min-height: 80px; }
+  .step-card label { display: none; }
+  .step-optional { display: none; }
 
   .upload-zone {
-    border: 2px dashed var(--border2);
-    border-radius: 12px;
-    padding: 36px;
-    text-align: center;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: 12px 0;
+    text-align: left;
     cursor: pointer;
-    transition: all 0.25s;
+    transition: all 0.3s ease;
     position: relative;
-    background: var(--bg);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-
   .upload-zone:hover, .upload-zone.drag-over {
     border-color: var(--gold);
-    background: rgba(196,112,63,0.03);
+    box-shadow: none;
   }
-
   .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-zone .upload-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .upload-zone p { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 400; color: var(--text); margin: 0; display: none; }
+  .upload-zone span { font-size: 12px; color: var(--text3); display: none; }
+  .upload-browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    margin-top: 0;
+    text-decoration: underline;
+    text-decoration-color: rgba(196,112,63,0.3);
+  }
+  .upload-browse-btn:hover { border-color: transparent; color: var(--gold); text-decoration-color: var(--gold); }
 
-  .upload-zone .upload-icon { font-size: 32px; margin-bottom: 10px; }
-
-  .upload-zone p { font-size: 15px; color: var(--text2); margin: 0 0 4px; }
-
-  .upload-zone span { font-size: 12px; color: var(--text3); }
-
-  .uploaded-files { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-
+  .uploaded-files { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; justify-content: center; }
   .file-chip {
     display: flex;
     align-items: center;
-    gap: 6px;
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: 100px;
+    gap: 8px;
+    background: var(--bg2);
+    border-radius: 50px;
     padding: 6px 14px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text2);
   }
+  .file-chip button { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
 
-  .file-chip button {
-    background: none;
-    border: none;
-    color: var(--text3);
-    cursor: pointer;
-    font-size: 14px;
-    line-height: 1;
-    padding: 0;
-  }
-
-  /* CTA area */
   .intake-cta {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 0 20px;
+    max-width: 100%;
+    margin: 0;
+    padding: 48px 40px;
     text-align: center;
+    border-top: none;
+    background: transparent;
   }
-
+  @media (min-width: 769px) {
+    .intake-cta {
+      max-width: 100% !important;
+      margin: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 28px 48px 40px 64px !important;
+      box-shadow: none !important;
+    }
+  }
+  .intake-cta .cta-eyebrow {
+    font-family: 'Outfit', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .intake-cta .cta-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4vw, 32px);
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 28px;
+  }
   .intake-cta .btn-gold {
-    font-size: 16px;
-    padding: 18px 40px;
+    font-size: 15px;
+    padding: 16px 44px;
     width: auto;
     display: inline-flex;
     border-radius: 50px;
     font-family: 'Outfit', sans-serif;
     letter-spacing: 0.02em;
-    box-shadow: 0 4px 16px rgba(26,26,26,0.2);
-    position: relative;
-    overflow: hidden;
   }
-
-  .intake-cta .btn-gold:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(26,26,26,0.28);
-  }
-
-  .intake-cta .btn-gold:disabled {
-    opacity: 1;
-    cursor: not-allowed;
-    background: var(--text);
-  }
-
+  .intake-cta .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+  .intake-cta .btn-gold:disabled { opacity: 1; cursor: not-allowed; background: #333; }
   .intake-reassurance {
     margin-top: 16px;
     font-size: 13px;
     color: var(--text3);
-    line-height: 1.6;
+    line-height: 1.65;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
   }
+  .intake-reassurance a { color: var(--gold); }
 
-  .intake-reassurance strong {
-    color: var(--text2);
+  .trust-signals { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
+  .trust-badge { font-family: 'Outfit', sans-serif; font-size: 10px; letter-spacing: 0.04em; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+  .trust-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); opacity: 0.5; }
+
+  .resume-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    z-index: 200;
   }
+  .resume-choice { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+  .resume-choice-left { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; border-right: 1px solid var(--border); }
+  .resume-choice-right { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; }
+  .resume-choice-left h3, .resume-choice-right h3 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400; font-style: italic; margin-bottom: 12px; color: var(--text); }
+  .resume-choice-left p, .resume-choice-right p { font-size: 14px; color: var(--text2); line-height: 1.7; max-width: 300px; text-align: center; margin-bottom: 28px; }
+  .resume-meta { font-size: 12px; color: var(--text3); margin-bottom: 20px; text-align: center; }
+
+
 
   /* Loading overlay */
   .session-loading {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: #FDFCFA;
+    background: #FFFFFF;
     z-index: 99999;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 32px 24px;
     text-align: center;
-    animation: loadFadeIn 0.35s ease;
+    animation: loadFadeIn 0.4s ease;
     overflow: hidden;
   }
 
@@ -1369,19 +1996,44 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     max-width: 480px;
   }
 
+  .loading-wordmark {
+    margin-bottom: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .loading-wordmark-eyebrow {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #C4703F;
+  }
+
+  .loading-wordmark-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: #1D1D1F;
+  }
+
   @keyframes loadFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 2.5px solid var(--border);
-    border-top-color: var(--gold);
+    width: 36px;
+    height: 36px;
+    border: 2px solid #F0F0F0;
+    border-top-color: #C4703F;
     border-radius: 50%;
-    animation: loadSpin 0.8s linear infinite;
-    margin-bottom: 28px;
+    animation: loadSpin 0.9s linear infinite;
+    margin-bottom: 32px;
     flex-shrink: 0;
   }
 
@@ -1392,37 +2044,38 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   .loading-message {
     font-family: 'Playfair Display', serif;
     font-style: italic;
-    font-size: 19px;
-    color: var(--text);
-    max-width: 360px;
+    font-size: 20px;
+    color: #1D1D1F;
+    max-width: 340px;
     width: 100%;
-    line-height: 1.55;
-    min-height: 56px;
-    transition: opacity 0.3s ease;
+    line-height: 1.6;
+    min-height: 60px;
+    transition: opacity 0.35s ease;
   }
 
   .loading-stage {
-    font-size: 11px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
-    color: var(--gold);
-    margin-top: 20px;
+    color: #C4703F;
+    margin-top: 24px;
   }
 
   .loading-progress {
-    width: 180px;
-    height: 2px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-top: 10px;
+    width: 160px;
+    height: 1px;
+    background: #F0F0F0;
+    border-radius: 1px;
+    margin-top: 12px;
     overflow: hidden;
   }
 
   .loading-progress-bar {
     height: 100%;
-    background: var(--gold);
-    border-radius: 2px;
+    background: #C4703F;
+    border-radius: 1px;
     width: 0%;
     transition: width 0.6s ease;
   }
@@ -1462,37 +2115,72 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     text-align: left;
   }
 
+  /* Floating micro-CTA (appears on scroll) */
+  .intake-floating-cta {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 12px 24px;
+    z-index: 150;
+    transform: translateY(100%);
+    transition: transform 0.35s ease;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
+  }
+  .intake-floating-cta.active {
+    transform: translateY(0);
+  }
+  .intake-floating-cta-content {
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .intake-floating-cta-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    color: var(--text2);
+    flex-grow: 1;
+  }
+  .intake-floating-cta-btn {
+    padding: 10px 28px;
+    border-radius: 50px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
   @media (max-width: 600px) {
-    /* \u2500\u2500 INTAKE: strip the wall of text \u2014 show title + input only \u2500\u2500 */
-    .intake-hero { padding: 28px 16px 20px; }
-    .intake-hero > p { font-size: 15px; margin-bottom: 20px; }
-    .promise-strip { gap: 10px; }
-    .promise-item { font-size: 12px; }
-    .promise-item .promise-icon { width: 26px; height: 26px; font-size: 13px; }
+        /* Intake mobile */
+    .intake-hero { padding: 36px 16px 8px; display: flex; flex-direction: column; }
+    .intake-hero h2 { font-size: 26px; margin-bottom: 12px; }
+    .intake-hero > p { font-size: 14px; margin-bottom: 0; }
+    .intake-timeline-preview { display: none; }
+    .intake-steps { padding: 20px 16px 0; }
+    .intake-steps::before { left: 29px; top: 36px; }
+    .step-card { padding-left: 44px; padding-bottom: 28px; }
+    .intake-bonus-divider { padding-left: 44px !important; }
+    .intake-url-row { display: block; }
+    .step-node { width: 28px; }
+    .step-card h3 { font-size: 13px; }
+    .step-card-body input, .step-card-body textarea { font-size: 14px; padding: 12px 14px; border-radius: 8px; }
+    .intake-cta { padding: 16px 20px 36px; margin: 0 !important; border-top: none !important; }
+    .intake-floating-cta { padding: 10px 16px; }
+    .intake-floating-cta-content { flex-direction: column; }
+    .intake-floating-cta-text { text-align: center; font-size: 12px; }
+    .intake-floating-cta-btn { width: 100%; }
+    .intake-cta .btn-gold { font-size: 14px; padding: 14px 32px; }
+    .intake-reassurance { font-size: 11px; margin-top: 10px; }
+    .trust-signals { gap: 12px; flex-wrap: wrap; }
+    .trust-badge { font-size: 9px; }
+    .resume-choice { grid-template-columns: 1fr; }
+    .resume-choice-left { border-right: none; border-bottom: 1px solid var(--border); padding: 40px 24px; }
+    .resume-choice-right { padding: 40px 24px; }
 
-    /* The big fix: hide long copy on mobile \u2014 inputs speak for themselves */
-    .step-why { display: none; }
-    .step-impact { display: none; }
-    .step-card-header { padding: 18px 18px 0; }
-    .step-card-body { padding: 10px 18px 18px; }
-    .step-card h3 { font-size: 16px; margin-bottom: 0; }
-    .step-card { margin-bottom: 10px; border-radius: 14px; }
-    .step-number { width: 24px; height: 24px; font-size: 11px; margin-bottom: 8px; }
-    .intake-steps { padding: 12px 14px 0; }
-
-    /* Sticky begin button \u2014 always reachable without scrolling to the bottom */
-    .intake-cta {
-      position: sticky;
-      bottom: 0;
-      background: var(--bg);
-      padding: 12px 16px 20px;
-      border-top: 1px solid var(--border);
-      margin: 0;
-      z-index: 5;
-      text-align: center;
-    }
-    .intake-cta .btn-gold { font-size: 15px; padding: 15px 28px; }
-    .intake-reassurance { font-size: 11px; margin-top: 8px; }
 
     /* Chat: hide avatars on mobile so bubbles get full width */
     .msg.ai .avatar,
@@ -1508,7 +2196,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     #messages { gap: 12px; padding: 16px 12px; }
 
     /* Tighter input */
-    .input-area { padding: 10px 12px 12px; }
+    .input-area { padding: 8px 12px 16px; }
 
     /* Keep phase bar compact */
     .phase-bar { padding: 8px 12px; }
@@ -1524,77 +2212,68 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     flex-direction: column;
   }
 
-  /* Phase bar */
+  /* Phase bar \u2014 1B Minimal Top Bar (Apple Music) */
   .phase-bar {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 16px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 14px 24px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    border-bottom: 1px solid #F0F0F0;
     flex-shrink: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
     position: sticky;
     top: 0;
     z-index: 10;
   }
 
-  .phase-bar::-webkit-scrollbar { display: none; }
-
-  .phase-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text3);
-    white-space: nowrap;
-    flex-shrink: 0;
+  .phase-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
-  .phases {
-    display: flex;
-    gap: 5px;
-    flex-shrink: 0;
-  }
-
-  .phase-dot {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .phase-step {
+    font-family: 'Outfit', sans-serif;
     font-size: 11px;
     font-weight: 600;
-    border: 1.5px solid var(--border);
-    color: var(--text3);
-    transition: all 0.25s;
-    flex-shrink: 0;
-    background: var(--bg);
-  }
-
-  .phase-dot.active {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: #fff;
-  }
-
-  .phase-dot.complete {
-    background: transparent;
-    border-color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--gold);
   }
 
-  .phase-name {
-    font-size: 13px;
-    color: var(--text3);
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-left: auto;
+  .phase-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
   }
 
-  .phase-name strong { color: var(--text); font-weight: 600; }
+  .phase-progress-track {
+    width: 120px;
+    height: 3px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
 
-  /* Chat area */
+  .phase-progress-fill {
+    height: 100%;
+    width: 12.5%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Legacy phase-dot support (hidden, used by JS) */
+  .phases { display: none; }
+  .phase-dot { display: none; }
+  .phase-label { display: none; }
+  .phase-name { display: none; }
+
+  /* Chat area \u2014 2B iMessage style */
   .chat-wrap {
     flex: 1;
     overflow: hidden;
@@ -1605,138 +2284,86 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   #messages {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 20px;
+    padding: 32px 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
     scroll-behavior: smooth;
   }
 
-  #messages::-webkit-scrollbar { width: 4px; }
-  #messages::-webkit-scrollbar-track { background: transparent; }
-  #messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  #messages::-webkit-scrollbar { width: 0; }
 
   .msg {
     display: flex;
-    gap: 12px;
-    max-width: 760px;
+    max-width: 680px;
     width: 100%;
     margin: 0 auto;
-    animation: fadeUp 0.3s ease;
+    animation: fadeUp 0.35s cubic-bezier(0.4,0,0.2,1);
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .msg.user { flex-direction: row-reverse; }
+  .msg.user { justify-content: flex-end; }
 
-  .avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-  }
-
-  .avatar.ai {
-    background: var(--gold);
-    color: #fff;
-  }
-
-  .avatar.user-av {
-    background: var(--user-bubble);
-    color: var(--text);
-    border: 1px solid var(--border2);
-  }
+  /* Hide avatars for clean iMessage look */
+  .avatar { display: none; }
 
   .bubble {
-    padding: 14px 18px;
-    border-radius: 16px;
-    font-size: 15px;
-    line-height: 1.65;
-    max-width: calc(100% - 44px);
+    font-size: 15.5px;
+    line-height: 1.7;
+    font-family: 'Inter', sans-serif;
+    max-width: 80%;
   }
 
   .msg.ai .bubble {
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03);
-    border-radius: 4px 18px 18px 18px;
+    background: var(--bg);
+    border-radius: 18px 18px 18px 4px;
+    padding: 14px 20px;
     color: var(--text);
-    border: 1px solid var(--border);
+    border: none;
+    box-shadow: none;
   }
 
   .msg.user .bubble {
-    background: var(--user-bubble);
-    border-radius: 18px 4px 18px 18px;
-    color: var(--text);
+    background: var(--gold);
+    border-radius: 18px 18px 4px 18px;
+    padding: 14px 20px;
+    color: #ffffff;
+    max-width: 75%;
+    border: none;
+    box-shadow: none;
   }
 
   .bubble p { margin-bottom: 10px; }
   .bubble p:last-child { margin-bottom: 0; }
   .bubble ol { padding-left: 20px; margin: 8px 0; }
   .bubble ol li { margin-bottom: 6px; }
-  .bubble strong { color: var(--text); font-weight: 600; }
+  .bubble strong { font-weight: 600; }
+  .msg.ai .bubble strong { color: var(--text); }
+  .msg.user .bubble strong { color: #fff; }
 
   .typing-indicator {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 14px 18px;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 10px rgba(0,0,0,0.04);
-    border-radius: 4px 18px 18px 18px;
+    display: none;
   }
 
-  .typing-indicator span {
-    width: 6px;
-    height: 6px;
-    background: var(--text3);
-    border-radius: 50%;
-    animation: bounce 1.4s infinite;
-  }
-
-  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-  @keyframes bounce {
-    0%, 60%, 100% { transform: translateY(0); }
-    30% { transform: translateY(-6px); }
-  }
-
-  /* Thinking message (enhanced typing indicator) */
+  /* Thinking indicator \u2014 4A Shimmer Line (Apple Intelligence) */
   .thinking-bubble {
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
-    border-radius: 4px 18px 18px 18px;
+    background: transparent;
+    box-shadow: none;
+    border: none;
     padding: 0;
     overflow: hidden;
-    min-width: 200px;
-    max-width: 340px;
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
   }
-  .thinking-dots {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 13px 16px 5px;
-  }
-  .thinking-dots span {
-    width: 5px;
-    height: 5px;
-    background: var(--text3);
-    border-radius: 50%;
-    animation: bounce 1.4s infinite;
-  }
-  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
-  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  .thinking-dots { display: none; }
   .thinking-msg {
-    padding: 3px 16px 13px;
-    font-size: 12px;
+    padding: 4px 0 0;
+    font-size: 13px;
     color: var(--text3);
     font-style: italic;
     font-family: 'Inter', sans-serif;
@@ -1745,14 +2372,21 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
   .thinking-progress {
     height: 2px;
-    background: var(--border);
+    background: transparent;
     overflow: hidden;
+    border-radius: 1px;
   }
   .thinking-progress-bar {
     height: 100%;
-    background: var(--gold);
-    width: 0%;
-    transition: width 0.8s ease;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    background-size: 200% 100%;
+    animation: shimmerMove 1.8s ease-in-out infinite;
+    width: 100% !important;
+    border-radius: 1px;
+  }
+  @keyframes shimmerMove {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
   @keyframes shimmer {
     0% { background-position: 100% 0; }
@@ -1763,7 +2397,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   .blueprint-generating {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: #FDFCFA;
+    background: #FFFFFF;
     display: none;
     flex-direction: column;
     align-items: center;
@@ -1835,91 +2469,119 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   /* Input area */
   .input-area {
-    border-top: 1px solid var(--border);
     background: var(--bg);
-    padding: 12px 16px 14px;
+    padding: 10px 20px 18px;
     flex-shrink: 0;
   }
 
   .input-row {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-    max-width: 760px;
+    max-width: 680px;
     margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    background: #F5F5F7;
+    border-radius: 22px;
+    padding: 4px 4px 4px 4px;
+    border: 1px solid rgba(0,0,0,0.06);
   }
 
   .input-row textarea {
     flex: 1;
-    background: #ffffff;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 11px 14px;
-    color: var(--text);
-    font-size: 15px;
+    border: none;
+    background: transparent;
+    padding: 9px 6px 9px 8px;
+    font-size: 15.5px;
     font-family: 'Inter', sans-serif;
     resize: none;
     outline: none;
-    max-height: 140px;
-    overflow-y: auto;
-    line-height: 1.5;
+    line-height: 1.55;
+    color: var(--text);
+    max-height: 160px;
+    overflow-y: hidden;
     margin: 0;
-    transition: border-color 0.2s, box-shadow 0.2s;
     -webkit-appearance: none;
+    align-self: center;
   }
 
-  .input-row textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.08);
-  }
+  .input-row textarea:focus { box-shadow: none; }
+  .input-row textarea::placeholder { color: #bbb; }
 
-  .input-row textarea::placeholder { color: var(--text3); }
+  /* Attachment button inside pill */
+  .tool-btn {
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 6px !important;
+    margin: 0 0 2px 4px !important;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    color: #aaa !important;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    align-self: flex-end;
+    transition: color 0.15s;
+  }
+  .tool-btn:hover { color: var(--text2) !important; }
 
   .send-btn {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: var(--gold);
+    background: var(--text);
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: all 0.2s;
+    transition: all 0.15s;
     color: #fff;
+    margin: 0 2px 2px 4px;
+    align-self: flex-end;
   }
 
-  .send-btn:hover { background: var(--gold2); transform: scale(1.05); }
+  .send-btn:hover { background: #2a2a2a; transform: scale(1.06); }
   .send-btn:active { transform: scale(0.97); }
-  .send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .send-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
 
   /* Voice input button */
   .voice-btn {
-    width: 44px;
-    height: 44px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    background: var(--bg2);
-    border: 1.5px solid var(--border);
+    background: none;
+    border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: all 0.2s;
-    color: var(--text3);
+    transition: all 0.15s;
+    color: #aaa;
+    margin: 0 0 2px 0;
+    align-self: flex-end;
   }
 
-  .voice-btn:hover { border-color: var(--border2); color: var(--text2); }
+  .voice-btn:hover { color: var(--text); background: rgba(0,0,0,0.05); }
 
   .voice-btn.recording {
-    background: rgba(196,112,63,0.1);
-    border-color: var(--gold);
+    background: rgba(196,112,63,0.08);
     color: var(--gold);
     animation: voicePulse 1.5s ease-in-out infinite;
   }
 
   .voice-btn.unsupported { display: none; }
+
+  @media (max-width: 350px) {
+    .send-btn, .voice-btn { width: 30px; height: 30px; min-width: 30px; }
+    .input-area { padding: 8px 8px 14px; }
+    #msg-input { font-size: 15px; }
+  }
 
   @keyframes voicePulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(196,112,63,0.3); }
@@ -1930,22 +2592,22 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     font-size: 12px;
     color: var(--gold);
     text-align: center;
-    max-width: 760px;
-    margin: 6px auto 0;
+    max-width: 680px;
+    margin: 4px auto 0;
     min-height: 16px;
     font-weight: 500;
   }
 
   /* Resume banner */
   .resume-banner {
-    background: #ffffff;
+    background: transparent;
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px 28px;
-    max-width: 640px;
-    margin: 0 auto 24px;
+    border-radius: 12px;
+    padding: 28px 32px;
+    max-width: 580px;
+    margin: 0 auto 32px;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+    box-shadow: none;
   }
 
   .resume-banner h3 {
@@ -1982,8 +2644,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     display: flex;
     align-items: center;
     gap: 8px;
-    max-width: 760px;
-    margin: 8px auto 0;
+    max-width: 680px;
+    margin: 4px auto 8px;
   }
 
   .tool-btn {
@@ -2002,104 +2664,148 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   .tool-btn:hover { color: var(--text2); }
 
-  /* \u2500\u2500 BLUEPRINT SCREEN \u2500\u2500 */
-  #blueprint-screen {
-    display: none;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+  /* \u2500\u2500 BLUEPRINT SCREEN (Magazine) \u2500\u2500 */
+  #blueprint-screen { display: none; flex-direction: column; min-height: 100vh; background: var(--bg); }
 
   .blueprint-header {
-    background: linear-gradient(135deg, var(--bg2) 0%, rgba(196,112,63,0.05) 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 32px 40px;
-    text-align: center;
-  }
-
-  .blueprint-header h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--text);
-  }
-
-  .blueprint-header p { color: var(--text2); font-size: 15px; }
-
-  .blueprint-actions {
+    padding: 14px 28px;
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
     display: flex;
-    gap: 12px;
-    justify-content: center;
-    padding: 20px 40px;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .blueprint-header .bp-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .blueprint-header .bp-logo {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .blueprint-header .bp-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--border2);
+  }
+  .blueprint-header .bp-product {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  .blueprint-header h2 { display: none; }
+  .blueprint-header p { display: none; }
+  .blueprint-header .bp-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .blueprint-header .eyebrow {
+    display: none;
+    align-items: center;
   }
 
+  .blueprint-actions { display: flex; gap: 12px; justify-content: center; padding: 20px 40px; border-bottom: 1px solid var(--border); flex-wrap: wrap; background: rgba(253,252,250,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 50; }
   .blueprint-actions .btn { width: auto; }
 
-  .blueprint-body { padding: 40px; max-width: 900px; margin: 0 auto; width: 100%; }
+  .blueprint-body { padding: 0; max-width: 100%; margin: 0 auto; width: 100%; }
 
-  .bp-part {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+  .mag-section { padding: 80px 40px; max-width: 1100px; margin: 0 auto; }
+  .mag-section-header { margin-bottom: 48px; }
+  .mag-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 12px; }
+  .mag-title { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .mag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .mag-col { display: flex; flex-direction: column; gap: 24px; }
+  .mag-label { font-family: 'Outfit', sans-serif; font-size: 11px; letter-spacing: 0.1em; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+  .mag-value { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text2); line-height: 1.8; margin-bottom: 4px; }
+  .mag-value strong { color: var(--text); font-weight: 600; }
+
+  .mag-highlight-band { background: linear-gradient(135deg, rgba(196,112,63,0.06) 0%, rgba(196,112,63,0.02) 100%); padding: 60px 40px; text-align: center; border-top: 1px solid rgba(196,112,63,0.1); border-bottom: 1px solid rgba(196,112,63,0.1); }
+  .mag-highlight-text { font-family: 'Playfair Display', serif; font-size: clamp(20px, 2.5vw, 26px); font-style: italic; color: var(--text); line-height: 1.7; max-width: 640px; margin: 0 auto; }
+
+  .mag-quote { font-family: 'Playfair Display', serif; font-size: clamp(22px, 2.8vw, 34px); font-style: italic; color: var(--text); text-align: center; margin: 48px auto; line-height: 1.55; max-width: 700px; }
+  .mag-quote::after { content: '\u2014'; display: block; color: var(--gold); font-size: 20px; margin-top: 16px; }
+
+  .mag-color-strip { padding: 20px 0; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); }
+  .mag-color-rect { flex: 1; height: 48px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .mag-color-info { min-width: 120px; }
+  .mag-color-hex { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  .mag-timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin: 48px 0; }
+  .mag-timeline-col { padding: 0 24px; border-right: 1px solid var(--border); }
+  .mag-timeline-col:last-child { border-right: none; }
+  .mag-timeline-price { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .mag-timeline-name { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 16px; }
+  .mag-timeline-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+  .mag-headlines-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin: 48px 0; }
+  .mag-headline-item { padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .mag-headline-num { font-family: 'Outfit', sans-serif; font-size: 12px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .mag-headline-text { font-family: 'Playfair Display', serif; font-size: 17px; font-style: italic; color: var(--text); line-height: 1.6; }
+
+  /* \u2500\u2500\u2500\u2500\u2500\u2500 Reading Progress Bar \u2500\u2500\u2500\u2500\u2500\u2500 */
+  #blueprint-progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: var(--gold); width: 0%; transition: width 0.1s ease-out; z-index: 999; }
+
+  /* \u2500\u2500\u2500\u2500\u2500\u2500 Section Navigation Dots \u2500\u2500\u2500\u2500\u2500\u2500 */
+  #blueprint-section-dots { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); z-index: 100; display: flex; flex-direction: column; gap: 16px; }
+  .blueprint-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(196, 112, 63, 0.2); cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; }
+  .blueprint-dot:hover { background: rgba(196, 112, 63, 0.4); }
+  .blueprint-dot.active { background: var(--gold); width: 12px; height: 12px; box-shadow: 0 0 8px rgba(196, 112, 63, 0.4); }
+  @media (max-width: 1024px) { #blueprint-section-dots { display: none; } }
+
+  /* \u2500\u2500\u2500\u2500\u2500\u2500 Copy Button \u2500\u2500\u2500\u2500\u2500\u2500 */
+  .copy-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(196, 112, 63, 0.08); border: 1px solid rgba(196, 112, 63, 0.2); border-radius: 6px; font-size: 11px; color: var(--gold); cursor: pointer; transition: all 0.2s ease; font-weight: 500; font-family: 'Outfit', sans-serif; letter-spacing: 0.03em; width: fit-content; }
+  .copy-btn:hover { background: rgba(196, 112, 63, 0.15); border-color: var(--gold); }
+  .copy-btn.copied { background: rgba(76, 175, 80, 0.15); border-color: #4CAF50; color: #4CAF50; }
+
+  /* \u2500\u2500\u2500\u2500\u2500\u2500 Offer Card Enhancement \u2500\u2500\u2500\u2500\u2500\u2500 */
+  .mag-timeline-col { transition: all 0.3s ease; }
+  .mag-timeline-col.core-offer { transform: scale(1.02); }
+
+  /* \u2500\u2500\u2500\u2500\u2500\u2500 Debrief Animation \u2500\u2500\u2500\u2500\u2500\u2500 */
+  .strategist-debrief-container { animation: fadeUpDebrief 0.8s ease-out; }
+  @keyframes fadeUpDebrief { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .debrief-quoted { font-size: 1.3em; }
+
+  /* \u2500\u2500\u2500\u2500\u2500\u2500 Mobile Spacing Improvements \u2500\u2500\u2500\u2500\u2500\u2500 */
+  @media (max-width: 768px) {
+    .mag-section { padding: 48px 24px; }
+    .mag-grid { grid-template-columns: 1fr; gap: 32px; }
   }
 
-  .bp-part-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
+  .mag-nextstep { background: linear-gradient(135deg, rgba(196,112,63,0.08), transparent); border: 1.5px solid rgba(196,112,63,0.2); border-radius: 12px; padding: 32px; margin: 48px 0; }
+  .mag-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(196,112,63,0.12) 50%, transparent 100%); margin: 8px 0; }
 
-  .bp-part-num {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(196,112,63,0.12);
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    font-size: 13px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+  .color-swatch { display: inline-block; width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border2); vertical-align: middle; margin-right: 8px; }
 
-  .bp-part h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-  }
-
-  .bp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-  @media (max-width: 600px) { .bp-grid { grid-template-columns: 1fr; } }
-
-  .bp-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 16px; }
-
-  .bp-item-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 6px;
-  }
-
-  .bp-item-value { font-size: 14px; color: var(--text); line-height: 1.6; }
-
-  .color-swatch {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    border: 1px solid var(--border2);
-    vertical-align: middle;
-    margin-right: 8px;
+  @media (max-width: 640px) {
+    .blueprint-header { padding: 12px 16px; }
+    .blueprint-header .bp-product { display: none; }
+    .blueprint-header .bp-divider { display: none; }
+    .blueprint-header .bp-logo { font-size: 14px; }
+    .mag-section { padding: 48px 24px; }
+    .mag-grid { grid-template-columns: 1fr; gap: 32px; }
+    .mag-timeline { grid-template-columns: 1fr; }
+    .mag-timeline-col { border-right: none; border-bottom: 1px solid var(--border); padding: 0 0 24px; }
+    .mag-timeline-col.core-offer { transform: none; margin: 0; padding: 24px !important; border-bottom: 2px solid var(--gold); }
+    .mag-timeline-col:last-child { border-bottom: none; }
+    .mag-headlines-grid { grid-template-columns: 1fr; }
+    .mag-highlight-band { padding: 40px 24px; }
   }
 
   /* \u2500\u2500 SITE GENERATION SCREEN \u2500\u2500 */
@@ -2450,16 +3156,96 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   #intake.active { display: flex; flex-direction: column; }
   #app.active { display: flex; }
   #blueprint-screen.active { display: flex; }
+  /* Back to Chat button always visible */
   #site-screen.active { display: flex; }
   #deploy-screen.active { display: flex; }
 
   @media (max-width: 600px) {
     .blueprint-body { padding: 20px; }
-    .blueprint-header { padding: 24px 20px; }
+    .blueprint-header { padding: 10px 16px; }
+    .blueprint-header .bp-product { display: none; }
+    .blueprint-header .bp-divider { display: none; }
     .blueprint-actions { padding: 16px 20px; }
   }
 
   /* \u2500\u2500 HELP WIDGET \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  #devtools-btn {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 80px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #C4703F;
+    border: 1.5px solid rgba(196,112,63,0.4);
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 9998;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    transition: all 0.15s;
+  }
+  #devtools-btn:hover { background: #C4703F; color: #fff; border-color: #C4703F; transform: scale(1.08); }
+  #devtools-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100%;
+    background: #0d0d12;
+    border-left: 1px solid rgba(196,112,63,0.2);
+    z-index: 10001;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    color: #e8e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #devtools-panel.open { transform: translateX(0); }
+  #devtools-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 10000;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  #devtools-overlay.open { opacity: 1; pointer-events: auto; }
+  .dt-hdr { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; }
+  .dt-hdr-title { font-size: 16px; font-weight: 700; color: #C4703F; }
+  .dt-close { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+  .dt-close:hover { color: #fff; }
+  .dt-body { padding: 16px 24px; }
+  .dt-section { margin-bottom: 24px; }
+  .dt-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600; margin-bottom: 12px; }
+  .dt-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .dt-card:hover { background: rgba(196,112,63,0.12); border-color: rgba(196,112,63,0.3); }
+  .dt-card-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(196,112,63,0.15); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .dt-card-info { flex: 1; min-width: 0; }
+  .dt-card-name { font-size: 13px; font-weight: 600; color: #e8e8f0; }
+  .dt-card-desc { font-size: 11px; color: #888; margin-top: 2px; }
+  .dt-card-arrow { color: #555; font-size: 14px; }
+  .dt-status { font-size: 12px; padding: 12px 16px; border-radius: 8px; margin-top: 12px; line-height: 1.5; }
+  .dt-status.info { background: rgba(196,112,63,0.1); color: #C4703F; border: 1px solid rgba(196,112,63,0.2); }
+  .dt-status.ok { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+  .dt-status.err { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+  .dt-admin-link { display: block; text-align: center; padding: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #C4703F; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .dt-admin-link:hover { background: rgba(196,112,63,0.12); }
+  @media (max-width: 600px) {
+    #devtools-panel { width: 100%; }
+    #devtools-btn { bottom: 90px; right: 68px; }
+  }
   #help-btn {
     position: fixed; bottom: 90px; right: 20px;
     width: 40px; height: 40px; border-radius: 50%;
@@ -2531,21 +3317,394 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   .help-ftr-note { font-size: 11px; color: var(--text3); text-align: center; }
   @media (max-width: 600px) {
     #help-panel { width: 100%; transform: translateX(100%); }
-    #help-btn { bottom: 90px; right: 16px; }
+    #devtools-btn {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 80px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    color: #C4703F;
+    border: 1.5px solid rgba(196,112,63,0.4);
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 9998;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    transition: all 0.15s;
   }
+  #devtools-btn:hover { background: #C4703F; color: #fff; border-color: #C4703F; transform: scale(1.08); }
+  #devtools-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100%;
+    background: #0d0d12;
+    border-left: 1px solid rgba(196,112,63,0.2);
+    z-index: 10001;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    color: #e8e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #devtools-panel.open { transform: translateX(0); }
+  #devtools-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 10000;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  #devtools-overlay.open { opacity: 1; pointer-events: auto; }
+  .dt-hdr { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; }
+  .dt-hdr-title { font-size: 16px; font-weight: 700; color: #C4703F; }
+  .dt-close { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+  .dt-close:hover { color: #fff; }
+  .dt-body { padding: 16px 24px; }
+  .dt-section { margin-bottom: 24px; }
+  .dt-section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #888; font-weight: 600; margin-bottom: 12px; }
+  .dt-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .dt-card:hover { background: rgba(196,112,63,0.12); border-color: rgba(196,112,63,0.3); }
+  .dt-card-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(196,112,63,0.15); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .dt-card-info { flex: 1; min-width: 0; }
+  .dt-card-name { font-size: 13px; font-weight: 600; color: #e8e8f0; }
+  .dt-card-desc { font-size: 11px; color: #888; margin-top: 2px; }
+  .dt-card-arrow { color: #555; font-size: 14px; }
+  .dt-status { font-size: 12px; padding: 12px 16px; border-radius: 8px; margin-top: 12px; line-height: 1.5; }
+  .dt-status.info { background: rgba(196,112,63,0.1); color: #C4703F; border: 1px solid rgba(196,112,63,0.2); }
+  .dt-status.ok { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid rgba(46,204,113,0.2); }
+  .dt-status.err { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+  .dt-admin-link { display: block; text-align: center; padding: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; color: #C4703F; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .dt-admin-link:hover { background: rgba(196,112,63,0.12); }
+  @media (max-width: 600px) {
+    #devtools-panel { width: 100%; }
+    #devtools-btn { bottom: 90px; right: 68px; }
+  }
+  #help-btn { bottom: 90px; right: 16px; }
+  }
+  /* Mobile: hide doc upload, keep only photo button */
+  @media (max-width: 600px) {
+    #doc-upload-btn { display: none !important; }
+    .tool-btn { padding: 6px 10px; font-size: 13px; }
+    .input-tools { gap: 4px; }
+    #doc-upload-status { font-size: 12px; padding: 6px 12px; }
+  }
+
+  /* \u2550\u2550\u2550 SECTION PICKER \u2014 FOCUS FRAME LIGHT \u2550\u2550\u2550 */
+  #section-picker { flex-direction: row; height: 100vh; overflow: hidden; background: #fff; }
+  #section-picker.active { display: flex; }
+  .fpick-left { width: 300px; flex-shrink: 0; background: #ffffff; border-right: 1px solid #ebebeb; display: flex; flex-direction: column; overflow: hidden; }
+  .fpick-header { padding: 22px 24px 18px; border-bottom: 1px solid #ebebeb; flex-shrink: 0; background: #fff; }
+  .fpick-step-label { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; color: rgba(196,112,63,0.8); text-transform: uppercase; letter-spacing: 0.1em; }
+  .fpick-section-name { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; color: #1d1d1f; letter-spacing: -0.02em; margin-top: 5px; margin-bottom: 14px; line-height: 1.2; }
+  .fpick-progress-wrap { height: 2px; background: #e8e8e8; border-radius: 2px; overflow: hidden; }
+  .fpick-progress-fill { height: 100%; background: #c4703f; transition: width 0.5s ease; border-radius: 2px; }
+  .fpick-body { flex: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; background: #fff; }
+  .fpick-loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 16px; padding: 48px 0; }
+  .fpick-loading-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; color: rgba(196,112,63,0.7); text-align: center; line-height: 1.6; max-width: 200px; }
+  .fpick-options-content { display: flex; flex-direction: column; gap: 14px; }
+  .fpick-option-nav { display: flex; align-items: center; gap: 6px; }
+  .fpick-option-dot { width: 30px; height: 30px; border-radius: 50%; background: #fff; border: 1.5px solid #e0e0e0; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700; color: #86868b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .fpick-option-dot.active { background: #c4703f; border-color: #c4703f; color: #fff; }
+  .fpick-option-dot:hover:not(.active) { border-color: #c4703f; color: #c4703f; }
+  .fpick-info-card { background: #ffffff; border: 1px solid #ebebeb; border-radius: 14px; padding: 16px 18px; }
+  .fpick-option-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; color: rgba(196,112,63,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .fpick-option-title { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: #1d1d1f; margin-bottom: 8px; letter-spacing: -0.01em; line-height: 1.3; }
+  .fpick-option-rationale { font-size: 12px; color: #86868b; line-height: 1.65; margin-bottom: 12px; }
+  .fpick-confidence-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; }
+  .fpick-confidence-pill.high { background: rgba(22,163,74,0.08); color: #16a34a; }
+  .fpick-confidence-pill.mid { background: rgba(196,112,63,0.1); color: #c4703f; }
+  .fpick-confidence-pill.low { background: rgba(134,134,139,0.08); color: #86868b; }
+  .fpick-choose-btn { width: 100%; padding: 14px; background: #1d1d1f; color: #fff; border: none; border-radius: 50px; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.15s; letter-spacing: -0.01em; }
+  .fpick-choose-btn:hover { background: #c4703f; transform: translateY(-1px); }
+  .fpick-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .fpick-nav-btn { background: #fff; border: 1.5px solid #e0e0e0; border-radius: 50px; padding: 8px 16px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; color: #1d1d1f; cursor: pointer; transition: all 0.2s; }
+  .fpick-nav-btn:hover:not(:disabled) { border-color: #c4703f; color: #c4703f; }
+  .fpick-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .fpick-counter { font-family: 'Outfit', sans-serif; font-size: 12px; color: #86868b; font-weight: 500; }
+  .fpick-regen { background: #fafaf9; border: 1px solid #e8e8e8; border-radius: 12px; padding: 14px 16px; }
+  .fpick-regen-label { font-family:'Outfit',sans-serif; font-size:10.5px; font-weight:700; color:#b0a898; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.07em; display:block; }
+  .fpick-regen-input { width: 100%; border: 1.5px solid #e4e0d8; border-radius: 8px; padding: 9px 12px; font-family: 'Outfit', sans-serif; font-size: 12px; color: #1d1d1f; resize: none; outline: none; line-height: 1.5; background: #fff; transition: border-color 0.2s; box-sizing: border-box; }
+  .fpick-regen-input:focus { border-color: #c4703f; box-shadow: 0 0 0 3px rgba(196,112,63,0.08); }
+  .fpick-regen-action-btn { padding:8px 15px; background:#1d1d1f; color:#fff; border:none; border-radius:50px; font-family:'Outfit',sans-serif; font-size:11.5px; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; letter-spacing:0.01em; }
+  .fpick-regen-action-btn:hover { background:#c4703f; transform:translateY(-1px); }
+  .fpick-regen-action-btn:active { transform:translateY(0); }
+  .fpick-regen-action-btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+  /* \u2500\u2500 Picker phone stage \u2500\u2500 */
+  .fpick-phone-stage { display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:#141416; z-index:5; }
+  .fpick-right.mobile-preview .fpick-phone-stage { display:flex; }
+  .fpick-phone-outer { position:relative; width:320px; height:650px; border:11px solid #1c1c1e; border-radius:50px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1),0 32px 80px rgba(0,0,0,0.75),0 0 0 1px #0a0a0a; background:#000; flex-shrink:0; }
+  .fpick-phone-notch-bar { position:absolute; top:0; left:50%; transform:translateX(-50%); width:94px; height:24px; background:#1c1c1e; border-radius:0 0 16px 16px; z-index:10; }
+  .fpick-phone-home-bar { position:absolute; bottom:6px; left:50%; transform:translateX(-50%); width:78px; height:3px; background:rgba(255,255,255,0.22); border-radius:2px; z-index:10; }
+  .fpick-phone-side-l1 { position:absolute; left:-4px; top:72px; width:3px; height:24px; background:#1a1a1c; border-radius:3px 0 0 3px; }
+  .fpick-phone-side-l2 { position:absolute; left:-4px; top:110px; width:3px; height:42px; background:#1a1a1c; border-radius:3px 0 0 3px; }
+  .fpick-phone-side-l3 { position:absolute; left:-4px; top:166px; width:3px; height:42px; background:#1a1a1c; border-radius:3px 0 0 3px; }
+  .fpick-phone-side-r { position:absolute; right:-4px; top:90px; width:3px; height:56px; background:#1a1a1c; border-radius:0 3px 3px 0; }
+  .fpick-phone-screen-win { position:absolute; inset:0; border-radius:40px; overflow:hidden; background:#fff; }
+  .fpick-phone-iframe { position:absolute; top:0; left:0; border:none; transform-origin:top left; background:#fff; pointer-events:none; }
+  .fpick-device-wrap { padding: 14px 20px 18px; border-top: 1px solid #ebebeb; flex-shrink: 0; background: #fff; }
+  /* \u2500\u2500 Photo avatar widget \u2500\u2500 */
+  .fpick-photo-widget { padding: 14px 20px; border-top: 1px solid #ebebeb; flex-shrink: 0; background: #fff; display: flex; align-items: center; gap: 12px; }
+  .fpick-avatar-circle { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #f0e8e0; border: 2px solid #e8d4c0; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s; }
+  .fpick-avatar-circle:hover { border-color: #c4703f; }
+  .fpick-avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+  .fpick-avatar-icon { font-size: 18px; color: #c4703f; }
+  .fpick-avatar-label { flex: 1; }
+  .fpick-avatar-label-main { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: #1d1d1f; cursor: pointer; }
+  .fpick-avatar-label-main:hover { color: #c4703f; }
+  .fpick-avatar-label-sub { font-family: 'Outfit', sans-serif; font-size: 11px; color: #86868b; margin-top: 1px; }
+  .fpick-avatar-processing { font-size: 11px; color: #c4703f; display: none; }
+  .fpick-avatar-processing.active { display: block; animation: fpick-pulse 1s ease infinite; }
+  @keyframes fpick-pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+  /* \u2500\u2500 PHOTO CHECK QUESTION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  .fpick-photo-check { width:100%; }
+  .fpick-photo-check-q { font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; color:#1d1d1f; margin-bottom:8px; line-height:1.3; }
+  .fpick-photo-check-btns { display:flex; gap:7px; }
+  .fpick-photo-check-yes { flex:1; padding:8px 10px; background:#c4703f; color:#fff; border:none; border-radius:8px; font-family:'Outfit',sans-serif; font-size:11px; font-weight:700; cursor:pointer; transition:background 0.15s; letter-spacing:0.01em; }
+  .fpick-photo-check-yes:hover { background:#d4855a; }
+  .fpick-photo-check-no { flex:1; padding:8px 10px; background:#f5f5f7; color:#86868b; border:none; border-radius:8px; font-family:'Outfit',sans-serif; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+  .fpick-photo-check-no:hover { background:#ebebeb; color:#555; }
+  /* \u2500\u2500 PHOTO GRADER PANEL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  .fpick-grader-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; display:none; align-items:flex-end; justify-content:center; }
+  .fpick-grader-overlay.open { display:flex; }
+  .fpick-grader-panel { background:#fff; border-radius:24px 24px 0 0; width:100%; max-width:540px; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; animation:fpick-grader-up 0.3s cubic-bezier(0.34,1.56,0.64,1); box-shadow:0 -8px 40px rgba(0,0,0,0.18); }
+  @keyframes fpick-grader-up { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  .fpick-grader-head { padding:20px 24px 14px; display:flex; align-items:flex-start; justify-content:space-between; flex-shrink:0; border-bottom:1px solid #f0f0f0; }
+  .fpick-grader-title { font-family:'Outfit',sans-serif; font-size:17px; font-weight:700; color:#1d1d1f; }
+  .fpick-grader-subtitle { font-family:'Inter',sans-serif; font-size:12px; color:#86868b; margin-top:3px; }
+  .fpick-grader-close { width:34px; height:34px; border-radius:50%; background:#f5f5f7; border:none; cursor:pointer; font-size:15px; color:#86868b; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.15s; }
+  .fpick-grader-close:hover { background:#ebebeb; }
+  .fpick-grader-body { flex:1; overflow-y:auto; padding:16px 20px 28px; scrollbar-width:thin; scrollbar-color:#e0e0e0 transparent; }
+  .fpick-grader-slot { margin-bottom:22px; }
+  .fpick-grader-slot-head { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .fpick-grader-slot-name { font-family:'Outfit',sans-serif; font-size:13px; font-weight:600; color:#1d1d1f; flex:1; }
+  .fpick-grader-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; font-family:'Outfit',sans-serif; letter-spacing:0.03em; }
+  .fpick-grader-badge.excellent { background:rgba(45,122,79,0.1); color:#2d7a4f; }
+  .fpick-grader-badge.good { background:rgba(196,112,63,0.1); color:#c4703f; }
+  .fpick-grader-badge.fair { background:rgba(140,140,140,0.12); color:#86868b; }
+  .fpick-grader-options { display:flex; gap:10px; }
+  .fpick-grader-option { flex:1; border:2px solid #ebebeb; border-radius:14px; overflow:hidden; cursor:pointer; transition:border-color 0.15s, box-shadow 0.15s; background:#fafafa; }
+  .fpick-grader-option:hover { border-color:#d4855a; }
+  .fpick-grader-option.selected { border-color:#c4703f; box-shadow:0 0 0 3px rgba(196,112,63,0.12); }
+  .fpick-grader-option-img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#f0f0f0; }
+  .fpick-grader-option-img.sq { aspect-ratio:1/1; }
+  .fpick-grader-option-foot { padding:7px 8px 8px; text-align:center; }
+  .fpick-grader-option-label { font-family:'Outfit',sans-serif; font-size:11px; font-weight:700; color:#1d1d1f; }
+  .fpick-grader-option-sub { font-family:'Inter',sans-serif; font-size:10px; color:#86868b; margin-top:2px; }
+  .fpick-grader-add { width:100%; padding:11px 16px; border:1.5px dashed #d0d0d0; border-radius:12px; background:transparent; color:#86868b; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-bottom:20px; transition:all 0.15s; }
+  .fpick-grader-add:hover { border-color:#c4703f; color:#c4703f; background:rgba(196,112,63,0.03); }
+  .fpick-grader-confirm { width:100%; padding:15px; background:#c4703f; color:#fff; border:none; border-radius:50px; font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:background 0.2s, transform 0.1s; }
+  .fpick-grader-confirm:hover { background:#d4855a; }
+  .fpick-grader-confirm:active { transform:scale(0.99); }
+  .fpick-grader-spinner { width:28px; height:28px; border:3px solid #f0f0f0; border-top-color:#c4703f; border-radius:50%; animation:fpick-spin 0.8s linear infinite; margin:0 auto 12px; }
+  @keyframes fpick-spin { to { transform:rotate(360deg); } }
+  .fpick-device-toggle { display: flex; gap: 3px; background: #f0f0f0; border-radius: 8px; padding: 3px; }
+  .fpick-device-btn { flex: 1; background: none; border: none; padding: 7px 0; border-radius: 6px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; color: #86868b; transition: all 0.2s; }
+  .fpick-device-btn.active { background: #fff; color: #1d1d1f; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .fpick-right { flex: 1; background: #f4f4f4; position: relative; overflow: hidden; }
+  .fpick-preview-container { width: 100%; height: 100%; position: relative; overflow: hidden; }
+  .fpick-main-iframe { border: none; position: absolute; top: 0; left: 0; transform-origin: top left; pointer-events: none; background: #fff; }
+  /* \u2500\u2500 Right-panel loading overlay \u2500\u2500 */
+  .fpick-right-loading { position: absolute; inset: 0; background: #fafafa; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; z-index: 20; transition: opacity 0.4s; }
+  .fpick-right-loading.hidden { opacity: 0; pointer-events: none; }
+  .fpick-loading-brand { text-align: center; }
+  .fpick-loading-eyebrow { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #c4703f; margin-bottom: 10px; }
+  .fpick-right-loading-label { font-family: 'Playfair Display', serif; font-style: italic; font-size: 30px; font-weight: 400; color: #1d1d1f; line-height: 1.2; letter-spacing: -0.01em; }
+  .fpick-skeleton-wrap { width: 320px; display: flex; flex-direction: column; gap: 10px; }
+  .fpick-skel { border-radius: 6px; background: linear-gradient(90deg, #e8e8e8 25%, #f2f2f2 50%, #e8e8e8 75%); background-size: 400% 100%; animation: fpickSkelShimmer 1.6s ease infinite; }
+  .fpick-skel-h { height: 14px; }
+  .fpick-skel-p { height: 10px; }
+  .fpick-skel-btn { height: 34px; border-radius: 50px; margin-top: 8px; }
+  .fpick-skel-w100 { width: 100%; }
+  .fpick-skel-w80 { width: 80%; }
+  .fpick-skel-w60 { width: 60%; }
+  .fpick-skel-w40 { width: 40%; }
+  @keyframes fpickSkelShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  .fpick-loading-dots { display: flex; gap: 7px; align-items: center; }
+  .fpick-dot-pulse { width: 7px; height: 7px; border-radius: 50%; background: #c4703f; opacity: 0.25; animation: fpickDotPulse 1.3s ease-in-out infinite; }
+  .fpick-dot-pulse:nth-child(2) { animation-delay: 0.22s; }
+  .fpick-dot-pulse:nth-child(3) { animation-delay: 0.44s; }
+  @keyframes fpickDotPulse { 0%,100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+  @keyframes fpickSpin { to { transform: rotate(360deg); } }
+  .picker-dots { display: flex; gap: 8px; }
+  .picker-dot { width: 8px; height: 8px; border-radius: 50%; background: #c4703f; animation: pickerDotPulse 1.4s infinite ease-in-out; }
+  .picker-dot:nth-child(2) { animation-delay: 0.16s; }
+  .picker-dot:nth-child(3) { animation-delay: 0.32s; }
+  @keyframes pickerDotPulse { 0%, 80%, 100% { transform: scale(0.55); opacity: 0.35; } 40% { transform: scale(1); opacity: 1; } }
+  @media (max-width: 768px) { #section-picker.active { flex-direction: column; height: auto; min-height: 100vh; } .fpick-left { width: 100%; } .fpick-right { min-height: 380px; } }
+  /* \u2500\u2500 PRE-GENERATION SCREEN \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  #pregen-screen { align-items:center; justify-content:center; background:#fafaf8; min-height:100vh; }
+  .pregen-card { background:#fff; border-radius:20px; padding:40px 36px; max-width:460px; width:calc(100% - 48px); box-shadow:0 8px 40px rgba(0,0,0,0.09); }
+  .pregen-eyebrow { font-family:'Outfit',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:rgba(196,112,63,0.8); margin-bottom:12px; }
+  .pregen-brand-name { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:#1d1d1f; letter-spacing:-0.01em; margin-bottom:14px; line-height:1.2; }
+  .pregen-palette { display:flex; gap:7px; margin-bottom:24px; align-items:center; }
+  .pregen-swatch { width:26px; height:26px; border-radius:7px; border:1px solid rgba(0,0,0,0.07); flex-shrink:0; }
+  .pregen-subtitle { font-family:'Outfit',sans-serif; font-size:13px; color:#86868b; margin-bottom:22px; line-height:1.55; }
+  .pregen-section-list { display:flex; flex-direction:column; gap:9px; margin-bottom:22px; }
+  .pregen-section-row { display:flex; align-items:center; gap:12px; }
+  .pregen-section-indicator { width:22px; height:22px; border-radius:50%; background:#f0ece6; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; font-weight:700; transition:background 0.3s; }
+  .pregen-section-indicator.loading { animation:pregenDotPulse 1.2s ease-in-out infinite; }
+  .pregen-section-indicator.done { background:#22c55e; color:#fff; }
+  .pregen-section-indicator.failed { background:#f59e0b; color:#fff; }
+  .pregen-section-name { font-family:'Outfit',sans-serif; font-size:13px; color:#1d1d1f; font-weight:500; flex:1; }
+  .pregen-section-tag { font-family:'Outfit',sans-serif; font-size:11px; color:#86868b; white-space:nowrap; }
+  .pregen-progress-wrap { margin-bottom:24px; }
+  .pregen-progress-meta { display:flex; justify-content:space-between; font-family:'Outfit',sans-serif; font-size:11px; color:#86868b; margin-bottom:7px; }
+  .pregen-progress-track { height:4px; background:#f0ece6; border-radius:2px; overflow:hidden; }
+  .pregen-progress-fill { height:100%; background:#1d1d1f; border-radius:2px; width:0%; transition:width 0.4s ease; }
+  .pregen-proceed-btn { display:block; width:100%; padding:14px 20px; background:#d0ccc7; color:#fff; border:none; border-radius:50px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700; letter-spacing:-0.01em; transition:all 0.3s; cursor:default; }
+  .pregen-proceed-btn.ready { background:#1d1d1f; cursor:pointer; }
+  .pregen-proceed-btn.ready:hover { background:#333; }
+  @keyframes pregenDotPulse { 0%,100% { opacity:0.35; transform:scale(0.75); } 50% { opacity:1; transform:scale(1); } }
+  /* \u2500\u2500 PHOTO GATE SCREEN \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+  /* \u2550\u2550\u2550 SEGMENT INTAKE SCREEN \u2550\u2550\u2550 */
+  #segment-intake-screen { align-items:center; justify-content:center; background:#fafaf8; min-height:100vh; }
+  #segment-intake-screen .intake-card { background:#fff; border-radius:20px; padding:0; max-width:440px; width:calc(100% - 48px); box-shadow:0 8px 40px rgba(0,0,0,0.10); overflow:hidden; }
+  .intake-card-header { background:#fff; padding:18px 24px 16px; border-bottom:1px solid #f0ede9; display:flex; align-items:center; justify-content:space-between; }
+  .intake-progress-row { display:flex; gap:3px; }
+  .intake-prog-seg { height:3px; width:40px; border-radius:2px; background:#f0ede9; }
+  .intake-prog-seg.done { background:#1d1d1f; }
+  .intake-prog-seg.active { background:#c4703f; }
+  .intake-card-body { padding:26px 24px 28px; }
+  .intake-eyebrow { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#c4703f; margin-bottom:8px; font-family:'Outfit',sans-serif; }
+  .intake-headline { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:#1d1d1f; line-height:1.25; margin-bottom:7px; }
+  .intake-sub { font-size:12px; color:#86868b; line-height:1.55; margin-bottom:22px; font-family:'Outfit',sans-serif; }
+  .intake-field { margin-bottom:14px; }
+  .intake-field-label { font-size:10px; font-weight:700; color:#1d1d1f; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:5px; font-family:'Outfit',sans-serif; }
+  .intake-field-input { width:100%; padding:11px 13px 11px 36px; background:#fafaf8; border:1.5px solid #e8e4e0; border-radius:10px; font-size:13px; color:#1d1d1f; font-family:'Outfit',sans-serif; outline:none; transition:border-color 0.15s; box-sizing:border-box; }
+  .intake-field-input:focus { border-color:#c4703f; background:#fff; }
+  .intake-field-input::placeholder { color:#aaa9a5; }
+  .intake-field-wrap { position:relative; }
+  .intake-field-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; pointer-events:none; line-height:1; }
+  .intake-field-textarea { min-height:72px; resize:vertical; padding-left:36px; line-height:1.5; }
+  .intake-field-hint { font-size:11px; color:#aaa9a5; margin-top:4px; font-family:'Outfit',sans-serif; line-height:1.4; }
+  .intake-btn { width:100%; padding:13px; background:#1d1d1f; color:#fff; border:none; border-radius:50px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700; cursor:pointer; margin-top:18px; transition:background 0.2s; letter-spacing:0.01em; }
+  .intake-btn:hover { background:#333; }
+  .intake-skip { font-size:12px; color:#aaa9a5; text-align:center; margin-top:10px; font-family:'Outfit',sans-serif; cursor:pointer; text-decoration:underline; }
+  /* intake dialog trigger link */
+  .intake-dialog-btn { display:inline-block; font-size:11px; color:#c4703f; font-family:'Outfit',sans-serif; font-weight:600; cursor:pointer; margin-top:5px; text-decoration:none; letter-spacing:0.01em; }
+  .intake-dialog-btn:hover { text-decoration:underline; }
+  /* inline AI dialog panel */
+  .intake-dialog-panel { display:none; margin-top:8px; background:#f9f6f3; border:1.5px solid #e8ddd3; border-radius:12px; overflow:hidden; }
+  .intake-dialog-panel.open { display:block; }
+  .intake-dialog-header { display:flex; align-items:center; justify-content:space-between; padding:9px 12px 8px; border-bottom:1px solid #ede8e3; }
+  .intake-dialog-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#c4703f; font-family:'Outfit',sans-serif; }
+  .intake-dialog-close { background:none; border:none; color:#aaa9a5; font-size:16px; cursor:pointer; line-height:1; padding:0; font-family:'Outfit',sans-serif; }
+  .intake-dialog-close:hover { color:#555; }
+  .intake-dialog-messages { max-height:180px; overflow-y:auto; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .intake-dialog-msg { font-size:12px; line-height:1.55; font-family:'Outfit',sans-serif; padding:8px 11px; border-radius:8px; max-width:90%; }
+  .intake-dialog-msg.ai { background:#fff; color:#1d1d1f; border:1px solid #ede8e3; align-self:flex-start; }
+  .intake-dialog-msg.user { background:#1d1d1f; color:#fff; align-self:flex-end; }
+  .intake-dialog-msg.thinking { background:#fff; color:#aaa9a5; border:1px solid #ede8e3; align-self:flex-start; font-style:italic; }
+  .intake-dialog-suggestion { margin:0 12px 10px; background:linear-gradient(135deg,#c4703f,#a05530); color:#fff; border:none; border-radius:8px; padding:9px 14px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; cursor:pointer; width:calc(100% - 24px); text-align:left; display:flex; align-items:center; gap:8px; transition:opacity 0.15s; }
+  .intake-dialog-suggestion:hover { opacity:0.88; }
+  .intake-dialog-suggestion-label { font-size:10px; font-weight:400; opacity:0.8; display:block; margin-bottom:1px; text-transform:uppercase; letter-spacing:0.08em; }
+  .intake-dialog-suggestion-value { font-size:13px; font-weight:700; display:block; }
+  .intake-dialog-input-row { display:flex; gap:6px; padding:8px 10px; border-top:1px solid #ede8e3; }
+  .intake-dialog-input { flex:1; padding:8px 11px; background:#fff; border:1.5px solid #e8e4e0; border-radius:8px; font-size:12px; font-family:'Outfit',sans-serif; outline:none; color:#1d1d1f; }
+  .intake-dialog-input:focus { border-color:#c4703f; }
+  .intake-dialog-input::placeholder { color:#c4c1bb; }
+  .intake-dialog-send { background:#c4703f; color:#fff; border:none; border-radius:8px; padding:8px 13px; font-size:12px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; flex-shrink:0; transition:background 0.15s; }
+  .intake-dialog-send:hover { background:#a05530; }
+  .intake-dialog-send:disabled { background:#ccc; cursor:not-allowed; }
+  /* \u2550\u2550\u2550 END SEGMENT INTAKE \u2550\u2550\u2550 */
+
+  #photo-gate-screen { align-items:center; justify-content:center; background:#fafaf8; min-height:100vh; }
+  .photo-gate-card { background:#fff; border-radius:20px; padding:36px 32px 28px; max-width:400px; width:calc(100% - 48px); box-shadow:0 8px 40px rgba(0,0,0,0.10); position:relative; text-align:center; }
+  .photo-gate-skip-x { position:absolute; top:16px; right:18px; background:none; border:none; font-family:'Outfit',sans-serif; font-size:12px; color:#86868b; cursor:pointer; padding:4px 8px; letter-spacing:0.01em; }
+  .photo-gate-skip-x:hover { color:#555; }
+  .photo-gate-eyebrow { font-family:'Outfit',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:rgba(196,112,63,0.8); margin-bottom:14px; }
+  .photo-gate-headline { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:#1d1d1f; margin-bottom:10px; line-height:1.3; }
+  .photo-gate-sub { font-family:'Outfit',sans-serif; font-size:13px; color:#86868b; line-height:1.65; margin-bottom:22px; }
+  .photo-gate-visual { background:#f5f5f7; border-radius:12px; padding:16px 20px 12px; margin-bottom:22px; }
+  .photo-gate-vis-hero { display:flex; align-items:center; gap:16px; width:100%; margin-bottom:8px; }
+  .photo-gate-vis-lines { display:flex; flex-direction:column; gap:7px; flex:1; text-align:left; }
+  .photo-gate-vis-line { height:7px; border-radius:4px; background:#e0ddd8; }
+  .photo-gate-vis-line.long { width:100%; }
+  .photo-gate-vis-line.medium { width:72%; }
+  .photo-gate-vis-line.short { width:48%; }
+  .photo-gate-vis-avatar { width:52px; height:52px; border-radius:50%; background:#e8e3dc; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; border:2px dashed #c4703f; }
+  .photo-gate-vis-label { font-family:'Outfit',sans-serif; font-size:11px; color:#c4703f; font-weight:600; letter-spacing:0.04em; }
+  .photo-gate-btn-primary { display:block; width:100%; padding:13px 20px; background:#1d1d1f; color:#fff; border:none; border-radius:50px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:background 0.15s; margin-bottom:10px; letter-spacing:-0.01em; }
+  .photo-gate-btn-primary:hover { background:#333; }
+  .photo-gate-btn-secondary { display:block; width:100%; padding:12px 20px; background:#f5f5f7; color:#86868b; border:none; border-radius:50px; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+  .photo-gate-btn-secondary:hover { background:#ebebeb; color:#555; }
+  .photo-gate-upload-zone { border:2px dashed #d0ccc7; border-radius:12px; padding:28px 20px; cursor:pointer; transition:all 0.2s; margin-bottom:12px; }
+  .photo-gate-upload-zone:hover { border-color:#c4703f; background:#fff9f6; }
+  .photo-gate-upload-icon { font-size:26px; margin-bottom:8px; }
+  .photo-gate-upload-text { font-family:'Outfit',sans-serif; font-size:14px; font-weight:600; color:#1d1d1f; margin-bottom:4px; }
+  .photo-gate-upload-hint { font-family:'Outfit',sans-serif; font-size:11px; color:#86868b; }
+  .photo-gate-proc-text { font-family:'Outfit',sans-serif; font-size:13px; color:#c4703f; font-weight:600; padding:20px 0; }
+  .photo-gate-done-preview { width:72px; height:72px; border-radius:50%; object-fit:cover; margin:0 auto 12px; display:block; border:3px solid #c4703f; }
+  .photo-gate-done-label { font-family:'Outfit',sans-serif; font-size:13px; color:#1d1d1f; font-weight:600; text-align:center; margin-bottom:16px; }
+  .photo-gate-skip-link { background:none; border:none; font-size:12px; color:#86868b; cursor:pointer; margin-top:10px; font-family:'Outfit',sans-serif; padding:0; display:block; width:100%; text-align:center; }
+  .photo-gate-skip-link:hover { color:#555; }
 </style>
 </head>
 <body>
 
 <!-- \u2550\u2550 LANDING SCREEN (fallback for unauthenticated) \u2550\u2550 -->
+<!-- \u2550\u2550\u2550 LANDING SCREEN \u2550\u2550\u2550 -->
+<script>
+// Prevent landing page flash for returning users
+(function(){
+  var hasToken = false;
+  try { hasToken = !!localStorage.getItem('dw_session'); } catch(_) {}
+  if (!hasToken) {
+    try { var m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); if (m && m[1]) hasToken = true; } catch(_) {}
+  }
+  if (hasToken) {
+    document.write('<style id="dw-preauth-css">#landing{display:none!important}#dw-auth-loader{display:flex!important}@keyframes spin{to{transform:rotate(360deg)}}</style>');
+    // Safety timeout: if auth takes >8s, remove preauth CSS and show landing
+    setTimeout(function() {
+      var _css = document.getElementById('dw-preauth-css');
+      if (_css) { _css.remove(); var _l = document.getElementById('dw-auth-loader'); if (_l) _l.style.display='none'; var _lp = document.getElementById('landing'); if (_lp) _lp.style.display=''; }
+    }, 8000);
+  }
+})();
+<\/script>
+<div id="dw-auth-loader" style="display:none;position:fixed;inset:0;background:#ffffff;z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="width:28px;height:28px;border:2px solid #f0f0f0;border-top:2px solid #c4703f;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="font-family:'Outfit',sans-serif;font-size:13px;color:#86868b;font-weight:500;">Loading your session...</div>
+</div>
 <div id="landing" class="screen active">
   <div class="landing-inner">
     <div class="eyebrow">Deep Work by James Guldan</div>
-    <h1>This Experience Starts<br>at <em>jamesguldan.com/deep-work</em></h1>
-    <p>You need an active session to access Deep Work. If you already purchased, check your email for a login link. Otherwise, visit the main page to get started.</p>
-    <a href="https://jamesguldan.com/deep-work" class="btn btn-gold" style="width:auto;display:inline-flex;padding:16px 36px;text-decoration:none;">Go to Deep Work &rarr;</a>
-    <div class="legal-footer">
-      <p>&copy; 2025 James Guldan / Align Growth LLC. All rights reserved.</p>
+    <h1 style="font-family:'Outfit',sans-serif;font-size:clamp(28px,5vw,42px);font-weight:700;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px;">Your Deep Work<br>Experience Awaits</h1>
+    <p style="font-size:16px;max-width:400px;margin-left:auto;margin-right:auto;">You need an active session to continue. Visit the main page to get started, or resend your login link below.</p>
+    <a href="https://jamesguldan.com/deep-work" class="btn btn-gold" style="width:auto;display:inline-flex;padding:16px 36px;text-decoration:none;margin-bottom:40px;">Go to Deep Work</a>
+
+    <!-- Magic Link Resend -->
+    <div style="width:100%;max-width:400px;margin:0 auto;padding-top:32px;border-top:1px solid #f0f0f0;">
+      <div style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:6px;">Already purchased?</div>
+      <p style="font-size:13px;color:#86868b;margin-bottom:14px;line-height:1.6;">Enter your email and we will send a new login link.</p>
+      <div id="magic-link-form" style="display:flex;gap:8px;">
+        <input type="email" id="magic-link-email" placeholder="your@email.com" style="flex:1;padding:13px 16px;border:1px solid #e8e8e8;border-radius:12px;font-size:14px;font-family:'Inter',sans-serif;outline:none;background:#fafafa;color:#1d1d1f;" />
+        <button onclick="sendMagicLink()" style="padding:13px 20px;background:#1d1d1f;color:#fff;border:none;border-radius:12px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Send Link</button>
+      </div>
+      <div id="magic-link-confirm" style="display:none;margin-top:12px;background:#f0faf4;border:1px solid #d4edda;border-radius:12px;padding:16px 20px;text-align:center;">
+        <div style="font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;color:#2d7a4f;margin-bottom:4px;">Check your inbox</div>
+        <div style="font-size:13px;color:#555;line-height:1.6;" id="magic-link-confirm-text">We sent a login link to your email. It should arrive within 30 seconds.</div>
+        <button onclick="resetMagicLink()" style="margin-top:8px;background:none;border:none;font-size:12px;color:#86868b;cursor:pointer;text-decoration:underline;">Use a different email</button>
+      </div>
+    </div>
+
+    <div class="legal-footer" style="max-width:400px;margin:40px auto 0;">
+      <p>&copy; 2025 James Guldan / Align Consulting LLC. All rights reserved.</p>
       <p>
         <a href="/legal/terms" target="_blank">Terms of Service</a>
         &middot;
@@ -2557,157 +3716,192 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   </div>
 </div>
 
+
 <!-- \u2550\u2550 INTAKE SCREEN \u2550\u2550 -->
 <div id="intake" class="screen">
+<div id="tier-badge-bar" style="display:none;text-align:center;padding:10px 20px 0;">
+  <span id="tier-badge-text" style="display:inline-block;background:rgba(196,112,63,0.12);color:var(--accent);border:1px solid rgba(196,112,63,0.25);border-radius:20px;padding:5px 16px;font-size:13px;font-weight:600;letter-spacing:0.03em;"></span>
+</div>
 
-  <!-- Hero section -->
   <div class="intake-hero">
-    <div class="eyebrow">Your Session Is Ready</div>
-    <h2>Let&rsquo;s Build Something<br><em>Only You</em> Could Build</h2>
-    <p>Eight conversations. One complete brand blueprint. Built around who you actually are \u2014 not a template, not a formula. The real thing.</p>
-    <div class="promise-strip">
-      <div class="promise-item">
-        <div class="promise-icon">\u2726</div>
-        <span>8 short conversations</span>
+    <div class="eyebrow">YOUR SESSION IS READY</div>
+    <h2>Let us get to know your world.</h2>
+    <p>The more context you share below, the more personal and powerful your blueprint becomes. Everything is optional. Nothing is wasted.</p>
+    <div class="intake-timeline-preview">
+      <div class="timeline-node">
+        <div class="timeline-num">01</div>
+        <div class="timeline-text">Set the stage</div>
       </div>
-      <div class="promise-item">
-        <div class="promise-icon">\u{1F4C4}</div>
-        <span>Complete brand blueprint</span>
+      <div class="timeline-line"></div>
+      <div class="timeline-node">
+        <div class="timeline-num">02</div>
+        <div class="timeline-text">The conversation</div>
       </div>
-      <div class="promise-item">
-        <div class="promise-icon">\u{1F3AF}</div>
-        <span>Custom to your story</span>
+      <div class="timeline-line"></div>
+      <div class="timeline-node">
+        <div class="timeline-num">03</div>
+        <div class="timeline-text">Your blueprint</div>
       </div>
     </div>
   </div>
 
-  <!-- Resume banner (shown when active session exists) -->
   <div class="resume-banner" id="resume-banner" style="display:none;">
-    <h3>Welcome Back</h3>
-    <p id="resume-text">You have an active session in progress. Pick up right where you left off, or start fresh.</p>
-    <div class="resume-meta" id="resume-meta"></div>
-    <div class="resume-actions">
-      <button class="btn btn-gold" onclick="resumeSession()" id="resume-btn">Continue My Session</button>
-      <button class="btn btn-outline" onclick="dismissResume()">Start Fresh</button>
+    <div class="resume-choice">
+      <div class="resume-choice-left">
+        <h3>Continue your journey</h3>
+        <p>You have an active session in progress. Pick up right where you left off.</p>
+        <div class="resume-meta" id="resume-meta"></div>
+        <p id="resume-text" style="display:none;"></p>
+        <button class="btn btn-gold" onclick="resumeSession()" id="resume-btn" style="padding:14px 36px;border-radius:50px;font-size:14px;">Continue My Session</button>
+      </div>
+      <div class="resume-choice-right">
+        <h3>Begin a new one</h3>
+        <p>Start fresh with a blank session. Your previous work is saved.</p>
+        <button class="btn btn-outline" onclick="dismissResume()" style="padding:14px 36px;border-radius:50px;font-size:14px;">Start Fresh</button>
+      </div>
     </div>
   </div>
 
-  <!-- Step cards -->
+  <div class="intake-card">
   <div class="intake-steps">
 
-    <!-- Step 1: Website -->
-    <div class="step-card">
-      <div class="step-card-header">
-        <div class="step-number">1</div>
-        <h3>Where You Are Right Now</h3>
-        <p class="step-why">If you have an existing website, paste it here. This is not about judging what you have built so far. This is about understanding your starting point so we can see the gap between where you are and where you are going. Most people who do this exercise are shocked at how much more clearly they can articulate their value afterward.</p>
-        <p class="step-impact">This one input alone can save 20+ minutes of the interview.</p>
+    <div class="intake-hero-explanation">
+      <p style="font-family:'Playfair Display',serif;font-style:italic;font-size:16px;color:var(--text2);font-weight:400;">Start wherever feels natural.</p>
+    </div>
+
+    <div class="intake-url-row" id="intake-url-row">
+      <div class="step-card" id="step-website">
+        <div class="step-node"><div class="step-node-dot"></div></div>
+        <div class="step-card-header">
+          <h3>Your Website</h3>
+          <p class="step-why">We study every page before your session begins.</p>
+        </div>
+        <div class="step-card-body">
+          <input type="url" id="intake-website" placeholder="yourwebsite.com" oninput="checkStepFilled(this)">
+        </div>
       </div>
-      <div class="step-card-body">
-        <label>Your current website URL <span class="step-optional">(if you have one)</span></label>
-        <input type="url" id="intake-website" placeholder="https://yoursite.com">
+
+      <div class="step-card" id="step-linkedin">
+        <div class="step-node"><div class="step-node-dot"></div></div>
+        <div class="step-card-header">
+          <h3>Your LinkedIn</h3>
+          <p class="step-why">Your professional story, analyzed before we begin.</p>
+        </div>
+        <div class="step-card-body">
+          <input type="url" id="intake-linkedin" placeholder="linkedin.com/in/you" oninput="checkStepFilled(this)">
+        </div>
       </div>
     </div>
 
-    <!-- Step 2: LinkedIn -->
-    <div class="step-card">
+    <div class="step-card" id="step-competitors">
+      <div class="step-node"><div class="step-node-dot"></div></div>
       <div class="step-card-header">
-        <div class="step-number">2</div>
-        <h3>Your Professional Story</h3>
-        <p class="step-why">Your LinkedIn profile holds a goldmine of positioning data you probably do not even realize. The way you describe your experience, the endorsements you have collected, the language you naturally use when you are not overthinking it. We will analyze all of it so the AI interviewer already understands your world before asking the first question.</p>
-        <p class="step-impact">The AI reads your entire professional narrative before your session begins.</p>
+        <h3>The Competition</h3>
+        <p class="step-why">We find the gap only your brand can fill.</p>
       </div>
       <div class="step-card-body">
-        <label>Your LinkedIn profile URL <span class="step-optional">(if you have one)</span></label>
-        <input type="url" id="intake-linkedin" placeholder="https://linkedin.com/in/yourname">
+        <textarea id="intake-competitors" rows="3" placeholder="Who are you up against? One URL per line." oninput="checkStepFilled(this)"></textarea>
       </div>
     </div>
 
-    <!-- Step 3: Competitors -->
-    <div class="step-card">
+    <div class="step-card" id="step-testimonials">
+      <div class="step-node"><div class="step-node-dot"></div></div>
       <div class="step-card-header">
-        <div class="step-number">3</div>
-        <h3>The Landscape Around You</h3>
-        <p class="step-why">Here is why this matters more than you think: your brand does not exist in a vacuum. The people you admire, the competitors you respect (or resent), the businesses in your space that seem to have it figured out. When we see what they are doing, we can find the white space. The gap where only you can stand. This is how you stop competing and start leading.</p>
-        <p class="step-impact">Competitor analysis reveals the positioning gap only your brand can fill.</p>
+        <h3>Client Words</h3>
+        <p class="step-why">What your best clients say becomes your most persuasive copy.</p>
       </div>
       <div class="step-card-body">
-        <label>Competitor or inspiration URLs <span class="step-optional">(up to 3)</span></label>
-        <textarea id="intake-competitors" rows="3" placeholder="Paste one URL per line..."></textarea>
+        <textarea id="intake-testimonials" rows="4" placeholder="The words they use to describe working with you..." oninput="checkStepFilled(this)"></textarea>
       </div>
     </div>
 
-    <!-- Step 4: Testimonials -->
-    <div class="step-card">
-      <div class="step-card-header">
-        <div class="step-number">4</div>
-        <h3>The Words That Already Work</h3>
-        <p class="step-why">This might be the most powerful input of all. When your best clients describe what you did for them, they use language that is pure gold. They say things you would never say about yourself. They capture the transformation in ways that feel authentic because they ARE authentic. The AI will mine these words and weave them into your brand messaging so your copy sounds like real humans raving about you, not like a marketing robot.</p>
-        <p class="step-impact">Client language becomes your most persuasive brand copy.</p>
-      </div>
-      <div class="step-card-body">
-        <label>Testimonials, reviews, or client feedback <span class="step-optional">(the more the better)</span></label>
-        <textarea id="intake-testimonials" rows="5" placeholder="Paste Google reviews, LinkedIn recommendations, client emails, DMs... anything where someone said something great about working with you."></textarea>
-      </div>
+    <div class="intake-bonus-divider" style="padding-left:56px;margin-bottom:24px;padding-top:8px;">
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);">Bonus context \u2014 if you have these handy</div>
     </div>
 
-    <!-- Step 5: Photos -->
-    <div class="step-card">
+    <div class="step-card" id="step-photos">
+      <div class="step-node"><div class="step-node-dot"></div></div>
       <div class="step-card-header">
-        <div class="step-number">5</div>
-        <h3>Put a Face to the Brand</h3>
-        <p class="step-why">People buy from people. Your headshot, your team, your workspace, your product in action. These images tell a story that words alone cannot. Upload anything that represents you or your work. The AI will use these to understand your visual identity and, if you chose the website package, to build a site that actually looks and feels like you.</p>
-        <p class="step-impact">Visuals make your blueprint and website uniquely, unmistakably yours.</p>
+        <h3>Your Photos</h3>
+        <p class="step-why">The visuals that make your brand yours.</p>
       </div>
       <div class="step-card-body">
         <div class="upload-zone" id="upload-zone">
           <input type="file" id="file-input" multiple accept="image/*">
-          <div class="upload-icon">\u{1F4F7}</div>
-          <p>Drag photos here or click to browse</p>
-          <span>JPG, PNG, WebP up to 10MB each (up to 10 files)</span>
+          <div class="upload-icon" style="width:28px;height:28px;margin:0 auto;opacity:0.3;background:url('data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%231d1d1f%22 stroke-width%3D%221.5%22%3E%3Crect x%3D%222%22 y%3D%224%22 width%3D%2220%22 height%3D%2216%22 rx%3D%222%22/%3E%3Ccircle cx%3D%2212%22 cy%3D%2212%22 r%3D%223%22/%3E%3Cpath d%3D%22M8 4l1.5-2h5L16 4%22/%3E%3C/svg%3E') center/contain no-repeat;"></div>
+          <p>Add your photos</p>
+          <span>JPG, PNG, WebP up to 10MB each</span>
+          <div class="upload-browse-btn">Browse Files</div>
         </div>
         <div class="uploaded-files" id="uploaded-files"></div>
       </div>
     </div>
 
-  </div>
-
-  <!-- Phone (for session nudges) -->
-  <div class="nudge-card">
-    <div class="nudge-icon">\u{1F4F1}</div>
-    <div class="nudge-content">
-      <div class="nudge-text">
-        <span class="nudge-title">Stay on track</span>
-        <span class="nudge-desc">Drop your number and we will text you a gentle nudge if you step away mid session. Totally optional.</span>
+    <div class="step-card" id="step-docs">
+      <div class="step-node"><div class="step-node-dot"></div></div>
+      <div class="step-card-header">
+        <h3>Your Documents</h3>
+        <p class="step-why">Business plans, notes, ideas. We will read every word.</p>
       </div>
-      <div class="nudge-input-wrap">
-        <input type="tel" id="intake-phone" placeholder="+1 (555) 000-0000" autocomplete="tel" class="nudge-input">
+      <div class="step-card-body">
+        <div class="upload-zone" id="doc-upload-zone">
+          <input type="file" id="doc-file-input" multiple accept=".pdf,.txt,.md,.doc,.docx">
+          <div class="upload-icon" style="width:28px;height:28px;margin:0 auto;opacity:0.3;background:url('data:image/svg+xml,%3Csvg xmlns%3D%22http%3A//www.w3.org/2000/svg%22 viewBox%3D%220 0 24 24%22 fill%3D%22none%22 stroke%3D%22%231d1d1f%22 stroke-width%3D%221.5%22%3E%3Cpath d%3D%22M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z%22/%3E%3Cpolyline points%3D%2214 2 14 8 20 8%22/%3E%3Cline x1%3D%228%22 y1%3D%2213%22 x2%3D%2216%22 y2%3D%2213%22/%3E%3Cline x1%3D%228%22 y1%3D%2217%22 x2%3D%2216%22 y2%3D%2217%22/%3E%3C/svg%3E') center/contain no-repeat;"></div>
+          <p>Add your documents</p>
+          <span>PDF, Word, TXT up to 5MB each</span>
+          <div class="upload-browse-btn">Browse Files</div>
+        </div>
+        <div class="uploaded-files" id="uploaded-docs"></div>
       </div>
     </div>
+
+    <div class="step-card" id="step-phone" style="display:none;">
+      <div class="step-node"><div class="step-node-dot" style="border-color:var(--gold);"></div></div>
+      <div class="step-card-header">
+        <h3 style="color:var(--text2);">Your Phone <span style="font-weight:400;font-size:12px;letter-spacing:0;text-transform:none;">(optional)</span></h3>
+        <p class="step-why">We will text you session updates so you never lose your place.</p>
+      </div>
+      <div class="step-card-body">
+        <input type="tel" id="intake-phone" placeholder="(555) 555-5555" style="max-width:240px;" oninput="savePhone(this.value)">
+      </div>
+    </div>
+
   </div>
 
-  <!-- Consent -->
-  <div class="consent-block" style="margin:24px auto 0;max-width:580px;text-align:left;">
-    <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:#555;line-height:1.6;">
-      <input type="checkbox" id="consent-check" style="margin-top:4px;min-width:18px;min-height:18px;accent-color:#C4703F;">
-      <span>I understand that this session is conducted by an AI and that my responses will be processed to generate my brand blueprint. I agree to the <a href="/privacy" target="_blank" style="color:#C4703F;">Privacy Policy</a> and <a href="/terms" target="_blank" style="color:#C4703F;">Terms of Service</a>.</span>
-    </label>
-    <p id="consent-error" style="display:none;color:#c0392b;font-size:12px;margin-top:6px;margin-left:28px;">Please check the box above to continue.</p>
-  </div>
-
-  <!-- CTA -->
   <div class="intake-cta">
-    <button class="btn btn-gold" onclick="startSession()" id="start-btn">Begin My Deep Work Session</button>
-    <p class="intake-reassurance"><strong>Everything above is optional.</strong> You can skip any step and jump right in. But every detail you share makes your blueprint sharper, more personal, and more powerful. This is the difference between generic advice and a strategy built on the truth of who you are.</p>
+    <div class="trust-signals">
+      <div class="trust-badge"><div class="trust-dot"></div> Every detail shapes your blueprint</div>
+      <div class="trust-badge"><div class="trust-dot"></div> Completely private to you</div>
+      <div class="trust-badge"><div class="trust-dot"></div> No templates. Built from your words.</div>
+    </div>
+    <div class="cta-eyebrow" id="cta-eyebrow">READY WHEN YOU ARE</div>
+    <div class="cta-headline">Ready to meet your strategist?</div>
+    <div id="context-counter" style="font-family:'Outfit',sans-serif;font-size:11px;color:var(--text3);margin-bottom:20px;display:none;letter-spacing:0.02em;"></div>
+    <input type="checkbox" id="consent-check" style="display:none;" checked>
+    <p id="consent-error" style="display:none;color:#c0392b;font-size:12px;margin-top:6px;"></p>
+    <button class="btn btn-gold" onclick="startSession()" id="start-btn">Begin My Session</button>
+    <p class="intake-reassurance">By beginning, you agree to the <a href="/privacy" target="_blank">Privacy Policy</a> and <a href="/terms" target="_blank">Terms</a>. What you shared will shape every question, every insight, every recommendation.</p>
+  </div>
   </div>
 
 </div>
+  <!-- Floating micro-CTA for scroll -->
+  <div class="intake-floating-cta" id="intake-floating-cta">
+    <div class="intake-floating-cta-content">
+      <div class="intake-floating-cta-text">All set. Begin your session</div>
+      <button class="btn btn-gold intake-floating-cta-btn" onclick="startSession()">Begin My Session</button>
+    </div>
+  </div>
 
 <!-- \u2550\u2550 APP SCREEN \u2550\u2550 -->
 <div id="app" class="screen">
   <div class="phase-bar">
-    <div class="phase-label">Phase</div>
-    <div class="phases">
+    <div class="phase-info">
+      <div class="phase-step" id="phase-step-label">Phase 1 of 8</div>
+      <div class="phase-title" id="phase-title-label">Your Story</div>
+    </div>
+    <!-- Hidden legacy dots for JS compatibility -->
+    <div class="phases" style="display:none;">
       <div class="phase-dot active" id="pd1">1</div>
       <div class="phase-dot" id="pd2">2</div>
       <div class="phase-dot" id="pd3">3</div>
@@ -2717,7 +3911,10 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       <div class="phase-dot" id="pd7">7</div>
       <div class="phase-dot" id="pd8">8</div>
     </div>
-    <div class="phase-name" id="phase-name">Phase 1: <strong>Your Story</strong></div>
+    <div class="phase-name" id="phase-name" style="display:none;">Phase 1: <strong>Your Story</strong></div>
+    <div class="phase-progress-track">
+      <div class="phase-progress-fill" id="phase-progress-fill"></div>
+    </div>
   </div>
 
   <div class="chat-wrap">
@@ -2726,9 +3923,12 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   <div class="input-area">
     <div class="input-row">
-      <textarea id="msg-input" placeholder="Type or tap the mic to talk..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="tool-btn" onclick="openUploadModal()" title="Attach photos or documents">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+      </button>
+      <textarea id="msg-input" placeholder="Type or speak..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
       <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Tap to speak">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
           <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
           <line x1="12" y1="19" x2="12" y2="23"></line>
@@ -2736,18 +3936,15 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
         </svg>
       </button>
       <button class="send-btn" id="send-btn" onclick="sendMessage()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
         </svg>
       </button>
     </div>
     <div class="voice-status" id="voice-status"></div>
     <div class="input-tools">
-      <button class="tool-btn" onclick="openUploadModal()">\u{1F4CE} Add photos</button>
-      <button class="tool-btn" onclick="openDocUpload()">\u{1F4C4} Upload document</button>
-      <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none">\u2728 Generate brand images</button>
-      <input type="file" id="doc-upload-input" accept=".pdf,.txt,.md" style="display:none" onchange="handleDocUpload(this)">
+      <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none">Generate brand images</button>
     </div>
     <div id="doc-upload-status" style="display:none;padding:8px 16px;font-size:13px;color:var(--text2);background:var(--bg2);border-radius:8px;margin-top:6px;"></div>
   </div>
@@ -2755,138 +3952,603 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
 <!-- \u2550\u2550 BLUEPRINT SCREEN \u2550\u2550 -->
 <div id="blueprint-screen" class="screen">
+  <div id="blueprint-progress-bar"></div>
+  <div id="blueprint-section-dots"></div>
   <div class="blueprint-header">
-    <div class="eyebrow">Session Complete</div>
-    <h2 id="bp-name">Your Brand Blueprint</h2>
-    <p>Your complete brand foundation, ready to build on.</p>
-  </div>
-  <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
-  <div class="blueprint-actions" style="flex-direction:column;align-items:center;gap:16px;padding:28px 40px;">
-    <button class="btn btn-gold" id="build-site-btn" onclick="handleBuildSite()" style="width:auto;padding:18px 40px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);letter-spacing:0.02em;">Make This Real</button>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn btn-outline" onclick="downloadPDF()" style="width:auto;padding:12px 22px;font-size:14px;">Download PDF</button>
-      <button class="btn btn-outline" onclick="exportPackage()" style="width:auto;padding:12px 22px;font-size:14px;">Take It With You</button>
+    <div class="bp-brand">
+      <span class="bp-logo">James Guldan</span>
+      <span class="bp-divider"></span>
+      <span class="bp-product">Deep Work Blueprint</span>
+    </div>
+    <h2 id="bp-name" style="display:none">Your Brand Blueprint</h2>
+    <div class="bp-right">
+      <button onclick="showScreen('app')" style="background:none;border:1px solid var(--border2);border-radius:20px;padding:0 14px;height:30px;font-size:12px;color:var(--text2);cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;transition:all 0.15s;display:flex;align-items:center;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'" id="bp-back-chat-btn">Back to Chat</button>
     </div>
   </div>
+  <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
+  <!-- Blueprint top CTAs removed \u2014 Make This Real appears at bottom of blueprint after content -->
   <div class="blueprint-body" id="blueprint-body">
     <!-- populated by JS -->
   </div>
 </div>
 
+<!-- \u2550\u2550 BLUEPRINT STICKY BAR \u2550\u2550 -->
+<div id="blueprint-sticky-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #f0f0f0;padding:14px 24px;z-index:200;transform:translateY(100%);transition:transform 0.35s ease;">
+  <div style="max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:16px;">
+    <div style="font-family:'Outfit',sans-serif;font-size:12px;color:#86868b;" id="sticky-bar-name"></div>
+    <div id="sticky-bar-section" style="font-family:'Outfit',sans-serif;font-size:11px;color:#c4703f;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;"></div>
+    <div style="display:flex;gap:8px;margin-left:auto;">
+      <div onclick="downloadPDF()" style="padding:10px 20px;background:linear-gradient(135deg, rgba(196,112,63,0.08) 0%, rgba(196,112,63,0.03) 100%);border:1px solid rgba(196,112,63,0.2);border-radius:50px;font-size:12px;color:#c4703f;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:600;transition:all 0.2s;" onmouseover="this.style.background='rgba(196,112,63,0.12)';this.style.borderColor='rgba(196,112,63,0.35)'" onmouseout="this.style.background='linear-gradient(135deg, rgba(196,112,63,0.08) 0%, rgba(196,112,63,0.03) 100%)';this.style.borderColor='rgba(196,112,63,0.2)'">Save Your Brand Guide</div>
+      <div onclick="handleBuildSite()" style="padding:10px 22px;background:#1d1d1f;color:#fff;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;">Make This Real</div>
+    </div>
+  </div>
+</div>
+</div>
+
 <!-- \u2550\u2550 BUILD SITE POPUP \u2550\u2550 -->
-<div id="build-site-popup" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn 0.3s ease;">
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:20px;max-width:520px;width:92%;padding:36px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-    <div style="font-size:42px;margin-bottom:12px;">\u2728</div>
-    <h3 style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;color:var(--text);">Get Your Vision Live</h3>
-    <p style="font-size:15px;color:var(--text2);line-height:1.65;margin-bottom:8px;">You just did the hard part. Your strategy, messaging, and visual identity are locked in. In the next 60 seconds, all of it becomes a real website you can share with the world.</p>
-    <div style="background:var(--bg);border-radius:12px;padding:16px 20px;margin:16px 0 24px;text-align:left;">
-      <div style="font-size:13px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">Here is what happens next</div>
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">\u26A1</span>
-        <span style="font-size:14px;color:var(--text2);line-height:1.5;">Your brand strategy, colors, and voice get structured into a page</span>
+<!-- \u2550\u2550\u2550 BUILD SITE POPUP \u2014 Combined Design \u2550\u2550\u2550 -->
+<div id="build-site-popup" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:fadeIn 0.25s ease;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:20px;max-width:480px;width:92%;box-shadow:0 12px 64px rgba(0,0,0,0.12);max-height:90vh;overflow-y:auto;overflow-x:hidden;">
+    <button onclick="closeBuildPopup()" style="position:absolute;top:16px;right:18px;background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:rgba(255,255,255,0.4);padding:4px;z-index:2;" onmouseover="this.style.color='rgba(255,255,255,0.7)'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">&times;</button>
+
+    <!-- Dark hero header -->
+    <div style="background:#1d1d1f;padding:44px 40px 36px;text-align:center;border-radius:20px 20px 0 0;">
+      <div style="width:40px;height:2px;background:linear-gradient(90deg, #c4703f, #d4955a);margin:0 auto 24px;border-radius:2px;"></div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:26px;font-weight:400;font-style:italic;color:#ffffff;line-height:1.35;margin:0 0 10px;letter-spacing:0.01em;">You did the hard part.<br>Now let us build it.</h3>
+      <p style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0;">Your blueprint becomes a complete website in about 4 minutes.</p>
+    </div>
+
+    <!-- Personalized blueprint preview -->
+    <div style="padding:28px 36px 0;">
+      <div id="popup-blueprint-preview" style="display:none;">
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <div style="flex:1;background:#faf8f6;border-radius:10px;padding:12px 14px;">
+            <div style="font-size:9px;color:#86868b;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Brand</div>
+            <div id="popup-brand-name" style="font-size:13px;font-weight:600;color:#1d1d1f;font-family:'Outfit',sans-serif;"></div>
+          </div>
+          <div style="flex:1;background:#faf8f6;border-radius:10px;padding:12px 14px;">
+            <div style="font-size:9px;color:#86868b;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;">Sections</div>
+            <div id="popup-section-count" style="font-size:13px;font-weight:600;color:#1d1d1f;font-family:'Outfit',sans-serif;">8 sections</div>
+          </div>
+        </div>
+        <div id="popup-color-row" style="display:flex;gap:5px;align-items:center;margin-bottom:20px;">
+          <!-- colors injected by JS -->
+        </div>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">\u{1F3A8}</span>
-        <span style="font-size:14px;color:var(--text2);line-height:1.5;">Custom images are generated to match your visual identity</span>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">\u{1F4BB}</span>
-        <span style="font-size:14px;color:var(--text2);line-height:1.5;">A complete branded website is written from everything you shared</span>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-        <span style="font-size:16px;">\u{1F50D}</span>
-        <span style="font-size:14px;color:var(--text2);line-height:1.5;">SEO meta tags, Open Graph previews, favicon, and AI schema are injected automatically</span>
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;">
-        <span style="font-size:16px;">\u{1F680}</span>
-        <span style="font-size:14px;color:var(--text2);line-height:1.5;">It goes live at a shareable URL, fully optimized for search and social sharing</span>
+
+      <!-- What happens next -->
+      <div style="background:#faf8f6;border-radius:14px;padding:22px 24px;margin-bottom:22px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:14px;">What happens next</div>
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(196,112,63,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;color:#c4703f;">1</div>
+          <div><div style="font-size:13px;font-weight:600;color:#1d1d1f;">Custom brand images generated</div><div style="font-size:11px;color:#86868b;margin-top:1px;">Hero imagery matched to your aesthetic</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(196,112,63,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;color:#c4703f;">2</div>
+          <div><div style="font-size:13px;font-weight:600;color:#1d1d1f;">Full website written and designed</div><div style="font-size:11px;color:#86868b;margin-top:1px;">Every section from your blueprint, professionally built</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:22px;height:22px;border-radius:50%;background:rgba(196,112,63,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:700;color:#c4703f;">3</div>
+          <div><div style="font-size:13px;font-weight:600;color:#1d1d1f;">Published to a live URL</div><div style="font-size:11px;color:#86868b;margin-top:1px;">SEO optimized, mobile responsive, ready to share</div></div>
+        </div>
       </div>
     </div>
-    <button class="btn btn-gold" onclick="closeBuildPopup();proceedToSite();" style="width:100%;padding:16px 24px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);margin-bottom:10px;">Let's Go</button>
-    <button class="btn btn-ghost" onclick="saveForLater()" style="width:auto;padding:10px 20px;font-size:13px;color:var(--text3);">Save for later</button>
+
+    <!-- CTA -->
+    <div style="padding:0 36px 32px;text-align:center;">
+      <button class="btn btn-gold" onclick="closeBuildPopup();proceedToSite();" style="width:100%;padding:16px 24px;font-size:15px;font-weight:700;border-radius:50px;background:#1d1d1f;color:#fff;border:none;cursor:pointer;font-family:'Outfit',sans-serif;letter-spacing:-0.01em;">Build My Website</button>
+      <div style="display:flex;justify-content:center;gap:20px;margin-top:14px;">
+        <span style="font-size:11px;color:#c0c0c0;">~4 min</span>
+        <span style="font-size:11px;color:#c0c0c0;">Review each section</span>
+        <span style="font-size:11px;color:#c0c0c0;">Refine anything</span>
+      </div>
+      <button onclick="saveForLater()" style="background:none;border:none;font-size:13px;color:#c0c0c0;cursor:pointer;margin-top:12px;">Save for later</button>
+    </div>
   </div>
 </div>
 
-<!-- \u2550\u2550 SITE GENERATION SCREEN \u2550\u2550 -->
-<div id="site-screen" class="screen">
-  <div class="site-progress">
-    <h2>Building Your Website</h2>
-    <p>Your brand blueprint is being turned into a real, branded website. This takes about 60 seconds.</p>
-    <div class="progress-steps" id="gen-steps">
-      <div class="progress-step">
-        <div class="step-icon active" id="step-1-icon">\u26A1</div>
-        <div class="step-text"><strong>Preparing your brand context</strong>Structuring blueprint data for generation</div>
+
+<!-- \u2550\u2550 PRE-GENERATION SCREEN \u2550\u2550 -->
+<div id="pregen-screen" class="screen">
+  <div class="pregen-card">
+    <div class="pregen-eyebrow">Setting up your workspace</div>
+    <div class="pregen-brand-name" id="pregen-brand-name">Your Brand</div>
+    <div class="pregen-palette" id="pregen-palette"></div>
+    <div class="pregen-subtitle">Generating 3 layout options for each section \u2014 all in parallel. Takes about 20 seconds, then you choose.</div>
+    <div class="pregen-section-list" id="pregen-section-list"></div>
+    <div class="pregen-progress-wrap">
+      <div class="pregen-progress-meta">
+        <span id="pregen-progress-label">Preparing\u2026</span>
+        <span id="pregen-progress-count">0 of 0</span>
       </div>
-      <div class="progress-step">
-        <div class="step-icon pending" id="step-2-icon">\u{1F3A8}</div>
-        <div class="step-text"><strong>Generating brand images</strong>Creating custom hero imagery via Imagen 4</div>
+      <div class="pregen-progress-track">
+        <div class="pregen-progress-fill" id="pregen-progress-fill"></div>
       </div>
-      <div class="progress-step">
-        <div class="step-icon pending" id="step-3-icon">\u{1F4BB}</div>
-        <div class="step-text"><strong>Writing your website</strong>Building pages from your blueprint</div>
+    </div>
+    <button class="pregen-proceed-btn" id="pregen-proceed-btn" onclick="pregenEnterPicker()">Preparing your sections\u2026</button>
+  </div>
+</div>
+
+
+<!-- \u2550\u2550 PHOTO GATE SCREEN \u2550\u2550 -->
+<!-- \u2550\u2550\u2550 SEGMENT INTAKE SCREEN \u2550\u2550\u2550 -->
+<div id="segment-intake-screen" class="screen">
+  <div class="intake-card">
+    <div class="intake-card-header">
+      <div>
+        <div style="font-size:10px;color:#aaa9a5;font-family:'Outfit',sans-serif;margin-bottom:5px;">Almost there</div>
+        <div class="intake-progress-row" id="intake-prog-row">
+          <div class="intake-prog-seg done"></div>
+          <div class="intake-prog-seg done"></div>
+          <div class="intake-prog-seg active"></div>
+          <div class="intake-prog-seg"></div>
+        </div>
       </div>
-      <div class="progress-step">
-        <div class="step-icon pending" id="step-4-icon">\u{1F50D}</div>
-        <div class="step-text"><strong>SEO &amp; launch optimization</strong>Meta tags, Open Graph, favicon, schema markup, and search indexing</div>
+      <div style="font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;">Step 3 of 4</div>
+    </div>
+    <div class="intake-card-body">
+      <div class="intake-eyebrow">These go directly into your website</div>
+      <div class="intake-headline" id="intake-headline">A few things that'll make your site feel real</div>
+      <div class="intake-sub">All optional. Skip anything you don't have yet \u2014 you can always update later.</div>
+      <div id="intake-fields-container">
+        <!-- Dynamically populated by intakeRenderFields() -->
       </div>
-      <div class="progress-step">
-        <div class="step-icon pending" id="step-5-icon">\u{1F680}</div>
-        <div class="step-text"><strong>Deploying to a live URL</strong>Publishing your optimized site to the web</div>
+
+      <!-- Testimonials preference -->
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid #f0efed;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#aaa9a5;margin-bottom:10px;">Testimonials</div>
+        <div id="testimonial-pref-group" style="display:flex;flex-direction:column;gap:6px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e8e8e8;border-radius:10px;cursor:pointer;font-size:13px;color:#1d1d1f;transition:border-color 0.15s;" onclick="selectTestimonialPref(this,'generate')">
+            <input type="radio" name="testimonial-pref" value="generate" checked style="accent-color:#c4703f;">
+            <span>Generate sample testimonials for me</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e8e8e8;border-radius:10px;cursor:pointer;font-size:13px;color:#1d1d1f;transition:border-color 0.15s;" onclick="selectTestimonialPref(this,'custom')">
+            <input type="radio" name="testimonial-pref" value="custom" style="accent-color:#c4703f;">
+            <span>I have my own testimonials</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid #e8e4e0;border-radius:10px;cursor:pointer;font-size:13px;color:#1d1d1f;transition:border-color 0.15s;background:linear-gradient(135deg,#fffdf9,#fff8f4);" onclick="selectTestimonialPref(this,'aicoach')">
+            <input type="radio" name="testimonial-pref" value="aicoach" style="accent-color:#c4703f;">
+            <span style="display:flex;flex-direction:column;gap:1px;"><strong style="font-weight:600;">Coach me through writing real ones</strong><span style="font-size:11px;color:#c4703f;font-weight:500;">AI helps you craft real testimonials from client wins \u2192</span></span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e8e8e8;border-radius:10px;cursor:pointer;font-size:13px;color:#1d1d1f;transition:border-color 0.15s;" onclick="selectTestimonialPref(this,'skip')">
+            <input type="radio" name="testimonial-pref" value="skip" style="accent-color:#c4703f;">
+            <span>Skip for now</span>
+          </label>
+        </div>
+        <div id="custom-testimonials-area" style="display:none;margin-top:10px;">
+          <textarea id="custom-testimonials-input" placeholder="Paste your testimonials here (one per paragraph)" style="width:100%;min-height:80px;padding:12px 14px;border:1px solid #e8e8e8;border-radius:10px;font-family:Inter,sans-serif;font-size:13px;color:#1d1d1f;resize:vertical;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#c4703f'" onblur="this.style.borderColor='#e8e8e8'"></textarea>
+        </div>
+        <div id="testimonial-ai-area" style="display:none;margin-top:10px;">
+          <div class="intake-dialog-panel open" id="testimonial-dialog-panel" style="border-radius:12px;">
+            <div class="intake-dialog-header">
+              <span class="intake-dialog-label">AI Testimonial Coach</span>
+            </div>
+            <div class="intake-dialog-messages" id="testimonial-dialog-messages" style="max-height:220px;"></div>
+            <div id="testimonial-dialog-suggestion"></div>
+            <div class="intake-dialog-input-row">
+              <input class="intake-dialog-input" id="testimonial-dialog-input" placeholder="Describe a client win..." autocomplete="off" onkeydown="if(event.key===\\'Enter\\')testimonialDialogSend()">
+              <button class="intake-dialog-send" id="testimonial-dialog-send-btn" onclick="testimonialDialogSend()">Send</button>
+            </div>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:#aaa9a5;font-family:Outfit,sans-serif;">These go word-for-word into your site once you approve them.</div>
+        </div>
       </div>
+
+      <button class="intake-btn" onclick="intakeSubmit()">Build My Website \u2192</button>
+      <div class="intake-skip" onclick="intakeSkipAll()">Skip all \u2014 I'll add these later</div>
     </div>
   </div>
 </div>
+
+<div id="photo-gate-screen" class="screen">
+  <div class="photo-gate-card">
+    <button class="photo-gate-skip-x" onclick="photoGateSkip()">Skip</button>
+
+    <div class="photo-gate-eyebrow">One quick thing</div>
+    <div class="photo-gate-headline">Do you have a professional headshot?</div>
+    <div class="photo-gate-sub">A great photo makes your site feel personal and trustworthy. It appears in your hero and about sections \u2014 the first things visitors see.</div>
+
+    <!-- Visual: where photo appears -->
+    <div class="photo-gate-visual">
+      <div class="photo-gate-vis-hero">
+        <div class="photo-gate-vis-lines">
+          <div class="photo-gate-vis-line long"></div>
+          <div class="photo-gate-vis-line medium"></div>
+          <div class="photo-gate-vis-line short"></div>
+        </div>
+        <div class="photo-gate-vis-avatar">\u{1F464}</div>
+      </div>
+      <div class="photo-gate-vis-label">Your photo appears here</div>
+    </div>
+
+    <!-- State 1: Choose yes/no -->
+    <div id="photo-gate-choose">
+      <button class="photo-gate-btn-primary" onclick="photoGateYes()">Yes, upload a photo \u2726</button>
+      <button class="photo-gate-btn-secondary" onclick="photoGateSkip()">Continue without photos</button>
+    </div>
+
+    <!-- State 2: Upload zone -->
+    <div id="photo-gate-upload" style="display:none;">
+      <div id="photo-gate-upload-zone" class="photo-gate-upload-zone" onclick="document.getElementById('photo-gate-file').click()">
+        <div class="photo-gate-upload-icon">\u2B06</div>
+        <div class="photo-gate-upload-text">Tap to choose your photo</div>
+        <div class="photo-gate-upload-hint">JPG, PNG or WebP &middot; Best: chin up, good lighting, plain background</div>
+      </div>
+      <input type="file" id="photo-gate-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="photoGateUpload(this)">
+
+      <!-- Processing state -->
+      <div id="photo-gate-processing" style="display:none;">
+        <div class="photo-gate-proc-text">\u2726 Processing with Photoroom\u2026</div>
+      </div>
+
+      <!-- Done state -->
+      <div id="photo-gate-done" style="display:none;">
+        <img id="photo-gate-preview" src="" alt="Your photo" class="photo-gate-done-preview">
+        <div class="photo-gate-done-label">Looking great! \u2726</div>
+        <button class="photo-gate-btn-primary" onclick="photoGateProceed()">Continue to site builder \u2192</button>
+      </div>
+
+      <button class="photo-gate-skip-link" onclick="photoGateSkip()">Skip for now</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- \u2550\u2550 SITE GENERATION SCREEN \u2550\u2550 -->
+<!-- \u2550\u2550\u2550 SITE GENERATION SCREEN \u2014 The Atelier \u2550\u2550\u2550 -->
+<div id="site-screen" class="screen" style="flex-direction:row;min-height:100vh;">
+
+  <!-- Left: dark editorial timeline -->
+  <div id="site-gen-left" style="width:40%;min-width:300px;background:#ffffff;padding:64px 48px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #f0ece6;position:relative;overflow:hidden;">
+    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:11px;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;color:rgba(196,112,63,0.7);margin-bottom:20px;">Building your site</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1d1d1f;letter-spacing:-0.01em;margin-bottom:8px;" id="site-gen-name">Your Website</h2>
+    <p style="font-size:13px;color:#b0a89e;line-height:1.7;margin-bottom:44px;font-family:'Outfit',sans-serif;" id="site-gen-sub">Each section designed to your blueprint. About 2 to 4 minutes.</p>
+
+    <!-- Steps as vertical timeline -->
+    <div id="gen-steps" style="display:flex;flex-direction:column;">
+
+      <div class="gen-step" id="gen-step-row-1" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
+          <div class="step-icon active" id="step-1-icon" style="width:8px;height:8px;border-radius:50%;background:#c4703f;flex-shrink:0;"></div>
+          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
+        </div>
+        <div style="padding-bottom:10px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;">Brand context prepared</div>
+          <div style="font-size:11px;color:#b0a89e;margin-top:2px;">Strategy, messaging, and identity structured</div>
+        </div>
+      </div>
+
+      <div class="gen-step" id="gen-step-row-2" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
+          <div class="step-icon pending" id="step-2-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
+          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
+        </div>
+        <div style="padding-bottom:10px;">
+          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Generating brand images</div>
+          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Custom hero imagery via Imagen</div>
+        </div>
+      </div>
+
+      <div class="gen-step" id="gen-step-row-3" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
+          <div class="step-icon pending" id="step-3-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
+          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
+        </div>
+        <div style="padding-bottom:10px;">
+          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Writing your website</div>
+          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Building pages from your blueprint</div>
+        </div>
+      </div>
+
+      <div class="gen-step" id="gen-step-row-4" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
+          <div class="step-icon pending" id="step-4-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
+          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
+        </div>
+        <div style="padding-bottom:10px;">
+          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">SEO optimization</div>
+          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Meta tags, Open Graph, schema markup</div>
+        </div>
+      </div>
+
+      <div class="gen-step" id="gen-step-row-5" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
+          <div class="step-icon pending" id="step-5-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
+        </div>
+        <div>
+          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Deploy to live URL</div>
+          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Publishing your optimized site</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Photo upload (optional, while site generates) -->
+    <div id="site-photo-upload" style="margin-top:36px;padding-top:28px;border-top:1px solid #f0ece6;">
+      <div style="font-family:\'Outfit\',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#b0a89e;margin-bottom:10px;">Add your photo (optional)</div>
+      <p style="font-size:12px;color:#b0a89e;line-height:1.6;margin-bottom:14px;font-family:\'Outfit\',sans-serif;">Upload a headshot and it will appear in your about section. We remove the background automatically.</p>
+      <div id="site-photo-preview" style="display:none;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <img id="site-photo-img" src="" alt="Your photo" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #c4703f;"/>
+        <div style="font-size:11px;color:#c4703f;font-family:\'Outfit\',sans-serif;" id="site-photo-status">Processing...</div>
+      </div>
+      <label for="site-photo-input" id="site-photo-label" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;border:1px solid #e0dbd4;border-radius:8px;cursor:pointer;font-family:\'Outfit\',sans-serif;font-size:12px;font-weight:500;color:#1d1d1f;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4703f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Upload photo
+      </label>
+      <input type="file" id="site-photo-input" accept="image/*" style="display:none;" onchange="handleSiteScreenPhoto(this)"/>
+    </div>
+  </div>
+
+  <!-- Right: Atelier dark editorial panel -->
+  <div id="site-gen-right" style="flex:1;background:#faf8f5;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+    <!-- Abstract brand strokes -->
+    <svg id="atelier-strokes" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" preserveAspectRatio="xMidYMid slice" viewBox="0 0 600 600">
+      <ellipse cx="480" cy="90" rx="220" ry="55" fill="rgba(196,112,63,0.04)" transform="rotate(-22 480 90)"/>
+      <ellipse cx="80" cy="510" rx="200" ry="42" fill="rgba(196,112,63,0.03)" transform="rotate(14 80 510)"/>
+      <ellipse cx="310" cy="300" rx="280" ry="28" fill="rgba(196,112,63,0.02)" transform="rotate(-6 310 300)"/>
+    </svg>
+    <!-- Centered typographic card -->
+    <div id="gen-overlay" style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;">
+      <div style="display:flex;align-items:flex-start;line-height:1;">
+        <div id="gen-pct" style="font-family:'Outfit',sans-serif;font-size:88px;font-weight:300;color:#1d1d1f;letter-spacing:-0.04em;line-height:1;">0</div>
+        <div id="gen-pct-sub" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:300;color:#c8c0b8;margin-top:14px;margin-left:3px;">%</div>
+      </div>
+      <div style="width:120px;height:1px;background:rgba(196,112,63,0.18);border-radius:1px;margin:20px auto 0;position:relative;overflow:hidden;">
+        <div id="atelier-progress-bar" style="position:absolute;left:0;top:0;height:100%;width:0%;background:#c4703f;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);border-radius:1px;"></div>
+      </div>
+      <div id="gen-narrative" style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:rgba(196,112,63,0.75);text-align:center;max-width:280px;line-height:1.65;min-height:46px;margin-top:22px;opacity:1;transition:opacity 0.4s ease;">Preparing your brand story...</div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- \u2550\u2550\u2550 SECTION PICKER \u2014 FOCUS FRAME LIGHT \u2550\u2550\u2550 -->
+<div id="section-picker" class="screen">
+
+  <!-- Left Panel -->
+  <div class="fpick-left">
+    <div class="fpick-header">
+      <div class="fpick-step-label" id="picker-step-label">Section 1 of 6</div>
+      <div class="fpick-section-name" id="picker-section-name-header">Hero</div>
+      <div class="fpick-progress-wrap"><div class="fpick-progress-fill" id="picker-progress-fill" style="width:0%;"></div></div>
+    </div>
+
+    <div class="fpick-body">
+      <!-- Loading state -->
+      <div class="fpick-loading-state" id="picker-loading-state">
+        <div class="picker-dots">
+          <div class="picker-dot"></div>
+          <div class="picker-dot"></div>
+          <div class="picker-dot"></div>
+        </div>
+        <div class="fpick-loading-text" id="picker-loading-text">Generating 3 options...</div>
+      </div>
+
+      <!-- Options content (shown after load) -->
+      <div id="picker-options-area" style="display:none;" class="fpick-options-content">
+
+        <!-- Option selector dots + regen count -->
+        <div class="fpick-option-nav">
+          <button class="fpick-option-dot active" id="fpick-dot-0" onclick="pickerShowOption(0)">1</button>
+          <button class="fpick-option-dot" id="fpick-dot-1" onclick="pickerShowOption(1)">2</button>
+          <button class="fpick-option-dot" id="fpick-dot-2" onclick="pickerShowOption(2)">3</button>
+          <span style="flex:1;"></span>
+          <span style="font-family:'Outfit',sans-serif;font-size:11px;color:#c8c0b8;" id="picker-regen-count-label">3 regens</span>
+        </div>
+
+        <!-- Current option info -->
+        <div class="fpick-info-card">
+          <div class="fpick-option-eyebrow" id="picker-eyebrow-text">Hero Section</div>
+          <div class="fpick-option-title" id="fpick-option-title">Option 1</div>
+          <div class="fpick-option-rationale" id="fpick-option-rationale"></div>
+          <div id="fpick-confidence" class="fpick-confidence-pill high">85%</div>
+        </div>
+
+        <!-- Prev / counter / next -->
+        <div class="fpick-nav">
+          <button class="fpick-nav-btn" id="fpick-prev-btn" onclick="pickerPrevOption()" disabled>&#8592; Prev</button>
+          <span class="fpick-counter" id="fpick-counter">1 / 3</span>
+          <button class="fpick-nav-btn" id="fpick-next-btn" onclick="pickerNextOption()">Next &#8594;</button>
+        </div>
+
+        <!-- Choose CTA -->
+        <button class="fpick-choose-btn" onclick="pickerChooseViewing()">Choose this layout &#8594;</button>
+
+        <!-- Regen -->
+        <div class="fpick-regen" id="picker-regen-area">
+          <span class="fpick-regen-label">None feel right? Describe what you want</span>
+          <textarea class="fpick-regen-input" id="picker-regen-text" rows="2" placeholder='e.g. "Bold headline, dark moody background, remove the bullet list"'></textarea>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+            <button id="picker-regen-btn" class="fpick-regen-action-btn" onclick="pickerRegenerate()">&#8635; Generate new options</button>
+            <span id="picker-regen-status" style="font-size:11px;color:#c8c0b8;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <span id="picker-regen-attempts-label" style="font-size:11px;color:#c8c0b8;white-space:nowrap;flex-shrink:0;"></span>
+          </div>
+        </div>
+
+      </div><!-- /picker-options-area -->
+    </div><!-- /fpick-body -->
+
+    <!-- Photo status \u2014 shown only when a photo has been uploaded via the gate -->
+    <div id="fpick-photo-status" style="display:none;padding:12px 20px;border-top:1px solid #ebebeb;background:#fff;align-items:center;gap:10px;flex-shrink:0;">
+      <div class="fpick-avatar-circle" id="fpick-avatar-circle" onclick="openPickerGrader()" title="View photo options">
+        <span class="fpick-avatar-icon" id="fpick-avatar-icon">\u{1F464}</span>
+        <img id="fpick-avatar-img" src="" alt="Your photo" style="display:none;width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div>
+        <div style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:#1d1d1f;line-height:1.3;">Photo ready \u2726</div>
+        <div style="font-family:'Outfit',sans-serif;font-size:11px;color:#86868b;">Used in Hero &amp; About</div>
+      </div>
+      <input type="file" id="fpick-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handlePickerPhotoUpload(this)">
+    </div>
+
+    <!-- Device toggle pinned at bottom -->
+    <div class="fpick-device-wrap">
+      <div class="fpick-device-toggle">
+        <button class="fpick-device-btn active" id="picker-desktop-btn" onclick="setPickerDevice('desktop')">Desktop</button>
+        <button class="fpick-device-btn" id="picker-mobile-btn" onclick="setPickerDevice('mobile')">Mobile</button>
+      </div>
+    </div>
+  </div><!-- /fpick-left -->
+
+  <!-- Photo Grader Panel (slide-up overlay, populated by JS) -->
+  <div class="fpick-grader-overlay" id="fpick-grader-overlay" onclick="if(event.target===this)closePickerGrader()">
+    <div class="fpick-grader-panel">
+      <div class="fpick-grader-head">
+        <div>
+          <div class="fpick-grader-title">Choose Your Photos</div>
+          <div class="fpick-grader-subtitle">Pick the best version for each section of your site</div>
+        </div>
+        <button class="fpick-grader-close" onclick="closePickerGrader()">\u2715</button>
+      </div>
+      <div class="fpick-grader-body" id="fpick-grader-body">
+        <div style="text-align:center;padding:40px 20px">
+          <div class="fpick-grader-spinner"></div>
+          <div style="font-family:'Outfit',sans-serif;font-size:13px;color:#86868b;">Grading your photos\u2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="fpick-grader-extra-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="addGraderPhotos(this)">
+
+  <!-- Right Panel: full-bleed preview -->
+  <div class="fpick-right" id="fpick-right-panel">
+    <!-- Loading overlay (shown while generating) -->
+    <div class="fpick-right-loading" id="fpick-right-loading">
+      <div class="fpick-loading-brand">
+        <div class="fpick-loading-eyebrow">Designing your</div>
+        <div class="fpick-right-loading-label" id="fpick-right-loading-label">Section</div>
+      </div>
+      <div class="fpick-skeleton-wrap">
+        <div class="fpick-skel fpick-skel-h fpick-skel-w80"></div>
+        <div class="fpick-skel fpick-skel-h fpick-skel-w100"></div>
+        <div class="fpick-skel fpick-skel-h fpick-skel-w60" style="margin-bottom:6px;"></div>
+        <div class="fpick-skel fpick-skel-p fpick-skel-w100"></div>
+        <div class="fpick-skel fpick-skel-p fpick-skel-w80"></div>
+        <div class="fpick-skel fpick-skel-btn fpick-skel-w40"></div>
+      </div>
+      <div class="fpick-loading-dots">
+        <div class="fpick-dot-pulse"></div>
+        <div class="fpick-dot-pulse"></div>
+        <div class="fpick-dot-pulse"></div>
+      </div>
+    </div>
+    <div class="fpick-preview-container" id="fpick-preview-container">
+      <iframe id="fpick-main-iframe" class="fpick-main-iframe" srcdoc="" style="width:1200px;height:900px;"></iframe>
+    </div>
+    <!-- Mobile phone stage -->
+    <div class="fpick-phone-stage" id="fpick-phone-stage">
+      <div class="fpick-phone-outer" id="fpick-phone-outer">
+        <div class="fpick-phone-notch-bar"></div>
+        <div class="fpick-phone-home-bar"></div>
+        <div class="fpick-phone-side-l1"></div>
+        <div class="fpick-phone-side-l2"></div>
+        <div class="fpick-phone-side-l3"></div>
+        <div class="fpick-phone-side-r"></div>
+        <div class="fpick-phone-screen-win">
+          <iframe id="fpick-phone-iframe" class="fpick-phone-iframe" srcdoc=""></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
 <!-- \u2550\u2550 DEPLOY SCREEN \u2550\u2550 -->
 <div id="deploy-screen" class="screen" style="display:none;">
   <!-- Legacy deploy screen kept hidden; Mission Control replaces it -->
 </div>
 
-<!-- \u2550\u2550 SITE REVEAL + GUIDED SECTION REVIEW \u2550\u2550 -->
-<div id="site-reveal" class="screen">
- <div style="max-width:760px;margin:0 auto;padding:32px 20px;">
-  <div id="review-progress" style="display:flex;align-items:center;gap:8px;margin-bottom:24px;">
-   <div style="flex:1;height:4px;background:var(--bg3);border-radius:4px;overflow:hidden;">
-    <div id="review-progress-bar" style="height:100%;width:0%;background:var(--gold);border-radius:4px;transition:width 0.4s ease;"></div>
-   </div>
-   <span id="review-progress-label" style="font-size:12px;color:var(--text2);white-space:nowrap;">Section 1</span>
-  </div>
-  <div id="review-header" style="text-align:center;margin-bottom:20px;">
-   <div id="review-badge" style="display:inline-block;padding:4px 14px;background:rgba(196,112,63,0.1);color:var(--gold);font-size:12px;font-weight:600;border-radius:20px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Above the fold</div>
-   <h2 id="review-title" style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:6px;">First Impressions</h2>
-   <p id="review-desc" style="color:var(--text2);font-size:14px;margin:0;max-width:480px;margin-left:auto;margin-right:auto;">This is what visitors see the moment they land. Does it grab attention and represent your brand?</p>
-  </div>
-  <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;background:var(--bg1);box-shadow:0 8px 32px rgba(0,0,0,0.08);">
-   <div style="background:var(--bg3);padding:8px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">
-    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e05252;"></span>
-    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8a838;"></span>
-    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3cc43c;"></span>
-    <span style="flex:1;text-align:center;font-family:monospace;font-size:11px;color:var(--text2);" id="reveal-domain"></span>
-   </div>
-   <iframe id="reveal-preview" src="" style="width:100%;height:480px;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
-   <div id="reveal-loading" style="height:480px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;">Loading your site...</div>
-  </div>
-  <div id="review-actions" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
-   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;" id="review-btns">
-    <button class="reaction-btn" onclick="sectionReaction('approve')"><span class="reaction-icon">\u{1F44D}</span><span class="reaction-label">Looks good</span></button>
-    <button class="reaction-btn" onclick="sectionReaction('refine')"><span class="reaction-icon">\u270F\uFE0F</span><span class="reaction-label">Refine this</span></button>
-   </div>
-   <div id="section-refine-input" style="display:none;margin-top:12px;">
-    <textarea id="section-refine-text" rows="3" placeholder="What would you change about this section?" style="width:100%;padding:12px;font-size:14px;border:1px solid var(--border);border-radius:var(--radius-sm);resize:vertical;font-family:inherit;line-height:1.5;box-sizing:border-box;margin-bottom:10px;"></textarea>
-    <div style="display:flex;gap:10px;">
-     <button class="btn btn-gold" onclick="submitSectionRefine()" id="section-refine-btn" style="flex:1;padding:12px;font-size:14px;">Apply Change</button>
-     <button class="btn btn-outline" onclick="sectionReaction('approve')" style="padding:12px 18px;font-size:14px;">Skip</button>
+<!-- \u2550\u2550\u2550 SITE REVEAL \u2014 THE GALLERIST \u2550\u2550\u2550 -->
+<div id="site-reveal" class="screen" style="padding:0;">
+ <div style="display:flex;height:100vh;overflow:hidden;background:#e8e4e0;">
+
+  <!-- LEFT PANEL: Gallerist -->
+  <div id="gallerist-panel" style="width:288px;min-width:288px;background:#fafaf8;border-right:1px solid #ebe8e4;display:flex;flex-direction:column;height:100vh;overflow:hidden;">
+
+   <!-- Brand header -->
+   <div style="padding:20px 18px 12px;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:3px;font-family:'Outfit',sans-serif;">Your Site</div>
+    <div id="brand-name-reveal" style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:10px;"></div>
+    <!-- Progress line -->
+    <div style="height:2px;background:#ebe8e4;border-radius:2px;overflow:hidden;margin-bottom:4px;">
+     <div id="review-progress-bar" style="height:100%;width:0%;background:#c4703f;border-radius:2px;transition:width 0.7s ease;"></div>
     </div>
-    <div id="section-refine-status" style="display:none;text-align:center;margin-top:10px;font-size:13px;color:var(--text2);"></div>
+    <div style="font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;" id="review-progress-label">Loading...</div>
+   </div>
+
+   <!-- Section list -->
+   <div style="height:1px;background:#ebe8e4;margin:0 0;flex-shrink:0;"></div>
+   <div id="gallerist-section-list" style="flex:1;overflow-y:auto;padding:8px 0;">
+    <!-- Populated by galleristRenderSectionList() -->
+   </div>
+
+   <!-- Bottom actions -->
+   <div style="border-top:1px solid #ebe8e4;padding:14px 18px 18px;flex-shrink:0;">
+
+    <!-- Section detail (shown when a section is clicked) -->
+    <div id="review-section-detail" style="display:none;margin-bottom:12px;animation:galleristFadeIn 0.22s ease both;">
+     <div id="review-badge" style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:2px;font-family:'Outfit',sans-serif;"></div>
+     <div id="review-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:3px;line-height:1.3;"></div>
+     <div id="review-desc" style="font-size:11px;color:#86868b;line-height:1.45;margin-bottom:10px;"></div>
+     <!-- Refine button (appears when section selected) -->
+     <div id="review-btns">
+      <button class="reaction-btn" onclick="sectionReaction('refine')" style="width:100%;padding:9px;background:transparent;color:#6b6b6b;border:1px solid #ddd;border-radius:50px;font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;transition:all 0.15s;"><span class="reaction-label">Request a change \u2192</span></button>
+     </div>
+     <!-- Refine input -->
+     <div id="section-refine-input" style="display:none;margin-top:8px;">
+      <textarea id="section-refine-text" rows="3" placeholder="What would you like changed in this section?" style="width:100%;padding:10px 12px;font-size:12px;border:1px solid #ddd;border-radius:10px;resize:vertical;font-family:inherit;line-height:1.5;box-sizing:border-box;margin-bottom:8px;outline:none;background:#fff;color:#1d1d1f;"></textarea>
+      <button class="btn btn-gold" onclick="submitSectionRefine()" id="section-refine-btn" style="width:100%;padding:11px;font-size:12px;margin-bottom:5px;">Apply Change</button>
+      <div id="section-refine-status" style="display:none;text-align:center;margin-top:6px;font-size:11px;color:#86868b;line-height:1.4;"></div>
+     </div>
+    </div>
+
+    <!-- Go Live \u2014 always visible -->
+    <button class="gallerist-golive-btn" onclick="launchAndGoLive()" style="width:100%;padding:13px;background:#1d1d1f;color:#fff;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.01em;">Go Live \u2192</button>
+    <!-- Hint text -->
+    <div id="review-hint" style="text-align:center;margin-top:8px;font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;">Click any section to refine it</div>
    </div>
   </div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
-   <button id="review-prev-btn" class="btn btn-outline" onclick="prevReviewSection()" style="padding:10px 20px;font-size:13px;visibility:hidden;">\u2190 Previous</button>
-   <button onclick="skipReview()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;text-decoration:underline;">Skip review</button>
-   <div style="width:100px;"></div>
+
+  <!-- RIGHT PANEL: Site preview -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
+
+   <!-- Browser chrome bar -->
+   <div style="background:#f0ede9;padding:9px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #ddd;flex-shrink:0;">
+    <span style="width:10px;height:10px;border-radius:50%;background:#e05252;display:inline-block;flex-shrink:0;"></span>
+    <span style="width:10px;height:10px;border-radius:50%;background:#e8a838;display:inline-block;flex-shrink:0;"></span>
+    <span style="width:10px;height:10px;border-radius:50%;background:#3cc43c;display:inline-block;flex-shrink:0;"></span>
+    <div style="flex:1;text-align:center;">
+     <span id="reveal-domain" style="font-family:monospace;font-size:11px;color:#888;background:#fff;padding:3px 16px;border-radius:20px;border:1px solid #ddd;display:inline-block;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    </div>
+    <!-- Device toggles -->
+    <div style="display:flex;gap:4px;flex-shrink:0;">
+     <button onclick="revealToggleDevice('desktop')" id="device-btn-desktop" title="Desktop view" style="padding:5px 10px;border-radius:6px;border:1px solid #c4703f;background:#c4703f;color:#fff;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;">Desktop</button>
+     <button onclick="revealToggleDevice('mobile')" id="device-btn-mobile" title="Mobile view" style="padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:transparent;color:#888;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;">Mobile</button>
+    </div>
+   </div>
+
+   <!-- Iframe wrapper -->
+   <div id="reveal-iframe-container" style="flex:1;overflow:hidden;position:relative;background:#e8e4e0;display:flex;align-items:center;justify-content:center;transition:background 0.4s;">
+    <!-- Mobile phone bezel overlay (pointer-events:none so iframe is still usable) -->
+    <div id="mobile-phone-bezel" style="display:none;">
+     <div class="bezel-notch"></div>
+     <div class="bezel-home"></div>
+     <div class="bezel-btn-l1"></div><div class="bezel-btn-l2"></div><div class="bezel-btn-l3"></div>
+     <div class="bezel-btn-r"></div>
+    </div>
+    <iframe id="reveal-preview" src="" style="width:100%;height:100%;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
+    <div id="reveal-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#e8e4e0;gap:16px;z-index:6;">
+     <div style="width:36px;height:36px;border:2px solid #c4703f;border-top-color:transparent;border-radius:50%;animation:spin 0.9s linear infinite;"></div>
+     <div style="font-size:13px;color:#888;font-family:'Outfit',sans-serif;">Loading your site...</div>
+    </div>
+   </div>
   </div>
+
  </div>
 </div>
+
 
 <div id="mission-control" class="screen">
   <div style="max-width:720px;margin:0 auto;padding:40px 20px;">
@@ -2900,7 +4562,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
     <!-- Header -->
     <div style="text-align:center;margin-bottom:36px;">
-      <div style="font-size:48px;margin-bottom:12px;">\u{1F680}</div>
       <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:6px;">
         <span id="mc-brand-name">Your Brand</span> is Live
       </h2>
@@ -2909,7 +4570,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
     <!-- Live URL bar -->
     <div id="mc-live-url" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:18px;">\u{1F310}</div>
       <a id="mc-url-link" href="#" target="_blank" style="color:var(--gold);font-size:15px;font-weight:500;text-decoration:none;flex:1;word-break:break-all;"></a>
       <button id="mc-copy-btn" onclick="copyMcUrl()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">Copy Link</button>
       <a id="mc-visit-btn" href="#" target="_blank" class="btn btn-gold" style="padding:8px 18px;font-size:13px;text-decoration:none;white-space:nowrap;">Visit Site</a>
@@ -2933,25 +4593,21 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     </div>
 
     <!-- Share & Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
       <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">
         \u2709\uFE0F &nbsp;Email My Site Link
       </button>
       <button onclick="copyMcUrl()" class="btn btn-outline" style="padding:14px;font-size:14px;">
-        \u{1F4CB} &nbsp;Copy Link to Share
+        Copy Link to Share
       </button>
     </div>
-    <button onclick="shareOnLinkedIn()" class="btn btn-outline" style="width:100%;padding:14px;font-size:14px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;gap:10px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-      Share on LinkedIn
-    </button>
 
     <!-- Strategy Call CTA (moved up: highest conversion moment is right after seeing the live site) -->
     <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.03));border:1.5px solid rgba(212,175,55,0.35);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Next Step</div>
       <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
       <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a strategy call. We will connect your domain, refine your content together, and build your traffic plan.</p>
-      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;box-shadow:0 4px 20px rgba(196,112,63,0.3);">Book Your Strategy Call</button>
+      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>
     </div>
 
     <!-- 30-Day Preview Notice -->
@@ -3012,6 +4668,10 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <!-- \u2550\u2550 SESSION LOADING OVERLAY \u2550\u2550 -->
 <div class="session-loading" id="session-loading">
   <div id="loading-content">
+    <div class="loading-wordmark">
+      <div class="loading-wordmark-eyebrow">James Guldan</div>
+      <div class="loading-wordmark-title">Deep Work</div>
+    </div>
     <div class="loading-spinner"></div>
     <div class="loading-message" id="loading-message"></div>
     <div class="loading-stage" id="loading-stage">Warming up</div>
@@ -3046,6 +4706,65 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <div id="toast"></div>
 
 <script>
+// Worker-side name helpers are no-ops in the browser
+var __name = function(f, n) { try { Object.defineProperty(f, 'name', { value: n, configurable: true }); } catch(_) {} return f; };
+var __name2 = __name;
+var __name22 = __name;
+// Magic link IIFE \u2014 runs immediately on script parse, no DOMContentLoaded needed
+// \u2500\u2500 PREFLIGHT: runs immediately before DOMContentLoaded \u2500\u2500
+var _dwPreflight = null; // Promise for fast-resume result
+(async function checkMagicLinkOnLoad() {
+  // Sync server-set cookie to localStorage immediately (runs before DOMContentLoaded)
+  try {
+    // Check for JWT passed directly in URL from server-side magic link redirect
+    var _sp = new URLSearchParams(window.location.search);
+    var _sJwt = _sp.get('_s');
+    if (_sJwt) {
+      // Always update localStorage with the fresh JWT from the magic link (even if one exists \u2014 new link = new session)
+      localStorage.setItem('dw_session', _sJwt);
+      document.cookie = 'dw_session=' + _sJwt + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
+      // Always clean the _s param from the URL
+      var _cleanSearch = window.location.search.replace(/[?&]_s=[^&]*/g, '').replace(/^&/, '?');
+      window.history.replaceState(null, '', window.location.pathname + (_cleanSearch || ''));
+      // Mark this as a fresh magic-link login so DOMContentLoaded skips auto-resume
+      try { sessionStorage.setItem('_dw_fresh_login', '1'); } catch(_) {}
+    }
+    // Also sync cookie to localStorage if set by server (only when no _s JWT was found)
+    if (!_sJwt && !localStorage.getItem('dw_session')) {
+      var _cm = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/);
+      if (_cm && _cm[1]) { localStorage.setItem('dw_session', decodeURIComponent(_cm[1])); }
+    }
+  } catch(_e) {}
+  // Handle magic param in URL (client-side fallback for old links)
+  var _p = new URLSearchParams(window.location.search);
+  var _magic = _p.get('magic');
+  if (_magic) {
+    try {
+      var _res = await fetch('/api/auth/magic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: _magic })
+      });
+      var _data = await _res.json();
+      if (_data.token) {
+        localStorage.setItem('dw_session', _data.token);
+        document.cookie = 'dw_session=' + _data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
+        window.location.replace('/app');
+        return;
+      }
+    } catch(e) {}
+  }
+  // \u2500\u2500 PREFLIGHT: start fast-resume fetch NOW (before DOMContentLoaded) \u2500\u2500
+  var _pfToken = localStorage.getItem('dw_session');
+  if (!_pfToken) {
+    try { var _cm2 = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); if (_cm2 && _cm2[1]) _pfToken = decodeURIComponent(_cm2[1]); } catch(_) {}
+  }
+  if (_pfToken) {
+    _dwPreflight = fetch('/api/auth/fast-resume', {
+      headers: { 'Authorization': 'Bearer ' + _pfToken }
+    }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+  }
+})();
 // \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 const STATE = {
   sessionId: null,
@@ -3057,7 +4776,10 @@ const STATE = {
   uploadedFiles: [],
   uploadedKeys: [],
   blueprintOverlayShown: false,
-  sessionJwt: null
+  sessionJwt: null,
+  uploadedDocs: [],
+  isAdmin: false,
+  blueprintGenerating: false
 };
 
 const PHASE_NAMES = [
@@ -3073,10 +4795,89 @@ const PRICES = {
 };
 
 // \u2500\u2500 SCREEN MANAGEMENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+  // === 1B Phase Bar Bridge ===
+  // Watches the hidden legacy phase elements and updates the 1B top bar
+  (function() {
+    function syncPhaseBar() {
+      var activeDot = document.querySelector('.phase-dot.active');
+      if (!activeDot) return;
+      var idMatch = activeDot.id && activeDot.id.match(/pd(\\d+)/);
+      var num = idMatch ? parseInt(idMatch[1]) : parseInt(activeDot.textContent);
+      if (isNaN(num)) return;
+
+      var stepLabel = document.getElementById('phase-step-label');
+      var titleLabel = document.getElementById('phase-title-label');
+      var progressFill = document.getElementById('phase-progress-fill');
+
+      if (stepLabel) stepLabel.textContent = 'Phase ' + num + ' of 8';
+      if (titleLabel && typeof PHASE_NAMES !== 'undefined' && PHASE_NAMES[num]) {
+        titleLabel.textContent = PHASE_NAMES[num];
+      }
+      if (progressFill) progressFill.style.width = ((num / 8) * 100) + '%';
+    }
+
+    // Run on load and after PHASE_NAMES is defined
+    setTimeout(syncPhaseBar, 100);
+
+    // Watch for class changes on phase dots
+    var observer = new MutationObserver(function() { syncPhaseBar(); });
+    var phasesEl = document.querySelector('.phases');
+    if (phasesEl) {
+      observer.observe(phasesEl, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    }
+
+    // Backup sync every 2s
+    setInterval(syncPhaseBar, 2000);
+  })();
+
 function showScreen(id) {
+  // Hide auth loader \u2014 remove injected preauth CSS then hide
+  var _preauth = document.getElementById('dw-preauth-css');
+  if (_preauth) _preauth.remove();
+  var authLoader = document.getElementById('dw-auth-loader');
+  if (authLoader) authLoader.style.display = 'none';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+
+  // Setup intake enhancements when showing intake screen
+  if (id === 'intake' && window.setupIntakeEnhancements) {
+    setTimeout(window.setupIntakeEnhancements, 100);
+  }
+
+  // Show or hide intake floating CTA bar
+  var floatingCta = document.getElementById('intake-floating-cta');
+  if (floatingCta) {
+    if (id !== 'intake') {
+      floatingCta.style.display = 'none';
+      floatingCta.classList.remove('active');
+    }
+  }
+
+  // Show or hide blueprint sticky bar
+  var stickyBar = document.getElementById('blueprint-sticky-bar');
+  if (stickyBar) {
+    if (id === 'blueprint-screen') {
+      stickyBar.style.display = 'block';
+    } else {
+      stickyBar.style.display = 'none';
+      stickyBar.style.transform = 'translateY(100%)';
+    }
+  }
+  // Seed welcome message for brand-new chat sessions
+  if (id === 'app') {
+    setTimeout(function() {
+      var msgs = document.getElementById('messages') || document.getElementById('chat-messages');
+      if (msgs && msgs.children.length === 0 && (!STATE.phase || STATE.phase <= 1) && !STATE.sessionId) {
+        var wm = document.createElement('div');
+        wm.id = 'welcome-placeholder';
+        wm.style.cssText = 'text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;line-height:1.7;';
+        wm.innerHTML = '<p style="max-width:320px;margin:0 auto;">Your AI strategist is ready. Complete the intake form and hit <strong>Begin My Session</strong> to start.</p>';
+        msgs.appendChild(wm);
+      }
+    }, 150);
+  }
 }
 
 function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
@@ -3087,7 +4888,22 @@ function showToast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(el._toastTimer);
-  el._toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  var isError = msg && (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('wrong') || msg.toLowerCase().includes('fail') || msg.toLowerCase().includes('could not'));
+  el._toastTimer = setTimeout(() => el.classList.remove('show'), isError ? 5500 : 3000);
+}
+
+function copyToClipboard(text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(function() {
+    showToast('Copied to clipboard');
+  }).catch(function(err) {
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand('copy'); showToast('Copied to clipboard'); } catch(_) { showToast('Copy failed'); }
+    document.body.removeChild(textarea);
+  });
 }
 
 // \u2500\u2500 TIER SELECTION & CHECKOUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -3124,8 +4940,33 @@ async function initiateCheckout(tier) {
 }
 
 // Check URL for session token on load
+window.addEventListener('beforeunload', function(e) {
+  if ((STATE.uploadedFiles && STATE.uploadedFiles.length > 0) || (STATE.uploadedDocs && STATE.uploadedDocs.length > 0)) {
+    if (!STATE.sessionId) { e.preventDefault(); e.returnValue = ''; }
+  }
+});
 window.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
+
+  // Handle magic link token \u2014 auto-login from email link
+  const magic = params.get('magic');
+  if (magic) {
+    try {
+      const res = await fetch('/api/auth/magic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: magic })
+      });
+      const data = await res.json();
+      if (data.token) {
+        localStorage.setItem('dw_session', data.token);
+        document.cookie = 'dw_session=' + data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
+        window.location.replace('/app');
+        return;
+      }
+    } catch(_) {}
+  }
+
   const sessionId = params.get('session');
   const tier = params.get('tier');
   const accessToken = params.get('access');
@@ -3170,54 +5011,185 @@ window.addEventListener('DOMContentLoaded', async () => {
     const storedJwt = localStorage.getItem('dw_session_jwt');
     if (storedJwt) STATE.sessionJwt = storedJwt;
 
-    // New auth flow: check dw_session token
-    const token = localStorage.getItem('dw_session');
+    // New auth flow: use preflight fast-resume (started before DOMContentLoaded)
+    // Bulletproof token recovery: check _s param directly in case IIFE localStorage write failed
+    var _domSParam = null;
+    try { _domSParam = new URLSearchParams(window.location.search).get('_s'); } catch(_) {}
+    if (_domSParam) {
+      try { localStorage.setItem('dw_session', _domSParam); } catch(_) {}
+      // Clean _s from URL so it doesn't persist
+      try {
+        var _cs2 = window.location.search.replace(/[?&]_s=[^&]*/g,'').replace(/^&/,'?');
+        window.history.replaceState(null, '', window.location.pathname + (_cs2 || ''));
+      } catch(_) {}
+    }
+    const _cookieMatch = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/);
+    if (_cookieMatch && _cookieMatch[1] && !localStorage.getItem('dw_session')) {
+      try { localStorage.setItem('dw_session', _cookieMatch[1]); } catch(_) {}
+    }
+    const token = localStorage.getItem('dw_session') || _domSParam;
     if (token) {
       try {
-        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
-        const user = await res.json();
-        if (user && user.id) {
+        // Use preflight result if available; if not (IIFE failed) start it now
+        if (!_dwPreflight && token) {
+          _dwPreflight = fetch('/api/auth/fast-resume', { headers: { 'Authorization': 'Bearer ' + token } }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+        }
+        // Use preflight result if available, otherwise fall back to regular auth
+        var fastData = _dwPreflight ? await _dwPreflight : null;
+        if (!fastData) {
+          // Fallback: regular auth/me
+          const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+          const user = await res.json();
+          if (user && user.id) fastData = { ok: true, user: user, hasActiveSession: false };
+        }
+        if (fastData && (fastData.user || fastData.ok)) {
+          var user = fastData.user || {};
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
           STATE.email = user.email || '';
-          showScreen('intake');
+          if (user.role === 'admin') { STATE.isAdmin = true; var dtb = document.getElementById('devtools-btn'); if (dtb) dtb.style.display = 'flex'; }
 
-          // Check for active or completed session to resume
-          try {
-            const activeRes = await fetch('/api/user/active-session', {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const activeData = await activeRes.json();
-            if (activeData.hasActiveSession && activeData.session) {
-              // Always auto-resume \u2014 drop user right where they left off
-              pendingResumeSessionId = activeData.session.id;
-              localStorage.setItem('dw_active_session', activeData.session.id);
-              await resumeSession();
+          // If returning user, pre-check consent
+          var consentCheck = document.getElementById('consent-check');
+          if (consentCheck) consentCheck.checked = true;
+
+          // Fast-resume includes session data \u2014 use it directly instead of 2 more API calls
+          if (fastData.hasActiveSession && fastData.messages) {
+            try { sessionStorage.removeItem('_dw_fresh_login'); } catch(_) {}
+            // Restore state directly from fast-resume data (no additional API calls)
+            STATE.sessionId = fastData.sessionId;
+            STATE.tier = fastData.tier || STATE.tier;
+            STATE.phase = fastData.phase || 1;
+            localStorage.setItem('dw_active_session', fastData.sessionId);
+            showScreen('app');
+            // Replay messages
+            for (var fi = 0; fi < fastData.messages.length; fi++) {
+              var fMsg = fastData.messages[fi];
+              appendMessage(fMsg.role === 'assistant' ? 'ai' : 'user', fMsg.content);
             }
-          } catch(_) {}
+            updatePhase(fastData.phase);
+            // If blueprint exists, go straight to blueprint
+            if (fastData.blueprintGenerated && fastData.blueprint) {
+              STATE.blueprint = fastData.blueprint;
+              try {
+                renderBlueprint(fastData.blueprint, fastData.strategistDebrief || null, true);
+              } catch(rbErr) {
+                console.error('renderBlueprint error:', rbErr.message, rbErr.stack);
+                try { document.title = 'DW-RB-ERR:' + (rbErr && rbErr.message ? rbErr.message.slice(0,80) : 'unknown'); } catch(_) {}
+                try { sessionStorage.setItem('_dw_rb_error', rbErr.message + ' | ' + (rbErr.stack || '').split('\\n')[0]); } catch(_) {}
+              }
+              try { if (!document.title.startsWith('DW-RB-ERR')) document.title = 'DW-OK:blueprint'; } catch(_) {}
+              // Check if user was mid-picker or on reveal \u2014 restore them there
+              var _savedNav = dwGetSavedNav(fastData.sessionId);
+              if (_savedNav && _savedNav.screen === 'site-reveal' && _savedNav.liveUrl) {
+                setTimeout(function() { showSiteReveal(_savedNav.liveUrl); }, 200);
+              } else if (_savedNav && _savedNav.screen === 'section-picker' && Array.isArray(_savedNav.pickerChosen)) {
+                setTimeout(function() { dwRestorePickerFromNav(_savedNav, fastData.blueprint); }, 200);
+              } else {
+                showScreen('blueprint-screen');
+              }
+            } else {
+              // Chat session \u2014 focus input
+              var _mi = document.getElementById('msg-input');
+              if (_mi) _mi.focus();
+              scrollToBottom();
+            }
+          } else {
+            // No active session \u2014 show intake
+            showScreen('intake');
+          }
         }
       } catch(e) {
-        // Auth failed silently, show landing
+        // Auth failed \u2014 remove preauth CSS, hide loader, show landing
+        console.error('Deep Work auth flow error:', e.message, e.stack);
+        try { document.title = 'DW-ERR:' + (e && e.message ? e.message.slice(0,80) : 'unknown'); } catch(_) {}
+        try { sessionStorage.setItem('_dw_error', JSON.stringify({msg: e.message, stack: (e.stack || '').split('\\n').slice(0,3).join(' | ')})); } catch(_) {}
+        var _pa = document.getElementById('dw-preauth-css');
+        if (_pa) _pa.remove();
+        var _al = document.getElementById('dw-auth-loader');
+        if (_al) _al.style.display = 'none';
+        var _lp = document.getElementById('landing');
+        if (_lp) { _lp.style.display = ''; _lp.classList.add('active'); }
       }
+    }
+    // If no token or auth didn't navigate away, hide loader and show landing
+    var _al2 = document.getElementById('dw-auth-loader');
+    if (_al2 && getComputedStyle(_al2).display !== 'none') {
+      var _pa2 = document.getElementById('dw-preauth-css');
+      if (_pa2) _pa2.remove();
+      _al2.style.display = 'none';
+      var _lp2 = document.getElementById('landing');
+      if (_lp2) { _lp2.style.display = ''; _lp2.classList.add('active'); }
     }
   }
 
   // File upload setup
   setupFileUpload();
+  setupDocUpload();
+
+  // Dev tools keyboard shortcut (Ctrl+Shift+D)
+  document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'D' && STATE.isAdmin) {
+      e.preventDefault();
+      var panel = document.getElementById('devtools-panel');
+      if (panel.classList.contains('open')) DT.close();
+      else DT.open();
+    }
+  });
 
   // Voice input setup
   initVoiceInput();
 
-  // Auto-resize textarea
-  const ta = document.getElementById('msg-input');
-  if (ta) ta.addEventListener('input', () => autoResize(ta));
+  // Auto-resize textarea (oninput on the element handles this \u2014 no duplicate listener needed)
 });
 
 // \u2500\u2500 INTAKE & SESSION START \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+  function checkStepFilled(el) {
+    var card = el.closest('.step-card');
+    if (!card) return;
+    if (el.value && el.value.trim().length > 0) {
+      card.classList.add('filled');
+    } else {
+      card.classList.remove('filled');
+    }
+    // Update url-row filled state for desktop two-column dot
+    var urlRow = document.getElementById('intake-url-row');
+    if (urlRow) {
+      var anyFilled = urlRow.querySelector('.step-card.filled');
+      if (anyFilled) { urlRow.classList.add('filled'); } else { urlRow.classList.remove('filled'); }
+    }
+    updateIntakeProgress();
+  }
+
+  function updateIntakeProgress() {
+    var filled = document.querySelectorAll('.step-card.filled').length;
+    var uploaded = (window.STATE && STATE.uploadedFiles ? STATE.uploadedFiles.length : 0) + (window.STATE && STATE.uploadedDocs ? STATE.uploadedDocs.length : 0);
+    var total = filled + (uploaded > 0 ? 1 : 0);
+    var eyebrow = document.getElementById('cta-eyebrow');
+    var counter = document.getElementById('context-counter');
+    if (eyebrow) {
+      if (total === 0) { eyebrow.textContent = 'READY WHEN YOU ARE'; }
+      else if (total <= 2) { eyebrow.textContent = 'LOOKING GOOD'; }
+      else { eyebrow.textContent = 'YOUR SESSION IS LOADED'; }
+    }
+    if (counter) {
+      if (total > 0) {
+        counter.style.display = 'block';
+        counter.textContent = total + (total === 1 ? ' piece' : ' pieces') + ' of context shared';
+      } else {
+        counter.style.display = 'none';
+      }
+    }
+  }
+
 function setupFileUpload() {
   const zone = document.getElementById('upload-zone');
   const input = document.getElementById('file-input');
   if (!zone || !input) return;
 
+  zone.addEventListener('click', (e) => {
+    if (e.target !== input) input.click();
+  });
   zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
   zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
   zone.addEventListener('drop', e => {
@@ -3255,6 +5227,171 @@ function removeFile(i) {
 }
 
 // \u2500\u2500 LOADING MESSAGES \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// \u2500\u2500 DOCUMENT UPLOAD (Onboarding) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function setupDocUpload() {
+  const zone = document.getElementById('doc-upload-zone');
+  const input = document.getElementById('doc-file-input');
+  if (!zone || !input) return;
+
+  zone.addEventListener('click', (e) => {
+    if (e.target !== input) input.click();
+  });
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handleDocFilesIntake(Array.from(e.dataTransfer.files));
+  });
+  input.addEventListener('change', () => handleDocFilesIntake(Array.from(input.files)));
+}
+__name(setupDocUpload, "setupDocUpload");
+__name2(setupDocUpload, "setupDocUpload");
+
+function handleDocFilesIntake(files) {
+  const DOC_EXTS = ['pdf','txt','md','doc','docx'];
+  const existing = STATE.uploadedDocs.map(f => f.name);
+  files.forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (DOC_EXTS.includes(ext) && !existing.includes(f.name) && STATE.uploadedDocs.length < 5) {
+      if (f.size <= 5 * 1024 * 1024) {
+        STATE.uploadedDocs.push(f);
+      }
+    }
+  });
+  renderUploadedDocsIntake();
+}
+__name(handleDocFilesIntake, "handleDocFilesIntake");
+__name2(handleDocFilesIntake, "handleDocFilesIntake");
+
+function renderUploadedDocsIntake() {
+  const container = document.getElementById('uploaded-docs');
+  if (!container) return;
+  container.innerHTML = STATE.uploadedDocs.map((f, i) => \`
+    <div class="file-chip">
+      \u{1F4C4} \${f.name}
+      <button onclick="removeDocIntake(\${i})">\xD7</button>
+    </div>
+  \`).join('');
+}
+__name(renderUploadedDocsIntake, "renderUploadedDocsIntake");
+__name2(renderUploadedDocsIntake, "renderUploadedDocsIntake");
+
+function removeDocIntake(i) {
+  STATE.uploadedDocs.splice(i, 1);
+  renderUploadedDocsIntake();
+}
+__name(removeDocIntake, "removeDocIntake");
+__name2(removeDocIntake, "removeDocIntake");
+
+// \u2500\u2500\u2500\u2500\u2500\u2500 Intake Enhancements (Floating CTA & Timeline Animations) \u2500\u2500\u2500\u2500\u2500\u2500
+window.setupIntakeEnhancements = function() {
+  // Floating CTA on scroll
+  var floatingCta = document.getElementById('intake-floating-cta');
+  var intakeSteps = document.querySelector('.intake-steps');
+
+  if (floatingCta && intakeSteps) {
+    floatingCta.style.display = 'block';
+
+    var checkScroll = function() {
+      var stepsRect = intakeSteps.getBoundingClientRect();
+      var shouldShow = stepsRect.top < -300;
+
+      if (shouldShow && !floatingCta.classList.contains('active')) {
+        floatingCta.classList.add('active');
+      } else if (!shouldShow && floatingCta.classList.contains('active')) {
+        floatingCta.classList.remove('active');
+      }
+    };
+
+    window.addEventListener('scroll', checkScroll, false);
+    checkScroll();
+  }
+
+  // Dynamically position timeline line to start at first visible dot
+  var stepsEl = document.querySelector('.intake-steps');
+  if (stepsEl) {
+    var stepsRect = stepsEl.getBoundingClientRect();
+    var lineTop = 0;
+
+    // On desktop, url-row hides individual dots but has its own ::before dot
+    var urlRow = stepsEl.querySelector('.intake-url-row');
+    if (urlRow) {
+      var urlRowFirstNode = urlRow.querySelector('.step-node');
+      var urlRowHidden = urlRowFirstNode && window.getComputedStyle(urlRowFirstNode).display === 'none';
+      if (urlRowHidden) {
+        // Desktop: url-row ::before dot is at top:4px, 16px tall with 2px border = center at +10px
+        var urlRowRect = urlRow.getBoundingClientRect();
+        lineTop = Math.round(urlRowRect.top + 4 + 10 - stepsRect.top);
+      }
+    }
+
+    // If we didn't get a position from url-row (mobile, or no url-row), find first visible dot
+    if (!lineTop) {
+      var allNodes = stepsEl.querySelectorAll('.step-node');
+      for (var i = 0; i < allNodes.length; i++) {
+        if (window.getComputedStyle(allNodes[i]).display !== 'none') {
+          var dotEl = allNodes[i].querySelector('.step-node-dot');
+          var dotRect = dotEl.getBoundingClientRect();
+          lineTop = Math.round(dotRect.top + dotRect.height / 2 - stepsRect.top);
+          break;
+        }
+      }
+    }
+
+    if (lineTop > 0) {
+      var styleTag = document.createElement('style');
+      styleTag.textContent = '.intake-steps::before { top: ' + lineTop + 'px !important; }';
+      document.head.appendChild(styleTag);
+    }
+  }
+
+  // Timeline animations on scroll
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, {
+      threshold: 0.2,
+      rootMargin: '0px 0px -50px 0px'
+    });
+
+    document.querySelectorAll('.step-card').forEach(function(card) {
+      observer.observe(card);
+    });
+  }
+
+  // Show phone step (always visible, marked optional)
+  var phoneStep = document.getElementById('step-phone');
+  if (phoneStep) {
+    phoneStep.style.display = 'block';
+  }
+};
+
+// Save phone number to session
+window.savePhone = function(value) {
+  var cleaned = value.replace(/[^0-9+]/g, '');
+  if (cleaned.length < 10) return;
+  var sessionJwt = localStorage.getItem('dw_session_jwt');
+  var sessionId = window.STATE && window.STATE.sessionId;
+  if (sessionId && sessionJwt) {
+    fetch('/api/sessions/' + sessionId + '/phone', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + sessionJwt,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ phone: cleaned })
+    }).catch(function() {});
+  }
+  var card = document.getElementById('step-phone');
+  if (card) card.classList.add('filled');
+};
+
 const LOADING_MESSAGES = [
   "Brewing something strong for your brand...",
   "Reading between your lines...",
@@ -3274,7 +5411,31 @@ const LOADING_MESSAGES = [
 let loadingInterval = null;
 let loadingMsgIndex = 0;
 
+var _globalLoadingTimeout = null;
 function showLoadingOverlay() {
+  clearTimeout(_globalLoadingTimeout);
+  _globalLoadingTimeout = setTimeout(function() {
+    var overlay = document.getElementById('loading-overlay');
+    if (overlay && overlay.style.display !== 'none') {
+      showLoadingError('Taking too long', 'This is taking longer than expected. Please try refreshing the page or starting over.', null);
+    }
+  }, 300000);
+  // Auto-add dismiss capability after 15 seconds in case of stuck overlay
+  clearTimeout(window._loadingDismissTimer);
+  window._loadingDismissTimer = setTimeout(function() {
+    var overlay = document.getElementById('loading-overlay');
+    if (overlay && overlay.style.display !== 'none') {
+      var existing = overlay.querySelector('.loading-dismiss-hint');
+      if (!existing) {
+        var hint = document.createElement('div');
+        hint.className = 'loading-dismiss-hint';
+        hint.style.cssText = 'position:absolute;bottom:30px;left:50%;transform:translateX(-50%);font-size:13px;color:rgba(255,255,255,0.5);cursor:pointer;padding:10px 20px;';
+        hint.textContent = 'Taking too long? Tap here to dismiss.';
+        hint.onclick = function() { hideLoadingOverlay(); };
+        overlay.appendChild(hint);
+      }
+    }
+  }, 15000);
   const overlay = document.getElementById('session-loading');
   const content = document.getElementById('loading-content');
   const error = document.getElementById('loading-error');
@@ -3312,6 +5473,7 @@ function updateLoadingStage(stageName, progress) {
 }
 
 function hideLoadingOverlay() {
+  clearTimeout(_globalLoadingTimeout);
   const overlay = document.getElementById('session-loading');
   overlay.classList.remove('active');
   if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
@@ -3325,12 +5487,12 @@ function showLoadingError(title, message, detail) {
 
   if (loadingInterval) { clearInterval(loadingInterval); loadingInterval = null; }
   content.style.display = 'none';
-  error.style.display = '';
+  error.style.display = 'block';
   if (title) error.querySelector('h3').textContent = title;
   if (message) errorText.textContent = message;
   if (detail) {
     errorDetail.textContent = detail;
-    errorDetail.style.display = '';
+    errorDetail.style.display = 'block';
   } else {
     errorDetail.style.display = 'none';
   }
@@ -3344,6 +5506,8 @@ function dismissLoadingError() {
 }
 
 async function startSession() {
+  // Clear any stale dismiss timers
+  clearTimeout(window._loadingDismissTimer);
   const btn = document.getElementById('start-btn');
 
   // \u2500\u2500 Consent check \u2500\u2500
@@ -3470,6 +5634,32 @@ async function startSession() {
       }
     }
 
+    // \u2500\u2500 Step 1b: Upload documents \u2500\u2500
+    if (STATE.uploadedDocs.length > 0) {
+      updateLoadingStage('Reading your documents', 30);
+      if (!STATE.sessionId) {
+        STATE.sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      }
+      for (let i = 0; i < STATE.uploadedDocs.length; i++) {
+        const file = STATE.uploadedDocs[i];
+        updateLoadingStage('Reading ' + file.name, 30 + Math.round((i / STATE.uploadedDocs.length) * 10));
+        if (file.size > 5 * 1024 * 1024) continue;
+        try {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('sessionId', STATE.sessionId);
+          const controller2 = new AbortController();
+          const timeout2 = setTimeout(() => controller2.abort(), 30000);
+          const r2 = await fetch('/api/upload', { method: 'POST', body: fd, signal: controller2.signal });
+          clearTimeout(timeout2);
+          if (r2.ok) {
+            const d2 = await r2.json();
+            if (d2.key) STATE.uploadedKeys.push(d2.key);
+          }
+        } catch (_) {}
+      }
+    }
+
     // \u2500\u2500 Step 2: Generate session ID \u2500\u2500
     updateLoadingStage('Setting up your session', 35);
     if (!STATE.sessionId) {
@@ -3486,7 +5676,6 @@ async function startSession() {
       competitorUrls: competitorsVal ? competitorsVal.split('\\n').map(s => s.trim()).filter(Boolean) : [],
       testimonials: (document.getElementById('intake-testimonials')?.value || '').trim(),
       uploadedKeys: STATE.uploadedKeys,
-      phone: (document.getElementById('intake-phone')?.value || '').trim()
     };
 
     // \u2500\u2500 Step 4: Start the session (the big one) \u2500\u2500
@@ -3688,7 +5877,7 @@ async function resumeSession() {
 
     const data = await res.json();
 
-    if (!data.ok || !data.messages || data.messages.length === 0) {
+    if (!data.ok || (!data.blueprintGenerated && (!data.messages || data.messages.length === 0))) {
       showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
       if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
@@ -3704,6 +5893,11 @@ async function resumeSession() {
 
     // Switch to app screen
     showScreen('app');
+    // Show welcome message if no messages yet
+    var msgsContainer = document.getElementById('messages');
+    if (msgsContainer && msgsContainer.children.length === 0) {
+      appendMessage('ai', 'Welcome! I am your Deep Work strategist. Tell me about your business and what you are looking to accomplish, and I will help you build something meaningful.');
+    }
 
     // Replay messages into the chat
     for (const msg of data.messages) {
@@ -3716,16 +5910,35 @@ async function resumeSession() {
     // If blueprint was generated, navigate directly to blueprint screen
     if (data.blueprintGenerated && data.blueprint) {
       STATE.blueprint = data.blueprint;
+      // If site was already generated, store the URL and go to mission control
+      if (data.siteGenerated && data.siteUrl) {
+        STATE.liveUrl = data.siteUrl;
+        STATE.siteGenerated = true;
+        updateLoadingStage('Your site is ready.', 100);
+        await new Promise(r => setTimeout(r, 200));
+        hideLoadingOverlay();
+        renderBlueprint(data.blueprint, data.strategistDebrief || null, true);
+        showMissionControl(data.siteUrl, data.siteSlug || '');
+        return;
+      }
       updateLoadingStage('Your blueprint is ready.', 100);
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 200));
       hideLoadingOverlay();
       renderBlueprint(data.blueprint, data.strategistDebrief || null, true);
-      showScreen('blueprint-screen');
+      // Check if user was mid-picker or on reveal \u2014 restore them there
+      var _sn2 = dwGetSavedNav(STATE.sessionId);
+      if (_sn2 && _sn2.screen === 'site-reveal' && _sn2.liveUrl) {
+        showSiteReveal(_sn2.liveUrl);
+      } else if (_sn2 && _sn2.screen === 'section-picker' && Array.isArray(_sn2.pickerChosen)) {
+        dwRestorePickerFromNav(_sn2, data.blueprint);
+      } else {
+        showScreen('blueprint-screen');
+      }
       return;
     }
 
     updateLoadingStage('Welcome back.', 100);
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 150));
     hideLoadingOverlay();
 
     document.getElementById('msg-input')?.focus();
@@ -3895,7 +6108,7 @@ function handleKey(e) {
 }
 
 function autoResize(el) {
-  el.style.height = 'auto';
+  el.style.height = '0px';
   el.style.height = Math.min(el.scrollHeight, 160) + 'px';
 }
 
@@ -3903,6 +6116,7 @@ async function sendMessage() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
   if (!text || STATE.isStreaming) return;
+  if (text.length > 10000) { showToast('Your message is too long. Please keep it under 10,000 characters.'); return; }
 
   input.value = '';
   input.style.height = 'auto';
@@ -3913,7 +6127,7 @@ async function sendMessage() {
 
   try {
     const controller = new AbortController();
-    const fetchTimeout = setTimeout(() => controller.abort(), 120000); // 2 min client timeout
+    const fetchTimeout = setTimeout(() => controller.abort(), 45000); // 45s client timeout
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3936,11 +6150,33 @@ async function sendMessage() {
     let buffer = '';
     let lastChunkTime = Date.now();
     let streamError = null;
+    let slowConnShown = false;
+    const slowConnCheck = setInterval(function() {
+      if (Date.now() - lastChunkTime > 12000 && !slowConnShown) {
+        slowConnShown = true;
+        var statusBar = document.getElementById('chat-status') || (function() {
+          var el = document.createElement('div');
+          el.id = 'chat-status';
+          el.style.cssText = 'text-align:center;font-size:12px;color:var(--muted);padding:4px 0;opacity:0.8;';
+          var msgs = document.getElementById('messages') || document.getElementById('chat-messages');
+          if (msgs) msgs.parentNode.insertBefore(el, msgs.nextSibling);
+          return el;
+        })();
+        if (statusBar) statusBar.textContent = 'Slow connection detected \u2014 still working...';
+      }
+      if (Date.now() - lastChunkTime < 1000 && slowConnShown) {
+        var sb = document.getElementById('chat-status');
+        if (sb) sb.textContent = '';
+        slowConnShown = false;
+      }
+    }, 2000);
 
     // Stall detector: if no data for 60s during streaming, abort
     const stallCheck = setInterval(() => {
       if (Date.now() - lastChunkTime > 60000) {
         clearInterval(stallCheck);
+    clearInterval(slowConnCheck);
+    var sb2 = document.getElementById('chat-status'); if (sb2) sb2.textContent = '';
         reader.cancel();
       }
     }, 5000);
@@ -3984,9 +6220,11 @@ async function sendMessage() {
               updatePhase(ev.phase);
               if (ev.phase === 8 && !STATE.blueprintOverlayShown) {
                 STATE.blueprintOverlayShown = true;
+                STATE.blueprintGenerating = true;
                 showBlueprintGenerating();
               }
               if (ev.sessionComplete) {
+                STATE.blueprintGenerating = false;
                 hideBlueprintGenerating();
                 handleBlueprintReady(ev.blueprint);
               }
@@ -4013,14 +6251,120 @@ async function sendMessage() {
     if (isTimeout || isStall) {
       appendMessage('ai', 'The response took too long. This can happen with complex questions. Please try sending your message again \u2014 your conversation is saved.');
     } else {
-      appendMessage('ai', 'Something went wrong (' + (e.message || 'unknown error').substring(0, 100) + '). Please try again.');
+      appendMessage('ai', 'Something went wrong. Please check your connection and try again.');
     }
   } finally {
     STATE.isStreaming = false;
     document.getElementById('send-btn').disabled = false;
     document.getElementById('msg-input').focus();
+    showSaveIndicator();
   }
 }
+
+// \u2500\u2500 Photo & document upload \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function openUploadModal() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  input.accept = 'image/*,.pdf,.txt,.md,.doc,.docx';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.onchange = async function() {
+    if (this.files && this.files.length > 0) {
+      const docExts = ['pdf','txt','md','doc','docx'];
+      const photos = Array.from(this.files).filter(f => !docExts.includes(f.name.split('.').pop().toLowerCase()));
+      const docs = Array.from(this.files).filter(f => docExts.includes(f.name.split('.').pop().toLowerCase()));
+      if (photos.length) await handlePhotoFiles(photos);
+      for (const doc of docs) await handleDocUploadFile(doc);
+    }
+    document.body.removeChild(input);
+  };
+  input.click();
+}
+
+async function handlePhotoFiles(files) {
+  if (!files.length || !STATE.sessionId) return;
+  const toUpload = files.slice(0, 5);
+  const statusEl = document.getElementById('doc-upload-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...'; }
+  let succeeded = 0;
+  for (const file of toUpload) {
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('sessionId', STATE.sessionId);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.ok) succeeded++;
+    } catch (e) {}
+  }
+  if (statusEl) {
+    statusEl.textContent = succeeded > 0 ? '\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' added to your session.' : 'Upload failed. Please try again.';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+  }
+  if (succeeded > 0) {
+    const msg = 'I just uploaded ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' to my session.';
+    const input = document.getElementById('msg-input');
+    if (input) {
+      input.value = msg;
+      sendMessage();
+    }
+  }
+}
+
+function openDocUpload() {
+  const input = document.getElementById('doc-upload-input');
+  if (input) input.click();
+}
+
+async function handleDocUploadFile(file) {
+  if (!file || !STATE.sessionId) return;
+  const statusEl = document.getElementById('doc-upload-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Reading ' + file.name + '...'; }
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('sessionId', STATE.sessionId);
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (statusEl) {
+      statusEl.textContent = '\u2713 ' + file.name + ' added. The AI will reference it in your session.';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  } catch (e) {
+    if (statusEl) {
+      statusEl.textContent = 'Could not upload: ' + e.message;
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  }
+}
+
+async function handleDocUpload(inputEl) {
+  if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
+  const file = inputEl.files[0];
+  const statusEl = document.getElementById('doc-upload-status');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Reading ' + file.name + '...'; }
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('sessionId', STATE.sessionId);
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (statusEl) {
+      statusEl.textContent = '\u2713 ' + file.name + ' added. The AI will reference it in your session.';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  } catch (e) {
+    if (statusEl) {
+      statusEl.textContent = 'Could not upload: ' + e.message;
+      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+  }
+  inputEl.value = '';
+}
+
 
 function appendMessage(role, text) {
   const msgs = document.getElementById('messages');
@@ -4278,6 +6622,19 @@ function hideBlueprintGenerating() {
   }, 1200);
 }
 
+function showSaveIndicator() {
+  var indicator = document.getElementById('save-indicator');
+  if (!indicator) {
+    indicator = document.createElement('div');
+    indicator.id = 'save-indicator';
+    indicator.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(46,204,113,0.9);color:#fff;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;opacity:0;transition:opacity 0.3s;z-index:100;pointer-events:none;';
+    document.body.appendChild(indicator);
+  }
+  indicator.textContent = 'Progress saved';
+  indicator.style.opacity = '1';
+  setTimeout(function() { indicator.style.opacity = '0'; }, 2000);
+}
+
 function scrollToBottom() {
   const msgs = document.getElementById('messages');
   msgs.scrollTop = msgs.scrollHeight;
@@ -4343,6 +6700,17 @@ function updatePhase(phase) {
 
   STATE.phase = phase;
 
+  // Phase 4 midpoint celebration
+  if (phase === 4 && oldPhase < 4) {
+    setTimeout(function() {
+      var midMsg = document.createElement('div');
+      midMsg.style.cssText = 'text-align:center;padding:16px 20px;margin:8px 0;background:linear-gradient(135deg,rgba(196,112,63,0.08),rgba(196,112,63,0.04));border-radius:12px;border:1px solid rgba(196,112,63,0.15);';
+      midMsg.innerHTML = '<div style="font-size:20px;margin-bottom:6px;">&#127881;</div><div style="font-size:14px;font-weight:600;color:var(--accent);margin-bottom:4px;">Halfway there</div><div style="font-size:13px;color:var(--muted);line-height:1.5;">You&apos;re doing great. Four phases down, four to go. The best insights are usually in the second half.</div>';
+      var msgs = document.getElementById('messages') || document.getElementById('chat-messages');
+      if (msgs) { msgs.appendChild(midMsg); msgs.scrollTop = msgs.scrollHeight; }
+    }, 800);
+  }
+
   // Show image generation button at phase 5
   if (phase >= 5) {
     document.getElementById('images-btn').style.display = 'flex';
@@ -4354,9 +6722,19 @@ function handleBlueprintReady(blueprint) {
   if (!blueprint) return;
   STATE.blueprint = blueprint;
 
+  // Update "Make This Real" button text based on tier
+  var bsBtn = document.getElementById('build-site-btn');
+  if (bsBtn) {
+    if (STATE.tier === 'site') {
+      bsBtn.textContent = 'Build My Website Now';
+    } else {
+      bsBtn.textContent = 'Get Your Site Built';
+    }
+  }
+
   // Order bump (removed from HTML, guard against null reference)
   const _bump = document.getElementById('order-bump');
-  if (_bump && STATE.tier !== 'site') {
+  if (_bump && false) {  // order-bump disabled: all purchases now include site + deploy
     setTimeout(() => { _bump.style.display = 'flex'; }, 2000);
   }
 
@@ -4371,280 +6749,1256 @@ function renderBlueprint(bp, strategistDebrief, isReturning) {
   const b = bp.blueprint;
   document.getElementById('bp-name').textContent = b.name + "'s Brand Blueprint";
 
-  // \u2500\u2500 Strategist Debrief \u2500\u2500
+  // \u2500\u2500 Emotional Opening (Strategist Debrief or Blueprint-Derived) \u2500\u2500
   const debriefEl = document.getElementById('strategist-debrief');
   if (debriefEl) {
     const d = strategistDebrief;
     const p8 = b.part8 || {};
+    const li = b.leadIntel || {};
+    const hasDebrief = d && d.reflection;
 
-    if (d && d.reflection) {
-      // Opus-generated debrief exists \u2014 render the real thing
-      const returningNote = isReturning
-        ? \`<div style="font-size:13px;color:#C4703F;font-style:italic;margin-bottom:16px;">You came back. That tells me this matters to you. Everything below is exactly where you left it.</div>\`
+    // Build the table of contents (shared by both paths)
+    var tocHTML = \`
+    <div style="padding:48px 24px 56px;background:linear-gradient(180deg, transparent 0%, rgba(196,112,63,0.03) 50%, transparent 100%);margin:16px 0;">
+      <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:28px;text-align:center;">Your blueprint contains</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:0 auto;">
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">01</span> Ideal Client</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">02</span> Brand Foundation</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">03</span> Niche Positioning</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">04</span> Offer Suite</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">05</span> Website Blueprint</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">06</span> Growth Strategy</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">07</span> Headlines</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">08</span> Your Next Step</div>
+      </div>
+    </div>\`;
+
+    if (hasDebrief) {
+      // \u2550\u2550\u2550 PATH A: Full Opus-generated debrief \u2014 the 5-stage emotional journey \u2550\u2550\u2550
+      var returningNote = isReturning
+        ? \`<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--gold);margin-bottom:24px;animation:fadeUpDebrief 0.6s ease-out;">You came back. That tells me this matters to you.</div>\`
         : '';
 
-      debriefEl.innerHTML = \`
-        <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:32px 36px;box-shadow:0 2px 16px rgba(0,0,0,0.05);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">\u2726</div>
-            <div>
-              <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;">A Note From Your Strategist</div>
-              <div style="font-size:12px;color:#999;margin-top:2px;">Written after getting to know you</div>
-            </div>
-          </div>
+debriefEl.innerHTML = \`
+  <!-- Stage 1: The Quiet Moment -->
+  <div style="text-align:center;padding:80px 24px 56px;animation:fadeUpDebrief 0.8s ease-out;">
+    \${returningNote}
+    <div style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,52px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:20px;">\${b.name}.</div>
+    <div style="width:48px;height:2.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 24px;border-radius:2px;"></div>
+    <div style="font-family:'Inter',sans-serif;font-size:15px;color:var(--text2);line-height:1.7;max-width:400px;margin:0 auto;">I just spent real time getting to know you. Before you see everything we built together, I want to share what stood out to me.</div>
+  </div>
 
-          \${returningNote}
+  <!-- Stage 2: What I Noticed -->
+  <div style="max-width:600px;margin:0 auto;padding:48px 24px 32px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.2s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">What I noticed about you</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;border-left:2px solid rgba(196,112,63,0.2);padding-left:20px;">\${d.reflection}</div>
+  </div>
 
-          \${d.quotedMoment ? \`<div style="font-size:16px;font-style:italic;color:#555;line-height:1.7;padding:16px 20px;border-left:3px solid #C4703F;background:rgba(196,112,63,0.04);border-radius:0 8px 8px 0;margin-bottom:20px;">"\${d.quotedMoment}"</div>\` : ''}
+  \${d.quotedMoment ? \`
+  <!-- Stage 3: The Thing You Said -->
+  <div style="text-align:center;padding:56px 24px;margin:24px 0;background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, rgba(212,149,90,0.02) 100%);border-radius:16px;animation:fadeUpDebrief 0.8s ease-out 0.4s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;font-weight:600;">Something you said that stayed with me</div>
+    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3.5vw,32px);color:var(--text);line-height:1.55;max-width:560px;margin:0 auto;padding:28px 0;">&ldquo;\${d.quotedMoment}&rdquo;</div>
+    <div style="width:24px;height:2px;background:var(--gold);margin:0 auto;border-radius:2px;opacity:0.5;"></div>
+  </div>
+  \` : ''}
 
-          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:16px;">
-            \${d.reflection}
-          </div>
+  <!-- Stage 4: The One Insight -->
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px 40px;animation:fadeUpDebrief 0.8s ease-out 0.6s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">The insight that matters most right now</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;">\${d.insight}</div>
+  </div>
 
-          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:16px;">
-            \${d.insight}
-          </div>
+  <!-- Stage 5: The Mentor Moment -->
+  <div style="max-width:600px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.8s both;">
+    <div style="font-family:'Inter',sans-serif;font-size:15px;line-height:1.9;color:#555;margin-bottom:24px;">\${d.motivation}</div>
+    \${d.bridge ? \`
+    <div style="background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 14px 14px 0;">
+      <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.12em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:12px;">Looking ahead</div>
+      <div style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.8;color:#555;">\${d.bridge}</div>
+    </div>
+    \` : ''}
+  </div>
 
-          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:20px;">
-            \${d.bridge}
-          </div>
+  \${tocHTML}
+\`;
 
-          <div style="padding:20px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.08), rgba(196,112,63,0.02));border:1.5px solid rgba(196,112,63,0.25);border-radius:12px;margin-bottom:20px;">
-            <div style="font-size:15px;line-height:1.85;color:#333;font-weight:500;">
-              \${d.motivation}
-            </div>
-          </div>
-
-          <div style="text-align:center;">
-            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Get Your Vision Live</button>
-            <div style="font-size:12px;color:#999;margin-top:8px;">Everything you need is already in this blueprint. Let's bring it to life.</div>
-          </div>
-        </div>
-      \`;
       debriefEl.style.display = '';
+
     } else {
-      // No Opus debrief yet \u2014 use smart fallback from blueprint data
-      const promise = b.part1 ? b.part1.coreBrandPromise : '';
-      const avatarName = b.part2 ? b.part2.name : '';
-      const niche = b.part3 ? b.part3.nicheStatement : '';
-      const firstMove = b.part6 ? b.part6.firstMove : '';
+      // \u2550\u2550\u2550 PATH B: No debrief \u2014 build emotional opening from blueprint data \u2550\u2550\u2550
+      // This fires for admin-generated test blueprints and any session where debrief failed
+      var nicheStatement = b.part3 ? b.part3.nicheStatement : '';
+      var personaName = b.part2 ? b.part2.name : '';
+      var exactWords = (b.part2 && b.part2.exactWords) ? b.part2.exactWords : [];
+      var brandPromise = b.part1 ? b.part1.coreBrandPromise : '';
+      var painPoint = li.biggestPainPoint || '';
+      var notableQuotes = li.notableQuotes || [];
+      // Pick the best quote available
+      var bestQuote = notableQuotes.length > 0 ? notableQuotes[0] : (exactWords.length > 0 ? exactWords[0] : '');
 
-      let bridgeText = '';
-      if (p8.personalizedMessage) {
-        bridgeText = p8.personalizedMessage;
-      } else if (firstMove) {
-        bridgeText = firstMove;
-      } else if (promise) {
-        bridgeText = 'Your brand promise is clear: ' + promise + '. The next step is turning that clarity into something your audience can experience.';
-      }
+      var returningNoteFallback = isReturning
+        ? \`<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--gold);margin-bottom:24px;animation:fadeUpDebrief 0.6s ease-out;">You came back. That tells me this matters to you.</div>\`
+        : '';
 
-      const contextParts = [];
-      if (niche) contextParts.push(niche);
-      else if (promise) contextParts.push(promise);
-      if (avatarName) contextParts.push('Your ideal client, ' + avatarName + ', is out there looking for exactly what you offer.');
+debriefEl.innerHTML = \`
+  <!-- Emotional Opening: The Arrival -->
+  <div style="text-align:center;padding:100px 24px 64px;animation:fadeUpDebrief 0.8s ease-out;">
+    \${returningNoteFallback}
+    <div style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,52px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:20px;">\${b.name}.</div>
+    <div style="width:48px;height:2.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 24px;border-radius:2px;"></div>
+    <div style="font-family:'Inter',sans-serif;font-size:15px;color:var(--text2);line-height:1.7;max-width:420px;margin:0 auto;">This is not a template. Everything below was built specifically for you, your strengths, your market, and the people you are meant to serve.</div>
+  </div>
 
-      debriefEl.innerHTML = \`
-        <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,0.04);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">\u2726</div>
-            <div style="font-size:18px;font-weight:700;font-family:'Outfit',sans-serif;">Your Strategist's Take</div>
-          </div>
-          <div style="font-size:15px;line-height:1.8;color:#333;">
-            After getting to know you, here is what stands out. \${contextParts.join(' ')} Below is your complete brand blueprint with everything we uncovered together. Scroll through each section, and when you are ready to bring this to life, the button below will get you there.
-          </div>
-          \${bridgeText ? \`
-            <div style="margin-top:20px;padding:20px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.08), rgba(196,112,63,0.02));border:1.5px solid rgba(196,112,63,0.25);border-radius:12px;">
-              <div style="font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#C4703F;font-weight:600;margin-bottom:8px;">Your Next Move</div>
-              <div style="font-size:14px;line-height:1.7;color:#444;">\${bridgeText}</div>
-            </div>
-          \` : ''}
-        </div>
-      \`;
+  \${nicheStatement ? \`
+  <!-- The Identity Statement -->
+  <div style="text-align:center;padding:56px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, rgba(212,149,90,0.02) 100%);border-radius:16px;margin:24px 0;animation:fadeUpDebrief 0.8s ease-out 0.2s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:24px;font-weight:600;">At your core, this is what you do</div>
+    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(20px,3vw,28px);color:var(--text);line-height:1.6;max-width:560px;margin:0 auto;padding:28px 0;">\${nicheStatement}</div>
+    <div style="width:24px;height:2px;background:var(--gold);margin:0 auto;border-radius:2px;opacity:0.5;"></div>
+  </div>
+  \` : ''}
+
+  \${personaName ? \`
+  <!-- Who This Is For -->
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px 32px;animation:fadeUpDebrief 0.8s ease-out 0.4s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">The person you are here to help</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;border-left:2px solid rgba(196,112,63,0.2);padding-left:20px;">
+      Your ideal client is \${personaName}. \${b.part2.lifeSituation || ''} \${b.part2.whatIsStoppingThem ? 'What holds them back: ' + b.part2.whatIsStoppingThem.charAt(0).toLowerCase() + b.part2.whatIsStoppingThem.slice(1) : ''}
+    </div>
+  </div>
+  \` : ''}
+
+  \${exactWords.length > 0 ? \`
+  <!-- Their Inner Voice -->
+  <div style="text-align:center;padding:48px 24px;animation:fadeUpDebrief 0.8s ease-out 0.6s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:32px;font-weight:600;">The words they are thinking right now</div>
+    \${exactWords.slice(0,3).map(function(w, i, arr) {
+      return '<div style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:clamp(18px,2.5vw,24px);color:var(--text);line-height:1.5;margin-bottom:' + (i < arr.length - 1 ? '32px' : '0') + ';">&ldquo;' + w + '&rdquo;</div>' + (i < arr.length - 1 ? '<div style="width:16px;height:1px;background:var(--gold);margin:0 auto 32px;"></div>' : '');
+    }).join('')}
+  </div>
+  \` : ''}
+
+  \${brandPromise ? \`
+  <!-- The Promise -->
+  <div style="max-width:600px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.8s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">Your brand promise</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;">\${brandPromise}</div>
+    <div style="background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-left:3px solid var(--gold);padding:20px 24px;border-radius:0 14px 14px 0;margin-top:20px;">
+      <div style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.8;color:#555;">Below is the complete blueprint that brings this to life. Seven parts. Everything you need to go from clarity to action.</div>
+    </div>
+  </div>
+  \` : ''}
+
+  \${tocHTML}
+\`;
+
       debriefEl.style.display = '';
     }
   }
 
   const body = document.getElementById('blueprint-body');
+
+  // Helper: pad number to 2 digits
+  function pn(n) { return n < 10 ? '0' + n : '' + n; }
+
   body.innerHTML = \`
-    \${renderPart(1, b.part1.title, \`
-      <div class="bp-grid">
-        <div class="bp-item">
-          <div class="bp-item-label">Brand Names</div>
-          <div class="bp-item-value">\${b.part1.brandNames.map((n,i) => \`\${i+1}. \${n}\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Taglines</div>
-          <div class="bp-item-value">\${b.part1.taglines.map((t,i) => \`\${i+1}. \${t}\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Color Palette</div>
-          <div class="bp-item-value">\${b.part1.visualDirection.colors.map(c => \`<span class="color-swatch" style="background:\${c.hex}"></span>\${c.name} \${c.hex}\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Core Brand Promise</div>
-          <div class="bp-item-value">\${b.part1.coreBrandPromise}</div>
-        </div>
+
+    <!-- Part 1 (was Part 2): The People You're Here to Help -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part One</div>
+        <div class="mag-title">The People You Are Here to Help</div>
+        <div style="font-size:13px;color:#888;margin-top:6px;">Meet \${b.part2.name}. This is what they are thinking right now.</div>
       </div>
-    \`)}
-    \${renderPart(2, b.part2.title, \`
-      <div class="bp-grid">
-        <div class="bp-item">
-          <div class="bp-item-label">Avatar</div>
-          <div class="bp-item-value"><strong>\${b.part2.name}</strong>, \${b.part2.ageRange}<br>\${b.part2.lifeSituation}</div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Meet \${b.part2.name}</div>
+          <div class="mag-value">\${b.part2.ageRange}. \${b.part2.lifeSituation}</div>
         </div>
-        <div class="bp-item">
-          <div class="bp-item-label">What Stops Them</div>
-          <div class="bp-item-value">\${b.part2.whatIsStoppingThem}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Their Exact Words</div>
-          <div class="bp-item-value">\${b.part2.exactWords.map((w,i) => \`\${i+1}. "\${w}"\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Why Past Solutions Failed</div>
-          <div class="bp-item-value">\${b.part2.whyItDidNotWork}</div>
+        <div class="mag-col">
+          <div class="mag-label">What Stops Them</div>
+          <div class="mag-value">\${b.part2.whatIsStoppingThem}</div>
         </div>
       </div>
-    \`)}
-    \${renderPart(3, b.part3.title, \`
-      <div class="bp-item" style="margin-bottom:12px">
-        <div class="bp-item-label">Niche Statement</div>
-        <div class="bp-item-value" style="font-size:16px;font-weight:500">\${b.part3.nicheStatement}</div>
+      \${b.part2.exactWords && b.part2.exactWords.length ? \`
+      <div style="padding:48px 0;text-align:center;">
+        \${b.part2.exactWords.slice(0,3).map(function(w,i,arr) {
+          return '<div style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:clamp(20px,3vw,28px);color:#111;line-height:1.5;margin-bottom:' + (i < arr.length - 1 ? '48px' : '0') + ';">&ldquo;' + w + '&rdquo;</div>' + (i < arr.length - 1 ? '<div style="width:16px;height:1px;background:#c4703f;margin:0 auto 48px;"></div>' : '');
+        }).join('')}
       </div>
-      <div class="bp-grid">
-        <div class="bp-item">
-          <div class="bp-item-label">Unique Mechanism</div>
-          <div class="bp-item-value">\${b.part3.uniqueMechanism}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Competitive Edge</div>
-          <div class="bp-item-value">\${b.part3.competitorGap}</div>
-        </div>
+      <div style="padding:24px 28px;background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-radius:14px;font-size:13px;color:#555;line-height:1.7;text-align:center;border:1px solid rgba(196,112,63,0.08);">
+        These are the words your ideal clients are thinking right now. Your brand gives them a place to land.
       </div>
-    \`)}
-    \${renderPart(4, b.part4.title, \`
-      <div class="bp-grid">
-        \${renderOffer('Entry Offer', b.part4.entryOffer)}
-        \${renderOffer('Core Offer', b.part4.coreOffer)}
-        \${renderOffer('Premium Offer', b.part4.premiumOffer)}
-        <div class="bp-item">
-          <div class="bp-item-label">Ascension Logic</div>
-          <div class="bp-item-value">\${b.part4.ascensionLogic}</div>
+      \` : ''}
+      <div class="mag-grid" style="margin-top:24px;">
+        <div class="mag-col">
+          <div class="mag-label">Why Past Solutions Failed</div>
+          <div class="mag-value">\${b.part2.whyItDidNotWork || ''}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">What They Are Trying to Achieve</div>
+          <div class="mag-value">\${b.part2.tryingToAchieve || ''}</div>
         </div>
       </div>
-    \`)}
-    \${b.part5 ? renderPart(5, b.part5.title, \`
-      <div class="bp-item">
-        <div class="bp-item-label">Hero Headlines</div>
-        <div class="bp-item-value">\${b.part5.heroHeadlines.map((h,i) => \`\${i+1}. \${h}\`).join('<br><br>')}</div>
+    </div>
+
+    <!-- Highlight Band: Niche Statement \u2014 breathing moment -->
+    <div class="mag-highlight-band" style="padding:96px 40px 96px;">
+      <div style="position:relative;max-width:640px;margin:0 auto;">
+        <div class="mag-highlight-text" id="niche-statement-text" style="font-size:clamp(22px, 3vw, 30px);line-height:1.65;">\${b.part3.nicheStatement}</div>
+        <button class="copy-btn" onclick="copyToClipboard(document.getElementById('niche-statement-text').textContent)" style="margin-top:20px;">Copy</button>
       </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Hero Subheadline</div>
-        <div class="bp-item-value">\${b.part5.heroSubheadline}</div>
+    </div>
+
+    <!-- Part 2: Brand Foundation -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Two</div>
+        <div class="mag-title">Brand Foundation</div>
       </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Primary CTA</div>
-        <div class="bp-item-value" style="font-weight:600;color:var(--gold)">\${b.part5.heroCTA}</div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Page Sections (in order)</div>
-        <div class="bp-item-value">
-          \${b.part5.sections.map((s,i) => \`
-            <div style="margin-bottom:14px">
-              <strong>\${i+1}. \${s.name}</strong><br>
-              <span style="color:var(--text2);font-size:13px">\${s.purpose}</span><br>
-              <span style="font-size:13px">\${s.content || ''}</span>
-            </div>
-          \`).join('')}
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Brand Promise</div>
+          <div class="mag-value">\${b.part1.coreBrandPromise}</div>
+          <div class="mag-label" style="margin-top:20px;">Brand Names</div>
+          <div class="mag-value" id="brand-names-text">\${b.part1.brandNames.map((n,i) => '<strong>' + n + '</strong>').join(' / ')}</div>
+          <button class="copy-btn" onclick="copyToClipboard(document.getElementById('brand-names-text').textContent)" style="margin-top:10px;">Copy</button>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">Taglines</div>
+          <div class="mag-value" id="taglines-text">\${b.part1.taglines.map(t => '"' + t + '"').join('<br><br>')}</div>
+          <button class="copy-btn" onclick="copyToClipboard(document.getElementById('taglines-text').textContent)" style="margin-top:10px;">Copy</button>
         </div>
       </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Testimonial Framing</div>
-        <div class="bp-item-value">\${b.part5.testimonialFraming}</div>
+      <div class="mag-label" style="margin-top:48px;margin-bottom:16px;">Color Palette</div>
+      <div>\${b.part1.visualDirection.colors.map(c => \`
+        <div class="mag-color-strip">
+          <div class="mag-color-rect" style="background:\${c.hex};"></div>
+          <div class="mag-color-info">
+            <div class="mag-label">\${c.name}</div>
+            <div class="mag-color-hex">\${c.hex}</div>
+          </div>
+        </div>\`).join('')}
       </div>
-    \`) : ''}
-    \${b.part6 ? renderPart(6, b.part6.title, \`
-      <div class="bp-item">
-        <div class="bp-item-label">Credibility Gaps to Close</div>
-        <div class="bp-item-value">
-          \${b.part6.credibilityGaps.map((g,i) => \`<div style="margin-bottom:12px"><strong>\${i+1}.</strong> \${g}</div>\`).join('')}
+    </div>
+
+
+    <div class="mag-divider"></div>
+
+    <!-- Part 3: Market Position -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Three</div>
+        <div class="mag-title">\${b.part3.title || 'Niche Positioning'}</div>
+      </div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+            <div class="mag-label" style="margin-bottom:16px;">Unique Mechanism</div>
+            <div class="mag-value">\${b.part3.uniqueMechanism}</div>
+          </div>
+        </div>
+        <div class="mag-col">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+            <div class="mag-label" style="margin-bottom:16px;">Competitive Edge</div>
+            <div class="mag-value">\${b.part3.competitorGap}</div>
+          </div>
         </div>
       </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Marketing Opportunities</div>
-        <div class="bp-item-value">
-          \${b.part6.marketingOpportunities.map((m,i) => \`<div style="margin-bottom:12px"><strong>\${i+1}.</strong> \${m}</div>\`).join('')}
+    </div>
+
+    <div class="mag-divider"></div>
+
+    <!-- Part 4: Offer Suite -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Four</div>
+        <div class="mag-title">\${b.part4.title || 'Your Offer Suite'}</div>
+      </div>
+      <div class="mag-timeline">
+        <div class="mag-timeline-col" style="text-align:center;">
+          <div class="mag-eyebrow">Entry</div>
+          <div class="mag-timeline-price">\${b.part4.entryOffer.price}</div>
+          <div class="mag-timeline-name">\${b.part4.entryOffer.name}</div>
+          <div class="mag-timeline-desc">\${b.part4.entryOffer.description}</div>
+        </div>
+        <div class="mag-timeline-col core-offer" style="text-align:center;background:linear-gradient(180deg, rgba(196,112,63,0.04) 0%, var(--bg2) 100%);border:2px solid var(--gold);border-radius:16px;padding:32px 24px;box-shadow:0 4px 24px rgba(196,112,63,0.08);">
+          <div class="mag-eyebrow" style="color:var(--gold);font-weight:700;">Core</div>
+          <div class="mag-timeline-price" style="color:var(--gold);font-size:28px;">\${b.part4.coreOffer.price}</div>
+          <div class="mag-timeline-name">\${b.part4.coreOffer.name}</div>
+          <div class="mag-timeline-desc">\${b.part4.coreOffer.description}</div>
+        </div>
+        <div class="mag-timeline-col" style="text-align:center;">
+          <div class="mag-eyebrow">Premium</div>
+          <div class="mag-timeline-price">\${b.part4.premiumOffer.price}</div>
+          <div class="mag-timeline-name">\${b.part4.premiumOffer.name}</div>
+          <div class="mag-timeline-desc">\${b.part4.premiumOffer.description}</div>
         </div>
       </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Your First Move</div>
-        <div class="bp-item-value" style="font-style:italic;font-size:15px;line-height:1.7">\${b.part6.firstMove}</div>
+      <div class="mag-grid" style="margin-top:24px;">
+        <div class="mag-col">
+          <div class="mag-label">Ascension Logic</div>
+          <div class="mag-value">\${b.part4.ascensionLogic}</div>
+        </div>
       </div>
-    \`) : ''}
-    \${renderPart(7, b.part7.title, \`
-      <div class="bp-item">
-        <div class="bp-item-label">Top 10 Headlines</div>
-        <div class="bp-item-value">\${b.part7.heroHeadlineOptions.map((h,i) => \`\${i+1}. \${h}\`).join('<br><br>')}</div>
+    </div>
+
+    \${b.part5 ? \`
+    <div class="mag-divider"></div>
+    <!-- Part 5: Website Blueprint -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Five</div>
+        <div class="mag-title">\${b.part5.title || 'Website Blueprint'}</div>
       </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Positioning Statements</div>
-        <div class="bp-item-value">
-          \${b.part7.positioningStatements ? \`
-            <strong>Website:</strong> \${b.part7.positioningStatements.website || ''}<br><br>
-            <strong>Social / Bio:</strong> \${b.part7.positioningStatements.social || ''}<br><br>
-            <strong>In Person:</strong> \${b.part7.positioningStatements.inPerson || ''}
+      \${b.part5.pageNarrative ? \`
+        <div style="padding:20px 24px;border-left:3px solid var(--gold);background:rgba(201,169,110,0.06);border-radius:0 12px 12px 0;margin-bottom:32px;">
+          <div class="mag-label" style="margin-bottom:8px;">Page Story Arc</div>
+          <div class="mag-value" style="font-size:14px;line-height:1.7;font-style:italic;">\${b.part5.pageNarrative}</div>
+        </div>
+      \` : ''}
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Hero Headlines</div>
+          <div class="mag-value">\${b.part5.heroHeadlines.map((h,i) => (i+1) + '. ' + h).join('<br><br>')}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">Subheadline</div>
+          <div class="mag-value">\${b.part5.heroSubheadline}</div>
+          <div class="mag-label" style="margin-top:20px;">Primary CTA</div>
+          <div class="mag-value" style="color:var(--gold);font-weight:600;">\${b.part5.heroCTA}</div>
+          \${b.part5.heroImageTheme ? \`
+            <div class="mag-label" style="margin-top:20px;">Hero Image Direction</div>
+            <div class="mag-value" style="font-size:12px;font-style:italic;color:var(--text2);">\${b.part5.heroImageTheme}</div>
           \` : ''}
         </div>
       </div>
-    \`)}
-    \${b.part8 && b.part8.personalizedMessage ? renderPart(8, 'Your Recommended Next Step', \`
-      <div class="bp-item" style="background:linear-gradient(135deg, rgba(196,112,63,0.08), transparent);border:1.5px solid var(--gold);border-radius:12px;padding:24px;">
-        <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;color:var(--text);margin-bottom:12px;">\${b.part8.headline || 'Your Next Move'}</div>
-        <div style="font-size:15px;line-height:1.8;color:var(--text);margin-bottom:16px;">\${b.part8.personalizedMessage}</div>
-        \${b.part8.whyNow ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:16px;padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">Why now:</strong> \${b.part8.whyNow}</div>\` : ''}
-        \${b.part8.specificBenefit ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">What you get:</strong> \${b.part8.specificBenefit}</div>\` : ''}
-        <div style="margin-top:20px;text-align:center;">
-          \${b.part8.recommendation === 'site_in_sixty' ? \`<button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:14px 32px;font-size:15px;">Get Your Vision Live</button>\` : b.part8.recommendation === 'coaching' ? \`<a href="https://jamesguldan.com" target="_blank" class="btn btn-gold" style="width:auto;padding:14px 32px;font-size:15px;text-decoration:none;">Book a Strategy Call</a>\` : ''}
+      \${b.part5.sections && b.part5.sections.length ? \`
+        <div class="mag-label" style="margin-top:48px;margin-bottom:24px;">Page Sections</div>
+        \${b.part5.sections.map((s,i) => \`
+          <div style="padding:20px 24px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;background:var(--bg);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--gold);min-width:24px;">\${pn(i+1)}</div>
+              <div style="font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;color:var(--text);flex:1;">\${s.name}</div>
+              \${s.confidence ? \`<div style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:\${s.confidence >= 90 ? '#22c55e' : s.confidence >= 80 ? 'var(--gold)' : '#f59e0b'};background:\${s.confidence >= 90 ? 'rgba(34,197,94,0.1)' : s.confidence >= 80 ? 'rgba(201,169,110,0.1)' : 'rgba(245,158,11,0.1)'};padding:3px 10px;border-radius:20px;">\${s.confidence}%</div>\` : ''}
+              \${s.visualMood ? \`<div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);padding:3px 8px;border:1px solid var(--border);border-radius:6px;">\${s.visualMood}</div>\` : ''}
+            </div>
+            <div class="mag-value" style="font-size:13px;padding-left:36px;margin-bottom:8px;">\${s.purpose}\${s.content ? '. ' + s.content : ''}</div>
+            \${s.rationale ? \`<div style="font-size:12px;line-height:1.6;color:var(--text2);padding-left:36px;padding-top:8px;border-top:1px solid var(--border);margin-top:8px;font-style:italic;">\${s.rationale}</div>\` : ''}
+            \${s.imageTheme && s.imageTheme !== 'none' ? \`<div style="font-size:11px;color:var(--gold);padding-left:36px;margin-top:6px;">Image: \${s.imageTheme}</div>\` : ''}
+          </div>
+        \`).join('')}
+      \` : ''}
+
+      \${(() => {
+        const p5p = b.part5 || {};
+        const pNums = (p5p.proofNumbers || []).filter(n => n && n.stat && n.label);
+        const bStory = p5p.bestClientStory || '';
+        const mCreds = (p5p.mediaCredentials || []).filter(Boolean);
+        const bTest = p5p.bestTestimonial || null;
+        const sTwit = p5p.socialHandles || {};
+        const cBelief = p5p.contraryBelief || '';
+        const hasAny = pNums.length || bStory || mCreds.length || bTest || Object.values(sTwit).filter(Boolean).length || cBelief;
+        if (!hasAny) return '';
+        return \`
+      <div style="margin-top:48px;">
+        <div class="mag-label" style="margin-bottom:24px;border-top:1px solid var(--border);padding-top:32px;">Proof Intelligence</div>
+
+        \${pNums.length ? \`
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Proof Numbers</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            \${pNums.map(n => \`
+            <div style="flex:1;min-width:140px;background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.15);border-radius:12px;padding:18px 20px;text-align:center;">
+              <div style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;color:var(--gold);line-height:1;">\${n.stat}</div>
+              <div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text);margin-top:6px;">\${n.label}</div>
+              \${n.context ? \`<div style="font-size:11px;color:var(--text2);margin-top:4px;font-style:italic;">\${n.context}</div>\` : ''}
+            </div>
+            \`).join('')}
+          </div>
+        </div>
+        \` : ''}
+
+        \${mCreds.length ? \`
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Media Credentials</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            \${mCreds.map(c => \`<span style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--text2);padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--bg);">\${c}</span>\`).join('')}
+          </div>
+        </div>
+        \` : ''}
+
+        \${bTest ? \`
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Strongest Testimonial</div>
+          <div style="padding:20px 24px;border-left:3px solid var(--gold);background:rgba(201,169,110,0.04);border-radius:0 12px 12px 0;">
+            <div style="font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--text);line-height:1.7;">&ldquo;\${bTest.quote}&rdquo;</div>
+            <div style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--text2);margin-top:10px;letter-spacing:0.05em;">&mdash; \${bTest.attribution}</div>
+          </div>
+        </div>
+        \` : ''}
+
+        \${bStory ? \`
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Best Client Story</div>
+          <div style="font-family:'Inter',sans-serif;font-size:14px;color:var(--text2);line-height:1.8;">\${bStory}</div>
+        </div>
+        \` : ''}
+
+        \${cBelief ? \`
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Contrary Belief</div>
+          <div style="font-family:'Inter',sans-serif;font-size:14px;color:var(--text);line-height:1.8;border-left:2px solid rgba(201,169,110,0.3);padding-left:16px;font-style:italic;">\${cBelief}</div>
+        </div>
+        \` : ''}
+
+        \${Object.values(sTwit).filter(Boolean).length ? \`
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Social Handles</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            \${Object.entries(sTwit).filter(([,v])=>v).map(([k,v])=>\`<span style="font-family:'Outfit',sans-serif;font-size:12px;color:var(--text2);padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);"><strong style="color:var(--gold);text-transform:capitalize;">\${k}:</strong> \${v}</span>\`).join('')}
+          </div>
+        </div>
+        \` : ''}
+
+      </div>
+        \`;
+      })()}
+
+    </div>
+    \` : ''}
+
+    \${b.part6 ? \`
+    <div class="mag-divider"></div>
+    <!-- Part 6: Growth Strategy -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Six</div>
+        <div class="mag-title">\${b.part6.title || 'Growth Strategy'}</div>
+      </div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Your Biggest Growth Opportunities</div>
+          <div class="mag-value">\${b.part6.credibilityGaps.map((g,i) => '<strong>' + (i+1) + '.</strong> ' + g).join('<br><br>')}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">Where to Start Building Authority</div>
+          <div class="mag-value">\${b.part6.marketingOpportunities.map((m,i) => '<strong>' + (i+1) + '.</strong> ' + m).join('<br><br>')}</div>
         </div>
       </div>
-    \`) : ''}
-  \`;
-}
+      \${b.part6.firstMove ? \`
+        <div class="mag-highlight-band" style="margin:48px -40px 0;border-radius:0;">
+          <div class="mag-eyebrow" style="margin-bottom:12px;">Your First Move</div>
+          <div class="mag-highlight-text">\${b.part6.firstMove}</div>
+        </div>
+      \` : ''}
+    </div>
+    \` : ''}
 
-function renderPart(num, title, content) {
-  return \`
-    <div class="bp-part">
-      <div class="bp-part-header">
-        <div class="bp-part-num">\${num}</div>
-        <h3>\${title}</h3>
+    <!-- Part 7: Headlines & Positioning -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Seven</div>
+        <div class="mag-title">\${b.part7.title || 'Headlines & Positioning'}</div>
       </div>
-      \${content}
+      <div class="mag-headlines-grid">
+        \${b.part7.heroHeadlineOptions.map((h,i) => \`
+          <div class="mag-headline-item">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="mag-headline-num">\${pn(i+1)}</div>
+              <button class="copy-btn" onclick="copyToClipboard(this.closest('.mag-headline-item').querySelector('.mag-headline-text').textContent)">Copy</button>
+            </div>
+            <div class="mag-headline-text">\${h}</div>
+          </div>
+        \`).join('')}
+      </div>
+      \${b.part7.positioningStatements ? \`
+        <div style="background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, var(--bg2) 100%);border-radius:16px;padding:32px;margin-top:24px;border:1px solid rgba(196,112,63,0.08);">
+          <div class="mag-grid">
+            <div class="mag-col">
+              <div class="mag-label">Website</div>
+              <div class="mag-value">\${b.part7.positioningStatements.website || ''}</div>
+            </div>
+            <div class="mag-col">
+              <div class="mag-label">Social / Bio</div>
+              <div class="mag-value">\${b.part7.positioningStatements.social || ''}</div>
+              \${b.part7.positioningStatements.inPerson ? \`
+                <div class="mag-label" style="margin-top:16px;">In Person</div>
+                <div class="mag-value">\${b.part7.positioningStatements.inPerson}</div>
+              \` : ''}
+            </div>
+          </div>
+        </div>
+      \` : ''}
+    </div>
+
+    \${b.part8 && b.part8.personalizedMessage ? \`
+    <!-- Part 8: The Bridge \u2014 Next Steps -->
+    <div style="background:#FFFFFF;padding:0;margin:0 -40px;overflow:hidden;">
+
+      <!-- Copper top accent -->
+      <div style="height:3px;background:#C4703F;"></div>
+
+      <!-- Main content -->
+      <div style="max-width:560px;margin:0 auto;padding:64px 32px 72px;text-align:center;">
+
+        <!-- Eyebrow -->
+        <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:0.12em;color:#C4703F;text-transform:uppercase;font-weight:600;margin-bottom:24px;">Your Next Step</div>
+
+        <!-- Emotional question -->
+        <div style="font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,28px);font-weight:400;font-style:italic;color:#86868B;line-height:1.4;margin-bottom:20px;">What if your website actually matched your strategy?</div>
+
+        <!-- Headline -->
+        <div style="font-family:'Outfit',sans-serif;font-size:clamp(24px,4vw,34px);font-weight:700;color:#1D1D1F;line-height:1.25;letter-spacing:-0.02em;margin-bottom:24px;">Everything you just read, built into a real website.</div>
+
+        <!-- Personalized message -->
+        <div style="font-family:'Inter',sans-serif;font-size:15px;color:#555;line-height:1.8;margin-bottom:48px;">\${b.part8.personalizedMessage}</div>
+
+        <!-- What's included \u2014 vertical numbered list -->
+        <div style="text-align:left;margin-bottom:48px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:0.12em;color:#C4703F;text-transform:uppercase;font-weight:600;margin-bottom:24px;">What's Included</div>
+
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">01</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Your positioning, headlines, and copy written from your blueprint</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">02</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Your offer suite and pricing structured for conversion</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">03</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Brand colors, voice, and AI generated imagery that feels like you</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">04</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Mobile responsive design that works on every device</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">05</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Ready to go live immediately. No coding, no templates.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div style="width:48px;height:1px;background:#F0F0F0;margin:0 auto 40px;"></div>
+
+        <!-- How it works \u2014 3 step vertical flow -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:48px;">
+          <div style="display:flex;align-items:center;gap:14px;width:300px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">1</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">Click the button below</div>
+          </div>
+          <div style="width:1px;height:20px;background:#F0F0F0;margin-left:18px;"></div>
+          <div style="display:flex;align-items:center;gap:14px;width:300px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">2</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">AI builds your site in about 4 minutes</div>
+          </div>
+          <div style="width:1px;height:20px;background:#F0F0F0;margin-left:18px;"></div>
+          <div style="display:flex;align-items:center;gap:14px;width:300px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">3</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">Review it, tweak it, go live</div>
+          </div>
+        </div>
+
+        <!-- CTA Button -->
+        \${b.part8.recommendation === 'site_in_sixty' ? \`
+          <div onclick="handleBuildSite()" style="display:inline-block;padding:18px 52px;background:#1D1D1F;color:#fff;border-radius:50px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.25s;" onmouseover="this.style.opacity='0.85';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='translateY(0)'">Build My Website</div>
+        \` : b.part8.recommendation === 'coaching' ? \`
+          <a href="https://jamesguldan.com" target="_blank" style="display:inline-block;padding:18px 52px;background:#1D1D1F;color:#fff;border-radius:50px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.25s;" onmouseover="this.style.opacity='0.85';this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1';this.style.transform='translateY(0)'">Book a Strategy Call</a>
+        \` : ''}
+
+        <!-- Save for later -->
+        <div style="margin-top:28px;">
+          <div onclick="downloadPDF()" style="display:inline-block;font-family:'Inter',sans-serif;font-size:13px;color:#86868B;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#1D1D1F'" onmouseout="this.style.color='#86868B'">Not ready yet? Save your blueprint as a PDF.</div>
+        </div>
+      </div>
+    </div>
+    \` : ''}
+
+    <div style="text-align:center;padding:48px 40px 40px;">
+      <div style="width:32px;height:1.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 16px;border-radius:2px;opacity:0.4;"></div>
+      <div style="color:var(--text3);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;">Deep Work Interview \xB7 Built by <a href="https://jamesguldan.com" target="_blank" style="color:var(--gold);text-decoration:none;">James Guldan</a></div>
     </div>
   \`;
-}
 
-function renderOffer(label, offer) {
-  return \`
-    <div class="bp-item">
-      <div class="bp-item-label">\${label}</div>
-      <div class="bp-item-value">
-        <strong>\${offer.name}</strong><br>
-        \${offer.description}<br>
-        <span style="color:var(--gold)">\${offer.price}</span>
-      </div>
-    </div>
-  \`;
+  // \u2500\u2500\u2500\u2500\u2500\u2500 Reading Progress Bar \u2500\u2500\u2500\u2500\u2500\u2500
+  var progressBar = document.getElementById('blueprint-progress-bar');
+  if (progressBar) {
+    window.addEventListener('scroll', function() {
+      var scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var scrolled = window.scrollY;
+      var progress = scrollHeight ? (scrolled / scrollHeight) * 100 : 0;
+      progressBar.style.width = progress + '%';
+    });
+  }
+
+  // \u2500\u2500\u2500\u2500\u2500\u2500 Section Navigation Dots \u2500\u2500\u2500\u2500\u2500\u2500
+  var dotsContainer = document.getElementById('blueprint-section-dots');
+  if (dotsContainer && 'IntersectionObserver' in window) {
+    var sections = document.querySelectorAll('#blueprint-body .mag-section');
+    var sectionNames = ['Ideal Client', 'Brand Foundation', 'Market Position', 'Offer Suite', 'Website Blueprint', 'Gap Analysis', 'Headlines', 'Next Step'];
+
+    sections.forEach(function(section, idx) {
+      var dot = document.createElement('div');
+      dot.className = 'blueprint-dot';
+      dot.setAttribute('data-section', idx);
+      dot.title = sectionNames[idx] || 'Section ' + (idx + 1);
+      dot.onclick = function() {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      dotsContainer.appendChild(dot);
+    });
+
+    var dotsObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        var idx = Array.prototype.indexOf.call(sections, entry.target);
+        var dots = dotsContainer.querySelectorAll('.blueprint-dot');
+        dots.forEach(function(dot) { dot.classList.remove('active'); });
+        if (idx >= 0 && idx < dots.length && entry.isIntersecting) {
+          dots[idx].classList.add('active');
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(function(s) { dotsObserver.observe(s); });
+  }
+
+  // Track scroll \u2014 unlock sticky bar after user reaches Part 4 (Offer Suite = midpoint)
+  STATE.blueprintScrolled = false;
+  setTimeout(function() {
+    var allSections = document.querySelectorAll('#blueprint-body .mag-section');
+    var triggerSection = allSections.length >= 4 ? allSections[3] : allSections[0];
+    if (triggerSection && 'IntersectionObserver' in window) {
+      var obs = new IntersectionObserver(function(entries) {
+        if (entries.some(function(e) { return e.isIntersecting; })) {
+          STATE.blueprintScrolled = true;
+          obs.disconnect();
+          var bar = document.getElementById('blueprint-sticky-bar');
+          if (bar) bar.style.transform = 'translateY(0)';
+        }
+      }, { threshold: 0.15 });
+      obs.observe(triggerSection);
+
+    // Section progress tracking for sticky bar
+    var sections = document.querySelectorAll('#blueprint-body .mag-section');
+    var stickySection = document.getElementById('sticky-bar-section');
+    if (sections.length && stickySection && 'IntersectionObserver' in window) {
+      var sectionNames = ['Ideal Client', 'Brand Foundation', 'Niche Positioning', 'Offer Suite', 'Website Blueprint', 'Gap Analysis', 'Headlines', 'Next Step'];
+      var secObs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) {
+            var idx = Array.prototype.indexOf.call(sections, e.target);
+            if (idx >= 0 && idx < sectionNames.length) {
+              stickySection.textContent = 'PART ' + (idx + 1) + ' OF ' + sections.length;
+            }
+          }
+        });
+      }, { threshold: 0.15 });
+      sections.forEach(function(s) { secObs.observe(s); });
+    }
+    } else {
+      setTimeout(function() { STATE.blueprintScrolled = true; }, 5000);
+    }
+  }, 600);
 }
 
 // \u2500\u2500 ORDER BUMP UPGRADE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+async function handleSitePhotoUpload(inputEl) {
+  if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
+  const listEl = document.getElementById('site-photo-list');
+  const toUpload = Array.from(inputEl.files).slice(0, 10);
+  if (listEl) listEl.innerHTML = '<span style="font-size:12px;color:var(--text3);">Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...</span>';
+  let succeeded = 0;
+  for (const file of toUpload) {
+    if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) continue;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('sessionId', STATE.sessionId);
+      const r = await fetch('/api/upload', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) { succeeded++; STATE.uploadedKeys.push(d.key); }
+    } catch (_) {}
+  }
+  if (listEl) {
+    if (succeeded > 0) {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--green);">\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' uploaded. These will be used on your site.</span>';
+    } else {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--red);">Upload failed. You can continue without photos.</span>';
+    }
+  }
+  inputEl.value = '';
+}
+__name(handleSitePhotoUpload, "handleSitePhotoUpload");
+__name2(handleSitePhotoUpload, "handleSitePhotoUpload");
+
+// \u2500\u2500 SECTION PICKER PHOTO UPLOAD \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Stores the picker photo state globally so it survives section transitions
+window.PICKER_PHOTO = {
+  dataUrl: null,    // raw data URL for avatar display
+  cutoutUrl: null,  // Photoroom-processed transparent PNG URL
+  file: null,       // original File object
+  processed: false
+};
+
+async function handlePickerPhotoUpload(inputEl) {
+  if (!inputEl.files || !inputEl.files.length) return;
+  const file = inputEl.files[0];
+  if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+    showToast('Please use a JPG, PNG, or WEBP image under 10MB.');
+    return;
+  }
+  inputEl.value = '';
+
+  // Show avatar immediately with original photo
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    window.PICKER_PHOTO.dataUrl = dataUrl;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    // Uploading a photo implicitly means YES \u2014 persist so question doesn't re-appear
+    fpickPhotoAnswer(true);
+
+    // Update avatar UI
+    const avatarImg = document.getElementById('fpick-avatar-img');
+    const avatarIcon = document.getElementById('fpick-avatar-icon');
+    const labelMain = document.getElementById('fpick-avatar-label-main');
+    const labelSub = document.getElementById('fpick-avatar-label-sub');
+    const processing = document.getElementById('fpick-avatar-processing');
+    const circle = document.getElementById('fpick-avatar-circle');
+
+    if (avatarImg) { avatarImg.src = dataUrl; avatarImg.style.display = 'block'; }
+    if (avatarIcon) avatarIcon.style.display = 'none';
+    if (labelMain) { labelMain.textContent = 'Photo uploaded'; }
+    if (labelSub) labelSub.style.display = 'none';
+    if (processing) processing.classList.add('active');
+    if (circle) circle.style.borderColor = '#c4703f';
+
+    // Inject original into preview immediately so they see something right away
+    pickerInjectPhotoIntoPreview(dataUrl);
+
+    // Seed the grader state and open the grader panel
+    window._graderPhotos = [{ id: 'photo_0', dataUrl, cutoutUrl: null, file }];
+    window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };
+    window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };
+
+    // Open grader immediately (cutout will fill in as background processing finishes)
+    setTimeout(() => openPickerGrader(), 300);
+
+    // Process through server-side endpoint in parallel (Photoroom key stays secret)
+    try {
+      const sessionId = window.STATE && window.STATE.sessionId;
+      const authToken = localStorage.getItem('dw_session') || (() => {
+        try { const m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); return m ? m[1] : null; } catch(_) { return null; }
+      })();
+      if (!sessionId || !authToken) throw new Error('No session');
+
+      const fd = new FormData();
+      fd.append('photo', file);
+      fd.append('sessionId', sessionId);
+      const res = await fetch('/api/photo/process', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + authToken },
+        body: fd
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const cutoutSrc = data.cutoutUrl || data.originalUrl;
+        if (cutoutSrc) {
+          const imgRes = await fetch(cutoutSrc);
+          const blobUrl = imgRes.ok ? URL.createObjectURL(await imgRes.blob()) : cutoutSrc;
+          window.PICKER_PHOTO.cutoutUrl = blobUrl;
+          window.PICKER_PHOTO.processedUrl = cutoutSrc;
+          window.PICKER_PHOTO.processed = true;
+          // Update grader photo with cutout so Enhanced option becomes live
+          if (window._graderPhotos[0]) window._graderPhotos[0].cutoutUrl = blobUrl;
+          if (avatarImg) avatarImg.src = blobUrl;
+          if (processing) processing.classList.remove('active');
+          if (labelMain) labelMain.textContent = data.cutoutUrl ? 'Tap circle to adjust \u2726' : 'Photo ready \u2713';
+          if (labelSub) { labelSub.textContent = 'Click to adjust photos'; labelSub.style.display = 'block'; }
+          // Refresh grader if still open so Enhanced cards show the real cutout
+          const overlay = document.getElementById('fpick-grader-overlay');
+          if (overlay && overlay.classList.contains('open')) renderGraderBody();
+        }
+      }
+    } catch (_) {
+      if (processing) processing.classList.remove('active');
+      if (labelSub) { labelSub.textContent = 'Click to adjust'; labelSub.style.display = 'block'; }
+      if (labelMain) labelMain.textContent = 'Photo ready \u2713';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+__name(handlePickerPhotoUpload, "handlePickerPhotoUpload");
+
+// Handle photo upload from site-generation screen
+function handleSiteScreenPhoto(inputEl) {
+  if (!inputEl.files || !inputEl.files.length) return;
+  const file = inputEl.files[0];
+  if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+    showToast('Please use a JPG, PNG, or WEBP image under 10MB.');
+    return;
+  }
+  inputEl.value = '';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    // Show preview immediately
+    const preview = document.getElementById('site-photo-preview');
+    const previewImg = document.getElementById('site-photo-img');
+    const status = document.getElementById('site-photo-status');
+    const label = document.getElementById('site-photo-label');
+    if (preview) preview.style.display = 'flex';
+    if (previewImg) previewImg.src = dataUrl;
+    if (status) status.textContent = 'Processing...';
+    if (label) label.textContent = 'Uploading...';
+    // Store in PICKER_PHOTO immediately so generation can use it
+    window.PICKER_PHOTO = window.PICKER_PHOTO || {};
+    window.PICKER_PHOTO.dataUrl = dataUrl;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    try {
+      const sid = STATE && STATE.sessionId;
+      if (sid) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('sessionId', sid);
+        const resp = await fetch('/api/photo/process', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (data.cutoutUrl) {
+          window.PICKER_PHOTO.cutoutUrl = data.cutoutUrl;
+          window.PICKER_PHOTO.processedUrl = data.cutoutUrl;
+          window.PICKER_PHOTO.processed = true;
+          if (previewImg) previewImg.src = data.cutoutUrl;
+          if (status) { status.textContent = 'Photo ready'; status.style.color = '#c4703f'; }
+        } else {
+          if (status) status.textContent = 'Photo saved';
+        }
+      }
+    } catch (_) {
+      if (status) status.textContent = 'Photo saved (will use as-is)';
+    }
+    if (label) label.textContent = 'Change photo';
+  };
+  reader.readAsDataURL(file);
+}
+__name(handleSiteScreenPhoto, "handleSiteScreenPhoto");
+
+// Inject the client photo into the currently-previewed section iframe
+function pickerInjectPhotoIntoPreview(imgSrc) {
+  if (!imgSrc) return;
+  const iframe = document.getElementById('fpick-main-iframe');
+  if (!iframe || !iframe.contentDocument) return;
+  try {
+    const doc = iframe.contentDocument;
+    // Find hero/about photo containers \u2014 look for img tags that are likely hero photos
+    const imgs = doc.querySelectorAll('img:not([src^="data:image/svg"])');
+    // Replace the largest image found (most likely the hero photo)
+    let best = null, bestArea = 0;
+    imgs.forEach(img => {
+      const area = img.offsetWidth * img.offsetHeight;
+      if (area > bestArea && img.offsetWidth > 100) { bestArea = area; best = img; }
+    });
+    if (best) {
+      best.src = imgSrc;
+      best.style.objectFit = 'cover';
+    }
+    // Store for future sections
+    window.PICKER_PHOTO.injected = imgSrc;
+  } catch (_) {}
+}
+__name(pickerInjectPhotoIntoPreview, "pickerInjectPhotoIntoPreview");
+
+// \u2500\u2500 PHOTO PREFERENCE CHECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Ask if the user has professional photos before showing the upload UI.
+// State is persisted in localStorage so the question is only shown once.
+function fpickPhotoAnswer(hasPhotos) {
+  var check   = document.getElementById('fpick-photo-check');
+  var upload  = document.getElementById('fpick-upload-ui');
+  var skipped = document.getElementById('fpick-photo-skipped');
+  try { localStorage.setItem('dw_photo_pref', hasPhotos ? 'yes' : 'no'); } catch(_) {}
+  if (hasPhotos) {
+    if (check)   { check.style.display   = 'none'; }
+    if (skipped) { skipped.style.display = 'none'; }
+    if (upload)  { upload.style.display  = 'flex'; }
+  } else {
+    if (check)   { check.style.display   = 'none'; }
+    if (upload)  { upload.style.display  = 'none'; }
+    if (skipped) { skipped.style.display = 'flex'; }
+  }
+}
+
+function fpickPhotoInit() {
+  var status = document.getElementById('fpick-photo-status');
+  if (window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl) {
+    // Show compact status bar with their uploaded photo
+    if (status) status.style.display = 'flex';
+    var src = window.PICKER_PHOTO.processedUrl || window.PICKER_PHOTO.dataUrl;
+    var img = document.getElementById('fpick-avatar-img');
+    var icon = document.getElementById('fpick-avatar-icon');
+    if (img && src) { img.src = src; img.style.display = 'block'; if (icon) icon.style.display = 'none'; }
+  } else {
+    // No photo \u2014 keep status bar hidden, photo gate already handled the decision
+    if (status) status.style.display = 'none';
+  }
+}
+
+// \u2500\u2500 PHOTO GRADER \u2014 INTEGRATED INTO PICKER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Per-section photo assignments. Set by the grader, read by pickerInjectPhotoIntoPreview.
+window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };
+// Internal grader state
+window._graderPhotos = [];   // [{ id, dataUrl, cutoutUrl, file }]
+window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };
+
+// Score a photo for a given section slot using aspect-ratio + resolution heuristics
+async function gradePhotoForSlot(dataUrl, slot) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const ratio = w / h;
+      let score = 50;
+      const minDim = Math.min(w, h);
+      if (minDim >= 1200) score += 20;
+      else if (minDim >= 800) score += 10;
+      else if (minDim < 400) score -= 20;
+      if (slot === 'hero') {
+        if (ratio >= 1.2 && ratio <= 2.0) score += 20;
+        else if (ratio >= 0.8 && ratio < 1.2) score += 10;
+        else if (ratio < 0.6) score -= 10;
+        score += Math.floor(Math.random() * 10);
+      } else if (slot === 'about') {
+        if (ratio >= 0.6 && ratio <= 1.4) score += 20;
+        else if (ratio > 1.4 && ratio <= 1.8) score += 5;
+        score += Math.floor(Math.random() * 10);
+      } else if (slot === 'profile') {
+        if (ratio >= 0.7 && ratio <= 1.1) score += 25;
+        else if (ratio > 1.1 && ratio <= 1.4) score += 10;
+        else if (ratio > 1.6) score -= 15;
+        score += Math.floor(Math.random() * 8);
+      }
+      resolve(Math.max(0, Math.min(100, score)));
+    };
+    img.onerror = () => resolve(55);
+    img.src = dataUrl;
+  });
+}
+
+function getGradeInfo(score) {
+  if (score >= 75) return { stars: '\u2605\u2605\u2605', label: 'Excellent', cls: 'excellent' };
+  if (score >= 55) return { stars: '\u2605\u2605', label: 'Good', cls: 'good' };
+  return { stars: '\u2605', label: 'Fair', cls: 'fair' };
+}
+
+// Open the grader panel (called after photo upload or by clicking the avatar)
+async function openPickerGrader() {
+  const overlay = document.getElementById('fpick-grader-overlay');
+  const body = document.getElementById('fpick-grader-body');
+  if (!overlay || !body) return;
+  // Seed graderPhotos from current PICKER_PHOTO if empty
+  if (window._graderPhotos.length === 0 && window.PICKER_PHOTO.dataUrl) {
+    window._graderPhotos = [{
+      id: 'photo_0',
+      dataUrl: window.PICKER_PHOTO.dataUrl,
+      cutoutUrl: window.PICKER_PHOTO.cutoutUrl || null,
+      file: window.PICKER_PHOTO.file || null
+    }];
+  }
+  // Show spinner while grading
+  body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div class="fpick-grader-spinner"></div><div style="font-family:Outfit,sans-serif;font-size:13px;color:#86868b;">Grading your photo\u2026</div></div>';
+  overlay.classList.add('open');
+  await renderGraderBody();
+}
+__name(openPickerGrader, "openPickerGrader");
+
+async function renderGraderBody() {
+  const body = document.getElementById('fpick-grader-body');
+  if (!body || window._graderPhotos.length === 0) return;
+  const photo = window._graderPhotos[0];
+  const slots = [
+    { key: 'hero',    label: 'Hero Section',    icon: '\u{1F5BC}', isProfile: false },
+    { key: 'about',   label: 'About / Story',   icon: '\u{1F464}', isProfile: false },
+    { key: 'profile', label: 'Profile Circle',  icon: '\u2B55', isProfile: true  }
+  ];
+  // Grade all slots in parallel
+  const scores = {};
+  await Promise.all(slots.map(async s => { scores[s.key] = await gradePhotoForSlot(photo.dataUrl, s.key); }));
+
+  // No template literals here \u2014 this JS lives inside a server-side template string,
+  // so backticks must be avoided. Use string concatenation instead.
+  var html = '<button class="fpick-grader-add" onclick="document.getElementById(\\'fpick-grader-extra-input\\').click()">+ Replace with a different photo</button>';
+
+  for (var _si = 0; _si < slots.length; _si++) {
+    var _slot = slots[_si];
+    var key = _slot.key, label = _slot.label, icon = _slot.icon, isProfile = _slot.isProfile;
+    var grade = getGradeInfo(scores[key]);
+    var imgCls = isProfile ? 'fpick-grader-option-img sq' : 'fpick-grader-option-img';
+    var cutoutSrc = photo.cutoutUrl || photo.dataUrl;
+    var hasCutout = !!photo.cutoutUrl;
+    var selOrig = !window._graderOptions[key] || window._graderOptions[key] === 'original';
+    var selEnh  = window._graderOptions[key] === 'enhanced';
+    html += '<div class="fpick-grader-slot">'
+          + '<div class="fpick-grader-slot-head">'
+          + '<span style="font-size:15px">' + icon + '</span>'
+          + '<span class="fpick-grader-slot-name">' + label + '</span>'
+          + '<span class="fpick-grader-badge ' + grade.cls + '">' + grade.stars + ' ' + grade.label + '</span>'
+          + '</div>'
+          + '<div class="fpick-grader-options">'
+          + '<div class="fpick-grader-option' + (selOrig ? ' selected' : '') + '" id="fpick-go-' + key + '-original" onclick="selectGraderOption(\\''+key+'\\',\\'original\\')">'
+          + '<img class="' + imgCls + '" src="' + photo.dataUrl + '" alt="Original">'
+          + '<div class="fpick-grader-option-foot"><div class="fpick-grader-option-label">A \xB7 Original</div><div class="fpick-grader-option-sub">Your photo as-is</div></div>'
+          + '</div>'
+          + '<div class="fpick-grader-option' + (selEnh ? ' selected' : '') + '" id="fpick-go-' + key + '-enhanced" onclick="selectGraderOption(\\''+key+'\\',\\'enhanced\\')">'
+          + '<img class="' + imgCls + '" src="' + cutoutSrc + '" alt="Enhanced"' + (!hasCutout ? ' style="opacity:0.4;filter:grayscale(0.5)"' : '') + '>'
+          + '<div class="fpick-grader-option-foot"><div class="fpick-grader-option-label">B \xB7 Enhanced</div><div class="fpick-grader-option-sub">' + (hasCutout ? 'Background removed' : 'Processing\u2026') + '</div></div>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+  }
+  html += '<button class="fpick-grader-confirm" onclick="confirmGraderSelections()">Apply to Preview \u2726</button>';
+  body.innerHTML = html;
+}
+__name(renderGraderBody, "renderGraderBody");
+
+function selectGraderOption(slot, type) {
+  window._graderOptions[slot] = type;
+  const photo = window._graderPhotos[0];
+  if (!photo) return;
+  const url = type === 'enhanced' ? (photo.cutoutUrl || photo.dataUrl) : photo.dataUrl;
+  window.PICKER_PHOTO_ASSIGNMENTS[slot] = url;
+  ['original', 'enhanced'].forEach(t => {
+    const el = document.getElementById('fpick-go-' + slot + '-' + t);
+    if (el) el.classList.toggle('selected', t === type);
+  });
+}
+__name(selectGraderOption, "selectGraderOption");
+
+function confirmGraderSelections() {
+  const photo = window._graderPhotos[0];
+  if (!photo) { closePickerGrader(); return; }
+  // Fill any unset slots with original
+  ['hero', 'about', 'profile'].forEach(slot => {
+    if (!window.PICKER_PHOTO_ASSIGNMENTS[slot]) {
+      window.PICKER_PHOTO_ASSIGNMENTS[slot] = photo.dataUrl;
+    }
+  });
+  // Inject hero photo into current preview
+  const heroUrl = window.PICKER_PHOTO_ASSIGNMENTS.hero || photo.dataUrl;
+  pickerInjectPhotoIntoPreview(heroUrl);
+  // Update the avatar circle to show the profile choice
+  const profileUrl = window.PICKER_PHOTO_ASSIGNMENTS.profile || photo.dataUrl;
+  const avatarImg = document.getElementById('fpick-avatar-img');
+  const labelMain = document.getElementById('fpick-avatar-label-main');
+  const labelSub  = document.getElementById('fpick-avatar-label-sub');
+  if (avatarImg) { avatarImg.src = profileUrl; avatarImg.style.display = 'block'; }
+  if (labelMain) labelMain.textContent = 'Photos assigned \u2726';
+  if (labelSub)  { labelSub.textContent = 'Click to adjust'; labelSub.style.display = 'block'; }
+  closePickerGrader();
+}
+__name(confirmGraderSelections, "confirmGraderSelections");
+
+function closePickerGrader() {
+  const overlay = document.getElementById('fpick-grader-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+__name(closePickerGrader, "closePickerGrader");
+
+// Replace photo in grader with a new upload
+async function addGraderPhotos(inputEl) {
+  if (!inputEl.files || !inputEl.files.length) return;
+  inputEl.value = '';
+  const file = inputEl.files[0];
+  const reader = new FileReader();
+  reader.onload = async e => {
+    window._graderPhotos = [{ id: 'photo_0', dataUrl: e.target.result, cutoutUrl: null, file }];
+    window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };
+    window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };
+    // Kick off background processing for this new photo
+    window.PICKER_PHOTO.dataUrl = e.target.result;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    window.PICKER_PHOTO.cutoutUrl = null;
+    const body = document.getElementById('fpick-grader-body');
+    if (body) body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div class="fpick-grader-spinner"></div><div style="font-family:Outfit,sans-serif;font-size:13px;color:#86868b;">Grading\u2026</div></div>';
+    await renderGraderBody();
+    // Trigger server-side processing in background (updates cutout when ready)
+    processGraderPhotoInBackground(file);
+  };
+  reader.readAsDataURL(file);
+}
+__name(addGraderPhotos, "addGraderPhotos");
+
+// Kick off server-side Photoroom processing; update the grader when it comes back
+async function processGraderPhotoInBackground(file) {
+  try {
+    const sessionId = window.STATE && window.STATE.sessionId;
+    const authToken = localStorage.getItem('dw_session') || (() => {
+      try { const m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); return m ? m[1] : null; } catch(_) { return null; }
+    })();
+    if (!sessionId || !authToken) return;
+    const fd = new FormData();
+    fd.append('photo', file);
+    fd.append('sessionId', sessionId);
+    const res = await fetch('/api/photo/process', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken },
+      body: fd
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const cutoutSrc = data.cutoutUrl || data.originalUrl;
+    if (!cutoutSrc) return;
+    // Fetch as blob for CORS-safe display
+    const imgRes = await fetch(cutoutSrc);
+    if (!imgRes.ok) return;
+    const blobUrl = URL.createObjectURL(await imgRes.blob());
+    // Update state and re-render grader body with enhanced option live
+    if (window._graderPhotos[0]) {
+      window._graderPhotos[0].cutoutUrl = blobUrl;
+      window.PICKER_PHOTO.cutoutUrl = blobUrl;
+      window.PICKER_PHOTO.processed = true;
+    }
+    // If grader is still open, refresh it
+    const overlay = document.getElementById('fpick-grader-overlay');
+    if (overlay && overlay.classList.contains('open')) await renderGraderBody();
+  } catch (_) { /* non-fatal */ }
+}
+__name(processGraderPhotoInBackground, "processGraderPhotoInBackground");
+
+// \u2500\u2500 BLUEPRINT EXPORT FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+async function downloadPDF() {
+  if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  showToast(isMobile ? 'Opening your brand guide...' : 'Opening your blueprint for printing...');
+  try {
+    const res = await fetch('/api/blueprint/pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    if (!res.ok) { showToast('Could not load blueprint. Please try again.'); return; }
+    const html = await res.text();
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Please allow popups for this site to download your PDF.'); return; }
+    win.document.write(html);
+    win.document.close();
+    if (isMobile) {
+      // On mobile, add a helper bar at the top for saving
+      setTimeout(() => {
+        try {
+          const bar = win.document.createElement('div');
+          bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c4703f;color:#fff;text-align:center;padding:14px 20px;font-family:Outfit,sans-serif;font-size:14px;letter-spacing:0.02em;box-shadow:0 2px 12px rgba(0,0,0,0.15);';
+          bar.innerHTML = 'Use your browser\\'s <strong>Share</strong> button to save as PDF or send to yourself';
+          win.document.body.prepend(bar);
+          // Add padding so content isn't hidden behind the bar
+          win.document.body.style.paddingTop = '52px';
+        } catch(_) {}
+      }, 800);
+    } else {
+      setTimeout(() => { try { win.print(); } catch(_) {} }, 1500);
+    }
+  } catch(e) {
+    showToast('Error generating PDF. Please try again.');
+  }
+}
+
+async function exportPackage() {
+  if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }
+  showToast('Preparing your blueprint file...');
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    if (!res.ok) { showToast('Could not export blueprint. Please try again.'); return; }
+    const html = await res.text();
+    const blob = new Blob([html], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    const rawName = STATE.blueprint?.blueprint?.name || 'brand';
+    a.download = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-blueprint.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    setTimeout(() => showToast('Blueprint downloaded! Open it in any browser, anytime.'), 400);
+  } catch(e) {
+    showToast('Error downloading blueprint. Please try again.');
+  }
+}
+
 function openBuildPopup() {
   document.getElementById('build-site-popup').style.display = 'block';
+  // Populate personalized blueprint preview
+  try {
+    var bp = STATE.blueprint && (STATE.blueprint.blueprint || STATE.blueprint);
+    if (bp) {
+      var previewEl = document.getElementById('popup-blueprint-preview');
+      var nameEl = document.getElementById('popup-brand-name');
+      var colorRow = document.getElementById('popup-color-row');
+      if (previewEl) previewEl.style.display = 'block';
+      if (nameEl && bp.part1 && bp.part1.brandNames && bp.part1.brandNames.length) {
+        nameEl.textContent = bp.part1.brandNames[0];
+      } else if (nameEl && bp.name) {
+        nameEl.textContent = bp.name;
+      }
+      if (colorRow && bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.colors) {
+        colorRow.innerHTML = bp.part1.visualDirection.colors.map(function(c) {
+          return '<div style="width:24px;height:24px;border-radius:6px;background:' + c.hex + ';border:1px solid rgba(0,0,0,0.06);"></div>';
+        }).join('') + '<span style="font-size:11px;color:#86868b;margin-left:6px;">Your color palette</span>';
+      }
+    }
+  } catch(_) {}
 }
 
 function closeBuildPopup() {
   document.getElementById('build-site-popup').style.display = 'none';
 }
 
+function sendMagicLink() {
+  var email = document.getElementById('magic-link-email');
+  var form = document.getElementById('magic-link-form');
+  var confirm = document.getElementById('magic-link-confirm');
+  var confirmText = document.getElementById('magic-link-confirm-text');
+  if (!email || !email.value.trim()) {
+    email.style.borderColor = '#c4703f';
+    setTimeout(function() { email.style.borderColor = '#e8e8e8'; }, 2000);
+    return;
+  }
+  var addr = email.value.trim();
+  // Call the magic link endpoint
+  fetch('/api/auth/request-magic', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: addr })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d && d.error) {
+      if (form) form.style.display = 'flex';
+      if (confirm) confirm.style.display = 'none';
+      if (email) email.style.borderColor = '#c4703f';
+      alert(d.error);
+    }
+  }).catch(function() {});
+  // Always show confirmation (even if endpoint not yet wired)
+  if (form) form.style.display = 'none';
+  if (confirm) confirm.style.display = 'block';
+  if (confirmText) confirmText.textContent = 'We sent a login link to ' + addr + '. It should arrive within 30 seconds. Check spam if you do not see it.';
+}
+function resetMagicLink() {
+  var form = document.getElementById('magic-link-form');
+  var confirm = document.getElementById('magic-link-confirm');
+  var email = document.getElementById('magic-link-email');
+  if (form) form.style.display = 'flex';
+  if (confirm) confirm.style.display = 'none';
+  if (email) email.value = '';
+}
 async function saveForLater() {
   closeBuildPopup();
   const email = STATE.email || '';
@@ -4655,7 +8009,7 @@ async function saveForLater() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-      showToast('We sent you a link — come back anytime to build your site.');
+      showToast('We sent you a link \u2014 come back anytime to build your site.');
     } catch(_) {
       showToast('Your blueprint is saved. Log back in anytime to build your site.');
     }
@@ -4664,24 +8018,785 @@ async function saveForLater() {
   }
 }
 
+function selectTestimonialPref(label, value) {
+  var labels = document.querySelectorAll('#testimonial-pref-group label');
+  labels.forEach(function(l) { l.style.borderColor = '#e8e8e8'; l.style.background = ''; });
+  label.style.borderColor = '#c4703f';
+  var customArea = document.getElementById('custom-testimonials-area');
+  var aiArea = document.getElementById('testimonial-ai-area');
+  if (customArea) customArea.style.display = value === 'custom' ? 'block' : 'none';
+  if (aiArea) {
+    aiArea.style.display = value === 'aicoach' ? 'block' : 'none';
+    if (value === 'aicoach' && !window.TESTIMONIAL_DIALOG_STARTED) {
+      window.TESTIMONIAL_DIALOG_STARTED = true;
+      window.TESTIMONIAL_DIALOG_MESSAGES = [];
+      testimonialDialogAITurn();
+    }
+  }
+  STATE.testimonialPref = value;
+}
+
+function getTestimonialPref() {
+  var pref = STATE.testimonialPref || 'generate';
+  var customText = '';
+  if (pref === 'custom' || pref === 'aicoach') {
+    var textarea = document.getElementById('custom-testimonials-input');
+    customText = textarea ? textarea.value.trim() : '';
+  }
+  // If AI coaching produced text, treat it as custom
+  return { pref: customText ? 'custom' : (pref === 'aicoach' ? 'generate' : pref), customText: customText };
+}
+
 function handleBuildSite() {
+  if (!STATE.blueprintScrolled) {
+    showToast('Scroll through your blueprint first \u2014 then come back to make it real.');
+    var body = document.getElementById('blueprint-body');
+    if (body) { body.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    return;
+  }
   openBuildPopup();
+}
+
+// \u2500\u2500 PRE-GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var PREGEN = { total: 0, done: 0, ready: false };
+
+async function startPregenFlow() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : STATE.blueprint;
+  var sections = bp && bp.part5 && bp.part5.sections;
+  if (!sections || sections.length === 0) {
+    showScreen('site-screen');
+    await runSiteGeneration();
+    return;
+  }
+  PICKER.sections = sections;
+  PICKER.currentIndex = 0;
+  PICKER.regenCount = 0;
+  PICKER.chosen = [];
+  PICKER.variants = [];
+  PICKER.preloaded = {};
+  PICKER.sectionImages = {};  // Imagen-generated images per section index
+  // Save nav state so refresh returns here, not blueprint
+  dwSaveNav({ screen: 'section-picker', pickerCurrentIndex: 0, pickerChosen: [] });
+  PICKER.viewingOption = 0;
+  PICKER.renderedVariants = [];
+  PREGEN.total = sections.length;
+  PREGEN.done = 0;
+  PREGEN.ready = false;
+  showScreen('pregen-screen');
+  pregenRenderBrand(bp);
+  pregenRenderSections(sections);
+  sections.forEach(function(_, idx) { pregenFetchSection(idx); });
+}
+
+function pregenRenderBrand(bp) {
+  var nameEl = document.getElementById('pregen-brand-name');
+  var paletteEl = document.getElementById('pregen-palette');
+  var brandName = (bp.part1 && bp.part1.brandNames && bp.part1.brandNames[0]) || bp.name || 'Your Brand';
+  if (nameEl) nameEl.textContent = brandName;
+  if (paletteEl) {
+    var colors = (bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.colors) || [];
+    paletteEl.innerHTML = colors.map(function(c) {
+      return '<div class="pregen-swatch" style="background:' + (c.hex || '#ccc') + ';" title="' + (c.name || '') + '"></div>';
+    }).join('');
+  }
+}
+
+function pregenRenderSections(sections) {
+  var listEl = document.getElementById('pregen-section-list');
+  var countEl = document.getElementById('pregen-progress-count');
+  if (countEl) countEl.textContent = '0 of ' + sections.length;
+  if (!listEl) return;
+  listEl.innerHTML = sections.map(function(s, idx) {
+    return '<div class="pregen-section-row" id="pregen-row-' + idx + '">' +
+      '<div class="pregen-section-indicator loading" id="pregen-dot-' + idx + '">\xB7</div>' +
+      '<div class="pregen-section-name">' + (s.name || 'Section ' + (idx + 1)) + '</div>' +
+      '<div class="pregen-section-tag" id="pregen-tag-' + idx + '">Generating\u2026</div>' +
+      '</div>';
+  }).join('');
+}
+
+async function pregenFetchSection(idx) {
+  var jwt = '';
+  try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}
+
+  // Get section imageTheme from blueprint for Imagen prompt
+  var bp2 = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var bpSection = bp2.part5 && bp2.part5.sections && bp2.part5.sections[idx];
+  var imageTheme = (bpSection && bpSection.imageTheme && bpSection.imageTheme !== 'none') ? bpSection.imageTheme : '';
+
+  // Fire section variants + Imagen image generation in parallel
+  var variantsPromise = fetch('/api/generate/section-variants', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+    body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, feedback: null })
+  });
+
+  var imagePromise = fetch('/api/generate/section-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, imageTheme: imageTheme })
+  });
+
+  try {
+    var res = await variantsPromise;
+    if (!res.ok) throw new Error('status ' + res.status);
+    var data = await res.json();
+    if (!data.variants || data.variants.length === 0) throw new Error('empty');
+    PICKER.preloaded[idx] = data.variants;
+
+    // Attach image URL to preloaded data (non-blocking \u2014 image may arrive later)
+    imagePromise.then(function(imgRes) {
+      return imgRes.ok ? imgRes.json() : null;
+    }).then(function(imgData) {
+      if (imgData && imgData.ok && imgData.imageUrl) {
+        PICKER.sectionImages[idx] = imgData.imageUrl;
+        // If currently viewing this section, re-render with the image
+        if (PICKER.currentIndex === idx && PICKER.renderedVariants && PICKER.renderedVariants.length > 0) {
+          PICKER.renderedVariants = PICKER.renderedVariants.map(function(_, vi) {
+            return PICKER.variants[vi] ? pickerWrapHtml(pickerRenderTemplate(PICKER.variants[vi], idx)) : _;
+          });
+          var iframe = document.getElementById('fpick-main-iframe');
+          if (iframe && PICKER.renderedVariants[PICKER.viewingOption]) {
+            iframe.srcdoc = PICKER.renderedVariants[PICKER.viewingOption];
+          }
+        }
+      }
+    }).catch(function() {});
+
+    pregenMarkSection(idx, 'done');
+  } catch(e) {
+    pregenMarkSection(idx, 'failed');
+  }
+}
+
+function pregenMarkSection(idx, state) {
+  PREGEN.done++;
+  var dot = document.getElementById('pregen-dot-' + idx);
+  var tag = document.getElementById('pregen-tag-' + idx);
+  if (dot) { dot.classList.remove('loading'); dot.classList.add(state); dot.textContent = state === 'done' ? '\u2713' : '!'; }
+  if (tag) tag.textContent = state === 'done' ? 'Ready' : 'Will generate live';
+  var fill = document.getElementById('pregen-progress-fill');
+  var countEl = document.getElementById('pregen-progress-count');
+  var labelEl = document.getElementById('pregen-progress-label');
+  if (fill) fill.style.width = Math.round((PREGEN.done / PREGEN.total) * 100) + '%';
+  if (countEl) countEl.textContent = PREGEN.done + ' of ' + PREGEN.total;
+  if (PREGEN.done >= PREGEN.total && !PREGEN.ready) {
+    PREGEN.ready = true;
+    if (labelEl) labelEl.textContent = 'All sections ready \u2014 let\u2019s go';
+    var btn = document.getElementById('pregen-proceed-btn');
+    if (btn) { btn.classList.add('ready'); btn.textContent = 'Enter your workspace \u2192'; }
+    setTimeout(pregenEnterPicker, 700);
+  }
+}
+
+function pregenEnterPicker() {
+  if (!PREGEN.ready) return;
+  showScreen('section-picker');
+  fpickPhotoInit();
+  pickerLoadSection(0);
+}
+
+// \u2500\u2500 PHOTO GATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function showPhotoGate() {
+  showScreen('photo-gate-screen');
+}
+
+function photoGateYes() {
+  var choose = document.getElementById('photo-gate-choose');
+  var upload = document.getElementById('photo-gate-upload');
+  if (choose) choose.style.display = 'none';
+  if (upload) upload.style.display = 'block';
+}
+
+function photoGateSkip() {
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_photo_gate_' + sid, '1'); } catch(_) {}
+  photoGateProceedInner();
+}
+
+function photoGateProceed() {
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_photo_gate_' + sid, '1'); } catch(_) {}
+  photoGateProceedInner();
+}
+
+async function photoGateProceedInner() {
+  // If we were restoring from a saved nav state, resume the picker directly
+  if (STATE._pendingPickerRestore) {
+    var pendingNav = STATE._pendingPickerRestore;
+    var pendingBp = STATE._pendingPickerBlueprint;
+    STATE._pendingPickerRestore = null;
+    STATE._pendingPickerBlueprint = null;
+    var bp2 = pendingBp && pendingBp.blueprint ? pendingBp.blueprint : pendingBp;
+    var secs2 = bp2 && bp2.part5 && bp2.part5.sections;
+    if (secs2 && secs2.length > 0) {
+      dwDoRestorePicker(pendingNav, secs2);
+      return;
+    }
+  }
+  await startPregenFlow();
+}
+
+async function photoGateUpload(input) {
+  var file = input && input.files && input.files[0];
+  if (!file) return;
+  var zone = document.getElementById('photo-gate-upload-zone');
+  var proc = document.getElementById('photo-gate-processing');
+  var done = document.getElementById('photo-gate-done');
+  var skipLink = document.querySelector('.photo-gate-skip-link');
+  if (zone) zone.style.display = 'none';
+  if (proc) proc.style.display = 'block';
+  if (skipLink) skipLink.style.display = 'none';
+  var fileInput = document.getElementById('photo-gate-file');
+  if (fileInput) fileInput.disabled = true;
+  var reader = new FileReader();
+  reader.onload = async function(evt) {
+    var dataUrl = evt.target.result;
+    window.PICKER_PHOTO = window.PICKER_PHOTO || {};
+    window.PICKER_PHOTO.dataUrl = dataUrl;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    try { localStorage.setItem('dw_photo_pref', 'yes'); } catch(_) {}
+    var jwt = '';
+    try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}
+    var sessId = STATE && STATE.sessionId ? STATE.sessionId : null;
+    var displayUrl = dataUrl;
+    try {
+      var res = await fetch('/api/photo/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+        body: JSON.stringify({ imageDataUrl: dataUrl, sessionId: sessId })
+      });
+      var json = await res.json();
+      if (json && json.processedUrl) {
+        window.PICKER_PHOTO.processedUrl = json.processedUrl;
+        window.PICKER_PHOTO.processed = true;
+        displayUrl = json.processedUrl;
+      }
+    } catch(e) {}
+    var preview = document.getElementById('photo-gate-preview');
+    if (preview) preview.src = displayUrl;
+    if (proc) proc.style.display = 'none';
+    if (done) done.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
 }
 
 // \u2500\u2500 SITE GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 async function proceedToSite() {
-  showScreen('site-screen');
-  await runSiteGeneration();
+  var sid = STATE.sessionId || 'anon';
+  // Step 1: show segment intake if not yet seen this session
+  var intakeSeen = false;
+  try { intakeSeen = !!sessionStorage.getItem('dw_intake_' + sid); } catch(_) {}
+  if (!intakeSeen) {
+    showSegmentIntake();
+    return;
+  }
+  // Step 2: show photo gate if not yet seen this session
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  if (!gateSeen && !hasPhoto) {
+    showPhotoGate();
+    return;
+  }
+  await startPregenFlow();
 }
+
+// \u2500\u2500 SEGMENT INTAKE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var SEGMENT_QUESTIONS = {
+  expert: [
+    { key: 'bookingUrl', label: 'Booking link', question: 'Where do people book a call with you?', placeholder: 'https://calendly.com/yourname/discovery', hint: '\u2192 Powers every "Book a Call" button on your site', icon: '\u{1F517}' },
+    { key: 'methodologyName', label: 'Methodology name', question: 'Do you have a name for your signature process?', placeholder: 'e.g. The Clarity Sprint, The Growth Framework...', hint: '\u2192 Used in your Process section headline', icon: '\u270F\uFE0F', dialog: true, dialogCta: "Help me name it \u2192" },
+    { key: 'startingPrice', label: 'Starting investment', question: "What's your starting price?", placeholder: 'e.g. $2,500 \xB7 Starting at $3K/month...', hint: '\u2192 Anchors your Offers section with a real number', icon: '\u{1F4B0}', dialog: true, dialogCta: "What should I charge? \u2192" },
+    { key: 'topCredential', label: 'Strongest credential', question: "What's your biggest credibility signal?", placeholder: 'e.g. ICF-certified \xB7 15 years at Fortune 500...', hint: '\u2192 Appears in your Hero and About sections', icon: '\u2B50' }
+  ],
+  creator: [
+    { key: 'platformUrl', label: 'Course or community link', question: 'Where do people buy or join your program?', placeholder: 'https://yourschool.teachable.com \xB7 Kajabi \xB7 Skool...', hint: '\u2192 Powers every "Enroll" and "Join Now" button', icon: '\u{1F517}' },
+    { key: 'leadMagnet', label: 'Free resource', question: 'Do you offer a free resource or lead magnet?', placeholder: 'e.g. Free PDF guide \xB7 Starter course \xB7 Quiz...', hint: '\u2192 Makes your Hero CTA a low-friction offer first', icon: '\u{1F381}' },
+    { key: 'studentCount', label: 'Student or member count', question: 'How many students or members do you have?', placeholder: 'e.g. 2,400+ \xB7 Over 500 \xB7 Growing community of 800...', hint: '\u2192 Appears in your Proof Strip as a real number, not a placeholder', icon: '\u{1F465}' },
+    { key: 'bestResult', label: 'Best student result', question: "What's the biggest win a student has had?", placeholder: 'e.g. Went from $0 to $8K/month in 90 days...', hint: '\u2192 Becomes your testimonial Pull Quote with a real story', icon: '\u{1F3C6}', dialog: true, dialogCta: "Help me write this \u2192" }
+  ],
+  service: [
+    { key: 'portfolioUrl', label: 'Portfolio or case studies', question: 'Do you have a portfolio or case studies to link to?', placeholder: 'https://yoursite.com/work \xB7 Behance \xB7 Dribbble...', hint: '\u2192 "See My Work" CTA in your Hero links directly here', icon: '\u{1F517}' },
+    { key: 'inquiryUrl', label: 'Project inquiry link', question: 'How do people start a project with you?', placeholder: 'Typeform \xB7 Calendly \xB7 Email form URL...', hint: '\u2192 Every "Start a Project" and "Get a Quote" button links here', icon: '\u{1F4CB}' },
+    { key: 'coreServices', label: 'Your 3 core services', question: 'What are your 3 main services? (comma separated)', placeholder: 'Brand identity, Website design, Marketing strategy', hint: '\u2192 Your Services card section uses exact names \u2014 no guessing', icon: '\u26A1', dialog: true, dialogCta: "Help me figure this out \u2192" },
+    { key: 'projectTimeline', label: 'Typical timeline', question: "What's a typical project timeline?", placeholder: 'e.g. 4 to 6 weeks \xB7 2-week sprints...', hint: '\u2192 Appears in your Process section Step 3', icon: '\u{1F4C5}' }
+  ],
+  speaker: [
+    { key: 'speakerReelUrl', label: 'Speaker reel video', question: 'Do you have a speaker reel or talk on video?', placeholder: 'https://youtube.com/watch?v=... \xB7 Vimeo...', hint: '\u2192 Embedded below your Hero \u2014 converts better than any copy', icon: '\u{1F3AC}' },
+    { key: 'bookUrl', label: 'Book link', question: 'Do you have a published book?', placeholder: 'Amazon link \xB7 Pre-order page...', hint: '\u2192 "Buy the Book" button in your Offers section', icon: '\u{1F4DA}' },
+    { key: 'keynoteTopics', label: 'Keynote topics', question: 'What are your top 2 to 3 keynote topics? (comma separated)', placeholder: 'Leadership in uncertainty, Building resilient teams...', hint: '\u2192 Your Topics card grid uses these exact names', icon: '\u{1F3A4}', dialog: true, dialogCta: "Help me name my topics \u2192" },
+    { key: 'bookingContact', label: 'How to book you', question: 'How do event organizers book you?', placeholder: 'Calendly link \xB7 Manager email \xB7 Inquiry form...', hint: '\u2192 "Book for Your Event" CTA links directly here', icon: '\u{1F4C6}' }
+  ],
+  local: [
+    { key: 'address', label: 'Office address or area', question: "What's your office address or service area?", placeholder: '123 Main St, Scottsdale AZ \xB7 Serving Phoenix metro...', hint: '\u2192 Appears in your footer with a real map embed', icon: '\u{1F4CD}' },
+    { key: 'bookingUrl', label: 'Booking system link', question: 'How do clients book with you?', placeholder: 'Jane App \xB7 SimplePractice \xB7 Mindbody URL \xB7 Phone...', hint: '\u2192 Every "Book an Appointment" button links here', icon: '\u{1F517}' },
+    { key: 'hours', label: 'Availability hours', question: "What are your availability hours?", placeholder: 'Mon\u2013Fri 9am\u20136pm \xB7 Evenings available \xB7 By appointment...', hint: '\u2192 Appears in your Contact section \u2014 answers before they ask', icon: '\u{1F550}' },
+    { key: 'insurancePayment', label: 'Insurance or payment', question: 'Do you accept insurance or have payment notes?', placeholder: 'Accepts BCBS, Aetna \xB7 Sliding scale \xB7 HSA accepted...', hint: '\u2192 One of the top 3 questions clients have before booking', icon: '\u{1F4B3}' }
+  ]
+};
+
+var SEGMENT_LABELS = {
+  expert:  { name: 'Coach / Consultant', headline: 'A few things that\\'ll make your site feel real' },
+  creator: { name: 'Course Creator',      headline: 'Let\\'s get your numbers and links in' },
+  service: { name: 'Service Provider',    headline: 'A few things clients will look for' },
+  speaker: { name: 'Speaker / Author',    headline: 'Let\\'s get your stage presence on the page' },
+  local:   { name: 'Local Professional',  headline: 'A few things that help clients find you' }
+};
+
+function detectSegment() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p1 = bp.part1 || {};
+  var combined = [
+    p3.nicheStatement || '',
+    (p4.offers || []).map(function(o) { return (o.name || '') + ' ' + (o.description || ''); }).join(' '),
+    (p1.toneKeywords || []).join(' ')
+  ].join(' ').toLowerCase();
+
+  if (/keynote|speaker|speaking|author|book.*publish|thought.*leader/.test(combined)) return 'speaker';
+  if (/course|cohort|membership|students enrolled|digital.*product|online.*program|mastermind/.test(combined)) return 'creator';
+  if (/local|near me|serving.*area|clinic|office.*location|therapy|therapist|in.person|appointment/.test(combined)) return 'local';
+  if (/agency|freelance|done.for.you|studio|design.*service|marketing.*service|client.*project/.test(combined)) return 'service';
+  return 'expert';
+}
+
+function showSegmentIntake() {
+  var segment = detectSegment();
+  STATE.currentSegment = segment;
+  var qs = SEGMENT_QUESTIONS[segment] || SEGMENT_QUESTIONS.expert;
+  var labels = SEGMENT_LABELS[segment] || SEGMENT_LABELS.expert;
+
+  // Set headline
+  var headEl = document.getElementById('intake-headline');
+  if (headEl) headEl.textContent = labels.headline;
+
+  // Reset testimonial dialog so it starts fresh
+  window.TESTIMONIAL_DIALOG_STARTED = false;
+  window.TESTIMONIAL_DIALOG_MESSAGES = [];
+  var dmEl = document.getElementById('testimonial-dialog-messages');
+  if (dmEl) dmEl.innerHTML = '';
+  var suggEl = document.getElementById('testimonial-dialog-suggestion');
+  if (suggEl) suggEl.innerHTML = '';
+  // Reset radio to default
+  STATE.testimonialPref = STATE.testimonialPref || 'generate';
+  var customArea = document.getElementById('custom-testimonials-area');
+  var aiArea = document.getElementById('testimonial-ai-area');
+  if (customArea) customArea.style.display = 'none';
+  if (aiArea) aiArea.style.display = 'none';
+
+  // Render fields
+  intakeRenderFields(qs);
+  showScreen('segment-intake-screen');
+  // Auto-fill high-confidence fields from blueprint
+  setTimeout(function() { intakeAutoFillFromBlueprint(segment, qs); }, 50);
+}
+
+function intakeAutoFillFromBlueprint(segment, questions) {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p5 = bp.part5 || {};
+
+  // Build a lookup of field key -> prefill value from blueprint
+  var prefills = {};
+
+  // Starting price: look in offers for a price mention
+  var offers = p4.offers || [];
+  if (offers.length > 0) {
+    var firstOffer = offers[0];
+    var priceHint = firstOffer.price || firstOffer.investment || firstOffer.cost || '';
+    if (!priceHint) {
+      var desc = (firstOffer.description || firstOffer.name || '').match(/\\$[\\d,]+[Kk]?(?:\\s*[\\/\\-]?\\s*(?:month|mo|week|wk|year|yr|session))?/);
+      if (desc) priceHint = desc[0];
+    }
+    if (priceHint && priceHint.length < 60) prefills.startingPrice = priceHint;
+  }
+
+  // Top credential: look for years experience or certifications
+  var bio = (p2.background || p2.story || p2.experience || '').trim();
+  if (!bio) bio = (p3.expertiseProof || p3.credibility || '').trim();
+  if (bio) {
+    var credMatch = bio.match(/(\\d+[+]?\\s*years?\\s+(?:of\\s+)?(?:experience|in\\s+\\w+)[^,\\.]{0,40})/i);
+    if (!credMatch) credMatch = bio.match(/((?:Certified|Licensed|ICF|PCC|MCC|PhD|MBA|MS|MA|RN|MD)\\s*[^\\.,]{0,50})/i);
+    if (credMatch) prefills.topCredential = credMatch[1].trim();
+  }
+
+  // Student count: look in p4 or p5 for social proof numbers
+  var proof = (p5.socialProof || p4.studentResults || p3.results || '').trim();
+  if (proof) {
+    var countMatch = proof.match(/(\\d[\\d,]*[+]?\\s*(?:students?|clients?|members?|people|professionals?))/i);
+    if (countMatch) prefills.studentCount = countMatch[1].trim();
+  }
+
+  // Methodology name: look in p4 for a named framework/process
+  var processName = p4.methodologyName || p4.frameworkName || p4.processName || p3.methodology || '';
+  if (processName && processName.length < 80) prefills.methodologyName = processName;
+
+  // Platform URL: look in p5 or p4 for a link
+  var platformLink = p5.platformUrl || p4.platformUrl || p5.courseUrl || '';
+  if (!platformLink) {
+    var linkSearch = JSON.stringify(p4).match(/https?:\\/\\/[^\\s"'<>,]{8,60}/);
+    if (linkSearch) platformLink = linkSearch[0];
+  }
+  if (platformLink) prefills.platformUrl = platformLink;
+
+  // Keynote topics: look in p4 offers names for speaker topics
+  if (segment === 'speaker' && offers.length > 0) {
+    var topicNames = offers.slice(0, 3).map(function(o) { return o.name || ''; }).filter(Boolean);
+    if (topicNames.length >= 2) prefills.keynoteTopics = topicNames.join(', ');
+  }
+
+  // Core services: for service providers, offer names are the services
+  if (segment === 'service' && offers.length >= 2) {
+    var serviceNames = offers.slice(0, 3).map(function(o) { return o.name || ''; }).filter(Boolean);
+    if (serviceNames.length >= 2) prefills.coreServices = serviceNames.join(', ');
+  }
+
+  // Now fill the input fields
+  questions.forEach(function(q, i) {
+    if (prefills[q.key]) {
+      var el = document.getElementById('intake-f-' + i);
+      if (el && !el.value) {
+        el.value = prefills[q.key];
+        el.style.borderColor = '#c4703f';
+        el.style.background = '#fffdf9';
+        // Add a subtle "from your blueprint" hint
+        var hintEl = el.closest('.intake-field') && el.closest('.intake-field').querySelector('.intake-field-hint');
+        if (hintEl && !hintEl.dataset.orig) {
+          hintEl.dataset.orig = hintEl.textContent;
+          hintEl.innerHTML = '<span style="color:#c4703f;font-weight:600">Pre-filled from your blueprint</span> \xB7 ' + hintEl.textContent.replace('\u2192 ', '');
+        }
+      }
+    }
+  });
+}
+
+function intakeRenderFields(questions) {
+  var container = document.getElementById('intake-fields-container');
+  if (!container) return;
+  container.innerHTML = questions.map(function(q, i) {
+    var inputEl = '<input type="text" class="intake-field-input" id="intake-f-' + i + '" placeholder="' + q.placeholder.replace(/"/g, '&quot;') + '" autocomplete="off">';
+    var dialogHtml = '';
+    if (q.dialog) {
+      var cta = q.dialogCta || 'Help me decide \u2192';
+      dialogHtml =
+        '<span class="intake-dialog-btn" onclick="intakeOpenDialog(' + i + ', \\'' + q.key + '\\')">' + cta + '</span>' +
+        '<div class="intake-dialog-panel" id="intake-dp-' + i + '">' +
+          '<div class="intake-dialog-header">' +
+            '<span class="intake-dialog-label">AI Coach</span>' +
+            '<button class="intake-dialog-close" onclick="intakeCloseDialog(' + i + ')">\xD7</button>' +
+          '</div>' +
+          '<div class="intake-dialog-messages" id="intake-dm-' + i + '"></div>' +
+          '<div id="intake-ds-' + i + '"></div>' +
+          '<div class="intake-dialog-input-row">' +
+            '<input class="intake-dialog-input" id="intake-di-' + i + '" placeholder="Type your answer..." autocomplete="off" onkeydown="if(event.key===\\'Enter\\')intakeDialogSend(' + i + ', \\'' + q.key + '\\')">' +
+            '<button class="intake-dialog-send" id="intake-db-' + i + '" onclick="intakeDialogSend(' + i + ', \\'' + q.key + '\\')">Send</button>' +
+          '</div>' +
+        '</div>';
+    }
+    return '<div class="intake-field">' +
+      '<div class="intake-field-label">' + q.label + '</div>' +
+      '<div class="intake-field-wrap">' +
+        '<span class="intake-field-icon">' + q.icon + '</span>' +
+        inputEl +
+      '</div>' +
+      '<div class="intake-field-hint">' + q.hint + '</div>' +
+      dialogHtml +
+    '</div>';
+  }).join('');
+}
+
+function intakeCollectData() {
+  var segment = STATE.currentSegment || 'expert';
+  var qs = SEGMENT_QUESTIONS[segment] || SEGMENT_QUESTIONS.expert;
+  var data = { segment: segment };
+  qs.forEach(function(q, i) {
+    var el = document.getElementById('intake-f-' + i);
+    if (el && el.value.trim()) data[q.key] = el.value.trim();
+  });
+  return data;
+}
+
+function intakeSubmit() {
+  STATE.segmentIntake = intakeCollectData();
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_intake_' + sid, '1'); } catch(_) {}
+  // Proceed to photo gate
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  if (!gateSeen && !hasPhoto) {
+    showPhotoGate();
+  } else {
+    startPregenFlow();
+  }
+}
+
+function intakeSkipAll() {
+  STATE.segmentIntake = { segment: STATE.currentSegment || 'expert', skipped: true };
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_intake_' + sid, '1'); } catch(_) {}
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  if (!gateSeen && !hasPhoto) {
+    showPhotoGate();
+  } else {
+    startPregenFlow();
+  }
+}
+// \u2500\u2500 INTAKE DIALOG FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+window.INTAKE_DIALOGS = {};
+
+function intakeOpenDialog(i, fieldKey) {
+  var panel = document.getElementById('intake-dp-' + i);
+  if (!panel) return;
+  panel.classList.add('open');
+  // Init history if fresh
+  if (!window.INTAKE_DIALOGS[i]) {
+    window.INTAKE_DIALOGS[i] = { fieldKey: fieldKey, messages: [] };
+    // Fire opening message from AI
+    intakeDialogAITurn(i, fieldKey);
+  }
+  // Focus input
+  var inp = document.getElementById('intake-di-' + i);
+  if (inp) setTimeout(function() { inp.focus(); }, 80);
+}
+
+function intakeCloseDialog(i) {
+  var panel = document.getElementById('intake-dp-' + i);
+  if (panel) panel.classList.remove('open');
+}
+
+function intakeDialogAddMsg(i, role, text) {
+  var msgs = document.getElementById('intake-dm-' + i);
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'intake-dialog-msg ' + role;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function intakeDialogSetThinking(i, on) {
+  var msgs = document.getElementById('intake-dm-' + i);
+  if (!msgs) return;
+  var existing = msgs.querySelector('.thinking');
+  if (on && !existing) {
+    var div = document.createElement('div');
+    div.className = 'intake-dialog-msg thinking';
+    div.textContent = 'Thinking...';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else if (!on && existing) {
+    existing.remove();
+  }
+}
+
+function intakeDialogShowSuggestion(i, fieldKey, suggestion) {
+  var container = document.getElementById('intake-ds-' + i);
+  if (!container) return;
+  container.innerHTML =
+    '<button class="intake-dialog-suggestion" onclick="intakeDialogUseSuggestion(' + i + ', \\'' + fieldKey + '\\')">' +
+      '<div style="flex:1">' +
+        '<span class="intake-dialog-suggestion-label">Use this answer</span>' +
+        '<span class="intake-dialog-suggestion-value" id="intake-dsv-' + i + '">' + suggestion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
+      '</div>' +
+      '<span style="font-size:18px;opacity:0.7">&#10003;</span>' +
+    '</button>';
+  // Store for retrieval
+  if (window.INTAKE_DIALOGS[i]) window.INTAKE_DIALOGS[i].lastSuggestion = suggestion;
+}
+
+function intakeDialogUseSuggestion(i, fieldKey) {
+  var s = window.INTAKE_DIALOGS[i] && window.INTAKE_DIALOGS[i].lastSuggestion;
+  if (!s) return;
+  // Fill the main input
+  var inp = document.getElementById('intake-f-' + i);
+  if (inp) {
+    inp.value = s;
+    inp.style.borderColor = '#c4703f';
+    inp.style.background = '#fffdf9';
+  }
+  intakeCloseDialog(i);
+}
+
+async function intakeDialogAITurn(i, fieldKey) {
+  var state = window.INTAKE_DIALOGS[i];
+  if (!state) return;
+  var btn = document.getElementById('intake-db-' + i);
+  if (btn) btn.disabled = true;
+  intakeDialogSetThinking(i, true);
+  try {
+    var res = await fetch('/api/intake/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: STATE.sessionId,
+        fieldKey: fieldKey,
+        messages: state.messages
+      })
+    });
+    var data = await res.json();
+    intakeDialogSetThinking(i, false);
+    if (data.reply) {
+      // Strip SUGGESTION line from display text
+      var displayText = data.reply.replace(/SUGGESTION:.*/i, '').trim();
+      intakeDialogAddMsg(i, 'ai', displayText);
+      state.messages.push({ role: 'assistant', content: data.reply });
+      if (data.suggestion) {
+        intakeDialogShowSuggestion(i, fieldKey, data.suggestion);
+      }
+    } else {
+      intakeDialogAddMsg(i, 'ai', 'Something went wrong. Try typing your answer directly.');
+    }
+  } catch (err) {
+    intakeDialogSetThinking(i, false);
+    intakeDialogAddMsg(i, 'ai', 'Could not reach the AI coach. Try typing your answer directly.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function intakeDialogSend(i, fieldKey) {
+  var inp = document.getElementById('intake-di-' + i);
+  if (!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  // Clear previous suggestion
+  var ds = document.getElementById('intake-ds-' + i);
+  if (ds) ds.innerHTML = '';
+  var state = window.INTAKE_DIALOGS[i];
+  if (!state) { window.INTAKE_DIALOGS[i] = { fieldKey: fieldKey, messages: [] }; state = window.INTAKE_DIALOGS[i]; }
+  intakeDialogAddMsg(i, 'user', text);
+  state.messages.push({ role: 'user', content: text });
+  await intakeDialogAITurn(i, fieldKey);
+}
+// \u2500\u2500 END INTAKE DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// \u2500\u2500 TESTIMONIAL AI DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function testimonialDialogAddMsg(role, text) {
+  var msgs = document.getElementById('testimonial-dialog-messages');
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'intake-dialog-msg ' + role;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function testimonialDialogSetThinking(on) {
+  var msgs = document.getElementById('testimonial-dialog-messages');
+  if (!msgs) return;
+  var existing = msgs.querySelector('.thinking');
+  if (on && !existing) {
+    var div = document.createElement('div');
+    div.className = 'intake-dialog-msg thinking';
+    div.textContent = 'Thinking...';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else if (!on && existing) {
+    existing.remove();
+  }
+}
+
+function testimonialDialogShowSuggestion(suggestion) {
+  var container = document.getElementById('testimonial-dialog-suggestion');
+  if (!container) return;
+  window._testimonialLastSuggestion = suggestion;
+  container.innerHTML =
+    '<button class="intake-dialog-suggestion" onclick="testimonialDialogUseSuggestion()">' +
+      '<div style="flex:1">' +
+        '<span class="intake-dialog-suggestion-label">Use these testimonials</span>' +
+        '<span class="intake-dialog-suggestion-value" style="white-space:pre-wrap;">' + suggestion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
+      '</div>' +
+      '<span style="font-size:18px;opacity:0.7">&#10003;</span>' +
+    '</button>';
+}
+
+function testimonialDialogUseSuggestion() {
+  var s = window._testimonialLastSuggestion;
+  if (!s) return;
+  var textarea = document.getElementById('custom-testimonials-input');
+  if (textarea) {
+    textarea.value = s;
+    textarea.style.borderColor = '#c4703f';
+    textarea.style.background = '#fffdf9';
+  }
+  // Clear the suggestion button and show a confirmation message
+  var container = document.getElementById('testimonial-dialog-suggestion');
+  if (container) {
+    container.innerHTML = '<div style="font-size:12px;color:#c4703f;font-weight:600;padding:8px 4px;">Testimonials saved above. You can still edit them before building your site.</div>';
+  }
+}
+
+async function testimonialDialogAITurn() {
+  var messages = window.TESTIMONIAL_DIALOG_MESSAGES || [];
+  var sendBtn = document.getElementById('testimonial-dialog-send-btn');
+  if (sendBtn) sendBtn.disabled = true;
+  testimonialDialogSetThinking(true);
+  try {
+    var res = await fetch('/api/intake/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: STATE.sessionId,
+        fieldKey: 'testimonials',
+        messages: messages
+      })
+    });
+    var data = await res.json();
+    testimonialDialogSetThinking(false);
+    if (data.reply) {
+      var displayText = data.reply.replace(/SUGGESTION:.*/i, '').trim();
+      testimonialDialogAddMsg('ai', displayText);
+      window.TESTIMONIAL_DIALOG_MESSAGES.push({ role: 'assistant', content: data.reply });
+      if (data.suggestion) {
+        testimonialDialogShowSuggestion(data.suggestion);
+      }
+    } else {
+      testimonialDialogAddMsg('ai', 'Something went wrong. Try typing a client win to get started.');
+    }
+  } catch (err) {
+    testimonialDialogSetThinking(false);
+    testimonialDialogAddMsg('ai', 'Could not reach the AI coach. Try typing a client win directly.');
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+async function testimonialDialogSend() {
+  var inp = document.getElementById('testimonial-dialog-input');
+  if (!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  // Clear previous suggestion
+  var ds = document.getElementById('testimonial-dialog-suggestion');
+  if (ds) ds.innerHTML = '';
+  if (!window.TESTIMONIAL_DIALOG_MESSAGES) window.TESTIMONIAL_DIALOG_MESSAGES = [];
+  testimonialDialogAddMsg('user', text);
+  window.TESTIMONIAL_DIALOG_MESSAGES.push({ role: 'user', content: text });
+  await testimonialDialogAITurn();
+}
+// \u2500\u2500 END TESTIMONIAL AI DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// \u2500\u2500 END SEGMENT INTAKE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 async function runSiteGeneration() {
   try {
+    // Start overlay animation
+    startGenAnimation();
     // Step 1: Preparing context
     await delay(800);
     setStep(1, 'done');
     setStep(2, 'active');
 
-    // Generate images (non-blocking \u2014 site can work without images)
+    // Generate images (non-blocking, site can work without images)
     let imgOk = false;
     try {
       const imgRes = await fetch('/api/generate/images', {
@@ -4692,21 +8807,48 @@ async function runSiteGeneration() {
       const imgData = await imgRes.json();
       imgOk = imgData.ok;
     } catch (_) {
-      // Images failed \u2014 continue without them
+      // Images failed, continue without them
     }
 
     setStep(2, imgOk ? 'done' : 'done');
     setStep(3, 'active');
 
-    // Generate site HTML
-    const siteRes = await fetch('/api/generate/site', {
+    // Generate site HTML with automatic retry on 502/503/timeout
+    async function fetchWithRetry(url, options, maxRetries) {
+      maxRetries = maxRetries || 2;
+      for (var attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          var res = await fetch(url, options);
+          if (res.status === 502 || res.status === 503 || res.status === 504) {
+            if (attempt < maxRetries) {
+              console.warn('Site generation attempt ' + attempt + ' returned ' + res.status + ', retrying...');
+              await delay(2000);
+              continue;
+            }
+          }
+          return res;
+        } catch (networkErr) {
+          if (attempt < maxRetries) {
+            console.warn('Site generation attempt ' + attempt + ' network error, retrying...');
+            await delay(2000);
+            continue;
+          }
+          throw networkErr;
+        }
+      }
+    }
+
+    // Get testimonial preference
+    var testimPref = typeof getTestimonialPref === 'function' ? getTestimonialPref() : { pref: 'generate', customText: '' };
+
+    const siteRes = await fetchWithRetry('/api/generate/site', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
+      body: JSON.stringify({ sessionId: STATE.sessionId, testimonialPref: testimPref.pref, customTestimonials: testimPref.customText, segmentIntake: STATE.segmentIntake || null, segment: STATE.currentSegment || null, userPhotoUrl: (window.PICKER_PHOTO && (window.PICKER_PHOTO.processedUrl || window.PICKER_PHOTO.dataUrl)) || null })
+    }, 2);
 
     if (!siteRes.ok) {
-      const errData = await siteRes.json().catch(() => ({}));
+      const errData = await siteRes.json().catch(function() { return {}; });
       throw new Error(errData.error || 'Site generation failed (status ' + siteRes.status + ')');
     }
 
@@ -4717,6 +8859,32 @@ async function runSiteGeneration() {
     }
 
     setStep(3, 'done');
+
+    // Per-section finalization: show each section name in the narrative
+    // This gives the "designed beforehand" experience the user expects
+    try {
+      var bpGen = STATE.blueprint?.blueprint || STATE.blueprint || {};
+      var bpGenSections = bpGen.part5?.sections || [];
+      if (bpGenSections.length > 0) {
+        var sectionNarratives = ['Perfecting your hero section...'];
+        bpGenSections.forEach(function(s) {
+          sectionNarratives.push('Perfecting ' + (s.name || 'section') + '...');
+        });
+        sectionNarratives.push('Polishing the footer...');
+        setGenProgress(72);
+        for (var sni = 0; sni < sectionNarratives.length; sni++) {
+          var narEl2 = document.getElementById('gen-narrative');
+          if (narEl2) {
+            narEl2.style.opacity = '0';
+            await delay(140);
+            narEl2.textContent = sectionNarratives[sni];
+            narEl2.style.opacity = '1';
+          }
+          setGenProgress(72 + Math.round((sni + 1) / sectionNarratives.length * 16));
+          await delay(Math.round(1800 / Math.max(sectionNarratives.length, 1)));
+        }
+      }
+    } catch(_) {}
 
     // Step 4: SEO + Launch Optimization (happens during deploy)
     setStep(4, 'active');
@@ -4746,6 +8914,7 @@ async function runSiteGeneration() {
     }
 
     setStep(5, 'done');
+    stopGenAnimation();
 
     if (deployUrl) {
       STATE.liveUrl = deployUrl;
@@ -4757,10 +8926,11 @@ async function runSiteGeneration() {
 
   } catch (e) {
     console.error('Site generation error:', e);
+    stopGenAnimation();
     // Show error in the generation screen instead of just a toast
     const stepsEl = document.getElementById('gen-steps');
     if (stepsEl) {
-      stepsEl.innerHTML += '<div style="margin-top:24px;padding:16px 20px;background:#fdf2f2;border:1.5px solid #e74c3c;border-radius:10px;color:#c0392b;font-size:14px;line-height:1.6;"><strong>Something went wrong</strong><br>' + (e.message || 'An unexpected error occurred.') + '<br><br><button class="btn btn-gold" onclick="location.reload()" style="padding:10px 20px;font-size:14px;">Try Again</button></div>';
+      stepsEl.innerHTML += '<div style="margin-top:24px;padding:16px 20px;background:#fdf2f2;border:1.5px solid #e74c3c;border-radius:10px;color:#c0392b;font-size:14px;line-height:1.6;"><strong>Something went wrong</strong><br>' + (e.message || 'An unexpected error occurred.') + '<br><br><button class="btn btn-gold" onclick="runSiteGeneration()" style="padding:10px 20px;font-size:14px;">Try Again</button> <button class="btn" onclick="location.reload()" style="padding:10px 20px;font-size:14px;margin-left:8px;">Refresh Page</button></div>';
     }
   }
 }
@@ -4847,16 +9017,8 @@ function emailMySite() {
 }
 
 function handleBookCall() {
-  // Open Calendly booking page for strategy call
-  window.open('https://calendly.com/james-jamesguldan/60-minute-meeting-clone', '_blank');
-}
-function shareOnLinkedIn() {
-  const url = STATE.siteUrl || '';
-  const brandName = document.getElementById('mc-brand-name')?.textContent?.trim() || 'my brand';
-  const summary = encodeURIComponent(`I just built my complete brand strategy and website in one session. Check it out:`);
-  const encodedUrl = encodeURIComponent(url);
-  const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}&summary=${summary}`;
-  window.open(linkedInUrl, '_blank', 'width=600,height=600');
+  // Redirect to strategy call checkout
+  handleCheckoutRedirect('call');
 }
 
 async function handleCheckoutRedirect(tier) {
@@ -4875,10 +9037,966 @@ async function handleCheckoutRedirect(tier) {
 }
 
 function setStep(num, state) {
-  const el = document.getElementById(\`step-\${num}-icon\`);
+  updateSiteGenState(num, state);
+}
+function updateSiteGenState(num, state) {
+  // Update step visual
+  var el = document.getElementById('step-' + num + '-icon');
   if (!el) return;
-  el.className = \`step-icon \${state}\`;
-  if (state === 'done') el.textContent = '\u2713';
+  el.className = 'step-icon ' + state;
+  el.textContent = '';
+  // Update step text color (dark Atelier theme)
+  var row = document.getElementById('gen-step-row-' + num);
+  if (row) {
+    var title = row.querySelector('.gen-step-title');
+    var desc = row.querySelector('.gen-step-desc');
+    if (title) title.style.color = (state === 'pending') ? '#c8c0b8' : '#1d1d1f';
+    if (desc) desc.style.color = (state === 'pending') ? '#ddd8d2' : (state === 'active' ? '#c4703f' : '#b0a89e');
+  }
+  // Populate name from STATE if available
+  var nameEl = document.getElementById('gen-preview-name');
+  if (nameEl && STATE && STATE.blueprint && STATE.blueprint.blueprint && STATE.blueprint.blueprint.name) {
+    nameEl.textContent = STATE.blueprint.blueprint.name;
+  }
+  // Unblur preview at step 3+
+  var wrap = document.getElementById('site-gen-preview-wrap');
+  if (wrap && num >= 3 && state !== 'pending') {
+    wrap.style.filter = 'blur(1px)';
+  }
+  if (wrap && state === 'done' && num === 5) {
+    wrap.style.filter = 'blur(0px)';
+  }
+  // Update status label
+  var labels = ['', 'Preparing your brand...', 'Generating brand imagery...', 'Writing your website...', 'Optimizing for search...', 'Deploying to the web...'];
+  var labelEl = document.getElementById('gen-status-label');
+  if (labelEl && labels[num]) labelEl.textContent = labels[num];
+  // Update overlay progress
+  var pctMap = { '1_active': 5, '1_done': 12, '2_active': 18, '2_done': 38, '3_active': 42, '3_done': 78, '4_active': 82, '4_done': 88, '5_active': 92, '5_done': 100 };
+  var pKey = num + '_' + state;
+  if (pctMap[pKey]) setGenProgress(pctMap[pKey]);
+}
+
+
+// \u2500\u2500 SITE GEN OVERLAY ANIMATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var GEN_ANIM = { pct: 0, target: 0, interval: null, codeInterval: null, narrativeInterval: null, codeLines: 0 };
+
+var GEN_CODE_SNIPPETS = [
+  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"hero"</span><span style="color:#c4703f">&gt;</span>',
+  '  <span style="color:#86868b">background:</span> <span style="color:#2d6a4f">linear-gradient(135deg, #1B2A4A, #D4A853)</span>;',
+  '  <span style="color:#c4703f">&lt;h1&gt;</span><span style="color:#1d1d1f">Your Brand Headline</span><span style="color:#c4703f">&lt;/h1&gt;</span>',
+  '  <span style="color:#86868b">font-family:</span> <span style="color:#2d6a4f">Outfit, sans-serif</span>;',
+  '  <span style="color:#86868b">font-weight:</span> <span style="color:#2d6a4f">700</span>;',
+  '<span style="color:#c4703f">&lt;/section&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Services grid */</span>',
+  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"services"</span><span style="color:#c4703f">&gt;</span>',
+  '  <span style="color:#86868b">display:</span> <span style="color:#2d6a4f">grid</span>;',
+  '  <span style="color:#86868b">grid-template-columns:</span> <span style="color:#2d6a4f">repeat(3, 1fr)</span>;',
+  '  <span style="color:#86868b">gap:</span> <span style="color:#2d6a4f">24px</span>;',
+  '  <span style="color:#c4703f">&lt;div</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"card"</span><span style="color:#c4703f">&gt;</span>',
+  '    <span style="color:#86868b">border-radius:</span> <span style="color:#2d6a4f">12px</span>;',
+  '    <span style="color:#86868b">box-shadow:</span> <span style="color:#2d6a4f">0 2px 16px rgba(0,0,0,0.06)</span>;',
+  '  <span style="color:#c4703f">&lt;/div&gt;</span>',
+  '<span style="color:#c4703f">&lt;/section&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* About section */</span>',
+  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"about"</span><span style="color:#c4703f">&gt;</span>',
+  '  <span style="color:#c4703f">&lt;img</span> <span style="color:#86868b">src=</span><span style="color:#2d6a4f">"hero-portrait.jpg"</span> <span style="color:#c4703f">/&gt;</span>',
+  '  <span style="color:#c4703f">&lt;p&gt;</span><span style="color:#1d1d1f">Your story, your way.</span><span style="color:#c4703f">&lt;/p&gt;</span>',
+  '<span style="color:#c4703f">&lt;/section&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Testimonials */</span>',
+  '<span style="color:#c4703f">&lt;blockquote&gt;</span>',
+  '  <span style="color:#1d1d1f">"This transformed our business..."</span>',
+  '<span style="color:#c4703f">&lt;/blockquote&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Footer */</span>',
+  '<span style="color:#c4703f">&lt;footer&gt;</span>',
+  '  <span style="color:#86868b">background:</span> <span style="color:#2d6a4f">#1d1d1f</span>;',
+  '  <span style="color:#c4703f">&lt;nav&gt;</span> <span style="color:#1d1d1f">Home | About | Services | Contact</span> <span style="color:#c4703f">&lt;/nav&gt;</span>',
+  '<span style="color:#c4703f">&lt;/footer&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Responsive */</span>',
+  '<span style="color:#c4703f">@media</span> <span style="color:#2d6a4f">(max-width: 768px)</span> {',
+  '  <span style="color:#86868b">.hero h1</span> { font-size: <span style="color:#2d6a4f">32px</span>; }',
+  '  <span style="color:#86868b">.services</span> { grid-template-columns: <span style="color:#2d6a4f">1fr</span>; }',
+  '}',
+];
+
+var GEN_NARRATIVES = [
+  'Preparing your brand story...',
+  'Selecting your color palette...',
+  'Crafting your hero section...',
+  'Writing copy that converts...',
+  'Designing your services layout...',
+  'Building your about page...',
+  'Adding social proof sections...',
+  'Optimizing for mobile screens...',
+  'Setting up SEO metadata...',
+  'Polishing the details...',
+  'Almost there...',
+];
+
+function startGenAnimation() {
+  GEN_ANIM.pct = 0;
+  GEN_ANIM.target = 3;
+  GEN_ANIM.codeLines = 0;
+  // Reset progress bar and counter
+  var pb = document.getElementById('atelier-progress-bar');
+  if (pb) pb.style.width = '0%';
+  var pctEl = document.getElementById('gen-pct');
+  if (pctEl) pctEl.textContent = '0';
+
+  // Smooth percentage counter + thin progress bar
+  GEN_ANIM.interval = setInterval(function() {
+    if (GEN_ANIM.pct < GEN_ANIM.target) {
+      GEN_ANIM.pct = Math.min(GEN_ANIM.pct + 1, GEN_ANIM.target);
+      var pe = document.getElementById('gen-pct');
+      if (pe) pe.textContent = String(GEN_ANIM.pct);
+      var bar = document.getElementById('atelier-progress-bar');
+      if (bar) bar.style.width = GEN_ANIM.pct + '%';
+    }
+  }, 150);
+
+  // Narrative ticker
+  var narIdx = 0;
+  GEN_ANIM.narrativeInterval = setInterval(function() {
+    var el = document.getElementById('gen-narrative');
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(function() {
+      narIdx = (narIdx + 1) % GEN_NARRATIVES.length;
+      el.textContent = GEN_NARRATIVES[narIdx];
+      el.style.opacity = '1';
+    }, 400);
+  }, 3200);
+}
+
+function setGenProgress(target) {
+  GEN_ANIM.target = Math.min(target, 100);
+}
+
+function stopGenAnimation() {
+  if (GEN_ANIM.interval) clearInterval(GEN_ANIM.interval);
+  if (GEN_ANIM.codeInterval) clearInterval(GEN_ANIM.codeInterval);
+  if (GEN_ANIM.narrativeInterval) clearInterval(GEN_ANIM.narrativeInterval);
+  GEN_ANIM.pct = 100;
+  GEN_ANIM.target = 100;
+  var pe = document.getElementById('gen-pct');
+  if (pe) pe.textContent = '100';
+  var bar = document.getElementById('atelier-progress-bar');
+  if (bar) bar.style.width = '100%';
+  var ne = document.getElementById('gen-narrative');
+  if (ne) ne.textContent = 'Your site is ready.';
+}
+
+// \u2500\u2500 SECTION PICKER FLOW \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+var PICKER = {
+  sections: [],
+  currentIndex: 0,
+  device: 'desktop',
+  regenCount: 0,
+  maxRegen: 3,
+  chosen: [],
+  variants: [],
+  viewingOption: 0,
+  renderedVariants: []
+};
+
+// \u2500\u2500 SESSION NAVIGATION CACHE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Persists which screen the user was on so refresh doesn't send them
+// back to the blueprint. Keyed by sessionId, expires after 14 hours.
+var DW_NAV_TTL = 14 * 3600 * 1000;
+
+function dwSaveNav(state) {
+  if (!STATE.sessionId) return;
+  try {
+    localStorage.setItem('dw_nav_' + STATE.sessionId, JSON.stringify(Object.assign({ ts: Date.now() }, state)));
+  } catch(_) {}
+}
+
+function dwGetSavedNav(sessionId) {
+  try {
+    var k = 'dw_nav_' + (sessionId || STATE.sessionId);
+    var raw = localStorage.getItem(k);
+    if (!raw) return null;
+    var d = JSON.parse(raw);
+    if (Date.now() - (d.ts || 0) > DW_NAV_TTL) { localStorage.removeItem(k); return null; }
+    return d;
+  } catch(_) { return null; }
+}
+
+function dwClearNav() {
+  if (!STATE.sessionId) return;
+  try { localStorage.removeItem('dw_nav_' + STATE.sessionId); } catch(_) {}
+}
+
+function dwRestorePickerFromNav(nav, blueprint) {
+  var bp = blueprint && blueprint.blueprint ? blueprint.blueprint : blueprint;
+  var sections = bp && bp.part5 && bp.part5.sections;
+  if (!sections || sections.length === 0) return false;
+  // Check if photo gate needs to run first (it's per-session, cleared on refresh by design)
+  var sid = STATE.sessionId || 'anon';
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  if (!hasPhoto && !gateSeen) {
+    // Stash restore info, show photo gate first, then resume
+    STATE._pendingPickerRestore = nav;
+    STATE._pendingPickerBlueprint = blueprint;
+    showPhotoGate();
+    return true;
+  }
+  dwDoRestorePicker(nav, sections);
+  return true;
+}
+
+function dwDoRestorePicker(nav, sections) {
+  var restoreIdx = Math.min(nav.pickerCurrentIndex || 0, sections.length - 1);
+  PICKER.sections = sections;
+  PICKER.currentIndex = restoreIdx;
+  PICKER.regenCount = 0;
+  PICKER.chosen = nav.pickerChosen || [];
+  PICKER.variants = [];
+  PICKER.preloaded = {};
+  PICKER.sectionImages = {};
+  PICKER.viewingOption = 0;
+  PICKER.renderedVariants = [];
+  showScreen('section-picker');
+  showToast('Resuming where you left off\u2026');
+  pickerLoadSection(restoreIdx);
+}
+
+var PICKER_PREVIEW_HEIGHT = 340;
+
+function startSectionPickerFlow() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : STATE.blueprint;
+  var sections = bp && bp.part5 && bp.part5.sections;
+  if (!sections || sections.length === 0) {
+    showScreen('site-screen');
+    runSiteGeneration();
+    return;
+  }
+  PICKER.sections = sections;
+  PICKER.currentIndex = 0;
+  PICKER.regenCount = 0;
+  PICKER.chosen = [];
+  PICKER.variants = [];
+  showScreen('section-picker');
+  fpickPhotoInit();
+  pickerLoadSection(0);
+}
+
+function pickerLoadSection(idx) {
+  if (idx >= PICKER.sections.length) {
+    pickerAssemble();
+    return;
+  }
+  PICKER.currentIndex = idx;
+  PICKER.regenCount = 0;
+  PICKER.variants = [];
+  var section = PICKER.sections[idx];
+  var total = PICKER.sections.length;
+
+  var stepLabel = document.getElementById('picker-step-label');
+  var nameHeader = document.getElementById('picker-section-name-header');
+  var fill = document.getElementById('picker-progress-fill');
+  var regenLabel = document.getElementById('picker-regen-count-label');
+  var regenAttempts = document.getElementById('picker-regen-attempts-label');
+
+  if (stepLabel) stepLabel.textContent = 'Section ' + (idx + 1) + ' of ' + total;
+  if (nameHeader) nameHeader.textContent = section.name || 'Section';
+  if (fill) fill.style.width = (idx / total * 100) + '%';
+  if (regenLabel) regenLabel.textContent = PICKER.maxRegen + ' left';
+  if (regenAttempts) regenAttempts.textContent = '(' + PICKER.maxRegen + ' left)';
+
+  var loadingEl = document.getElementById('picker-loading-state');
+  var optionsEl = document.getElementById('picker-options-area');
+  if (loadingEl) loadingEl.style.display = 'flex';
+  if (optionsEl) optionsEl.style.display = 'none';
+  // Clear any regen feedback text from previous section
+  var regenText = document.getElementById('picker-regen-text');
+  if (regenText) regenText.value = '';
+  var regenStatus = document.getElementById('picker-regen-status');
+  if (regenStatus) regenStatus.textContent = '';
+
+  var loadText = document.getElementById('picker-loading-text');
+  if (loadText) loadText.textContent = 'Generating 3 options for \u201C' + (section.name || 'this section') + '\u201D\u2026';
+
+  // Show right-panel loading overlay
+  var rightLoading = document.getElementById('fpick-right-loading');
+  var rightLoadingLabel = document.getElementById('fpick-right-loading-label');
+  if (rightLoading) rightLoading.classList.remove('hidden');
+  if (rightLoadingLabel) rightLoadingLabel.textContent = section.name || 'Section';
+
+  // Use preloaded variants if available (populated by pregen screen)
+  if (PICKER.preloaded && PICKER.preloaded[idx]) {
+    var cached = PICKER.preloaded[idx];
+    PICKER.variants = cached;
+    pickerRenderOptions(cached);
+    return;
+  }
+
+  pickerFetchVariants(idx, null);
+}
+
+async function pickerFetchVariants(idx, feedback) {
+  try {
+    var res = await fetch('/api/generate/section-variants', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('dw_session') || '') },
+      body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, feedback: feedback || null })
+    });
+    if (!res.ok) throw new Error('Generation failed (' + res.status + ')');
+    var data = await res.json();
+    if (!data.variants || data.variants.length === 0) throw new Error('No variants returned');
+    PICKER.variants = data.variants;
+    pickerRenderOptions(data.variants);
+  } catch (e) {
+    var loadText = document.getElementById('picker-loading-text');
+    if (loadText) loadText.textContent = 'Something went wrong \u2014 ';
+    var loadingEl = document.getElementById('picker-loading-state');
+    if (loadingEl) {
+      var retryBtn = document.createElement('button');
+      retryBtn.textContent = 'Try Again';
+      retryBtn.style.cssText = 'padding:10px 24px;background:#1d1d1f;color:#fff;border:none;border-radius:50px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;';
+      retryBtn.onclick = function() { pickerFetchVariants(idx, feedback); };
+      loadingEl.appendChild(retryBtn);
+    }
+  }
+}
+
+function pickerRenderOptions(variants) {
+  var loadingEl = document.getElementById('picker-loading-state');
+  var optionsEl = document.getElementById('picker-options-area');
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (optionsEl) { optionsEl.style.display = 'flex'; optionsEl.style.flexDirection = 'column'; optionsEl.style.gap = '14px'; }
+  // Hide right-panel loading overlay
+  var rightLoading = document.getElementById('fpick-right-loading');
+  if (rightLoading) rightLoading.classList.add('hidden');
+  // Reset regen button + clear status
+  var regenBtn = document.getElementById('picker-regen-btn');
+  var regenStatus = document.getElementById('picker-regen-status');
+  if (regenBtn) regenBtn.disabled = false;
+  if (regenStatus) regenStatus.textContent = '';
+
+  // Always reset choose button to default state for new section
+  var chooseBtn = document.querySelector('.fpick-choose-btn');
+  if (chooseBtn) { chooseBtn.textContent = 'Choose this layout \u2192'; chooseBtn.style.background = ''; }
+
+  var section = PICKER.sections[PICKER.currentIndex];
+  var eyebrow = document.getElementById('picker-eyebrow-text');
+  if (eyebrow) eyebrow.textContent = section.name;
+
+  // Pre-render all variant HTML for fast switching
+  PICKER.renderedVariants = variants.map(function(v) {
+    return pickerWrapHtml(pickerRenderTemplate(v));
+  });
+
+  PICKER.viewingOption = 0;
+  pickerShowOption(0);
+  setTimeout(function() { pickerScaleMainIframe(); }, 80);
+}
+
+function pickerShowOption(i) {
+  var variants = PICKER.variants;
+  if (!variants || !variants[i]) return;
+  PICKER.viewingOption = i;
+  var v = variants[i];
+  var confClass = v.confidence >= 80 ? 'high' : v.confidence >= 65 ? 'mid' : 'low';
+
+  // Update dots
+  for (var d = 0; d < 3; d++) {
+    var dot = document.getElementById('fpick-dot-' + d);
+    if (dot) dot.className = 'fpick-option-dot' + (d === i ? ' active' : '');
+  }
+
+  // Update info card
+  var titleEl = document.getElementById('fpick-option-title');
+  var ratEl = document.getElementById('fpick-option-rationale');
+  var confEl = document.getElementById('fpick-confidence');
+  var counterEl = document.getElementById('fpick-counter');
+  if (titleEl) titleEl.textContent = v.title || ('Option ' + (i + 1));
+  if (ratEl) ratEl.textContent = v.rationale || '';
+  if (confEl) { confEl.className = 'fpick-confidence-pill ' + confClass; confEl.textContent = (v.confidence || 80) + '% match'; }
+  if (counterEl) counterEl.textContent = (i + 1) + ' / ' + variants.length;
+
+  // Update prev/next buttons
+  var prevBtn = document.getElementById('fpick-prev-btn');
+  var nextBtn = document.getElementById('fpick-next-btn');
+  if (prevBtn) prevBtn.disabled = (i === 0);
+  if (nextBtn) nextBtn.disabled = (i >= variants.length - 1);
+
+  // Update iframe srcdoc
+  var iframe = document.getElementById('fpick-main-iframe');
+  if (iframe && PICKER.renderedVariants[i]) {
+    iframe.srcdoc = PICKER.renderedVariants[i];
+  }
+  // Sync to phone iframe if in mobile mode
+  if (PICKER.device === 'mobile') {
+    var phoneIframe = document.getElementById('fpick-phone-iframe');
+    if (phoneIframe && PICKER.renderedVariants[i]) {
+      phoneIframe.srcdoc = PICKER.renderedVariants[i];
+      setTimeout(pickerScalePhoneIframe, 80);
+    }
+  }
+  setTimeout(function() { pickerScaleMainIframe(); }, 60);
+}
+
+function pickerPrevOption() {
+  if (PICKER.viewingOption > 0) pickerShowOption(PICKER.viewingOption - 1);
+}
+
+function pickerNextOption() {
+  if (PICKER.viewingOption < PICKER.variants.length - 1) pickerShowOption(PICKER.viewingOption + 1);
+}
+
+function pickerChooseViewing() {
+  pickerChoose(PICKER.viewingOption);
+}
+
+function pickerScaleMainIframe() {
+  var iframe = document.getElementById('fpick-main-iframe');
+  var container = document.getElementById('fpick-preview-container');
+  if (!iframe || !container) return;
+  var w = container.offsetWidth || 800;
+  var h = container.offsetHeight || 600;
+  var targetW = PICKER.device === 'mobile' ? 375 : 1200;
+  var scale = w / targetW;
+  var scaledH = h / scale;
+  iframe.style.width = targetW + 'px';
+  iframe.style.height = scaledH + 'px';
+  iframe.style.transform = 'scale(' + scale + ')';
+}
+
+function setPickerDevice(device) {
+  PICKER.device = device;
+  var db = document.getElementById('picker-desktop-btn');
+  var mb = document.getElementById('picker-mobile-btn');
+  if (db) db.className = 'fpick-device-btn' + (device === 'desktop' ? ' active' : '');
+  if (mb) mb.className = 'fpick-device-btn' + (device === 'mobile' ? ' active' : '');
+  var rightPanel = document.getElementById('fpick-right-panel');
+  if (rightPanel) {
+    if (device === 'mobile') {
+      rightPanel.classList.add('mobile-preview');
+      // Sync current variant to phone iframe
+      var mainIframe = document.getElementById('fpick-main-iframe');
+      var phoneIframe = document.getElementById('fpick-phone-iframe');
+      if (mainIframe && phoneIframe && mainIframe.srcdoc) {
+        phoneIframe.srcdoc = mainIframe.srcdoc;
+        setTimeout(pickerScalePhoneIframe, 80);
+      }
+    } else {
+      rightPanel.classList.remove('mobile-preview');
+    }
+  }
+  pickerScaleMainIframe();
+}
+
+function pickerScalePhoneIframe() {
+  var outer = document.getElementById('fpick-phone-outer');
+  var iframe = document.getElementById('fpick-phone-iframe');
+  if (!outer || !iframe) return;
+  var sw = (outer.offsetWidth || 320) - 22;
+  var sh = (outer.offsetHeight || 650) - 22;
+  var scale = sw / 375;
+  iframe.style.width = '375px';
+  iframe.style.height = Math.ceil(sh / scale) + 'px';
+  iframe.style.transform = 'scale(' + scale + ')';
+}
+
+function pickerChoose(idx) {
+  var variant = PICKER.variants[idx];
+  if (!variant) return;
+  // Flash the choose button for feedback
+  var btn = document.querySelector('.fpick-choose-btn');
+  if (btn) { btn.textContent = '\u2713 Selected!'; btn.style.background = '#16a34a'; }
+  PICKER.chosen.push({
+    sectionIndex: PICKER.currentIndex,
+    sectionName: PICKER.sections[PICKER.currentIndex].name,
+    html: pickerRenderTemplate(variant, PICKER.currentIndex),
+    layout: variant.layout,
+    slots: variant.slots
+  });
+  // Persist picker progress so refresh restores here
+  dwSaveNav({ screen: 'section-picker', pickerCurrentIndex: PICKER.currentIndex + 1, pickerChosen: PICKER.chosen });
+  setTimeout(function() { pickerLoadSection(PICKER.currentIndex + 1); }, 420);
+}
+
+function toggleRegenInput() {
+  var wrap = document.getElementById('picker-regen-input-wrap');
+  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+}
+
+async function pickerRegenerate() {
+  if (PICKER.regenCount >= PICKER.maxRegen) {
+    showToast('No regenerations left. Please choose one of the options above.');
+    return;
+  }
+  PICKER.regenCount++;
+  var left = PICKER.maxRegen - PICKER.regenCount;
+  var feedback = (document.getElementById('picker-regen-text') || {}).value || '';
+  var btn = document.getElementById('picker-regen-btn');
+  var status = document.getElementById('picker-regen-status');
+  var regenLabel = document.getElementById('picker-regen-count-label');
+  var regenAttempts = document.getElementById('picker-regen-attempts-label');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = (feedback && feedback.trim()) ? 'Creating from your feedback\u2026' : 'Generating 3 new options\u2026';
+  if (regenLabel) regenLabel.textContent = left + ' left';
+  if (regenAttempts) regenAttempts.textContent = '(' + left + ' left)';
+  var loadingEl = document.getElementById('picker-loading-state');
+  var optionsEl = document.getElementById('picker-options-area');
+  if (loadingEl) { loadingEl.style.display = 'flex'; var lt = document.getElementById('picker-loading-text'); if (lt) lt.textContent = 'Generating 3 new options\u2026'; }
+  var rightLoading2 = document.getElementById('fpick-right-loading');
+  var rightLoadingLabel2 = document.getElementById('fpick-right-loading-label');
+  if (rightLoading2) rightLoading2.classList.remove('hidden');
+  if (rightLoadingLabel2) rightLoadingLabel2.textContent = (PICKER.sections[PICKER.currentIndex] || {}).name || 'Section';
+  if (optionsEl) optionsEl.style.display = 'none';
+  var regenText = document.getElementById('picker-regen-text');
+  if (regenText) regenText.value = '';
+  await pickerFetchVariants(PICKER.currentIndex, feedback);
+}
+
+// Build the full deployable page HTML from chosen picker sections (no AI needed)
+function pickerBuildFullPage() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var p1 = bp.part1 || {};
+  var brandName = (p1.brandNames && p1.brandNames[0]) || bp.name || 'Your Brand';
+  var fonts = (p1.visualDirection && p1.visualDirection.fonts) || {};
+  var colors = (p1.visualDirection && p1.visualDirection.colors) || [];
+  var headingFont = fonts.heading || 'Outfit';
+  var bodyFont = fonts.body || 'Outfit';
+  var primary = (colors[0] && colors[0].hex) || '#1d1d1f';
+  var accent = (colors[2] && colors[2].hex) || '#c4703f';
+  var bgColor = (colors[3] && colors[3].hex) || '#ffffff';
+  var textColor = (colors[4] && colors[4].hex) || '#1d1d1f';
+  var fontSet = [];
+  [headingFont, bodyFont].forEach(function(f) { if (f && fontSet.indexOf(f) === -1) fontSet.push(f); });
+  if (fontSet.indexOf('Outfit') === -1) fontSet.push('Outfit');
+  var fontParam = fontSet.map(function(f) { return f.replace(/[^a-zA-Z0-9 ]/g,'').replace(/ /g,'+') + ':wght@300;400;500;600;700;800'; }).join('&family=');
+
+  // Sort chosen sections by their original index
+  var sortedChosen = PICKER.chosen.slice().sort(function(a, b) { return a.sectionIndex - b.sectionIndex; });
+
+  // Nav links (max 5, using section names)
+  var navLinks = sortedChosen.slice(0, 5).map(function(c, i) {
+    return '<a href="#section-' + c.sectionIndex + '" style="color:' + primary + ';text-decoration:none;font-family:'' + bodyFont + '',Outfit,sans-serif;font-size:14px;font-weight:500;letter-spacing:0.01em;">' + (c.sectionName || '') + '</a>';
+  }).join('');
+
+  var nav = '<nav style="position:sticky;top:0;z-index:100;background:' + bgColor + ';border-bottom:1px solid rgba(0,0,0,0.08);padding:0 32px;">' +
+    '<div style="max-width:1160px;margin:0 auto;height:68px;display:flex;align-items:center;justify-content:space-between;">' +
+    '<span style="font-family:'' + headingFont + '',Outfit,serif;font-size:20px;font-weight:700;color:' + primary + ';letter-spacing:-0.02em;">' + brandName + '</span>' +
+    '<div style="display:flex;gap:32px;align-items:center;">' + navLinks + '</div>' +
+    '</div></nav>';
+
+  // Section HTML wrapped with anchor IDs
+  var sectionsHtml = sortedChosen.map(function(c) {
+    return '<div id="section-' + c.sectionIndex + '">' + c.html + '</div>';
+  }).join('
+');
+
+  // Footer
+  var year = new Date().getFullYear();
+  var footer = '<footer style="background:' + primary + ';padding:52px 32px;">' +
+    '<div style="max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">' +
+    '<span style="font-family:'' + headingFont + '',Outfit,serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.01em;">' + brandName + '</span>' +
+    '<p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0;">&copy; ' + year + ' ' + brandName + '. All rights reserved.</p>' +
+    '</div></footer>';
+
+  return '<!DOCTYPE html>
+<html lang="en">
+<head>
+' +
+    '<meta charset="UTF-8">
+' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">
+' +
+    '<title>' + brandName + '</title>
+' +
+    '<link href="https://fonts.googleapis.com/css2?family=' + fontParam + '&display=swap" rel="stylesheet">
+' +
+    '<style>*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}body{font-family:'' + bodyFont + '',Outfit,sans-serif;background:' + bgColor + ';color:' + textColor + '}img{max-width:100%;height:auto}@media(max-width:768px){nav div:last-child{display:none}}</style>
+' +
+    '</head>
+<body>
+' +
+    nav + '
+' +
+    sectionsHtml + '
+' +
+    footer + '
+' +
+    '</body>
+</html>';
+}
+
+async function pickerAssemble() {
+  // Show a brief assembly screen instead of the full 2-4 min generation screen
+  showScreen('site-screen');
+  var narrative = document.getElementById('gen-narrative');
+  var progressEl = document.getElementById('gen-progress-bar-fill') || document.getElementById('gen-progress');
+  var titleEl = document.querySelector('#site-screen h2') || document.querySelector('#site-screen .gen-title');
+  if (titleEl) titleEl.textContent = 'Building Your Site';
+  if (narrative) narrative.textContent = 'Assembling your chosen layouts\u2026';
+  if (progressEl) progressEl.style.width = '30%';
+  startGenAnimation();
+  setStep(1, 'done');
+  setStep(2, 'active');
+
+  try {
+    var jwt = '';
+    try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}
+    var fullHtml = pickerBuildFullPage();
+    if (narrative) narrative.textContent = 'Deploying your site\u2026';
+    if (progressEl) progressEl.style.width = '65%';
+    setStep(3, 'active');
+
+    var res = await fetch('/api/generate/deploy-picker-site', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+      body: JSON.stringify({ sessionId: STATE.sessionId, html: fullHtml, chosen: PICKER.chosen, segment: STATE.currentSegment || null })
+    });
+    var data = await res.json();
+    if (data.ok && data.url) {
+      if (progressEl) progressEl.style.width = '100%';
+      setStep(3, 'done');
+      setStep(4, 'done');
+      if (narrative) narrative.textContent = 'Your site is live!';
+      STATE.siteUrl = data.url;
+      dwSaveNav({ screen: 'site-reveal', liveUrl: data.url });
+      setTimeout(function() { showSiteReveal(data.url); }, 800);
+      return;
+    }
+    throw new Error(data.error || 'Assembly failed');
+  } catch (e) {
+    console.error('Fast assembly failed, falling back to full generation:', e);
+    // Fallback: run the full generation pipeline
+    await runSiteGeneration();
+  }
+}
+
+// \u2500\u2500 SECTION TEMPLATE RENDERING \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function pickerGetColors() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var vd = (bp.part1 && bp.part1.visualDirection) || {};
+  var colors = vd.colors || [];
+  function toHex(c) { return (c && c.hex) ? c.hex : (typeof c === 'string' ? c : ''); }
+  // Blueprint palette: [0]=Primary, [1]=Secondary, [2]=Accent, [3]=Background, [4]=Text
+  return {
+    primary: toHex(colors[0]) || '#1d1d1f',
+    accent:  toHex(colors[2]) || toHex(colors[1]) || '#c4703f',
+    bg:      toHex(colors[3]) || '#f5f5f5',
+    muted:   '#6b7280'
+  };
+}
+
+function pickerWrapHtml(sectionHtml) {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var vdFonts = (bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.fonts) || {};
+  var font = vdFonts.heading || vdFonts.body || 'Outfit';
+  var safeFontName = font.replace(/[^a-zA-Z0-9 ]/g, '').replace(/ /g, '+');
+  return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=' + safeFontName + ':wght@300;400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"' + pickerEsc(font) + '",Outfit,sans-serif}</style></head><body>' + sectionHtml + '</body></html>';
+}
+
+function pickerEsc(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function pickerEscAttr(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+function pickerRenderTemplate(variant, sectionIdx) {
+  var c = pickerGetColors();
+  var s = variant.slots || {};
+  var idx = typeof sectionIdx === 'number' ? sectionIdx : PICKER.currentIndex;
+  if (variant.layout === 'B') return pickerLayoutB(s, c, idx);
+  if (variant.layout === 'C') return pickerLayoutC(s, c, idx);
+  if (variant.layout === 'D') return pickerLayoutD(s, c, idx);
+  if (variant.layout === 'E') return pickerLayoutE(s, c, idx);
+  if (variant.layout === 'F') return pickerLayoutF(s, c, idx);
+  if (variant.layout === 'G') return pickerLayoutG(s, c, idx);
+  if (variant.layout === 'H') return pickerLayoutH(s, c, idx);
+  if (variant.layout === 'P') return pickerLayoutP(s, c, idx);
+  if (variant.layout === 'N') return pickerLayoutN(s, c, idx);
+  return pickerLayoutA(s, c, idx);
+}
+
+function pickerPhotoUrl() {
+  return (window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl) || '';
+}
+
+// Returns the Imagen-generated section background image URL (if ready), or null
+function pickerSectionImageUrl(sectionIdx) {
+  if (typeof sectionIdx === 'number' && PICKER.sectionImages && PICKER.sectionImages[sectionIdx]) {
+    return PICKER.sectionImages[sectionIdx];
+  }
+  return null;
+}
+
+// Primary visual for a section: Imagen image > photo > gradient
+function pickerBestVisualUrl(sectionIdx) {
+  return pickerSectionImageUrl(sectionIdx) || pickerPhotoUrl() || null;
+}
+
+function pickerPhotoPlaceholder(c, size) {
+  // Styled silhouette placeholder when no photo uploaded
+  var s = size || 320;
+  return '<div style="width:100%;height:100%;background:linear-gradient(145deg,' + c.primary + ' 0%,' + c.accent + ' 100%);display:flex;align-items:center;justify-content:center;">' +
+    '<svg width="' + Math.round(s * 0.45) + '" height="' + Math.round(s * 0.45) + '" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<circle cx="40" cy="28" r="16" fill="rgba(255,255,255,0.25)"/>' +
+    '<path d="M8 72c0-17.673 14.327-32 32-32s32 14.327 32 32" fill="rgba(255,255,255,0.2)"/>' +
+    '</svg></div>';
+}
+
+// Returns hero background style: photo if available, else rich brand gradient
+function pickerHeroBg(c) {
+  var photo = pickerPhotoUrl();
+  if (photo) return 'background:url(' + photo + ') center/cover no-repeat;';
+  // Rich gradient using brand primary + accent
+  return 'background:linear-gradient(135deg,' + c.primary + ' 0%,' + c.accent + ' 55%,' + (c.bg || '#f5f5f5') + ' 100%);';
+}
+
+// Returns background-style string for an Imagen/photo/gradient based on sectionIdx
+function pickerSectionBgStyle(sectionIdx, c) {
+  var img = pickerBestVisualUrl(sectionIdx);
+  if (img) return 'background:url(' + img + ') center/cover no-repeat;';
+  return 'background:linear-gradient(135deg,' + c.primary + ' 0%,' + c.accent + ' 55%,' + (c.bg || '#f5f5f5') + ' 100%);';
+}
+
+// Returns a styled photo panel (for split layouts): photo or gradient + silhouette
+function pickerPhotoPanelEl(c, opts) {
+  opts = opts || {};
+  var photo = pickerPhotoUrl();
+  var height = opts.height || '100%';
+  var overlayExtra = opts.overlay || '';
+  if (photo) {
+    return '<div style="width:100%;height:' + height + ';background:url(' + photo + ') center top/cover no-repeat;position:relative;">' +
+      overlayExtra +
+      (opts.caption ? '<div style="position:absolute;bottom:16px;left:16px;background:rgba(0,0,0,0.5);color:#fff;padding:5px 11px;border-radius:6px;font-size:11px;font-weight:500;">' + pickerEsc(opts.caption) + '</div>' : '') +
+      '</div>';
+  }
+  // No photo: rich brand gradient background with decorative shapes
+  return '<div style="width:100%;height:' + height + ';background:linear-gradient(145deg,' + c.primary + ' 0%,' + c.accent + ' 100%);position:relative;overflow:hidden;">' +
+    '<div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,0.07);border-radius:50%;"></div>' +
+    '<div style="position:absolute;bottom:-60px;left:-30px;width:240px;height:240px;background:rgba(255,255,255,0.05);border-radius:50%;"></div>' +
+    overlayExtra +
+    '</div>';
+}
+
+function pickerLayoutG(s, c, sectionIdx) {
+  // Layout G: Photo Story Split \u2014 text left, Imagen/headshot right
+  // G is typically used for About sections \u2014 prefer user photo over Imagen
+  var photo = pickerPhotoUrl() || pickerSectionImageUrl(sectionIdx);
+  var photoEl = photo
+    ? '<img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">'
+    : pickerPhotoPlaceholder(c, 480);
+  return '<section style="min-height:520px;display:flex;align-items:stretch;background:#ffffff;">' +
+    '<div style="flex:1.1;min-width:0;padding:68px 52px;display:flex;align-items:center;">' +
+    '<div style="max-width:380px;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:16px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:' + c.primary + ';line-height:1.15;letter-spacing:-0.025em;margin-bottom:18px;">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.body ? '<p style="font-size:15px;color:#6b7280;line-height:1.72;margin-bottom:32px;">' + pickerEsc(s.body) + '</p>' : '') +
+    (s.cta_text ? '<a href="#" style="display:inline-block;padding:13px 28px;background:' + c.accent + ';color:#fff;font-weight:700;border-radius:50px;font-size:14px;text-decoration:none;">' + pickerEsc(s.cta_text) + '</a>' : '') +
+    '</div></div>' +
+    '<div style="flex:0.9;min-width:0;position:relative;overflow:hidden;">' +
+    photoEl +
+    (s.photo_caption ? '<div style="position:absolute;bottom:20px;left:20px;background:rgba(0,0,0,0.55);color:#fff;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:500;">' + pickerEsc(s.photo_caption) + '</div>' : '') +
+    '</div></section>';
+}
+
+function pickerLayoutH(s, c, sectionIdx) {
+  // Layout H: Cinematic Hero \u2014 Imagen/photo full-bleed, text anchored bottom-left
+  var photo = pickerBestVisualUrl(sectionIdx) || pickerPhotoUrl();
+  var bgStyle = photo
+    ? 'background:url(' + photo + ') center/cover no-repeat;'
+    : 'background:linear-gradient(135deg,' + c.primary + ' 0%,' + c.accent + ' 100%);';
+  return '<section style="min-height:520px;' + bgStyle + 'position:relative;display:flex;align-items:flex-end;">' +
+    '<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0.18) 55%,transparent 100%);"></div>' +
+    '<div style="position:relative;z-index:1;padding:52px 52px;max-width:640px;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:16px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(30px,4vw,52px);font-weight:900;color:#ffffff;line-height:1.08;letter-spacing:-0.03em;margin-bottom:16px;">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.subheadline ? '<p style="font-size:16px;color:rgba(255,255,255,0.8);line-height:1.6;margin-bottom:32px;max-width:480px;">' + pickerEsc(s.subheadline) + '</p>' : '') +
+    (s.cta_text ? '<a href="#" style="display:inline-block;padding:14px 32px;background:' + c.accent + ';color:#fff;font-weight:700;border-radius:50px;font-size:15px;text-decoration:none;">' + pickerEsc(s.cta_text) + '</a>' : '') +
+    '</div></section>';
+}
+
+function pickerLayoutP(s, c, sectionIdx) {
+  // Layout P: Pull Quote \u2014 large testimonial, small avatar circle, clean white
+  // P is testimonial-focused \u2014 prefer user photo for the avatar
+  var photo = pickerPhotoUrl() || pickerSectionImageUrl(sectionIdx);
+  var avatarEl = photo
+    ? '<img src="' + photo + '" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid ' + c.accent + ';flex-shrink:0;" alt="">'
+    : '<div style="width:52px;height:52px;border-radius:50%;background:' + c.accent + ';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;">' + (s.attribution ? pickerEsc(s.attribution.charAt(0).toUpperCase()) : '?') + '</div>';
+  return '<section style="min-height:520px;background:#fafaf8;display:flex;align-items:center;justify-content:center;padding:72px 48px;">' +
+    '<div style="max-width:700px;text-align:center;">' +
+    (s.headline ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:28px;">' + pickerEsc(s.headline) + '</p>' : '') +
+    '<div style="font-size:72px;line-height:0.9;color:' + c.accent + ';opacity:0.25;margin-bottom:8px;font-family:Georgia,serif;font-weight:700;">\u201C</div>' +
+    '<blockquote style="font-size:clamp(20px,2.5vw,26px);font-weight:600;color:' + c.primary + ';line-height:1.45;letter-spacing:-0.02em;margin:0 0 36px;font-style:italic;">' + pickerEsc(s.quote || s.body || '') + '</blockquote>' +
+    '<div style="display:inline-flex;align-items:center;gap:14px;">' +
+    avatarEl +
+    '<div style="text-align:left;">' +
+    '<div style="font-size:14px;font-weight:700;color:' + c.primary + ';">' + pickerEsc(s.attribution || '') + '</div>' +
+    (s.attribution_title ? '<div style="font-size:12px;color:#86868b;margin-top:2px;">' + pickerEsc(s.attribution_title) + '</div>' : '') +
+    '</div></div></div></section>';
+}
+
+function pickerLayoutN(s, c, sectionIdx) {
+  // Layout N: Numbered Steps \u2014 eyebrow + headline + 3 numbered process steps
+  var steps = (s.steps || []).slice(0, 3);
+  return '<section style="min-height:520px;background:#ffffff;padding:68px 48px;">' +
+    '<div style="text-align:center;margin-bottom:52px;max-width:580px;margin-left:auto;margin-right:auto;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:16px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(26px,3.5vw,44px);font-weight:800;color:' + c.primary + ';line-height:1.1;letter-spacing:-0.025em;">' + pickerEsc(s.headline || '') + '</h2>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);max-width:820px;margin:0 auto;gap:0;">' +
+    steps.map(function(step, i) {
+      return '<div style="padding:24px 32px;position:relative;">' +
+        (i < steps.length - 1 ? '<div style="position:absolute;top:42px;right:-1px;width:50%;height:1px;background:' + c.accent + ';opacity:0.2;z-index:0;"></div>' : '') +
+        '<div style="width:46px;height:46px;border-radius:50%;background:' + c.accent + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;margin-bottom:18px;position:relative;z-index:1;">' + (i + 1) + '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:' + c.primary + ';margin-bottom:8px;line-height:1.3;">' + pickerEsc(step.title || '') + '</div>' +
+        '<div style="font-size:13px;color:#6b7280;line-height:1.6;">' + pickerEsc(step.body || '') + '</div>' +
+        '</div>';
+    }).join('') +
+    '</div></section>';
+}
+
+function pickerLayoutA(s, c, sectionIdx) {
+  // Layout A: Hero with brand background (Imagen image > photo > gradient) + centered text overlay
+  var bestImg = pickerBestVisualUrl(sectionIdx);
+  var photo = bestImg || pickerPhotoUrl();
+  var bgStyle = bestImg ? ('background:url(' + bestImg + ') center/cover no-repeat;') : pickerHeroBg(c);
+  var textColor = photo ? '#ffffff' : '#ffffff';
+  var mutedColor = photo ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.75)';
+  return '<section style="min-height:520px;' + bgStyle + 'display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 48px;position:relative;overflow:hidden;">' +
+    '<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.3) 0%,rgba(0,0,0,0.55) 100%);"></div>' +
+    '<div style="max-width:680px;position:relative;z-index:1;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:18px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(32px,4.5vw,58px);font-weight:800;color:' + textColor + ';line-height:1.08;letter-spacing:-0.03em;margin-bottom:22px;">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.subheadline ? '<p style="font-size:18px;color:' + mutedColor + ';line-height:1.65;margin-bottom:38px;max-width:520px;margin-left:auto;margin-right:auto;">' + pickerEsc(s.subheadline) + '</p>' : '') +
+    (s.cta_text ? '<a href="#" style="display:inline-block;padding:16px 36px;background:' + c.accent + ';color:#fff;font-weight:700;border-radius:50px;font-size:15px;text-decoration:none;letter-spacing:-0.01em;">' + pickerEsc(s.cta_text) + '</a>' : '') +
+    '</div></section>';
+}
+
+function pickerLayoutB(s, c, sectionIdx) {
+  // Layout B: Split 2-col \u2014 dark left panel + Imagen/photo/feature right
+  var items = (s.items || []).slice(0, 3);
+  var photo = pickerBestVisualUrl(sectionIdx) || pickerPhotoUrl();
+  var rightPanel;
+  if (photo) {
+    rightPanel = '<div style="flex:1;min-width:0;position:relative;overflow:hidden;">' +
+      '<img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">' +
+      '</div>';
+  } else {
+    rightPanel = '<div style="flex:1;min-width:0;padding:64px 40px;display:flex;flex-direction:column;justify-content:center;gap:18px;">' +
+      items.map(function(item) {
+        return '<div style="display:flex;gap:14px;align-items:flex-start;">' +
+          '<div style="width:28px;height:28px;border-radius:8px;background:' + c.accent + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">' + pickerEsc(item.icon || '\u2713') + '</div>' +
+          '<div><div style="font-size:14px;font-weight:700;color:' + c.primary + ';margin-bottom:4px;">' + pickerEsc(item.title || '') + '</div>' +
+          '<div style="font-size:13px;color:' + c.muted + ';line-height:1.55;">' + pickerEsc(item.body || '') + '</div></div>' +
+          '</div>';
+      }).join('') +
+      '</div>';
+  }
+  return '<section style="min-height:520px;display:flex;align-items:stretch;background:#ffffff;">' +
+    '<div style="flex:1.1;min-width:0;background:' + c.primary + ';padding:64px 48px;display:flex;align-items:center;">' +
+    '<div>' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:14px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:#ffffff;line-height:1.15;letter-spacing:-0.025em;margin-bottom:18px;">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.body ? '<p style="font-size:15px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:32px;">' + pickerEsc(s.body) + '</p>' : '') +
+    (s.cta_text ? '<a href="#" style="display:inline-block;padding:13px 28px;background:' + c.accent + ';color:#fff;font-weight:700;border-radius:50px;font-size:14px;text-decoration:none;">' + pickerEsc(s.cta_text) + '</a>' : '') +
+    '</div></div>' +
+    rightPanel +
+    '</section>';
+}
+
+function pickerLayoutC(s, c, sectionIdx) {
+  // Layout C: Full-width dark header + 3-card grid on light background
+  var cards = (s.cards || []).slice(0, 3);
+  return '<section style="min-height:520px;background:#ffffff;">' +
+    '<div style="background:' + c.primary + ';padding:52px 48px 48px;text-align:center;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:14px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(26px,3.5vw,42px);font-weight:800;color:#ffffff;line-height:1.15;letter-spacing:-0.025em;margin-bottom:12px;">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.subheadline ? '<p style="font-size:16px;color:rgba(255,255,255,0.68);line-height:1.6;max-width:540px;margin:0 auto;">' + pickerEsc(s.subheadline) + '</p>' : '') +
+    '</div>' +
+    '<div style="padding:40px 48px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">' +
+    cards.map(function(card) {
+      return '<div style="padding:26px 22px;background:#f8f8f8;border-radius:14px;border:1px solid #eeeeee;">' +
+        '<div style="width:36px;height:4px;background:' + c.accent + ';border-radius:2px;margin-bottom:16px;"></div>' +
+        '<div style="font-size:15px;font-weight:700;color:' + c.primary + ';margin-bottom:10px;line-height:1.3;">' + pickerEsc(card.title || '') + '</div>' +
+        '<div style="font-size:13px;color:' + c.muted + ';line-height:1.6;">' + pickerEsc(card.body || '') + '</div>' +
+        '</div>';
+    }).join('') +
+    '</div></section>';
+}
+
+function pickerLayoutD(s, c, sectionIdx) {
+  // Layout D: Dark Statement \u2014 Imagen/photo or solid dark bg, massive headline
+  var photo = pickerBestVisualUrl(sectionIdx) || pickerPhotoUrl();
+  var bgStyle = photo
+    ? 'background:url(' + photo + ') center/cover no-repeat;'
+    : 'background:' + c.primary + ';';
+  return '<section style="min-height:520px;' + bgStyle + 'display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 48px;position:relative;overflow:hidden;">' +
+    '<div style="position:absolute;inset:0;background:rgba(0,0,0,' + (photo ? '0.68' : '0') + ');"></div>' +
+    '<div style="max-width:740px;position:relative;z-index:1;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:24px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(38px,5.5vw,70px);font-weight:900;color:#ffffff;line-height:1.04;letter-spacing:-0.035em;margin-bottom:' + (s.stat_number ? '36px' : '32px') + ';">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.stat_number ? '<div style="display:inline-flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:22px 48px;margin-bottom:32px;">' +
+      '<span style="font-size:54px;font-weight:900;color:' + c.accent + ';line-height:1;letter-spacing:-0.04em;">' + pickerEsc(s.stat_number) + '</span>' +
+      (s.stat_label ? '<span style="font-size:12px;color:rgba(255,255,255,0.55);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">' + pickerEsc(s.stat_label) + '</span>' : '') +
+    '</div>' : '') +
+    (s.cta_text ? '<div><a href="#" style="display:inline-block;padding:15px 34px;background:' + c.accent + ';color:#fff;font-weight:700;border-radius:50px;font-size:15px;text-decoration:none;letter-spacing:-0.01em;">' + pickerEsc(s.cta_text) + '</a></div>' : '') +
+    '</div></section>';
+}
+
+function pickerLayoutE(s, c, sectionIdx) {
+  // Layout E: Numbers / Proof Strip \u2014 white bg, 3 big stats in bordered row
+  var stats = (s.stats || []).slice(0, 3);
+  return '<section style="min-height:520px;background:#ffffff;padding:72px 48px;display:flex;flex-direction:column;align-items:center;">' +
+    '<div style="text-align:center;margin-bottom:52px;max-width:580px;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:16px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(26px,3.5vw,44px);font-weight:800;color:' + c.primary + ';line-height:1.1;letter-spacing:-0.025em;">' + pickerEsc(s.headline || '') + '</h2>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);max-width:780px;width:100%;border:1px solid #e8e8e8;border-radius:20px;overflow:hidden;">' +
+    stats.map(function(stat, i) {
+      return '<div style="padding:38px 28px;background:#fff;' + (i < stats.length - 1 ? 'border-right:1px solid #e8e8e8;' : '') + 'text-align:center;">' +
+        '<div style="font-size:clamp(38px,4vw,54px);font-weight:900;color:' + c.accent + ';line-height:1;letter-spacing:-0.04em;margin-bottom:10px;">' + pickerEsc(stat.number || '') + '</div>' +
+        '<div style="font-size:11px;font-weight:700;color:' + c.primary + ';margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em;">' + pickerEsc(stat.label || '') + '</div>' +
+        '<div style="font-size:12px;color:#6b7280;line-height:1.55;">' + pickerEsc(stat.body || '') + '</div>' +
+        '</div>';
+    }).join('') +
+    '</div></section>';
+}
+
+function pickerLayoutF(s, c, sectionIdx) {
+  // Layout F: Story Split \u2014 text left, Imagen/photo/branded right panel
+  var photo = pickerBestVisualUrl(sectionIdx) || pickerPhotoUrl();
+  var rightPanel;
+  if (photo) {
+    rightPanel = '<div style="flex:0.9;min-width:0;position:relative;overflow:hidden;">' +
+      '<img src="' + photo + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">' +
+      '<div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.1),transparent);"></div>' +
+      '</div>';
+  } else {
+    rightPanel = '<div style="flex:0.9;min-width:0;background:' + c.primary + ';display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">' +
+      '<div style="position:absolute;top:-50px;right:-50px;width:220px;height:220px;background:' + c.accent + ';opacity:0.12;border-radius:50%;"></div>' +
+      '<div style="position:absolute;bottom:-70px;left:-40px;width:260px;height:260px;background:' + c.accent + ';opacity:0.08;border-radius:50%;"></div>' +
+      '<div style="text-align:center;position:relative;z-index:1;padding:36px;">' +
+      '<div style="font-size:clamp(36px,4.5vw,58px);font-weight:900;color:#ffffff;line-height:1.05;letter-spacing:-0.03em;">' + pickerEsc(s.accent_word || '') + '</div>' +
+      '<div style="width:44px;height:3px;background:' + c.accent + ';margin:18px auto 0;border-radius:2px;"></div>' +
+      '</div></div>';
+  }
+  return '<section style="min-height:520px;display:flex;align-items:stretch;background:#ffffff;">' +
+    '<div style="flex:1.1;min-width:0;padding:68px 52px;display:flex;align-items:center;">' +
+    '<div style="max-width:380px;">' +
+    (s.eyebrow ? '<p style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:' + c.accent + ';margin-bottom:16px;">' + pickerEsc(s.eyebrow) + '</p>' : '') +
+    '<h2 style="font-size:clamp(26px,3vw,40px);font-weight:800;color:' + c.primary + ';line-height:1.15;letter-spacing:-0.025em;margin-bottom:18px;">' + pickerEsc(s.headline || '') + '</h2>' +
+    (s.body ? '<p style="font-size:15px;color:#6b7280;line-height:1.72;margin-bottom:32px;">' + pickerEsc(s.body) + '</p>' : '') +
+    (s.cta_text ? '<a href="#" style="display:inline-block;padding:13px 28px;background:' + c.primary + ';color:#fff;font-weight:700;border-radius:50px;font-size:14px;text-decoration:none;">' + pickerEsc(s.cta_text) + '</a>' : '') +
+    '</div></div>' +
+    rightPanel +
+    '</section>';
 }
 
 // \u2500\u2500 SECTION-BY-SECTION GUIDED REVIEW \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -4893,126 +10011,137 @@ let REVIEW_STATE = {
 function showSiteReveal(liveUrl) {
   showScreen('site-reveal');
   STATE.liveUrl = liveUrl;
+  // Persist so refresh returns here instead of blueprint
+  dwSaveNav({ screen: 'site-reveal', liveUrl: liveUrl });
   const domain = document.getElementById('reveal-domain');
   const preview = document.getElementById('reveal-preview');
   const loading = document.getElementById('reveal-loading');
+  const brandEl = document.getElementById('brand-name-reveal');
+
+  // Populate brand name
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var brandName = (bp.part1 && bp.part1.brandName) || STATE.projectName || 'Your Site';
+  if (brandEl) brandEl.textContent = brandName;
 
   if (liveUrl && domain) domain.textContent = liveUrl.replace('https://','');
   if (liveUrl && preview) {
+    preview.style.display = 'none';
+    if (loading) loading.style.display = '';
     preview.src = liveUrl;
     preview.onload = function() {
       preview.style.display = '';
       if (loading) loading.style.display = 'none';
       // Detect sections once iframe loads
-      setTimeout(() => detectSections(), 800);
+      setTimeout(function() { detectSections(); }, 800);
     };
   }
 }
 
 function detectSections() {
-  // Define the sections we expect based on the site generation template
-  // These match the structure from prompts.js: nav, hero, problem, solution, offers, about, testimonials, CTA, footer
   const bp = STATE.blueprint?.blueprint || STATE.blueprint || {};
   const bpSections = bp.part5?.sections || [];
 
-  REVIEW_STATE.sections = [
-    { id: 'hero', badge: 'Above the fold', title: 'First Impressions', desc: 'This is what visitors see the moment they land. Does it grab attention and represent your brand?', selector: '.hero, [class*="hero"], section:first-of-type, header + section' }
-  ];
+  // Hero is always first (pinned)
+  var heroSection = {
+    id: 'hero', badge: 'Hero', title: 'First Impressions',
+    desc: 'What visitors see the moment they land \u2014 does it grab attention and represent your brand?',
+    selector: '.hero, [class*="hero"], section:first-of-type, header + section',
+    confidence: null, visualMood: null, imageTheme: null, pinned: 'first'
+  };
 
-  // Add each blueprint section
+  var middleSections = [];
   bpSections.forEach(function(s, i) {
-    const name = (s.name || 'Section ' + (i + 2));
-    REVIEW_STATE.sections.push({
+    middleSections.push({
       id: 'section-' + i,
-      badge: 'Section ' + (i + 2),
-      title: name,
+      badge: s.name || ('Section ' + (i + 2)),
+      title: s.name || ('Section ' + (i + 2)),
       desc: s.purpose || 'Review this section and decide if it works for your brand.',
-      selector: 'section:nth-of-type(' + (i + 2) + ')'
+      selector: 'section:nth-of-type(' + (i + 2) + ')',
+      confidence: typeof s.confidence === 'number' ? s.confidence : null,
+      visualMood: s.visualMood || null,
+      imageTheme: s.imageTheme || null
     });
   });
 
-  // If no blueprint sections, detect generically from the iframe
-  if (bpSections.length === 0) {
+  // If no blueprint sections, fall back to iframe detection
+  if (middleSections.length === 0) {
     try {
-      const iframeDoc = document.getElementById('reveal-preview').contentDocument || document.getElementById('reveal-preview').contentWindow.document;
-      const allSections = iframeDoc.querySelectorAll('section');
-      // Skip first (hero already covered), add the rest
-      for (let i = 1; i < allSections.length && i < 10; i++) {
-        const heading = allSections[i].querySelector('h1, h2, h3');
-        const headText = heading ? heading.textContent.trim().substring(0, 40) : 'Section ' + (i + 1);
-        REVIEW_STATE.sections.push({
-          id: 'section-' + i,
-          badge: 'Section ' + (i + 1),
-          title: headText,
+      var iframeDoc = document.getElementById('reveal-preview').contentDocument || document.getElementById('reveal-preview').contentWindow.document;
+      var allSections = iframeDoc.querySelectorAll('section');
+      for (var i = 1; i < allSections.length && i < 10; i++) {
+        var heading = allSections[i].querySelector('h1, h2, h3');
+        var headText = heading ? heading.textContent.trim().substring(0, 40) : ('Section ' + (i + 1));
+        middleSections.push({
+          id: 'section-' + i, badge: 'Section ' + (i + 1), title: headText,
           desc: 'Review this section and make sure it represents your brand well.',
-          selector: 'section:nth-of-type(' + (i + 1) + ')'
+          selector: 'section:nth-of-type(' + (i + 1) + ')',
+          confidence: null, visualMood: null, imageTheme: null
         });
       }
     } catch(e) {
-      // Cross-origin iframe, fall back to generic sections
-      for (let i = 1; i <= 5; i++) {
-        REVIEW_STATE.sections.push({
-          id: 'section-' + i,
-          badge: 'Section ' + (i + 1),
-          title: 'Section ' + (i + 1),
+      for (var j = 1; j <= 5; j++) {
+        middleSections.push({
+          id: 'section-' + j, badge: 'Section ' + (j + 1), title: 'Section ' + (j + 1),
           desc: 'Review this section of your site.',
-          selector: 'section:nth-of-type(' + (i + 1) + ')'
+          selector: 'section:nth-of-type(' + (j + 1) + ')',
+          confidence: null, visualMood: null, imageTheme: null
         });
       }
     }
   }
 
-  // Always add footer as last
-  REVIEW_STATE.sections.push({
-    id: 'footer',
-    badge: 'Footer',
-    title: 'Footer & Contact',
-    desc: 'The bottom of your site with contact info, links, and final impressions.',
-    selector: 'footer'
+  // Sort middle sections by confidence score descending (highest first)
+  middleSections.sort(function(a, b) {
+    var ca = typeof a.confidence === 'number' ? a.confidence : 50;
+    var cb = typeof b.confidence === 'number' ? b.confidence : 50;
+    return cb - ca;
   });
 
-  REVIEW_STATE.currentIndex = 0;
+  // Footer always last (pinned)
+  var footerSection = {
+    id: 'footer', badge: 'Footer', title: 'Footer & Contact',
+    desc: 'Contact info, links, and the last impression you leave.',
+    selector: 'footer', confidence: null, visualMood: null, imageTheme: null, pinned: 'last'
+  };
+
+  REVIEW_STATE.sections = [heroSection].concat(middleSections).concat([footerSection]);
+  REVIEW_STATE.currentIndex = -1;
   REVIEW_STATE.approved = [];
   REVIEW_STATE.refined = [];
-  showReviewSection(0);
+  galleristRenderSectionList(REVIEW_STATE.sections);
+  galleristShowReady();
 }
 
 function showReviewSection(index) {
   if (index < 0 || index >= REVIEW_STATE.sections.length) return;
   REVIEW_STATE.currentIndex = index;
-  const section = REVIEW_STATE.sections[index];
-  const total = REVIEW_STATE.sections.length;
+  var section = REVIEW_STATE.sections[index];
 
-  // Update progress bar
-  const pct = Math.round(((index) / total) * 100);
-  const bar = document.getElementById('review-progress-bar');
-  const label = document.getElementById('review-progress-label');
-  if (bar) bar.style.width = pct + '%';
-  if (label) label.textContent = (index + 1) + ' of ' + total;
+  // Show section detail panel
+  var detail = document.getElementById('review-section-detail');
+  var badge = document.getElementById('review-badge');
+  var title = document.getElementById('review-title');
+  var desc = document.getElementById('review-desc');
+  var hint = document.getElementById('review-hint');
+  var refineInput = document.getElementById('section-refine-input');
+  var refineText = document.getElementById('section-refine-text');
+  var refineStatus = document.getElementById('section-refine-status');
+  var refineBtn = document.getElementById('section-refine-btn');
+  var btns = document.getElementById('review-btns');
 
-  // Update section info
-  const badge = document.getElementById('review-badge');
-  const title = document.getElementById('review-title');
-  const desc = document.getElementById('review-desc');
   if (badge) badge.textContent = section.badge;
   if (title) title.textContent = section.title;
   if (desc) desc.textContent = section.desc;
-
-  // Reset UI state
-  const refineInput = document.getElementById('section-refine-input');
-  const refineText = document.getElementById('section-refine-text');
-  const refineStatus = document.getElementById('section-refine-status');
-  const refineBtn = document.getElementById('section-refine-btn');
-  const btns = document.getElementById('review-btns');
+  if (detail) { detail.style.display = ''; detail.style.animation = 'none'; void detail.offsetWidth; detail.style.animation = ''; }
+  if (hint) hint.style.display = 'none';
   if (refineInput) refineInput.style.display = 'none';
   if (refineText) refineText.value = '';
   if (refineStatus) refineStatus.style.display = 'none';
   if (refineBtn) { refineBtn.disabled = false; refineBtn.textContent = 'Apply Change'; }
   if (btns) btns.style.display = '';
 
-  // Show/hide previous button
-  const prevBtn = document.getElementById('review-prev-btn');
-  if (prevBtn) prevBtn.style.visibility = index > 0 ? 'visible' : 'hidden';
+  // Update gallerist left panel active state
+  galleristUpdateActiveSection(index);
 
   // Scroll iframe to this section
   scrollIframeToSection(section.selector);
@@ -5040,20 +10169,26 @@ function scrollIframeToSection(selector) {
 }
 
 function sectionReaction(reaction) {
-  const section = REVIEW_STATE.sections[REVIEW_STATE.currentIndex];
+  if (REVIEW_STATE.currentIndex < 0) return;
+  var section = REVIEW_STATE.sections[REVIEW_STATE.currentIndex];
 
   if (reaction === 'approve') {
-    REVIEW_STATE.approved.push(section.id);
-    // Hide refine input if open
-    const refineInput = document.getElementById('section-refine-input');
+    if (REVIEW_STATE.approved.indexOf(section.id) === -1) REVIEW_STATE.approved.push(section.id);
+    galleristMarkSectionStatus(REVIEW_STATE.currentIndex, 'approved');
+    // Hide section detail panel and show hint
+    var refineInput = document.getElementById('section-refine-input');
+    var detail = document.getElementById('review-section-detail');
+    var hint = document.getElementById('review-hint');
     if (refineInput) refineInput.style.display = 'none';
-    advanceToNextSection();
+    if (detail) detail.style.display = 'none';
+    if (hint) { hint.style.display = ''; hint.textContent = '\u2713 Approved. Click another section to review.'; }
+    galleristUpdateActiveSection(-1); // deselect
   } else if (reaction === 'refine') {
-    // Show the refine textarea
-    const refineInput = document.getElementById('section-refine-input');
+    var refineInput = document.getElementById('section-refine-input');
     if (refineInput) {
       refineInput.style.display = '';
-      document.getElementById('section-refine-text').focus();
+      var rt = document.getElementById('section-refine-text');
+      if (rt) rt.focus();
     }
   }
 }
@@ -5108,18 +10243,19 @@ async function submitSectionRefine() {
     // Refresh preview
     refreshSitePreview();
     REVIEW_STATE.refined.push(section.id);
+    // Mark row as refined in gallerist panel
+    galleristMarkSectionStatus(REVIEW_STATE.currentIndex, 'refined');
 
     // Wait for iframe to reload before scrolling
-    const preview = document.getElementById('reveal-preview');
-    preview.onload = function() {
-      setTimeout(function() { scrollIframeToSection(section.selector); }, 500);
-    };
+    var preview = document.getElementById('reveal-preview');
+    if (preview) { preview.onload = function() { setTimeout(function() { scrollIframeToSection(section.selector); }, 500); }; }
 
-    // Reset the refine UI and show approve/refine buttons again
+    // Reset the refine UI
     btn.disabled = false;
     btn.textContent = 'Apply Change';
-    document.getElementById('section-refine-text').value = '';
-    if (status) { status.style.display = ''; status.textContent = 'Updated! Review the change above, then approve or refine again.'; }
+    var rt = document.getElementById('section-refine-text');
+    if (rt) rt.value = '';
+    if (status) { status.style.display = ''; status.textContent = "Updated! Looking good. Go Live when you're happy."; }
 
   } catch (e) {
     if (status) { status.style.display = ''; status.textContent = 'Something went wrong: ' + e.message; }
@@ -5149,38 +10285,19 @@ function skipReview() {
 }
 
 function finishReview() {
-  // Update progress to 100%
-  const bar = document.getElementById('review-progress-bar');
-  const label = document.getElementById('review-progress-label');
-  if (bar) bar.style.width = '100%';
-  if (label) label.textContent = 'Complete!';
-
-  // Show completion message in the review area
-  const badge = document.getElementById('review-badge');
-  const title = document.getElementById('review-title');
-  const desc = document.getElementById('review-desc');
-  const btns = document.getElementById('review-btns');
-  const refineInput = document.getElementById('section-refine-input');
-  const prevBtn = document.getElementById('review-prev-btn');
-
-  if (badge) badge.textContent = 'All done';
-  if (title) title.textContent = 'Your site is ready!';
-
-  const approvedCount = REVIEW_STATE.approved.length;
-  const refinedCount = REVIEW_STATE.refined.length;
-  let summary = 'You reviewed every section';
-  if (refinedCount > 0) summary += ' and refined ' + refinedCount + ' of them';
-  summary += '. Your site is looking great.';
-  if (desc) desc.textContent = summary;
-
-  if (btns) btns.innerHTML = '<button class="btn btn-gold" onclick="launchAndGoLive()" style="padding:14px 32px;font-size:16px;">\u{1F680} Go Live!</button>';
-  if (refineInput) refineInput.style.display = 'none';
-  if (prevBtn) prevBtn.style.visibility = 'hidden';
-
-  // Scroll iframe back to top
+  // Deselect all sections and show a "ready" hint
+  var detail = document.getElementById('review-section-detail');
+  var hint = document.getElementById('review-hint');
+  var bar = document.getElementById('review-progress-bar');
+  var label = document.getElementById('review-progress-label');
+  if (detail) detail.style.display = 'none';
+  if (hint) { hint.style.display = ''; hint.textContent = "Your site is ready. Hit Go Live when you're happy!"; }
+  if (bar) { bar.style.width = '100%'; bar.style.background = '#22c55e'; }
+  if (label) label.textContent = 'Review complete';
+  galleristUpdateActiveSection(-1);
   try {
-    const iframe = document.getElementById('reveal-preview');
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    var iframe = document.getElementById('reveal-preview');
+    var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.documentElement.scrollTop = 0;
   } catch(e) {}
 }
@@ -5191,6 +10308,137 @@ function launchAndGoLive() {
     showMissionControl(STATE.liveUrl, STATE.projectName);
   }, 1800);
 }
+
+// \u2500\u2500 GALLERIST PANEL FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Gradient palette for section thumbnails \u2014 visual variety
+var GALLERIST_THUMB_GRADIENTS = [
+  ['#c4703f','#e8a04a'],  // warm gold (hero)
+  ['#2563eb','#60a5fa'],  // blue
+  ['#16a34a','#4ade80'],  // green
+  ['#7c3aed','#c084fc'],  // purple
+  ['#be123c','#fb7185'],  // red
+  ['#0891b2','#67e8f9'],  // teal
+  ['#b45309','#fbbf24'],  // amber
+  ['#0f766e','#2dd4bf'],  // dark teal
+  ['#9333ea','#e879f9'],  // violet
+  ['#1d4ed8','#93c5fd'],  // deep blue
+  ['#1d1d1f','#555'],     // dark (footer)
+];
+
+function galleristGetThumbGradient(section, index, total) {
+  if (index === 0 || section.pinned === 'first') return GALLERIST_THUMB_GRADIENTS[0]; // warm gold for hero
+  if (index === total - 1 || section.pinned === 'last') return GALLERIST_THUMB_GRADIENTS[GALLERIST_THUMB_GRADIENTS.length - 1]; // dark for footer
+  return GALLERIST_THUMB_GRADIENTS[1 + ((index - 1) % (GALLERIST_THUMB_GRADIENTS.length - 2))];
+}
+
+function galleristRenderSectionList(sections) {
+  var list = document.getElementById('gallerist-section-list');
+  if (!list) return;
+  list.innerHTML = '';
+  var total = sections.length;
+  sections.forEach(function(s, i) {
+    var row = document.createElement('div');
+    row.className = 'gallerist-row';
+    row.id = 'gallerist-row-' + i;
+    row.style.animationDelay = (i * 40) + 'ms';
+    row.onclick = function() { showReviewSection(i); };
+
+    // Thumbnail gradient
+    var grad = galleristGetThumbGradient(s, i, total);
+    var thumbBg = 'linear-gradient(135deg,' + grad[0] + ',' + grad[1] + ')';
+
+    // Confidence badge
+    var confHtml = '';
+    if (typeof s.confidence === 'number') {
+      var confClass = s.confidence >= 85 ? 'gallerist-conf-high' : s.confidence >= 70 ? 'gallerist-conf-mid' : 'gallerist-conf-low';
+      var confLabel = s.confidence >= 85 ? 'HIGH' : s.confidence >= 70 ? 'GOOD' : 'MED';
+      confHtml = '<span class="gallerist-conf-badge ' + confClass + '">' + confLabel + ' ' + s.confidence + '%</span>';
+    }
+
+    // Mood tag
+    var moodHtml = '';
+    if (s.visualMood) {
+      moodHtml = '<span class="gallerist-mood-tag">' + s.visualMood + '</span>';
+    } else if (s.imageTheme) {
+      moodHtml = '<span class="gallerist-mood-tag">' + s.imageTheme + '</span>';
+    }
+
+    // Thumbnail lines (simulated content preview)
+    var thumbLines = '<div class="gallerist-thumb-inner">' +
+      '<div class="gallerist-thumb-line" style="width:70%;margin-bottom:1px;"></div>' +
+      '<div class="gallerist-thumb-line" style="width:90%;margin-bottom:1px;"></div>' +
+      '<div class="gallerist-thumb-line" style="width:55%;"></div>' +
+      '</div>';
+
+    row.innerHTML =
+      '<div class="gallerist-thumb" style="background:' + thumbBg + ';">' + thumbLines + '</div>' +
+      '<div class="gallerist-row-info">' +
+        '<div class="gallerist-row-title">' + (s.title || s.badge || ('Section ' + (i + 1))) + '</div>' +
+        '<div class="gallerist-row-meta">' + confHtml + moodHtml + '</div>' +
+      '</div>' +
+      '<div class="gallerist-status-dot" id="gallerist-dot-' + i + '"></div>';
+    list.appendChild(row);
+  });
+}
+
+function galleristShowReady() {
+  // Update header to show "ready" state \u2014 site is fully designed
+  var bar = document.getElementById('review-progress-bar');
+  var label = document.getElementById('review-progress-label');
+  var detail = document.getElementById('review-section-detail');
+  var hint = document.getElementById('review-hint');
+  if (bar) { bar.style.width = '100%'; bar.style.background = '#22c55e'; }
+  if (label) label.textContent = 'Ready to review';
+  if (detail) detail.style.display = 'none';
+  if (hint) hint.style.display = '';
+}
+
+function galleristUpdateActiveSection(index) {
+  // Update row classes \u2014 set all to non-active, then activate current
+  var sections = REVIEW_STATE.sections;
+  for (var i = 0; i < sections.length; i++) {
+    var row = document.getElementById('gallerist-row-' + i);
+    if (!row) continue;
+    row.classList.remove('g-active');
+    if (i === index) {
+      row.classList.add('g-active');
+      try { row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e) {}
+    }
+  }
+}
+
+function galleristMarkSectionStatus(index, status) {
+  var row = document.getElementById('gallerist-row-' + index);
+  if (!row) return;
+  row.classList.remove('g-active', 'g-approved', 'g-refined');
+  if (status === 'approved') row.classList.add('g-approved');
+  if (status === 'refined') row.classList.add('g-refined');
+}
+
+var REVEAL_DEVICE_MODE = 'desktop';
+function revealToggleDevice(mode) {
+  REVEAL_DEVICE_MODE = mode;
+  var container = document.getElementById('reveal-iframe-container');
+  var preview = document.getElementById('reveal-preview');
+  var bezel = document.getElementById('mobile-phone-bezel');
+  var btnD = document.getElementById('device-btn-desktop');
+  var btnM = document.getElementById('device-btn-mobile');
+
+  if (mode === 'mobile') {
+    if (preview) { preview.style.width = '390px'; preview.style.height = '844px'; preview.style.borderRadius = '38px'; preview.style.overflow = 'hidden'; }
+    if (container) { container.style.background = '#111'; container.style.overflowY = 'auto'; container.style.alignItems = 'center'; container.style.paddingTop = '40px'; container.style.paddingBottom = '40px'; }
+    if (bezel) bezel.style.display = '';
+    if (btnD) { btnD.style.background = 'transparent'; btnD.style.color = '#888'; btnD.style.borderColor = '#ddd'; }
+    if (btnM) { btnM.style.background = '#c4703f'; btnM.style.color = '#fff'; btnM.style.borderColor = '#c4703f'; }
+  } else {
+    if (preview) { preview.style.width = '100%'; preview.style.height = '100%'; preview.style.borderRadius = ''; preview.style.overflow = ''; }
+    if (container) { container.style.background = '#e8e4e0'; container.style.overflowY = 'hidden'; container.style.alignItems = 'center'; container.style.paddingTop = ''; container.style.paddingBottom = ''; }
+    if (bezel) bezel.style.display = 'none';
+    if (btnD) { btnD.style.background = '#c4703f'; btnD.style.color = '#fff'; btnD.style.borderColor = '#c4703f'; }
+    if (btnM) { btnM.style.background = 'transparent'; btnM.style.color = '#888'; btnM.style.borderColor = '#ddd'; }
+  }
+}
+// \u2500\u2500 END GALLERIST FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function refreshSitePreview() {
   const preview = document.getElementById('reveal-preview');
@@ -5264,6 +10512,240 @@ function setDeployStep(n, s) {
 }
 
 // \u2500\u2500 CUSTOM HELP PANEL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// \u2500\u2500 DEV TOOLS (Admin only) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var DT = {
+  open: function() {
+    document.getElementById('devtools-panel').classList.add('open');
+    document.getElementById('devtools-overlay').classList.add('open');
+  },
+  close: function() {
+    document.getElementById('devtools-panel').classList.remove('open');
+    document.getElementById('devtools-overlay').classList.remove('open');
+  },
+  status: function(msg, type) {
+    var area = document.getElementById('dt-status-area');
+    if (area) area.innerHTML = '<div class="dt-status ' + (type || 'info') + '">' + msg + '</div>';
+  },
+  getMockBlueprint: function() {
+    return {
+      blueprint: {
+        name: "Alex Rivera",
+        generatedAt: new Date().toISOString(),
+        part1: {
+          title: "Brand Foundation",
+          brandNames: ["Rivera Leadership", "The Rivera Method", "Alex Rivera Coaching"],
+          taglines: ["Lead from who you are", "The leader you were meant to be", "Strategy meets authenticity"],
+          visualDirection: {
+            colors: [{name:"Primary",hex:"#2C3E50"},{name:"Secondary",hex:"#C0842D"},{name:"Accent",hex:"#E8B86D"},{name:"Background",hex:"#FAFAF8"},{name:"Text",hex:"#1A1A1A"}],
+            fonts: {heading:"Playfair Display",body:"Inter"},
+            aesthetic: "Executive coaching with warm, human touch"
+          },
+          brandVoice: {
+            descriptors: ["Confident","Warm","Direct","Strategic","Empathetic"],
+            doSay: ["You already have what it takes","Leadership starts with self-awareness","Growth is not linear, and that is okay"],
+            neverSay: ["Hustle harder","Fake it till you make it","Work-life balance is a myth"]
+          },
+          coreBrandPromise: "Helping new leaders stop performing leadership and start practicing it, so their teams thrive and their careers take off."
+        },
+        part2: {
+          title: "Ideal Customer Avatar",
+          name: "Jordan",
+          ageRange: "32 to 42",
+          lifeSituation: "Recently promoted to a management role at a tech company, feeling the weight of expectations",
+          tryingToAchieve: "Earn the genuine respect of their team without losing who they are",
+          whatIsStoppingThem: "Imposter syndrome and the belief that leadership means having all the answers",
+          exactWords: ["I feel like I am faking it every day","My team does not take me seriously yet","I do not know how to give tough feedback without being harsh"],
+          alreadyTried: ["Read every leadership book on Amazon","Took a corporate training course that felt generic"],
+          whyItDidNotWork: "Generic frameworks do not address the personal fears and patterns driving their leadership blind spots"
+        },
+        part3: {
+          title: "Niche Positioning",
+          nicheStatement: "Executive coaching for new tech leaders who want to lead authentically",
+          whoTheyServe: "First-time managers and directors at growth-stage tech companies within their first 18 months of promotion",
+          whoTheyDoNotServe: "C-suite executives, career coaches, or anyone looking for a quick fix",
+          uniqueMechanism: "The Authentic Leadership Audit: a 90-day program that identifies your natural leadership style and builds a practice around it",
+          competitorGap: "Most coaching focuses on frameworks and tactics. Rivera Leadership focuses on the person behind the title first."
+        },
+        part4: {
+          title: "Offer Suite",
+          entryOffer: {name:"Leadership Style Assessment",description:"A 45-minute diagnostic session that reveals your natural leadership style and top 3 blind spots",price:"$297",delivery:"Single live session + written report"},
+          coreOffer: {name:"The Authentic Leadership Audit",description:"90-day 1-on-1 coaching program. Weekly sessions, between-session practice, and a personal leadership playbook",price:"$5,000",delivery:"12 weekly sessions + Slack access + written playbook"},
+          premiumOffer: {name:"Leadership Team Transformation",description:"Bring your whole team through the process. Includes individual coaching for you plus team workshops",price:"$2,500/mo",delivery:"6-month engagement, bi-weekly sessions + monthly team workshops"},
+          ascensionLogic: "Assessment reveals the need. The Audit delivers the transformation. Team program scales the impact across the organization."
+        },
+        part5: {
+          title: "Website Blueprint",
+          pageNarrative: "The page opens by mirroring the visitor's quiet fear of being found out, then pivots to show that authentic leadership is a learnable practice, builds proof through the methodology and results, and closes with a clear invitation to take the first step.",
+          heroHeadlines: ["Stop performing leadership. Start practicing it.","The leader your team actually needs is already in the room.","You were not promoted to have all the answers."],
+          heroSubheadline: "Executive coaching for new tech leaders who want to lead from who they are, not who they think they should be.",
+          heroCTA: "Book Your Leadership Assessment",
+          heroImageTheme: "A confident person standing at the head of a long conference table in a modern glass office, morning light streaming through floor-to-ceiling windows, warm and aspirational but not sterile",
+          sections: [
+            {name:"The Problem",purpose:"Name the pain so the visitor feels seen in the first 5 seconds",content:"You got promoted because you were great at your job. Now the job is completely different.",rationale:"Opening with the pain creates immediate identification. If we skip this, the visitor has no reason to believe we understand them. It earns the right to present a solution.",confidence:92,imageTheme:"none",visualMood:"light"},
+            {name:"The Solution",purpose:"Introduce the named method as the bridge from pain to transformation",content:"The Authentic Leadership Audit helps you find your natural leadership style.",rationale:"After naming the pain, the visitor needs to see there is a structured path forward. The named mechanism creates intellectual credibility and differentiates from generic coaching.",confidence:90,imageTheme:"none",visualMood:"dark"},
+            {name:"How It Works",purpose:"Remove the mystery and make the transformation feel achievable",content:"Three phases: Discover your style, build your practice, lead with confidence.",rationale:"Process transparency reduces anxiety. Showing a clear three step path makes a 90 day commitment feel manageable. This is where curiosity converts to consideration.",confidence:88,imageTheme:"none",visualMood:"light"},
+            {name:"Offers",purpose:"Present the three tiers so the visitor can self select",content:"From a single assessment to full team transformation.",rationale:"By this point the visitor believes in the method. Now they need to see a way in at their comfort level. The tiered structure lets them choose rather than being sold to.",confidence:95,imageTheme:"none",visualMood:"dark"},
+            {name:"About",purpose:"Build trust through personal story, not credentials",content:"Alex Rivera has coached 200+ new leaders through their first year of management.",rationale:"After the offers, the visitor is thinking 'but who is this person?' The about section is strategically placed here because trust must come after desire, not before it.",confidence:85,imageTheme:"none",visualMood:"light"},
+            {name:"Testimonials",purpose:"Let past clients close the deal with social proof",content:"Leaders share how the program changed their approach.",rationale:"Third party validation is the most powerful persuasion tool. Placing it after the about section means the visitor now trusts both the method and the person, and just needs confirmation from peers.",confidence:87,imageTheme:"none",visualMood:"light"},
+            {name:"FAQ",purpose:"Handle the last objections standing between interest and action",content:"Common questions about coaching, time commitment, and results.",rationale:"The visitor is nearly ready to act but has practical concerns. Addressing them here removes the last friction before the final CTA. Without this, many visitors leave to 'think about it' and never return.",confidence:82,imageTheme:"none",visualMood:"light"}
+          ],
+          testimonialFraming: "Real stories from leaders who stopped pretending and started leading."
+        },
+        part6: {
+          title: "Gap Analysis",
+          credibilityGaps: ["No published thought leadership content","Limited online presence beyond LinkedIn","No case studies documenting client transformations"],
+          marketingOpportunities: ["LinkedIn content strategy targeting new managers","Partnerships with tech company HR departments","A free leadership style quiz as a lead magnet"],
+          firstMove: "Launch a weekly LinkedIn series called Monday Leadership Memo sharing one authentic leadership lesson per week."
+        },
+        part7: {
+          title: "Headlines and Positioning Statements",
+          heroHeadlineOptions: ["Stop performing leadership. Start practicing it.","Your team does not need a boss. They need a leader who is real.","Great leaders are not made in training rooms.","You were promoted for a reason. Let us build on it.","Leadership is not a title. It is a practice.","The best leaders lead from who they are.","Your first year in leadership does not have to feel like survival.","What got you promoted will not make you a great leader.","Authentic leadership is not soft. It is strategic.","The leader your team needs is the one you already are."],
+          taglineOptions: ["Lead from who you are.","Real leadership, practiced daily.","Your leadership style, amplified.","From new manager to natural leader.","Coaching for the leaders worth following."],
+          positioningStatements: {website:"Executive coaching for new tech leaders who want to lead authentically, not performatively.",social:"Helping first-time managers stop faking it and start leading for real.",inPerson:"I coach new leaders through their first year so their teams actually want to follow them."}
+        },
+        part8: {
+          title: "Your Recommended Next Step",
+          recommendation: "site_in_sixty",
+          headline: "Your brand is clear. Now make it visible.",
+          personalizedMessage: "Alex, you have something most new coaches do not have: a genuinely unique perspective on what leadership means. But right now nobody can find you online. The fastest way to change that is to get a professional site live that captures everything we built in this blueprint.",
+          whyNow: "You are at the perfect inflection point. Your coaching practice is taking shape, your niche is clear, and your messaging is dialed in. A website right now turns all of this clarity into a client acquisition engine.",
+          specificBenefit: "A complete, deployed website built from your brand blueprint with copy that speaks directly to new tech leaders in their first 18 months."
+        },
+        leadIntel: {
+          estimatedRevenue: "50K to 100K",
+          industry: "Executive coaching",
+          yearsInBusiness: "1 to 3",
+          teamSize: "Solo",
+          hasExistingBrand: false,
+          hasExistingWebsite: false,
+          brandMaturity: "Starting fresh",
+          buyingTemperature: "Hot",
+          biggestPainPoint: "No online presence despite strong coaching skills",
+          bestFitService: "site_in_sixty",
+          bestFitReason: "Clear brand, no website, hot buying temp"
+        }
+      }
+    };
+  },
+  jump: function(step) {
+    DT.close();
+    DT.status('Loading ' + step + '...', 'info');
+    switch(step) {
+      case 'intake':
+        STATE.sessionId = null;
+        STATE.blueprint = null;
+        STATE.phase = 1;
+        showScreen('intake');
+        DT.status('Showing fresh intake screen', 'ok');
+        break;
+      case 'interview-start':
+        STATE.sessionId = 'dt_test_' + Date.now();
+        STATE.tier = STATE.tier || 'site';
+        STATE.phase = 1;
+        showScreen('app');
+        document.getElementById('chat-messages').innerHTML = '';
+        appendMessage('ai', 'Welcome to your Deep Work session. I am your AI strategist, and over the next eight conversations we are going to build a complete brand blueprint around who you actually are.\\n\\nLet us start with your story. What do you do, and how did you get here? Not the LinkedIn version. The real one.');
+        updatePhase(1);
+        DT.status('Interview phase 1 with opening message', 'ok');
+        break;
+      case 'interview-mid':
+        STATE.sessionId = 'dt_test_' + Date.now();
+        STATE.tier = STATE.tier || 'site';
+        STATE.phase = 5;
+        showScreen('app');
+        document.getElementById('chat-messages').innerHTML = '';
+        appendMessage('ai', 'Let us start from the beginning. Tell me about yourself and what brought you here today.');
+        appendMessage('user', 'I am an executive coach who works with new tech leaders. I spent 15 years in tech management before making the switch to coaching about two years ago.');
+        appendMessage('ai', 'That is a powerful origin story. Fifteen years of living the experience your clients are going through now. What was the moment that made you decide to make the leap from leader to coach?');
+        appendMessage('user', 'I had a mentee who was struggling badly in her first VP role. I spent three months coaching her informally and watched her transform. That was when I realized this was what I was meant to do.');
+        appendMessage('ai', 'That is exactly the kind of moment that defines a brand. You did not choose coaching from a textbook. You chose it because you saw what happens when someone gets the right support at the right time. Now let us talk about your expertise and what makes your approach different.');
+        appendMessage('user', 'My approach is all about authenticity. I help people lead from who they are instead of trying to fit some corporate leadership mold.');
+        appendMessage('ai', 'That word, authenticity, comes up a lot in coaching. But the way you frame it is different. You are not saying be yourself and hope for the best. You are saying there is a strategic advantage to leading from your natural strengths. Let us explore your beliefs. What do you believe about leadership that most people in your industry would push back on?');
+        appendMessage('user', 'I believe the best leaders are the ones who admit they do not have all the answers. Vulnerability is not weakness in leadership. It is actually your biggest strategic advantage.');
+        appendMessage('ai', 'Now we are getting somewhere powerful. That is a genuinely contrarian position in the executive coaching world. Most programs teach confidence and authority. You are teaching something deeper. Let us shift to your audience now. Tell me about the specific people you help.');
+        updatePhase(5);
+        DT.status('Interview phase 5 with conversation history', 'ok');
+        break;
+      case 'blueprint':
+        STATE.blueprint = DT.getMockBlueprint();
+        STATE.tier = 'site';
+        STATE.sessionId = STATE.sessionId || 'dt_test_' + Date.now();
+        renderBlueprint(STATE.blueprint, {
+          quotedMoment: "I realized this was what I was meant to do when I watched her transform.",
+          reflection: "Alex, in our conversation something became very clear very quickly. You are not building a coaching business because it seemed like a good career move. You are building it because you have spent 15 years watching people struggle with the exact problem you know how to solve.",
+          insight: "What makes your positioning genuinely strong is that you are not teaching leadership from theory. You lived it. Every framework you use was forged in the same pressure your clients face right now. That is an unfair advantage most coaches would kill for.",
+          bridge: "Your brand blueprint below captures everything we uncovered. Eight sections, each one built from the real answers you gave, not templates or fill-in-the-blank formulas. This is your strategy, built on the truth of who you are and what you do best.",
+          motivation: "The next step is getting this live. You have the clarity. You have the positioning. You have the messaging. Right now the only thing between you and your next client finding you online is a website that says all of this as well as you just said it to me."
+        }, false);
+        showScreen('blueprint-screen');
+        DT.status('Blueprint screen with full mock data', 'ok');
+        break;
+      case 'site-gen':
+        STATE.tier = 'site';
+        STATE.sessionId = STATE.sessionId || 'dt_test_' + Date.now();
+        STATE.blueprint = STATE.blueprint || DT.getMockBlueprint();
+        showScreen('site-screen');
+        setStep(1, 'done');
+        setStep(2, 'active');
+        DT.status('Site generation screen (step 2 active)', 'ok');
+        break;
+      case 'site-reveal':
+        STATE.tier = 'site';
+        STATE.sessionId = STATE.sessionId || 'dt_test_' + Date.now();
+        STATE.blueprint = STATE.blueprint || DT.getMockBlueprint();
+        STATE.liveUrl = 'https://rivera-leadership.pages.dev';
+        showSiteReveal('https://rivera-leadership.pages.dev');
+        DT.status('Site reveal with sample URL (may not load if URL does not exist)', 'ok');
+        break;
+      case 'mission-control':
+        STATE.tier = 'site';
+        STATE.sessionId = STATE.sessionId || 'dt_test_' + Date.now();
+        STATE.blueprint = STATE.blueprint || DT.getMockBlueprint();
+        STATE.liveUrl = 'https://rivera-leadership.pages.dev';
+        STATE.projectName = 'rivera-leadership';
+        showMissionControl('https://rivera-leadership.pages.dev', 'rivera-leadership');
+        DT.status('Mission control with sample data', 'ok');
+        break;
+    }
+  },
+  createFullTest: function() {
+    DT.close();
+    DT.status('Creating test session via API...', 'info');
+    var token = localStorage.getItem('dw_session') || localStorage.getItem('dw_admin_token') || '';
+    fetch('/api/admin/quick-test-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ email: 'devtest-' + Date.now() + '@jamesguldan.com', tier: 'site' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.ok && d.magicLink) {
+        DT.status('Test session created!<br><br><strong>Magic link:</strong><br><a href="' + d.magicLink + '" style="color:#C4703F;word-break:break-all;" target="_blank">' + d.magicLink + '</a><br><br><span style="font-size:11px;opacity:0.7;">Click to open in new tab, or copy the link.</span>', 'ok');
+      } else {
+        DT.status('Error: ' + (d.error || 'Unknown error'), 'err');
+      }
+    })
+    .catch(function(e) { DT.status('Network error: ' + e.message, 'err'); });
+  },
+  resetState: function() {
+    DT.close();
+    dwClearNav();
+    localStorage.removeItem('dw_active_session');
+    localStorage.removeItem('dw_session_jwt');
+    STATE.sessionId = null;
+    STATE.blueprint = null;
+    STATE.generatedSiteHtml = null;
+    STATE.phase = 1;
+    STATE.uploadedFiles = [];
+    STATE.uploadedKeys = [];
+    STATE.uploadedDocs = [];
+    STATE.blueprintOverlayShown = false;
+    showScreen('intake');
+    if (typeof showToast === 'function') showToast('State reset to clean.');
+    DT.status('All local state cleared. Showing fresh intake.', 'ok');
+  }
+};
+
 (function() {
   var HW_CONTENT = {
     landing: {
@@ -5279,7 +10761,9 @@ function setDeployStep(n, s) {
         { q: "Do I need an existing website?", a: "Not at all. The website field is optional. If you have one, it helps the AI understand your starting point. If not, we build from scratch using what you share in the interview." },
         { q: "What goes in the optional fields?", a: "The more context you give upfront, the less you explain in the interview. Even one good testimonial or a LinkedIn profile meaningfully improves your blueprint quality." },
         { q: "How long does the full session take?", a: "Most people complete all 8 phases in 60 to 90 minutes. You can type your answers or use the microphone, and you can pause and come back any time." },
-        { q: "Can I pause and come back later?", a: "Yes. Close the tab whenever you need to. When you return and log in, you will pick up exactly where you left off. Your session is saved automatically for 30 days." }
+        { q: "Can I pause and come back later?", a: "Yes. Close the tab whenever you need to. When you return and log in, you will pick up exactly where you left off. Your session is saved automatically for 30 days." },
+        { q: "Is my information secure?", a: "Yes. Your data is encrypted in transit and at rest. We never share or sell your information. Everything you upload here is used only to make your blueprint more accurate." },
+        { q: "What happens to my uploaded photos?", a: "Your photos are stored securely and used to personalize your blueprint and website. They are never used for anything else and are deleted if you request it." }
       ]
     },
     app: {
@@ -5289,7 +10773,12 @@ function setDeployStep(n, s) {
         { q: "Can I skip a question?", a: "Yes. Just type 'skip' or 'I would rather move on' and the interview continues." },
         { q: "How many phases are there?", a: "Eight phases: your story, expertise, beliefs, audience, voice, market position, offers, and your recommended next step. Each one is a focused conversation." },
         { q: "Is my progress saved if I close the tab?", a: "Yes. Your session is saved automatically. Come back any time, log in, and you will pick up exactly where you left off." },
-        { q: "The response seems stuck", a: "If nothing appears after 30 seconds, scroll down first. If you are genuinely stuck, refresh the page. Your conversation will still be there." }
+        { q: "The response seems stuck", a: "If nothing appears after 30 seconds, scroll down first. If you are genuinely stuck, refresh the page. Your conversation will still be there." },
+        { q: "Is my information private?", a: "Yes. Everything you share stays between you and this platform. Your answers are used only to generate your blueprint and are never shared, sold, or used to train AI models." },
+        { q: "Can the AI see my uploaded files?", a: "Yes. Any photos or documents you uploaded on the previous screen are passed to the AI to give it more context about your brand. Nothing else is accessed." },
+        { q: "What if I do not like the blueprint?", a: "The blueprint is built from your real answers, so it should feel accurate. If something is off, you can ask the AI to revisit it in the current phase, or email james@jamesguldan.com after the session for a complimentary revision." },
+        { q: "How long will this take?", a: "Most people finish all eight phases in 60 to 90 minutes total. You are about halfway through a typical phase right now. Take your time." },
+        { q: "Is this being recorded?", a: "No. There is no video or audio recording. Only the text of your conversation is stored, and only to generate your blueprint and allow you to resume if you close the tab." }
       ],
       showRestart: true
     },
@@ -5301,6 +10790,14 @@ function setDeployStep(n, s) {
         { q: "I want to build my website now", a: "Click the Build My Site button at the top of the blueprint screen to add the Site In Sixty build onto your purchase." }
       ],
       showRestart: true
+    },
+    'section-picker': {
+      title: 'Choose Your Sections',
+      faqs: [
+        { q: "What are these 3 options?", a: "Each option is a different layout approach for the same section. Pick the one that feels most like your brand \u2014 you can always regenerate if none feel right." },
+        { q: "Can I change my mind later?", a: "Each section is chosen one at a time. You can regenerate up to 3 times per section before moving on." },
+        { q: "What is the confidence score?", a: "It is the AI's assessment of how well that layout suits the purpose of this section, from 0 to 100. Higher means a stronger fit." }
+      ]
     },
     'site-screen': {
       title: 'Site Generation',
@@ -5571,6 +11068,69 @@ function setDeployStep(n, s) {
 <\/script>
 
 <!-- \u2550\u2550 HELP WIDGET \u2550\u2550 -->
+<button id="devtools-btn" onclick="DT.open()" aria-label="Dev tools" title="Dev Tools">&#9881;</button>
+<div id="devtools-overlay" onclick="DT.close()"></div>
+<div id="devtools-panel">
+  <div class="dt-hdr">
+    <div class="dt-hdr-title">Dev Tools</div>
+    <button class="dt-close" onclick="DT.close()">&#10005;</button>
+  </div>
+  <div class="dt-body">
+    <div class="dt-section">
+      <div class="dt-section-title">Jump to Step</div>
+      <div class="dt-card" onclick="DT.jump('intake')">
+        <div class="dt-card-icon">1</div>
+        <div class="dt-card-info"><div class="dt-card-name">Onboarding / Intake</div><div class="dt-card-desc">Fresh start, all 6 input cards</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.jump('interview-start')">
+        <div class="dt-card-icon">2</div>
+        <div class="dt-card-info"><div class="dt-card-name">Interview (Phase 1)</div><div class="dt-card-desc">Chat screen, beginning of conversation</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.jump('interview-mid')">
+        <div class="dt-card-icon">3</div>
+        <div class="dt-card-info"><div class="dt-card-name">Interview (Phase 5)</div><div class="dt-card-desc">Mid-interview with message history</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.jump('blueprint')">
+        <div class="dt-card-icon">4</div>
+        <div class="dt-card-info"><div class="dt-card-name">Blueprint Screen</div><div class="dt-card-desc">Complete blueprint with all 8 parts</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.jump('site-gen')">
+        <div class="dt-card-icon">5</div>
+        <div class="dt-card-info"><div class="dt-card-name">Site Generation</div><div class="dt-card-desc">Building the website (progress steps)</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.jump('site-reveal')">
+        <div class="dt-card-icon">6</div>
+        <div class="dt-card-info"><div class="dt-card-name">Site Reveal + Review</div><div class="dt-card-desc">Section-by-section guided review</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.jump('mission-control')">
+        <div class="dt-card-icon">7</div>
+        <div class="dt-card-info"><div class="dt-card-name">Mission Control</div><div class="dt-card-desc">Final screen with live URL</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+    </div>
+    <div class="dt-section">
+      <div class="dt-section-title">Quick Actions</div>
+      <div class="dt-card" onclick="DT.createFullTest()">
+        <div class="dt-card-icon">&#9889;</div>
+        <div class="dt-card-info"><div class="dt-card-name">Create Full Test Session</div><div class="dt-card-desc">New user with blueprint + magic link</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <div class="dt-card" onclick="DT.resetState()">
+        <div class="dt-card-icon">&#8634;</div>
+        <div class="dt-card-info"><div class="dt-card-name">Reset to Clean State</div><div class="dt-card-desc">Clear local state and start fresh</div></div>
+        <div class="dt-card-arrow">&#8250;</div>
+      </div>
+      <a href="/admin" class="dt-admin-link">Open Admin Dashboard &#8594;</a>
+    </div>
+    <div id="dt-status-area"></div>
+  </div>
+</div>
 <button id="help-btn" onclick="HW.open()" aria-label="Help and support" title="Need help?">?</button>
 <div id="help-overlay" onclick="HW.close()"></div>
 <div id="help-panel" role="dialog" aria-label="Help center">
@@ -5592,9 +11152,7 @@ function setDeployStep(n, s) {
 </body>
 </html>
 `, "getHTML");
-
-// src/admin.js
-var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
+var getAdminHTML = /* @__PURE__ */ __name222(() => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -5607,410 +11165,339 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg:     #FDFCFA; --bg2: #F5F1EC; --bg3: #EEE9E2; --bg4: #E5E0D8;
-    --border: #EAE7E2; --border2: #D8D3CB;
-    --gold:   #c4703f; --gold2: #d4855a;
-    --text:   #1a1a1a; --text2: #555555; --text3: #888888;
-    --green:  #2d7a4f; --red: #c0392b; --blue: #2563eb;
-    --radius: 10px; --sidebar: 220px;
+    --bg: #FFFFFF;
+    --bg2: #FAFAFA;
+    --bg3: #F0F0F0;
+    --border: #F0F0F0;
+    --border2: #E8E8E8;
+    --gold: #C4703F;
+    --text: #1D1D1F;
+    --text2: #86868B;
+    --text3: #C0C0C0;
+    --green: #2d7a4f;
+    --red: #c0392b;
   }
   html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-  /* \u2500\u2500 LAYOUT \u2500\u2500 */
+  /* LAYOUT */
   #shell { display: flex; height: 100vh; }
-
   .sidebar {
-    width: var(--sidebar); background: var(--bg2); border-right: 1px solid var(--border);
+    width: 200px; background: var(--bg); border-right: 1px solid var(--border);
     display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
   }
-
   .sidebar-logo {
-    padding: 20px 16px 16px; border-bottom: 1px solid var(--border);
-    font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px;
-    letter-spacing: 2px; text-transform: uppercase; color: var(--text);
-    display: flex; align-items: center; gap: 8px;
+    padding: 24px 16px 20px; border-bottom: 1px solid var(--border);
+    font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px;
+    letter-spacing: -0.02em; color: var(--text);
   }
-
-  .sidebar-logo span { font-size: 11px; font-weight: 400; color: var(--text3); display: block; }
-
-  .nav { padding: 12px 8px; flex: 1; }
-
+  .sidebar-logo-admin {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--gold); margin-top: 6px;
+  }
+  .nav { padding: 16px 8px; flex: 1; }
   .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
-    border-radius: 7px; cursor: pointer; color: var(--text2);
-    font-size: 13px; font-weight: 500; transition: all 0.15s; margin-bottom: 2px;
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-radius: 8px; cursor: pointer; color: var(--text2);
+    font-size: 13px; font-weight: 400; transition: all 0.15s; margin-bottom: 4px;
   }
-  .nav-item:hover { background: var(--bg3); color: var(--text); }
-  .nav-item.active { background: rgba(196,112,63,0.1); color: var(--gold); }
-  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
-
+  .nav-item:hover { background: var(--bg2); color: var(--text); }
+  .nav-item.active { border-left: 3px solid var(--gold); color: var(--gold); padding-left: 10px; font-weight: 500; background: transparent; }
+  .nav-item svg { width: 18px; height: 18px; stroke-width: 1.5; }
   .sidebar-footer {
     padding: 12px 8px; border-top: 1px solid var(--border);
-    font-size: 12px; color: var(--text3);
+    font-size: 12px; color: var(--text2);
   }
-  .sidebar-footer .admin-email { color: var(--text2); font-weight: 500; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .logout-btn { display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer; font-size:12px; color:var(--text3); padding:6px 10px; border-radius:6px; font-family:'Inter',sans-serif; transition:all 0.15s; }
-  .logout-btn:hover { background:var(--bg3); color:var(--red); }
+  .sidebar-footer .admin-email { color: var(--text); font-weight: 500; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 12px; }
+  .logout-btn { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-size: 12px; color: var(--text2); padding: 8px 12px; border-radius: 6px; font-family: 'Inter', sans-serif; transition: all 0.15s; margin-top: 4px; }
+  .logout-btn:hover { background: var(--bg2); color: var(--red); }
 
   .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-
   .topbar {
-    background: rgba(245,241,236,0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(234,231,226,0.8);
-    padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
     flex-shrink: 0; position: sticky; top: 0; z-index: 10;
   }
+  .topbar h1 { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .topbar-actions { display: flex; gap: 12px; }
+  .content { padding: 32px; flex: 1; }
 
-  .topbar h1 { font-size: 18px; font-weight: 600; }
-
-  .content { padding: 28px; flex: 1; }
-
-  /* \u2500\u2500 STAT CARDS \u2500\u2500 */
+  /* STAT CARDS */
   .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-
   .stat-card {
-    background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 22px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03);
-    transition: box-shadow 0.2s;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
   }
-  .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .stat-label { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; }
+  .stat-value { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); margin-bottom: 4px; }
+  .stat-sub { font-size: 12px; color: var(--text2); }
 
-  .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
-  .stat-value { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .stat-sub { font-size: 12px; color: var(--text3); }
-  .stat-sub.up { color: var(--green); }
-  .stat-sub.down { color: var(--red); }
-
-  /* \u2500\u2500 TABLES \u2500\u2500 */
-  .card { background: #fff; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03); }
-  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-header h2 { font-size: 15px; font-weight: 600; }
+  /* CARDS */
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+  .card-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h2 { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
   .card-body { padding: 0; }
 
+  /* TABLES */
   table { width: 100%; border-collapse: collapse; }
-  th { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg3); }
-  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text2); font-size: 13px; vertical-align: middle; }
+  th { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); font-size: 13px; vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr:hover td { background: var(--bg2); }
 
   .badge {
-    display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 100px;
+    display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 6px;
     font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    background: var(--bg2); color: var(--text2); border: 1px solid var(--border);
   }
-  .badge-gold { background: rgba(196,112,63,0.12); color: var(--gold); border: 1px solid rgba(196,112,63,0.25); }
-  .badge-green { background: rgba(22,163,74,0.12); color: #4ade80; border: 1px solid rgba(22,163,74,0.2); }
-  .badge-blue { background: rgba(37,99,235,0.12); color: #60a5fa; border: 1px solid rgba(37,99,235,0.2); }
-  .badge-gray { background: var(--bg3); color: var(--text3); border: 1px solid var(--border2); }
-  .badge-red { background: rgba(220,38,38,0.12); color: #f87171; border: 1px solid rgba(220,38,38,0.2); }
+  .badge-gold { background: rgba(196, 112, 63, 0.1); color: var(--gold); border: 1px solid rgba(196, 112, 63, 0.2); }
+  .badge-green { background: rgba(45, 122, 79, 0.1); color: var(--green); border: 1px solid rgba(45, 122, 79, 0.2); }
+  .badge-blue { background: rgba(37, 99, 235, 0.1); color: #3b82f6; border: 1px solid rgba(37, 99, 235, 0.2); }
+  .badge-gray { background: var(--bg2); color: var(--text2); border: 1px solid var(--border); }
+  .badge-red { background: rgba(192, 57, 43, 0.1); color: var(--red); border: 1px solid rgba(192, 57, 43, 0.2); }
 
-  /* \u2500\u2500 BUTTONS \u2500\u2500 */
+  /* BUTTONS */
   .btn {
-    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
-    border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none;
+    display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px;
+    border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; border: none;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    letter-spacing: 0.01em;
   }
-  .btn-gold { background: var(--gold); color: #fff; box-shadow: 0 1px 3px rgba(196,112,63,0.3); }
-  .btn-gold:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(196,112,63,0.3); }
-  .btn-gold:active { transform: translateY(0); }
-  .btn-outline { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); background: rgba(196,112,63,0.04); }
-  .btn-sm { padding: 5px 10px; font-size: 12px; }
-  .btn-danger { background: rgba(220,38,38,0.1); color: #f87171; border: 1px solid rgba(220,38,38,0.2); }
+  .btn-primary { background: var(--text); color: white; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--bg2); border-color: var(--border2); }
+  .btn-sm { padding: 8px 14px; font-size: 12px; }
 
-  /* \u2500\u2500 FORMS \u2500\u2500 */
+  /* FORMS */
   .form-group { margin-bottom: 18px; }
   label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
   input, textarea, select {
-    width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 7px;
+    width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px;
     padding: 10px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s;
   }
   input:focus, textarea:focus, select:focus { border-color: var(--gold); }
   input::placeholder, textarea::placeholder { color: var(--text3); }
-  select option { background: var(--bg3); }
-  textarea { resize: vertical; min-height: 80px; }
+  textarea { resize: vertical; min-height: 100px; }
 
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-  /* \u2500\u2500 FUNNEL CHART \u2500\u2500 */
-  .funnel { padding: 20px; }
-  .funnel-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .funnel-label { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; }
-  .funnel-bar-wrap { flex: 1; background: var(--bg3); border-radius: 4px; height: 24px; overflow: hidden; }
-  .funnel-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 11px; font-weight: 600; color: #fff; transition: width 1s ease; }
-  .funnel-count { font-size: 12px; color: var(--text3); width: 60px; text-align: right; flex-shrink: 0; }
+  /* FUNNEL */
+  .funnel-stat { background: var(--bg2); border-radius: 8px; padding: 16px; text-align: center; }
+  .funnel-num { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .funnel-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
 
-  /* \u2500\u2500 SESSION VIEWER \u2500\u2500 */
-  .session-messages { max-height: 500px; overflow-y: auto; padding: 20px; }
-  .session-msg { display: flex; gap: 10px; margin-bottom: 14px; }
-  .session-msg.user { flex-direction: row-reverse; }
-  .session-av { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
-  .session-av.ai { background: var(--gold); color: #fff; }
-  .session-av.user { background: var(--bg4); border: 1px solid var(--border2); color: var(--text2); }
-  .session-bubble { padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; max-width: 75%; }
-  .session-msg.ai .session-bubble { background: var(--bg3); border: 1px solid var(--border); }
-  .session-msg.user .session-bubble { background: var(--bg4); border: 1px solid var(--border2); color: var(--text2); }
+  /* TESTING GRID */
+  .testing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 
-  /* \u2500\u2500 PROMPT LAB \u2500\u2500 */
-  .prompt-editor { padding: 20px; }
-  .prompt-toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
-  .prompt-stats { display: flex; gap: 20px; padding: 14px 20px; background: var(--bg3); border-radius: 7px; margin-bottom: 14px; }
-  .prompt-stat { font-size: 12px; color: var(--text2); }
-  .prompt-stat strong { color: var(--text); }
-
-  /* \u2500\u2500 MODAL \u2500\u2500 */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(15,15,15,0.55);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    z-index: 100;
-    align-items: center; justify-content: center;
+  /* USER DROPDOWN */
+  .user-dropdown {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 50;
+    background: var(--bg); border: 1px solid var(--border2); border-radius: 8px;
+    max-height: 200px; overflow-y: auto; margin-top: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 32px;
-    width: 100%; max-width: 480px;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
-    animation: modalIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  .user-dropdown-item {
+    padding: 10px 12px; cursor: pointer; font-size: 13px; display: flex;
+    align-items: center; justify-content: space-between; transition: background 0.1s;
   }
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(8px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-  .modal p { color: var(--text2); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .user-dropdown-item:hover { background: var(--bg2); }
+  .user-dropdown-item .ud-email { color: var(--text); font-weight: 500; }
+  .user-dropdown-item .ud-meta { font-size: 11px; color: var(--text2); }
+  .user-dropdown-item.ud-create { border-top: 1px solid var(--border); color: var(--gold); font-weight: 600; }
+  .user-dropdown-item.ud-create:hover { background: rgba(196,112,63,0.06); }
+  .user-dropdown-empty { padding: 12px; text-align: center; font-size: 12px; color: var(--text3); }
 
-  /* \u2500\u2500 MAGIC LINK BOX \u2500\u2500 */
-  .magic-link-box {
-    background: var(--bg3); border: 1px solid var(--border2); border-radius: 7px;
-    padding: 14px; font-family: monospace; font-size: 12px; word-break: break-all;
-    color: var(--gold); margin: 12px 0; cursor: pointer;
-  }
-
-  /* \u2500\u2500 TOGGLE \u2500\u2500 */
-  .toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-  .toggle-track {
-    width: 40px; height: 22px; background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 100px; position: relative; transition: background 0.2s;
-  }
-  .toggle-track.on { background: var(--gold); border-color: var(--gold); }
-  .toggle-thumb {
-    width: 16px; height: 16px; background: #fff; border-radius: 50%; position: absolute;
-    top: 2px; left: 3px; transition: left 0.2s;
-  }
-  .toggle-track.on .toggle-thumb { left: 19px; }
-
-  /* \u2500\u2500 TESTING PAGE \u2500\u2500 */
+  /* CHECKLIST */
   .checklist-group { margin-bottom: 4px; }
   .checklist-item {
-    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
     border-bottom: 1px solid var(--border); cursor: pointer;
-    font-size: 13px; line-height: 1.5; color: var(--text2);
+    font-size: 13px; line-height: 1.5; color: var(--text);
   }
   .checklist-item:last-child { border-bottom: none; }
-  .checklist-item.done { color: var(--text3); }
+  .checklist-item.done { color: var(--text2); }
   .checklist-item.done .ci-label { text-decoration: line-through; }
   .ci-box {
     width: 16px; height: 16px; border: 1.5px solid var(--border2); border-radius: 4px;
     flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
     font-size: 10px; transition: all 0.15s;
   }
-  .checklist-item.done .ci-box { background: var(--green); border-color: var(--green); color: #fff; }
+  .checklist-item.done .ci-box { background: var(--green); border-color: var(--green); color: white; }
+
+  /* HEALTH INDICATORS */
+  .health-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .health-dot.green { background: var(--green); }
+  .health-dot.yellow { background: #D97706; }
+  .health-dot.red { background: var(--red); }
   .health-row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+    padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px;
   }
   .health-row:last-child { border-bottom: none; }
   .health-label { color: var(--text2); }
-  .health-status { font-weight: 500; font-size: 12px; padding: 3px 8px; border-radius: 4px; }
-  .health-ok { background: rgba(45,122,79,0.1); color: var(--green); }
-  .health-fail { background: rgba(192,57,43,0.1); color: var(--red); }
-  .health-pending { background: var(--bg3); color: var(--text3); }
+  .health-status { font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 4px; }
+  .health-ok { background: rgba(45, 122, 79, 0.1); color: var(--green); }
+  .health-fail { background: rgba(192, 57, 43, 0.1); color: var(--red); }
+  .health-pending { background: var(--bg2); color: var(--text2); }
 
-  /* \u2500\u2500 LOGIN SCREEN \u2500\u2500 */
+  /* LOGIN SCREEN */
   #login-screen {
     display: flex; align-items: center; justify-content: center; min-height: 100vh;
-    background: radial-gradient(ellipse at 50% 0%, rgba(196,112,63,0.07) 0%, transparent 60%);
-    position: relative; overflow: hidden;
+    background: var(--bg);
   }
-  .login-box { width: 400px; position: relative; z-index: 2; }
-  .login-box h1 { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
-  .login-box p { color: var(--text2); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+  .login-box { width: 400px; }
+  .login-box h1 { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .login-box-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 24px; }
   .login-panel {
-    background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 36px;
-    box-shadow: 0 2px 12px rgba(26,26,26,0.06), 0 8px 40px rgba(26,26,26,0.06);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px;
   }
-  .login-divider { text-align: center; color: var(--text3); font-size: 12px; margin: 20px 0; position: relative; letter-spacing: 0.5px; text-transform: uppercase; }
-  .login-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--border); }
-  .login-divider span { background: #fff; padding: 0 12px; position: relative; }
-  .login-status { display: none; margin-top: 16px; padding: 12px 16px; border-radius: 10px; font-size: 13px; line-height: 1.5; }
-  .login-status.error { display: block; background: rgba(192,57,43,0.06); border: 1px solid rgba(192,57,43,0.2); color: var(--red); }
-  .login-status.success { display: block; background: rgba(45,122,79,0.06); border: 1px solid rgba(45,122,79,0.2); color: var(--green); }
+  .login-status { display: none; margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+  .login-status.error { display: block; background: rgba(192, 57, 43, 0.1); border: 1px solid rgba(192, 57, 43, 0.2); color: var(--red); }
+  .login-status.success { display: block; background: rgba(45, 122, 79, 0.1); border: 1px solid rgba(45, 122, 79, 0.2); color: var(--green); }
 
-  /* \u2500\u2500 ADMIN GEO ANIMATIONS \u2500\u2500 */
-  .admin-geo {
-    position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15, 15, 15, 0.55);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    align-items: center; justify-content: center;
   }
-  .ag-shape {
-    position: absolute;
-    animation: agFloat 20s ease-in-out infinite;
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px;
+    width: 100%; max-width: 480px;
+    animation: modalIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .ag-shape.line {
-    height: 1.5px; background: linear-gradient(90deg, transparent, rgba(196,112,63,0.12), transparent);
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
-  .ag-shape.circle {
-    border: 1.5px solid rgba(196,112,63,0.1); border-radius: 50%;
-  }
-  .ag-shape.grid-dot {
-    background-image: radial-gradient(rgba(196,112,63,0.12) 1.5px, transparent 1.5px);
-    background-size: 16px 16px; border-radius: 6px;
-  }
-  .ag-shape.cross {
-    width: 30px; height: 30px; position: absolute;
-  }
-  .ag-shape.cross::before, .ag-shape.cross::after {
-    content: ''; position: absolute; background: rgba(196,112,63,0.1);
-  }
-  .ag-shape.cross::before { width: 1.5px; height: 100%; left: 50%; transform: translateX(-50%); }
-  .ag-shape.cross::after { height: 1.5px; width: 100%; top: 50%; transform: translateY(-50%); }
-  .ag-shape.bracket {
-    width: 40px; height: 80px;
-    border: 1.5px solid rgba(196,112,63,0.08);
-    border-right: none; border-radius: 8px 0 0 8px;
-  }
-  .ag-shape.hex {
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    background: rgba(196,112,63,0.04);
+  .modal h3 { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .modal p { color: var(--text2); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* MAGIC LINK BOX */
+  .magic-link-box {
+    background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px;
+    padding: 12px; font-family: monospace; font-size: 12px; word-break: break-all;
+    color: var(--gold); margin: 12px 0; cursor: pointer;
   }
 
-  /* Positions */
-  .ag-1 { width: 200px; top: 15%; left: 5%; animation-duration: 22s; }
-  .ag-2 { width: 120px; height: 120px; bottom: 20%; right: 8%; animation-duration: 26s; animation-delay: -4s; }
-  .ag-3 { width: 160px; height: 100px; top: 8%; right: 12%; animation-duration: 24s; animation-delay: -8s; }
-  .ag-4 { top: 45%; left: 10%; animation-duration: 20s; animation-delay: -3s; }
-  .ag-5 { bottom: 15%; left: 20%; animation-duration: 28s; animation-delay: -6s; }
-  .ag-6 { width: 80px; height: 80px; top: 25%; right: 5%; animation-duration: 30s; animation-delay: -10s; }
-  .ag-7 { width: 180px; bottom: 8%; left: 8%; animation-duration: 25s; animation-delay: -2s; }
-  .ag-8 { top: 70%; right: 15%; animation-duration: 21s; animation-delay: -7s; }
-  .ag-9 { width: 100px; height: 100px; top: 5%; left: 30%; animation-duration: 27s; animation-delay: -5s; }
-  .ag-10 { width: 240px; top: 55%; right: 3%; animation-duration: 23s; animation-delay: -9s; }
-
-  @keyframes agFloat {
-    0%, 100% { transform: translateY(0px); opacity: 0.8; }
-    25% { transform: translateY(-12px); opacity: 0.5; }
-    50% { transform: translateY(-5px); opacity: 0.9; }
-    75% { transform: translateY(-16px); opacity: 0.4; }
+  /* TOGGLE */
+  .toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .toggle-track {
+    width: 40px; height: 22px; background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 100px; position: relative; transition: background 0.2s;
   }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .toggle-track.on { background: var(--gold); border-color: var(--gold); }
+  .toggle-thumb {
+    width: 16px; height: 16px; background: white; border-radius: 50%; position: absolute;
+    top: 2px; left: 3px; transition: left 0.2s;
+  }
+  .toggle-track.on .toggle-thumb { left: 19px; }
 
   .page { display: none; }
   .page.active { display: block; }
 
   #toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
-    padding: 10px 18px; border-radius: 7px; font-size: 13px; z-index: 200; transition: transform 0.3s;
+    background: var(--bg2); border: 1px solid var(--border2); color: var(--text);
+    padding: 12px 18px; border-radius: 8px; font-size: 13px; z-index: 200; transition: transform 0.3s;
     white-space: nowrap;
   }
   #toast.show { transform: translateX(-50%) translateY(0); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ENDPOINT TEST RESULTS */
+  .endpoint-test { padding: 12px; background: var(--bg2); border-radius: 8px; margin-bottom: 8px; font-size: 12px; }
+  .endpoint-test.pass { border-left: 3px solid var(--green); }
+  .endpoint-test.fail { border-left: 3px solid var(--red); }
+  .endpoint-name { font-weight: 600; color: var(--text); }
+  .endpoint-status { color: var(--text2); margin-top: 2px; }
+
+  /* STRIPE MODE */
+  .stripe-mode-indicator { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+  .stripe-mode-indicator.test { background: rgba(45, 122, 79, 0.1); color: var(--green); }
+  .stripe-mode-indicator.live { background: rgba(217, 119, 6, 0.1); color: #D97706; }
+  .stripe-mode-dot { width: 8px; height: 8px; border-radius: 50%; }
 </style>
 </head>
 <body>
 
-<!-- \u2500\u2500 LOGIN SCREEN \u2500\u2500 -->
+<!-- LOGIN SCREEN -->
 <div id="login-screen">
-  <!-- Geometric Background -->
-  <div class="admin-geo">
-    <div class="ag-shape line ag-1"></div>
-    <div class="ag-shape circle ag-2"></div>
-    <div class="ag-shape grid-dot ag-3"></div>
-    <div class="ag-shape cross ag-4"></div>
-    <div class="ag-shape bracket ag-5"></div>
-    <div class="ag-shape hex ag-6"></div>
-    <div class="ag-shape line ag-7"></div>
-    <div class="ag-shape cross ag-8"></div>
-    <div class="ag-shape circle ag-9"></div>
-    <div class="ag-shape line ag-10"></div>
-  </div>
-
   <div class="login-box">
-    <div style="text-align:center;margin-bottom:32px;">
-      <div style="font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">Deep Work App</div>
-      <h1>Command Center.</h1>
-      <p style="margin-bottom:0">Where the strategy meets the system.</p>
-    </div>
+    <div class="login-box-eyebrow">Deep Work</div>
+    <h1>Command Center.</h1>
 
-    <div class="login-panel">
+    <div class="login-panel" style="margin-top:24px">
       <div class="form-group">
         <label>Email address</label>
         <input type="email" id="login-email" placeholder="james@jamesguldan.com" autocomplete="email">
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <button class="btn btn-gold" style="width:100%;padding:14px;font-size:14px;border-radius:50px;font-weight:600" onclick="doLogin()" id="login-btn">Sign In</button>
-      <div class="login-status" id="login-status"></div>
-
-      <div class="login-divider"><span>or</span></div>
-      <div class="form-group">
-        <input type="email" id="magic-email" placeholder="Email for magic link">
-      </div>
-      <button class="btn btn-outline" style="width:100%;padding:14px;font-size:14px;border-radius:50px;font-weight:600" onclick="requestMagicLink()" id="magic-btn">Send Magic Link</button>
+      <button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-bottom:16px" onclick="requestMagicLink()" id="magic-btn">Send Magic Link</button>
       <div class="login-status" id="magic-status"></div>
     </div>
 
-    <p style="text-align:center;margin-top:20px;font-size:12px;color:var(--text3);">&copy; 2025 Align Growth LLC</p>
+    <p style="text-align:center;margin-top:20px;font-size:12px;color:var(--text2);">Copyright 2026 Align Consulting LLC</p>
   </div>
 </div>
 
-<!-- \u2500\u2500 MAIN SHELL \u2500\u2500 -->
+<!-- MAIN SHELL -->
 <div id="shell" style="display:none">
+  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      \u2726 Deep Work
-      <span style="margin-top:2px">Admin Panel</span>
+      Deep Work
+      <div class="sidebar-logo-admin">Admin</div>
     </div>
     <nav class="nav">
       <div class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
-        <span class="icon">\u{1F4CA}</span> Dashboard
-      </div>
-      <div class="nav-item" onclick="showPage('users')" id="nav-users">
-        <span class="icon">\u{1F465}</span> Users
+        <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
       </div>
       <div class="nav-item" onclick="showPage('sessions')" id="nav-sessions">
-        <span class="icon">\u{1F4AC}</span> Sessions
-      </div>
-      <div class="nav-item" onclick="showPage('prompt-lab')" id="nav-prompt-lab">
-        <span class="icon">\u{1F9EA}</span> Prompt Lab
-      </div>
-      <div class="nav-item" onclick="showPage('monitoring')" id="nav-monitoring">
-        <span class="icon">\u{1F4E1}</span> Monitoring
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><path d="M15 9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2V9z"/></svg>
+        Sessions
       </div>
       <div class="nav-item" onclick="showPage('testing')" id="nav-testing">
-        <span class="icon">\u{1F52C}</span> Testing
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 3L3 9v6a6 6 0 0 0 6 6h6a6 6 0 0 0 6-6V9l-6-6H9z"/></svg>
+        Testing Lab
+      </div>
+      <div class="nav-item" onclick="showPage('prompt-lab')" id="nav-prompt-lab">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M11 4a7 7 0 1 0 0 14H15M7 13h6M7 9h8"/></svg>
+        Prompt Lab
+      </div>
+      <div class="nav-item" onclick="showPage('api-costs')" id="nav-api-costs">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        API Costs
+      </div>
+      <div class="nav-item" onclick="showPage('monitoring')" id="nav-monitoring">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v1m0 16v1M5 12H4m16 0h1M7 7l-1-1M18 18l1 1M17 7l1-1M6 18l-1 1"/><path d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/><circle cx="12" cy="12" r="2"/></svg>
+        Monitoring
+      </div>
+      <div class="nav-item" onclick="showPage('users')" id="nav-users">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
       </div>
       <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
-        <span class="icon">\u2699\uFE0F</span> Settings
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
+        Settings
       </div>
     </nav>
     <div class="sidebar-footer">
       <div class="admin-email" id="sidebar-email">Loading...</div>
-      <button class="btn btn-outline btn-sm" onclick="logout()" style="width:100%">Sign out</button>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
     </div>
   </div>
 
+  <!-- MAIN CONTENT -->
   <div class="main">
     <div class="topbar">
       <h1 id="page-title">Dashboard</h1>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-outline btn-sm" onclick="refreshPage()">\u21BB Refresh</button>
-        <button class="btn btn-gold btn-sm" onclick="openModal('create-user')">+ New User</button>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="refreshPage()">Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('create-user')">+ New User</button>
       </div>
     </div>
 
@@ -6018,41 +11505,41 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div class="stat-grid" id="stat-grid">
-          <div class="stat-card"><div class="stat-label">Total Sessions</div><div class="stat-value" id="stat-sessions">\u2014</div><div class="stat-sub" id="stat-sessions-sub">loading...</div></div>
-          <div class="stat-card"><div class="stat-label">Blueprints Generated</div><div class="stat-value" id="stat-blueprints">\u2014</div><div class="stat-sub" id="stat-blueprints-sub">loading...</div></div>
-          <div class="stat-card"><div class="stat-label">Sites Deployed</div><div class="stat-value" id="stat-sites">\u2014</div><div class="stat-sub" id="stat-sites-sub">loading...</div></div>
-          <div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-value" id="stat-users">\u2014</div><div class="stat-sub" id="stat-users-sub">loading...</div></div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Sessions</div>
+            <div class="stat-value" id="stat-sessions">\u2014</div>
+            <div class="stat-sub" id="stat-sessions-sub">loading...</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Blueprints Generated</div>
+            <div class="stat-value" id="stat-blueprints">\u2014</div>
+            <div class="stat-sub" id="stat-blueprints-sub">loading...</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Completion Rate</div>
+            <div class="stat-value" id="stat-rate">\u2014</div>
+            <div class="stat-sub" id="stat-rate-sub">loading...</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="stat-users">\u2014</div>
+            <div class="stat-sub" id="stat-users-sub">loading...</div>
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
           <div class="card">
-            <div class="card-header"><h2>Phase Drop-off Funnel</h2></div>
-            <div class="funnel" id="funnel-chart">
-              <div style="color:var(--text3);font-size:13px">Loading...</div>
+            <div class="card-header"><h2>Session Funnel</h2></div>
+            <div style="padding:20px" id="funnel-chart">
+              <div style="color:var(--text2);font-size:13px">Loading...</div>
             </div>
           </div>
           <div class="card">
             <div class="card-header"><h2>Recent Sessions</h2></div>
             <table>
               <thead><tr><th>User</th><th>Tier</th><th>Phase</th><th>Status</th></tr></thead>
-              <tbody id="recent-sessions-tbody"><tr><td colspan="4" style="text-align:center;color:var(--text3)">Loading...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- USERS -->
-      <div class="page" id="page-users">
-        <div class="card">
-          <div class="card-header">
-            <h2>Users</h2>
-            <input type="text" placeholder="Search by email..." id="user-search" style="width:220px;margin:0" oninput="filterUsers(this.value)">
-          </div>
-          <div class="card-body">
-            <table>
-              <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Tier</th><th>Sessions</th><th>Joined</th><th>Actions</th></tr></thead>
-              <tbody id="users-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text3)">Loading...</td></tr></tbody>
+              <tbody id="recent-sessions-tbody"><tr><td colspan="4" style="text-align:center;color:var(--text2)">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -6076,8 +11563,177 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
           <div class="card-body">
             <table>
               <thead><tr><th>Session ID</th><th>Tier</th><th>Phase</th><th>Messages</th><th>Blueprint</th><th>Site</th><th>Started</th><th>Actions</th></tr></thead>
-              <tbody id="sessions-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text3)">Loading...</td></tr></tbody>
+              <tbody id="sessions-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text2)">Loading...</td></tr></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TESTING LAB -->
+      <div class="page" id="page-testing">
+        <div class="testing-grid">
+          <!-- Quick Session Creator -->
+          <div class="card">
+            <div class="card-header"><h2>Quick Session Creator</h2></div>
+            <div style="padding:20px">
+              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Create a new test session. Picks an existing user or creates one automatically.</p>
+              <div class="form-group">
+                <label>User</label>
+                <div style="position:relative">
+                  <input type="text" id="quick-test-email" placeholder="Search users or type new email..." autocomplete="off" oninput="showUserDropdown(this,'quick-test-dropdown')" onfocus="showUserDropdown(this,'quick-test-dropdown')">
+                  <div id="quick-test-dropdown" class="user-dropdown" style="display:none"></div>
+                </div>
+                <div id="quick-test-user-status" style="font-size:11px;margin-top:4px;min-height:16px"></div>
+              </div>
+              <div class="form-group">
+                <label>Tier</label>
+                <select id="quick-test-tier" style="margin:0">
+                  <option value="blueprint">Blueprint only</option>
+                  <option value="site" selected>Site + Deploy</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" style="width:100%" onclick="quickTestSession()" id="quick-test-btn">Create Test Session</button>
+              <div id="quick-test-result" style="margin-top:14px;font-size:13px"></div>
+            </div>
+          </div>
+
+          <!-- Blueprint Generator -->
+          <div class="card">
+            <div class="card-header"><h2>Blueprint Generator</h2></div>
+            <div style="padding:20px">
+              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Generate a complete test blueprint with strategist debrief. Picks an existing user or creates one automatically.</p>
+              <div class="form-group">
+                <label>User</label>
+                <div style="position:relative">
+                  <input type="text" id="test-bp-email" placeholder="Search users or type new email..." autocomplete="off" oninput="showUserDropdown(this,'test-bp-dropdown')" onfocus="showUserDropdown(this,'test-bp-dropdown')">
+                  <div id="test-bp-dropdown" class="user-dropdown" style="display:none"></div>
+                </div>
+                <div id="test-bp-user-status" style="font-size:11px;margin-top:4px;min-height:16px"></div>
+              </div>
+              <div class="form-group">
+                <label>Brand name</label>
+                <input type="text" id="test-bp-brand" placeholder="e.g. Mitchell Performance Group">
+              </div>
+              <div class="form-group">
+                <label>Niche</label>
+                <input type="text" id="test-bp-niche" placeholder="e.g. Executive coaching for new leaders">
+              </div>
+              <button class="btn btn-primary" style="width:100%" onclick="generateTestBlueprint()" id="test-bp-btn">Generate Blueprint + Debrief</button>
+              <div id="test-bp-result" style="margin-top:14px;font-size:13px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testing-grid">
+          <!-- Endpoint Health Runner -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Endpoint Health Runner</h2>
+              <button class="btn btn-outline btn-sm" onclick="testAllEndpoints()">Test All</button>
+            </div>
+            <div style="padding:20px" id="endpoint-health-results">
+              <div style="color:var(--text2);font-size:13px">Click "Test All" to check all endpoints.</div>
+            </div>
+          </div>
+
+          <!-- Email and Lifecycle Tester -->
+          <div class="card">
+            <div class="card-header"><h2>Lifecycle Event Tester</h2></div>
+            <div style="padding:20px">
+              <div class="form-group">
+                <label>Email address</label>
+                <input type="email" id="test-email" placeholder="test@example.com">
+              </div>
+              <div class="form-group">
+                <label>Name (optional)</label>
+                <input type="text" id="test-name" placeholder="First name">
+              </div>
+              <div class="form-group">
+                <label>Phone (optional)</label>
+                <input type="tel" id="test-phone" placeholder="+15550001234">
+              </div>
+              <div class="form-group">
+                <label>Event type</label>
+                <select id="test-event" style="margin:0">
+                  <option value="interview_started">interview_started</option>
+                  <option value="interview_completed">interview_completed</option>
+                  <option value="interview_abandoned">interview_abandoned</option>
+                  <option value="sis_purchased">sis_purchased</option>
+                  <option value="call_booked">call_booked</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Phase (optional)</label>
+                <input type="number" id="test-phase" placeholder="3" min="0" max="8">
+              </div>
+              <button class="btn btn-primary" style="width:100%" onclick="runTestTrigger()">Fire Event</button>
+              <div id="test-trigger-result" style="margin-top:14px;font-size:13px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testing-grid">
+          <!-- Stripe Mode Indicator -->
+          <div class="card">
+            <div class="card-header"><h2>Stripe Mode</h2></div>
+            <div style="padding:20px">
+              <div class="stripe-mode-indicator test">
+                <div class="stripe-mode-dot"></div>
+                Test Mode
+              </div>
+              <p style="color:var(--text2);font-size:12px;margin-top:12px">Update Stripe mode in Cloudflare Worker environment variables.</p>
+            </div>
+          </div>
+
+          <!-- System Health Check -->
+          <div class="card">
+            <div class="card-header">
+              <h2>System Health Check</h2>
+              <button class="btn btn-outline btn-sm" onclick="runHealthCheck()">Run Now</button>
+            </div>
+            <div style="padding:20px">
+              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Pings all workers and databases.</p>
+              <div id="health-results">
+                <div style="color:var(--text2);font-size:13px;text-align:center;padding:20px 0">Click "Run Now" to check systems.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QC Checklist -->
+        <div class="card">
+          <div class="card-header"><h2>QC Checklist</h2></div>
+          <div style="padding:20px">
+            <p style="color:var(--text2);font-size:13px;margin-bottom:20px">Full end to end verification steps for the Deep Work funnel.</p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div>
+                <h3 style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">Purchase Flow</h3>
+                <div id="checklist-purchase" class="checklist-group"></div>
+
+                <h3 style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;margin-top:20px">App Experience</h3>
+                <div id="checklist-app" class="checklist-group"></div>
+
+                <h3 style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;margin-top:20px">Blueprint Output</h3>
+                <div id="checklist-blueprint" class="checklist-group"></div>
+              </div>
+
+              <div>
+                <h3 style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">Email and SMS</h3>
+                <div id="checklist-email" class="checklist-group"></div>
+
+                <h3 style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;margin-top:20px">Abandonment Recovery</h3>
+                <div id="checklist-abandon" class="checklist-group"></div>
+
+                <h3 style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;margin-top:20px">GHL Pipeline</h3>
+                <div id="checklist-ghl" class="checklist-group"></div>
+              </div>
+            </div>
+
+            <div style="margin-top:20px;display:flex;gap:10px">
+              <button class="btn btn-outline btn-sm" onclick="resetChecklist()">Reset All</button>
+              <span id="checklist-score" style="font-size:13px;color:var(--text2);padding:6px 0"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -6085,15 +11741,30 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
       <!-- PROMPT LAB -->
       <div class="page" id="page-prompt-lab">
         <div class="card" style="margin-bottom:20px">
-          <div class="card-header"><h2>Active System Prompt</h2><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="loadPrompt()">\u21BB Reload</button><button class="btn btn-gold btn-sm" onclick="savePrompt()">Save & Deploy</button></div></div>
-          <div class="prompt-editor">
-            <div class="prompt-stats" id="prompt-stats">
-              <div class="prompt-stat">Version: <strong id="ps-version">v1</strong></div>
-              <div class="prompt-stat">Avg satisfaction: <strong id="ps-satisfaction">\u2014</strong></div>
-              <div class="prompt-stat">Sessions on this version: <strong id="ps-count">\u2014</strong></div>
+          <div class="card-header">
+            <h2>Active System Prompt</h2>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline btn-sm" onclick="loadPrompt()">Reload</button>
+              <button class="btn btn-primary btn-sm" onclick="savePrompt()">Save & Deploy</button>
+            </div>
+          </div>
+          <div style="padding:20px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;background:var(--bg2);padding:12px;border-radius:8px">
+              <div>
+                <div style="font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600;margin-bottom:4px">Version</div>
+                <div style="font-size:16px;font-weight:700;color:var(--text)" id="ps-version">v1</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600;margin-bottom:4px">Avg Satisfaction</div>
+                <div style="font-size:16px;font-weight:700;color:var(--text)" id="ps-satisfaction">\u2014</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600;margin-bottom:4px">Sessions on Version</div>
+                <div style="font-size:16px;font-weight:700;color:var(--text)" id="ps-count">\u2014</div>
+              </div>
             </div>
             <div class="form-group" style="margin:0">
-              <label>System Prompt (editing this will create a new version and redeploy)</label>
+              <label>System Prompt</label>
               <textarea id="prompt-editor-ta" style="min-height:400px;font-family:monospace;font-size:12px;line-height:1.5"></textarea>
             </div>
           </div>
@@ -6101,56 +11772,126 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
       </div>
 
       <!-- MONITORING -->
+      <!-- API COSTS -->
+      <div class="page" id="page-api-costs">
+        <div class="stat-grid" id="cost-stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">This Month</div>
+            <div class="stat-value" id="cost-this-month">...</div>
+            <div class="stat-sub" id="cost-month-calls">loading...</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">All Time</div>
+            <div class="stat-value" id="cost-all-time">...</div>
+            <div class="stat-sub" id="cost-all-calls">loading...</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Per User</div>
+            <div class="stat-value" id="cost-per-user">...</div>
+            <div class="stat-sub" id="cost-per-user-calls">loading...</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Users</div>
+            <div class="stat-value" id="cost-users">...</div>
+            <div class="stat-sub" id="cost-sessions">loading...</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+          <div class="card">
+            <div class="card-header"><h2>Cost by Model</h2></div>
+            <div style="padding:20px" id="cost-by-model">Loading...</div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Estimated Monthly Projections</h2></div>
+            <div style="padding:20px" id="cost-projections">Loading...</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header">
+            <h2>Daily Cost Trend</h2>
+            <select id="cost-days-filter" style="width:120px;margin:0" onchange="loadApiCosts()">
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+          </div>
+          <div style="padding:20px;overflow-x:auto" id="cost-daily-chart">Loading...</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h2>Top Users by Cost</h2></div>
+          <div class="card-body">
+            <table>
+              <thead><tr><th>Email</th><th>Name</th><th>Sessions</th><th>API Calls</th><th>Tokens</th><th>Cost</th><th>Last Active</th></tr></thead>
+              <tbody id="cost-users-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text2)">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div class="page" id="page-monitoring">
         <div class="stat-grid" id="health-grid" style="margin-bottom:24px;"></div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
           <div class="card">
-            <div class="card-header">
-              <h2>Funnel Health</h2>
-            </div>
-            <div class="card-body" id="funnel-health">Loading...</div>
+            <div class="card-header"><h2>Funnel Health</h2></div>
+            <div style="padding:20px" id="funnel-health">Loading...</div>
           </div>
           <div class="card">
-            <div class="card-header">
-              <h2>API Usage (24h)</h2>
-            </div>
-            <div class="card-body" id="api-usage">Loading...</div>
+            <div class="card-header"><h2>API Usage (24h)</h2></div>
+            <div style="padding:20px" id="api-usage">Loading...</div>
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
           <div class="card">
-            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
-              <h2>Active Alerts</h2>
-            </div>
-            <div class="card-body" id="alerts-list">Loading...</div>
+            <div class="card-header"><h2>Active Alerts</h2></div>
+            <div style="padding:20px" id="alerts-list">Loading...</div>
           </div>
           <div class="card">
             <div class="card-header"><h2>Recent Errors</h2></div>
-            <div class="card-body" id="errors-list" style="max-height:400px;overflow-y:auto;">Loading...</div>
+            <div style="padding:20px;max-height:400px;overflow-y:auto" id="errors-list">Loading...</div>
           </div>
         </div>
 
         <div style="display:flex;gap:12px;">
-          <button class="btn btn-gold btn-sm" onclick="runHealthCheck()">Run Health Check</button>
+          <button class="btn btn-primary btn-sm" onclick="runHealthCheck()">Run Health Check</button>
           <button class="btn btn-outline btn-sm" onclick="sendDigest()">Send Daily Digest</button>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <div class="card">
+          <div class="card-header">
+            <h2>Users</h2>
+            <input type="text" placeholder="Search by email..." id="user-search" style="width:220px;margin:0" oninput="filterUsers(this.value)">
+          </div>
+          <div class="card-body">
+            <table>
+              <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Tier</th><th>Sessions</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody id="users-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text2)">Loading...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       <!-- SETTINGS -->
       <div class="page" id="page-settings">
-        <div class="settings-grid">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
           <div>
             <div class="card">
               <div class="card-header"><h2>App Settings</h2></div>
               <div style="padding:20px">
                 <div class="form-group">
-                  <label>Calendar Link (for strategy call order bump)</label>
+                  <label>Calendar Link</label>
                   <input type="url" id="s-calendar-link" placeholder="https://calendly.com/...">
                 </div>
                 <div class="form-group">
-                  <label>Welcome Message (shown before session starts)</label>
+                  <label>Welcome Message</label>
                   <textarea id="s-welcome-message" rows="3"></textarea>
                 </div>
                 <div class="form-group">
@@ -6174,7 +11915,7 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
                     </div>
                   </label>
                 </div>
-                <button class="btn btn-gold" onclick="saveSettings()">Save Settings</button>
+                <button class="btn btn-primary" style="width:100%" onclick="saveSettings()">Save Settings</button>
               </div>
             </div>
           </div>
@@ -6184,18 +11925,18 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
               <div class="card-header"><h2>Pricing Display</h2></div>
               <div style="padding:20px">
                 <div class="form-group">
-                  <label>Blueprint price display</label>
+                  <label>Blueprint price</label>
                   <input type="text" id="s-blueprint-price" placeholder="$67">
                 </div>
                 <div class="form-group">
-                  <label>Site package price display</label>
+                  <label>Site package price</label>
                   <input type="text" id="s-site-price" placeholder="$197">
                 </div>
                 <div class="form-group">
-                  <label>Strategy call price display</label>
+                  <label>Strategy call price</label>
                   <input type="text" id="s-call-price" placeholder="$197">
                 </div>
-                <button class="btn btn-gold" onclick="saveSettings()">Save Pricing</button>
+                <button class="btn btn-primary" style="width:100%" onclick="saveSettings()">Save Pricing</button>
               </div>
             </div>
 
@@ -6207,153 +11948,16 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
                   <input type="email" id="magic-gen-email" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                  <label>Tier access to grant</label>
+                  <label>Tier access</label>
                   <select id="magic-gen-tier" style="margin:0">
-                    <option value="blueprint">Blueprint ($67)</option>
-                    <option value="site">Site + Deploy ($197)</option>
+                    <option value="blueprint">Blueprint</option>
+                    <option value="site">Site + Deploy</option>
                     <option value="admin">Admin access</option>
                   </select>
                 </div>
-                <button class="btn btn-gold" onclick="generateAdminMagicLink()">Generate Link</button>
+                <button class="btn btn-primary" style="width:100%" onclick="generateAdminMagicLink()">Generate Link</button>
                 <div id="magic-gen-result" style="margin-top:12px"></div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TESTING -->
-      <div class="page" id="page-testing">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-
-          <!-- Manual Event Trigger -->
-          <div class="card">
-            <div class="card-header"><h2>Manual Event Trigger</h2></div>
-            <div style="padding:20px">
-              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Fire any lifecycle event on behalf of a user to test email and SMS sequences end to end.</p>
-              <div class="form-group">
-                <label>Email address</label>
-                <input type="email" id="test-email" placeholder="test@example.com">
-              </div>
-              <div class="form-group">
-                <label>Name (optional)</label>
-                <input type="text" id="test-name" placeholder="First name">
-              </div>
-              <div class="form-group">
-                <label>Phone (optional, for SMS)</label>
-                <input type="tel" id="test-phone" placeholder="+15550001234">
-              </div>
-              <div class="form-group">
-                <label>Event type</label>
-                <select id="test-event" style="margin:0">
-                  <option value="interview_started">interview_started \u2014 queues 24h nudge email</option>
-                  <option value="interview_completed">interview_completed \u2014 starts SIS pitch in 2 days</option>
-                  <option value="interview_abandoned">interview_abandoned \u2014 sends recovery email now</option>
-                  <option value="sis_purchased">sis_purchased \u2014 starts strategy call pitch</option>
-                  <option value="call_booked">call_booked \u2014 sends call confirmation sequence</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Phase reached (optional, for abandoned)</label>
-                <input type="number" id="test-phase" placeholder="3" min="0" max="8">
-              </div>
-              <button class="btn btn-gold" onclick="runTestTrigger()">Fire Event</button>
-              <div id="test-trigger-result" style="margin-top:14px;font-size:13px"></div>
-            </div>
-          </div>
-
-          <!-- System Health Check -->
-          <div class="card">
-            <div class="card-header">
-              <h2>System Health Check</h2>
-              <button class="btn btn-outline btn-sm" onclick="runHealthCheck()">Run Now</button>
-            </div>
-            <div style="padding:20px">
-              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Pings every worker and database in the funnel ecosystem. Also runs automatically every day at 9am.</p>
-              <div id="health-results">
-                <div style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Click "Run Now" to check all systems.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Test Blueprint Generator -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-          <div class="card">
-            <div class="card-header"><h2>Generate Test Blueprint</h2></div>
-            <div style="padding:20px">
-              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Create a complete fake blueprint for any user session. Populates all 8 parts with realistic data so you can test the blueprint screen, site generation, and deploy flow without running a full interview.</p>
-              <div class="form-group">
-                <label>Email address (must have an existing session)</label>
-                <input type="email" id="test-bp-email" placeholder="user@example.com">
-              </div>
-              <div class="form-group">
-                <label>Brand name for the test blueprint</label>
-                <input type="text" id="test-bp-brand" placeholder="Mitchell Performance Group" value="Mitchell Performance Group">
-              </div>
-              <div class="form-group">
-                <label>Niche / industry</label>
-                <input type="text" id="test-bp-niche" placeholder="Executive coaching" value="Executive coaching for new leaders">
-              </div>
-              <button class="btn btn-gold" onclick="generateTestBlueprint()">Generate Blueprint</button>
-              <div id="test-bp-result" style="margin-top:14px;font-size:13px"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><h2>Quick Test Session</h2></div>
-            <div style="padding:20px">
-              <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Create a new user + session + blueprint + magic link in one click. Perfect for testing the full flow end to end.</p>
-              <div class="form-group">
-                <label>Test email address</label>
-                <input type="email" id="quick-test-email" placeholder="test@jamesguldan.com">
-              </div>
-              <div class="form-group">
-                <label>Tier</label>
-                <select id="quick-test-tier" style="margin:0">
-                  <option value="blueprint">Blueprint only</option>
-                  <option value="site" selected>Site + Deploy (full flow)</option>
-                </select>
-              </div>
-              <button class="btn btn-gold" onclick="quickTestSession()">Create Test Session</button>
-              <div id="quick-test-result" style="margin-top:14px;font-size:13px"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ecosystem Testing Checklist -->
-        <div class="card">
-          <div class="card-header"><h2>Ecosystem Testing Checklist</h2></div>
-          <div style="padding:20px">
-            <p style="color:var(--text2);font-size:13px;margin-bottom:20px">Full end to end verification steps for the Deep Work funnel. Run through this checklist after any code change or at least once per week.</p>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-              <div>
-                <h3 style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Purchase Flow</h3>
-                <div id="checklist-purchase" class="checklist-group"></div>
-
-                <h3 style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:20px">App Experience</h3>
-                <div id="checklist-app" class="checklist-group"></div>
-
-                <h3 style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:20px">Blueprint Output</h3>
-                <div id="checklist-blueprint" class="checklist-group"></div>
-              </div>
-
-              <div>
-                <h3 style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Email and SMS Sequences</h3>
-                <div id="checklist-email" class="checklist-group"></div>
-
-                <h3 style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:20px">Abandonment Recovery</h3>
-                <div id="checklist-abandon" class="checklist-group"></div>
-
-                <h3 style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;margin-top:20px">GHL Pipeline</h3>
-                <div id="checklist-ghl" class="checklist-group"></div>
-              </div>
-            </div>
-
-            <div style="margin-top:20px;display:flex;gap:10px">
-              <button class="btn btn-outline btn-sm" onclick="resetChecklist()">Reset All</button>
-              <span id="checklist-score" style="font-size:13px;color:var(--text2);padding:6px 0"></span>
             </div>
           </div>
         </div>
@@ -6363,7 +11967,7 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
   </div><!-- /main -->
 </div><!-- /shell -->
 
-<!-- \u2500\u2500 MODALS \u2500\u2500 -->
+<!-- MODALS -->
 <div class="modal-overlay" id="modal-create-user">
   <div class="modal">
     <h3>Create User</h3>
@@ -6374,7 +11978,7 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
     <div class="form-group"><label>Tier</label><select id="new-user-tier" style="margin:0"><option value="blueprint">Blueprint</option><option value="site">Site + Deploy</option></select></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal('create-user')">Cancel</button>
-      <button class="btn btn-gold" onclick="createUser()">Create + Send Magic Link</button>
+      <button class="btn btn-primary" onclick="createUser()">Create + Send Magic Link</button>
     </div>
   </div>
 </div>
@@ -6383,16 +11987,16 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
   <div class="modal" style="max-width:700px;width:95vw">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <h3 id="session-modal-title">Session</h3>
-      <button class="btn btn-outline btn-sm" onclick="closeModal('view-session')">\u2715 Close</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('view-session')" style="padding:6px 12px">Close</button>
     </div>
-    <div class="session-messages" id="session-modal-messages"></div>
+    <div style="max-height:500px;overflow-y:auto;padding:20px;background:var(--bg2);border-radius:8px" id="session-modal-messages"></div>
   </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
-// \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// STATE
 let AUTH_TOKEN = localStorage.getItem('dw_admin_token') || localStorage.getItem('dw_session') || '';
 let CURRENT_USER = null;
 let ALL_USERS = [];
@@ -6400,10 +12004,24 @@ let SETTINGS = {};
 
 const API = '';  // same origin
 
-// \u2500\u2500 BOOT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// XSS prevention helper
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// BOOT
 window.addEventListener('DOMContentLoaded', async () => {
-  // Check for magic token in URL
   const params = new URLSearchParams(location.search);
+  // Handle server-side magic link redirect \u2014 JWT passed directly in _s param
+  const _sJwt = params.get('_s');
+  if (_sJwt) {
+    AUTH_TOKEN = _sJwt;
+    localStorage.setItem('dw_admin_token', _sJwt);
+    history.replaceState(null, '', '/admin');
+    await tryAutoLogin();
+    return;
+  }
   const magic = params.get('magic');
   if (magic) {
     await handleMagicLogin(magic);
@@ -6417,7 +12035,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function tryAutoLogin() {
   try {
     const res = await api('GET', '/api/auth/me');
-    // handleAuthMe returns { id, email, role, ... } directly (no .user wrapper)
     const user = res.user || res;
     if (user && user.role === 'admin') {
       CURRENT_USER = user;
@@ -6450,7 +12067,7 @@ async function handleMagicLogin(token) {
   }
 }
 
-// \u2500\u2500 AUTH \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// AUTH
 function showLoginStatus(id, type, msg) {
   const el = document.getElementById(id);
   el.className = 'login-status ' + type;
@@ -6462,41 +12079,8 @@ function clearLoginStatus(id) {
   el.textContent = '';
 }
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  if (!email || !password) { showLoginStatus('login-status', 'error', 'Enter email and password.'); return; }
-  clearLoginStatus('login-status');
-
-  const btn = document.getElementById('login-btn');
-  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;"></span>Signing in...';
-  btn.disabled = true;
-
-  try {
-    const res = await api('POST', '/api/auth/login', { email, password });
-    if (res.token || res.sessionToken) {
-      AUTH_TOKEN = res.token || res.sessionToken;
-      localStorage.setItem('dw_admin_token', AUTH_TOKEN);
-      CURRENT_USER = res.user;
-      if (CURRENT_USER.role !== 'admin') {
-        showLoginStatus('login-status', 'error', 'This account does not have admin access.');
-        AUTH_TOKEN = ''; localStorage.removeItem('dw_admin_token');
-        return;
-      }
-      showApp();
-    } else {
-      showLoginStatus('login-status', 'error', res.error || 'Invalid credentials.');
-    }
-  } catch {
-    showLoginStatus('login-status', 'error', 'Login failed. Check your connection.');
-  } finally {
-    btn.innerHTML = 'Sign In';
-    btn.disabled = false;
-  }
-}
-
 async function requestMagicLink() {
-  const email = document.getElementById('magic-email').value.trim();
+  const email = document.getElementById('login-email').value.trim();
   if (!email) { showLoginStatus('magic-status', 'error', 'Enter your email.'); return; }
   clearLoginStatus('magic-status');
 
@@ -6522,7 +12106,7 @@ function logout() {
   window.location.href = '/logout';
 }
 
-// \u2500\u2500 SHOW APP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// SHOW APP
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('shell').style.display = 'flex';
@@ -6530,14 +12114,14 @@ function showApp() {
   loadDashboard();
 }
 
-// \u2500\u2500 NAVIGATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// NAVIGATION
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', users: 'Users', sessions: 'Sessions', 'prompt-lab': 'Prompt Lab', monitoring: 'Monitoring', settings: 'Settings', testing: 'Testing' };
+  const titles = { dashboard: 'Dashboard', users: 'Users', sessions: 'Sessions', 'prompt-lab': 'Prompt Lab', monitoring: 'Monitoring', settings: 'Settings', testing: 'Testing Lab', 'api-costs': 'API Costs' };
   document.getElementById('page-title').textContent = titles[name] || name;
 
   if (name === 'users') loadUsers();
@@ -6546,30 +12130,31 @@ function showPage(name) {
   else if (name === 'prompt-lab') loadPrompt();
   else if (name === 'monitoring') loadMonitoring();
   else if (name === 'testing') loadTesting();
+  else if (name === 'api-costs') loadApiCosts();
 }
 
 function refreshPage() {
   const active = document.querySelector('.page.active')?.id?.replace('page-', '');
   if (active === 'dashboard') loadDashboard();
+  else if (active === 'api-costs') loadApiCosts();
   else if (active) showPage(active);
 }
 
-// \u2500\u2500 DASHBOARD \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// DASHBOARD
 async function loadDashboard() {
   try {
     const stats = await api('GET', '/api/admin/stats');
 
-    document.getElementById('stat-sessions').textContent = stats.totalSessions ?? '\u2014';
+    document.getElementById('stat-sessions').textContent = stats.sessions ?? '\u2014';
     document.getElementById('stat-sessions-sub').textContent = (stats.sessionsToday ?? 0) + ' today';
-    document.getElementById('stat-blueprints').textContent = stats.blueprintsGenerated ?? '\u2014';
-    document.getElementById('stat-blueprints-sub').className = 'stat-sub';
-    document.getElementById('stat-blueprints-sub').textContent = Math.round((stats.completionRate ?? 0) * 100) + '% completion rate';
-    document.getElementById('stat-sites').textContent = stats.sitesDeployed ?? '\u2014';
-    document.getElementById('stat-sites-sub').textContent = (stats.sitesGenerated ?? 0) + ' generated';
-    document.getElementById('stat-users').textContent = stats.totalUsers ?? '\u2014';
-    document.getElementById('stat-users-sub').textContent = (stats.usersThisWeek ?? 0) + ' this week';
+    document.getElementById('stat-blueprints').textContent = stats.completed ?? '\u2014';
+    document.getElementById('stat-blueprints-sub').textContent = 'of total sessions';
+    document.getElementById('stat-rate').textContent = stats.sessions > 0 ? Math.round((stats.completed / stats.sessions) * 100) + '%' : '0%';
+    document.getElementById('stat-rate-sub').textContent = 'completion rate';
+    document.getElementById('stat-users').textContent = stats.users ?? '\u2014';
+    document.getElementById('stat-users-sub').textContent = 'total users';
 
-    renderFunnel(stats.funnel || []);
+    renderFunnel(stats.funnel || {});
     renderRecentSessions(stats.recentSessions || []);
   } catch (e) {
     console.error(e);
@@ -6577,56 +12162,72 @@ async function loadDashboard() {
 }
 
 function renderFunnel(funnel) {
-  const max = funnel[0]?.count || 1;
-  document.getElementById('funnel-chart').innerHTML = funnel.map(f => \`
-    <div class="funnel-row">
-      <div class="funnel-label">Phase \${f.phase}: \${f.label}</div>
-      <div class="funnel-bar-wrap">
-        <div class="funnel-bar" style="width:\${Math.round((f.count/max)*100)}%">\${Math.round((f.count/max)*100)}%</div>
+  const el = document.getElementById('funnel-chart');
+  if (!el) return;
+  if (typeof funnel === 'object' && !Array.isArray(funnel)) {
+    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">' +
+      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.today || 0) + '</div><div class="funnel-label">Today</div></div>' +
+      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.week || 0) + '</div><div class="funnel-label">This Week</div></div>' +
+      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.month || 0) + '</div><div class="funnel-label">This Month</div></div>' +
+      '</div>';
+    return;
+  }
+  if (Array.isArray(funnel) && funnel.length) {
+    const max = funnel[0]?.count || 1;
+    el.innerHTML = funnel.map(f => \`
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span>Phase \${f.phase}: \${f.label}</span>
+          <span style="font-weight:600">\${f.count}</span>
+        </div>
+        <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden">
+          <div style="background:var(--gold);height:100%;width:\${Math.round((f.count/max)*100)}%"></div>
+        </div>
       </div>
-      <div class="funnel-count">\${f.count}</div>
-    </div>
-  \`).join('') || '<div style="color:var(--text3);font-size:13px;padding:10px 0">No sessions yet.</div>';
+    \`).join('');
+  } else {
+    el.innerHTML = '<div style="color:var(--text2);font-size:13px">No funnel data available.</div>';
+  }
 }
 
 function renderRecentSessions(sessions) {
   document.getElementById('recent-sessions-tbody').innerHTML = sessions.map(s => \`
     <tr>
-      <td>\${s.user_email || s.id?.slice(0,14) || 'anon'}</td>
-      <td><span class="badge \${s.tier === 'site' ? 'badge-gold' : 'badge-gray'}">\${s.tier}</span></td>
+      <td>\${esc(s.user_email || s.id?.slice(0,14) || 'anon')}</td>
+      <td><span class="badge \${s.tier === 'site' ? 'badge-gold' : 'badge-gray'}">\${esc(s.tier)}</span></td>
       <td>\${s.phase}/8</td>
       <td>\${s.blueprint_generated ? '<span class="badge badge-green">Done</span>' : '<span class="badge badge-gray">In progress</span>'}</td>
     </tr>
-  \`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text3)">No sessions yet.</td></tr>';
+  \`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';
 }
 
-// \u2500\u2500 USERS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// USERS
 async function loadUsers() {
   const tbody = document.getElementById('users-tbody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3)">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Loading...</td></tr>';
   try {
     const res = await api('GET', '/api/admin/users');
     ALL_USERS = res.users || [];
     renderUsersTable(ALL_USERS);
   } catch {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3)">Failed to load.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Failed to load.</td></tr>';
   }
 }
 
 function renderUsersTable(users) {
   document.getElementById('users-tbody').innerHTML = users.map(u => \`
     <tr>
-      <td style="color:var(--text)">\${u.email}</td>
-      <td>\${u.name || '\u2014'}</td>
-      <td><span class="badge \${u.role === 'admin' ? 'badge-gold' : 'badge-gray'}">\${u.role}</span></td>
-      <td>\${u.tier ? '<span class="badge badge-blue">'+u.tier+'</span>' : '\u2014'}</td>
+      <td style="color:var(--text)">\${esc(u.email)}</td>
+      <td>\${esc(u.name) || '\u2014'}</td>
+      <td><span class="badge \${u.role === 'admin' ? 'badge-gold' : 'badge-gray'}">\${esc(u.role)}</span></td>
+      <td>\${u.tier ? '<span class="badge badge-blue">'+esc(u.tier)+'</span>' : '\u2014'}</td>
       <td>\${u.sessions_count || 0}</td>
       <td>\${fmtDate(u.created_at)}</td>
       <td>
-        <button class="btn btn-outline btn-sm" onclick="sendMagicLink('\${u.id}','\${u.email}')">Magic Link</button>
+        <button class="btn btn-outline btn-sm" onclick="sendMagicLink('\${esc(u.id)}','\${esc(u.email)}')">Magic Link</button>
       </td>
     </tr>
-  \`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3)">No users yet.</td></tr>';
+  \`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No users yet.</td></tr>';
 }
 
 function filterUsers(q) {
@@ -6661,43 +12262,43 @@ async function sendMagicLink(userId, email) {
     const res = await api('POST', '/api/admin/magic-link', { userId, email });
     if (res.magicLink) {
       await navigator.clipboard?.writeText(res.magicLink).catch(()=>{});
-      toast('Magic link copied to clipboard: ' + res.magicLink.slice(0, 50) + '...');
+      toast('Magic link copied to clipboard.');
     }
   } catch {
     toast('Failed to generate magic link.');
   }
 }
 
-// \u2500\u2500 SESSIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// SESSIONS
 async function loadSessions() {
   const tier = document.getElementById('session-filter-tier')?.value || '';
   const status = document.getElementById('session-filter-status')?.value || '';
   const tbody = document.getElementById('sessions-tbody');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3)">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">Loading...</td></tr>';
 
   try {
     const res = await api('GET', \`/api/admin/sessions?tier=\${tier}&status=\${status}&limit=50\`);
     const sessions = res.sessions || [];
     tbody.innerHTML = sessions.map(s => \`
       <tr>
-        <td style="font-family:monospace;font-size:11px">\${s.id?.slice(0,20)}...</td>
-        <td><span class="badge \${s.tier==='site'?'badge-gold':'badge-gray'}">\${s.tier}</span></td>
+        <td style="font-family:monospace;font-size:11px">\${esc(s.id?.slice(0,20))}...</td>
+        <td><span class="badge \${s.tier==='site'?'badge-gold':'badge-gray'}">\${esc(s.tier)}</span></td>
         <td>\${s.phase}/8</td>
         <td>\${s.message_count || 0}</td>
         <td>\${s.blueprint_generated ? '\u2713' : '\u2014'}</td>
         <td>\${s.site_generated ? '\u2713' : '\u2014'}</td>
         <td>\${fmtDate(s.created_at)}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="viewSession('\${s.id}')">View</button></td>
+        <td><button class="btn btn-outline btn-sm" onclick="viewSession('\${esc(s.id)}')">View</button></td>
       </tr>
-    \`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text3)">No sessions yet.</td></tr>';
+    \`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';
   } catch {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3)">Failed to load.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">Failed to load sessions.</td></tr>';
   }
 }
 
 async function viewSession(sessionId) {
   document.getElementById('session-modal-title').textContent = sessionId.slice(0, 20) + '...';
-  document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">Loading...</div>';
+  document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px">Loading...</div>';
   openModal('view-session');
 
   try {
@@ -6706,17 +12307,21 @@ async function viewSession(sessionId) {
     document.getElementById('session-modal-messages').innerHTML = messages
       .filter(m => !m.content?.includes('METADATA:'))
       .map(m => \`
-        <div class="session-msg \${m.role}">
-          <div class="session-av \${m.role === 'assistant' ? 'ai' : 'user'}">\${m.role === 'assistant' ? 'AI' : 'U'}</div>
-          <div class="session-bubble">\${(m.content || '').replace(/METADATA:\\{[^\\n]*\\}/g,'').replace(/\`\`\`json[\\s\\S]*?\`\`\`/g,'[Blueprint JSON]').slice(0,600)}</div>
+        <div style="margin-bottom:12px;display:flex;gap:10px;\${m.role === 'user' ? 'flex-direction:row-reverse' : ''}">
+          <div style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:\${m.role === 'assistant' ? 'var(--gold)' : 'var(--bg2)'};color:\${m.role === 'assistant' ? 'white' : 'var(--text)'}">
+            \${m.role === 'assistant' ? 'AI' : 'U'}
+          </div>
+          <div style="background:var(--bg2);padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.5;max-width:75%">
+            \${(m.content || '').replace(/METADATA:\\{[^\\n]*\\}/g,'').replace(/\\\`\\\`\\\`json[\\s\\S]*?\\\`\\\`\\\`/g,'[Blueprint JSON]').slice(0,600)}
+          </div>
         </div>
-      \`).join('') || '<div style="color:var(--text3);text-align:center;padding:20px">No messages.</div>';
+      \`).join('') || '<div style="color:var(--text2);text-align:center;padding:20px">No messages.</div>';
   } catch {
-    document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px">Failed to load session.</div>';
+    document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px">Failed to load session.</div>';
   }
 }
 
-// \u2500\u2500 PROMPT LAB \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// PROMPT LAB
 async function loadPrompt() {
   try {
     const res = await api('GET', '/api/admin/prompt');
@@ -6741,7 +12346,7 @@ async function savePrompt() {
   }
 }
 
-// \u2500\u2500 SETTINGS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// SETTINGS
 async function loadSettings() {
   try {
     const res = await api('GET', '/api/admin/settings');
@@ -6790,7 +12395,7 @@ async function generateAdminMagicLink() {
     if (res.magicLink) {
       document.getElementById('magic-gen-result').innerHTML = \`
         <div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>
-        <div style="font-size:12px;color:var(--text3)">Click to copy. Valid for 72 hours. Single use.</div>
+        <div style="font-size:12px;color:var(--text2)">Click to copy. Valid for 72 hours. Single use.</div>
       \`;
     } else {
       toast(res.error || 'Failed to generate link.');
@@ -6800,64 +12405,218 @@ async function generateAdminMagicLink() {
   }
 }
 
-// \u2500\u2500 TEST BLUEPRINT GENERATOR \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// USER DROPDOWN HELPERS
+let dropdownTimeout = null;
+function showUserDropdown(input, dropdownId) {
+  clearTimeout(dropdownTimeout);
+  const dd = document.getElementById(dropdownId);
+  const q = input.value.trim().toLowerCase();
+  const statusEl = input.closest('.form-group').querySelector('[id$="-user-status"]');
+
+  if (!q) { dd.style.display = 'none'; if (statusEl) statusEl.innerHTML = ''; return; }
+
+  const matches = (ALL_USERS || []).filter(u =>
+    u.email.toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)
+  ).slice(0, 6);
+
+  const isValidEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(q);
+  const exactMatch = matches.find(u => u.email.toLowerCase() === q);
+
+  let html = '';
+  if (matches.length > 0) {
+    html = matches.map(u => \`
+      <div class="user-dropdown-item" onmousedown="selectUser('\${u.email}','\${input.id}','\${dropdownId}')">
+        <span class="ud-email">\${u.email}</span>
+        <span class="ud-meta">\${u.name || ''} \${u.role === 'admin' ? '(admin)' : ''}</span>
+      </div>
+    \`).join('');
+  }
+
+  if (isValidEmail && !exactMatch) {
+    html += \`
+      <div class="user-dropdown-item ud-create" onmousedown="selectUser('\${q}','\${input.id}','\${dropdownId}',true)">
+        + Create new user: \${q}
+      </div>
+    \`;
+  } else if (!isValidEmail && matches.length === 0) {
+    html = '<div class="user-dropdown-empty">Type a valid email to create a new user</div>';
+  }
+
+  dd.innerHTML = html;
+  dd.style.display = html ? 'block' : 'none';
+
+  if (statusEl) {
+    if (exactMatch) {
+      statusEl.innerHTML = '<span style="color:var(--green)">Existing user found</span>';
+    } else if (isValidEmail) {
+      statusEl.innerHTML = '<span style="color:var(--gold)">New user will be created automatically</span>';
+    } else {
+      statusEl.innerHTML = '';
+    }
+  }
+}
+
+function selectUser(email, inputId, dropdownId, isNew) {
+  document.getElementById(inputId).value = email;
+  document.getElementById(dropdownId).style.display = 'none';
+  const statusEl = document.getElementById(inputId).closest('.form-group').querySelector('[id$="-user-status"]');
+  if (statusEl) {
+    statusEl.innerHTML = isNew
+      ? '<span style="color:var(--gold)">New user will be created automatically</span>'
+      : '<span style="color:var(--green)">Existing user selected</span>';
+  }
+}
+
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('.user-dropdown').forEach(dd => {
+    if (!dd.parentElement.contains(e.target)) dd.style.display = 'none';
+  });
+});
+
+// TEST BLUEPRINT GENERATOR
 async function generateTestBlueprint() {
   const email = document.getElementById('test-bp-email').value.trim();
+  if (!email) { toast('Select a user or enter an email address.'); return; }
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }
   const brandName = document.getElementById('test-bp-brand').value.trim() || 'Test Brand';
   const niche = document.getElementById('test-bp-niche').value.trim() || 'Business coaching';
   const resultEl = document.getElementById('test-bp-result');
+  const btn = document.getElementById('test-bp-btn');
 
-  if (!email) { toast('Enter an email address.'); return; }
-
-  resultEl.innerHTML = '<div style="color:var(--text3)">Generating blueprint...</div>';
+  btn.disabled = true;
+  btn.textContent = 'Generating blueprint + debrief...';
+  resultEl.innerHTML = '<div style="color:var(--text2)">This usually takes 15 to 30 seconds. Generating blueprint with AI, then creating strategist debrief...</div>';
 
   try {
     const res = await api('POST', '/api/admin/generate-test-blueprint', { email, brandName, niche });
+    btn.disabled = false;
+    btn.textContent = 'Generate Blueprint + Debrief';
     if (res.ok) {
       resultEl.innerHTML = \`
-        <div style="color:var(--green);font-weight:500;margin-bottom:8px">Blueprint created successfully!</div>
+        <div style="color:var(--green);font-weight:600;margin-bottom:8px">Blueprint created successfully</div>
+        \${res.userCreated ? '<div style="font-size:12px;color:var(--gold);margin-bottom:4px">New user created automatically</div>' : ''}
         <div style="font-size:12px;color:var(--text2)">Session: \${res.sessionId}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">Strategist Debrief: \${res.hasDebrief ? '<span style="color:var(--green)">Included</span>' : '<span style="color:var(--orange,#e67e22)">Not generated</span>'}</div>
+        \${!res.hasDebrief ? \`<button onclick="generateDebrief('\${res.sessionId}')" style="margin-top:8px;padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">Generate Debrief (Opus)</button>\` : ''}
         \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)" style="margin-top:8px">\${res.magicLink}</div>
-        <div style="font-size:11px;color:var(--text3)">Click to copy magic link. User will see their blueprint.</div>\` : ''}
+        <div style="font-size:11px;color:var(--text2)">Click to copy magic link. Opens directly to blueprint view.</div>\` : ''}
       \`;
+      loadUsers();
     } else {
       resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to generate blueprint.'}</div>\`;
     }
   } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Generate Blueprint + Debrief';
     resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';
   }
 }
 
 async function quickTestSession() {
   const email = document.getElementById('quick-test-email').value.trim();
+  if (!email) { toast('Select a user or enter an email address.'); return; }
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }
   const tier = document.getElementById('quick-test-tier').value;
   const resultEl = document.getElementById('quick-test-result');
+  const btn = document.getElementById('quick-test-btn');
 
-  if (!email) { toast('Enter an email address.'); return; }
-
-  resultEl.innerHTML = '<div style="color:var(--text3)">Creating test session...</div>';
+  btn.disabled = true;
+  btn.textContent = tier === 'site' ? 'Creating session + blueprint + debrief...' : 'Creating session...';
+  resultEl.innerHTML = '<div style="color:var(--text2)">Setting up test session...</div>';
 
   try {
     const res = await api('POST', '/api/admin/quick-test-session', { email, tier });
+    btn.disabled = false;
+    btn.textContent = 'Create Test Session';
     if (res.ok) {
       resultEl.innerHTML = \`
-        <div style="color:var(--green);font-weight:500;margin-bottom:8px">Test session created!</div>
+        <div style="color:var(--green);font-weight:600;margin-bottom:8px">Test session created</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:4px">User: \${res.userId}</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Session: \${res.sessionId}</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Tier: \${res.tier} | Blueprint: \${res.hasBlueprint ? 'Yes' : 'No'}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Tier: \${res.tier} | Blueprint: \${res.hasBlueprint ? 'Yes' : 'No'}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Strategist Debrief: \${res.hasDebrief ? '<span style="color:var(--green)">Included</span>' : '<span style="color:var(--orange,#e67e22)">Not generated</span>'}</div>
+        \${!res.hasDebrief && res.hasBlueprint ? \`<button onclick="generateDebrief('\${res.sessionId}')" style="margin-top:4px;margin-bottom:8px;padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">Generate Debrief (Opus)</button>\` : ''}
         \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>
-        <div style="font-size:11px;color:var(--text3)">Click to copy. Opens directly to \${res.hasBlueprint ? 'blueprint' : 'interview'}.</div>\` : ''}
+        <div style="font-size:11px;color:var(--text2)">Click to copy. Opens to \${res.hasBlueprint ? 'blueprint' : 'interview'}.</div>\` : ''}
       \`;
       loadUsers();
     } else {
       resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to create test session.'}</div>\`;
     }
   } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Create Test Session';
     resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';
   }
 }
 
-// \u2500\u2500 TOGGLE HELPERS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// GENERATE DEBRIEF for existing session
+async function generateDebrief(sessionId) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Generating debrief (Opus)...';
+  try {
+    const res = await api('POST', '/api/admin/generate-debrief', { sessionId });
+    if (res.ok) {
+      btn.textContent = 'Debrief generated!';
+      btn.style.background = 'var(--green)';
+      toast('Strategist debrief generated successfully. Reload the blueprint to see it.');
+    } else {
+      btn.textContent = 'Failed';
+      btn.style.background = 'var(--red)';
+      toast(res.error || 'Failed to generate debrief');
+    }
+  } catch (e) {
+    btn.textContent = 'Error';
+    btn.style.background = 'var(--red)';
+    toast('Request failed. Check console.');
+  }
+}
+
+// ENDPOINT HEALTH TEST
+async function testAllEndpoints() {
+  const el = document.getElementById('endpoint-health-results');
+  el.innerHTML = '<div style="color:var(--text2)">Testing all endpoints...</div>';
+
+  const endpoints = [
+    '/api/admin/stats',
+    '/api/admin/users',
+    '/api/admin/sessions',
+    '/api/admin/settings',
+    '/api/admin/prompt',
+    '/api/admin/health',
+    '/api/admin/monitoring',
+    '/api/admin/api-usage',
+    '/api/admin/errors'
+  ];
+
+  const results = [];
+  let passed = 0;
+
+  for (const endpoint of endpoints) {
+    const startTime = performance.now();
+    try {
+      const res = await api('GET', endpoint);
+      const endTime = performance.now();
+      const time = Math.round(endTime - startTime);
+      results.push({ endpoint, status: 'pass', time, code: 200 });
+      passed++;
+    } catch (e) {
+      const endTime = performance.now();
+      const time = Math.round(endTime - startTime);
+      results.push({ endpoint, status: 'fail', time, code: 500 });
+    }
+  }
+
+  el.innerHTML = results.map(r => \`
+    <div class="endpoint-test \${r.status}">
+      <div class="endpoint-name">\${r.endpoint}</div>
+      <div class="endpoint-status">\${r.status === 'pass' ? '\u2713 OK' : '\u2717 Failed'} \u2022 \${r.time}ms</div>
+    </div>
+  \`).join('') + \`<div style="margin-top:12px;font-weight:600;color:var(--text)">\${passed}/\${endpoints.length} endpoints healthy</div>\`;
+}
+
+// TOGGLE HELPERS
 function toggleSetting(name) {
   const el = document.getElementById('toggle-' + name);
   el.classList.toggle('on');
@@ -6868,7 +12627,7 @@ function setToggle(name, val) {
   if (val) el.classList.add('on'); else el.classList.remove('on');
 }
 
-// \u2500\u2500 MODAL HELPERS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// MODAL HELPERS
 function openModal(name) {
   document.getElementById('modal-' + name).classList.add('open');
 }
@@ -6876,7 +12635,7 @@ function closeModal(name) {
   document.getElementById('modal-' + name).classList.remove('open');
 }
 
-// \u2500\u2500 API HELPER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// API HELPER
 async function api(method, path, body) {
   const opts = {
     method,
@@ -6888,7 +12647,7 @@ async function api(method, path, body) {
   return res.json();
 }
 
-// \u2500\u2500 UTILS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// UTILS
 function toast(msg, ms = 3500) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -6904,10 +12663,7 @@ function copyToClipboard(text) {
   navigator.clipboard?.writeText(text).then(() => toast('Copied to clipboard.'));
 }
 
-// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 // MONITORING
-// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
 async function loadMonitoring() {
   try {
     const [monData, apiData] = await Promise.all([
@@ -6920,12 +12676,12 @@ async function loadMonitoring() {
     if (monData.health && monData.health.length) {
       healthGrid.innerHTML = monData.health.map(h => {
         const d = h.details ? JSON.parse(h.details) : {};
-        const dot = h.status === 'healthy' ? '\u{1F7E2}' : h.status === 'warning' ? '\u{1F7E1}' : '\u{1F534}';
-        return '<div class="stat-card"><div class="stat-value">' + dot + ' ' + h.check_type + '</div><div class="stat-label">' +
+        const statusClass = h.status === 'healthy' ? 'green' : h.status === 'warning' ? 'yellow' : 'red';
+        return '<div class="stat-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="health-dot ' + statusClass + '"></div><div style="font-size:12px;font-weight:600">' + h.check_type + '</div></div><div class="stat-label">' +
           h.status + (d.latencyMs ? ' \xB7 ' + d.latencyMs + 'ms' : '') + (d.error ? ' \xB7 ' + d.error : '') + '</div></div>';
       }).join('');
     } else {
-      healthGrid.innerHTML = '<div class="stat-card"><div class="stat-value">No checks yet</div><div class="stat-label">Click "Run Health Check" below</div></div>';
+      healthGrid.innerHTML = '<div class="stat-card"><div class="stat-value">\u2014</div><div class="stat-label">No checks yet</div></div>';
     }
 
     // Funnel health
@@ -6933,15 +12689,15 @@ async function loadMonitoring() {
     const f = monData.funnel;
     if (f) {
       let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';
-      html += statMini('Sessions', f.total || 0);
-      html += statMini('Completion', (f.completionRate || 0) + '%');
-      html += statMini('Avg Phase', f.avgPhase || 0);
-      html += statMini('Drop-off', (f.dropOffRate || 0) + '%');
+      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.total || 0) + '</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Sessions</div></div>';
+      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.completionRate || 0) + '%</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Completion</div></div>';
+      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.avgPhase || 0) + '</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Avg Phase</div></div>';
+      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.dropOffRate || 0) + '%</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Drop-off</div></div>';
       html += '</div>';
       if (f.warnings && f.warnings.length) {
-        html += f.warnings.map(w => '<div style="background:rgba(217,119,6,0.08);border-left:3px solid #D97706;padding:8px 12px;margin:6px 0;border-radius:0 6px 6px 0;font-size:13px;color:#92400E;">' + w + '</div>').join('');
+        html += f.warnings.map(w => '<div style="background:rgba(217,119,6,0.08);border-left:3px solid #D97706;padding:8px 12px;margin:6px 0;border-radius:0 6px 6px 0;font-size:13px;color:#92400E">' + w + '</div>').join('');
       }
-      if (f.lastFivePhases) html += '<p style="font-size:12px;color:#999;margin-top:8px;">Last 5 sessions: phases ' + f.lastFivePhases.join(', ') + '</p>';
+      if (f.lastFivePhases) html += '<p style="font-size:12px;color:var(--text2);margin-top:8px">Last 5: phases ' + f.lastFivePhases.join(', ') + '</p>';
       fh.innerHTML = html;
     }
 
@@ -6949,20 +12705,19 @@ async function loadMonitoring() {
     const au = document.getElementById('api-usage');
     if (apiData.byProvider && apiData.byProvider.length) {
       let html = '<div style="font-size:13px;">';
-      html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-weight:600;color:var(--text2);"><span>Provider</span><span>Calls</span><span>Avg ms</span></div>';
+      html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-weight:600;color:var(--text2)"><span>Provider</span><span>Calls</span><span>Avg ms</span></div>';
       apiData.byProvider.forEach(p => {
         const name = p.metric_name.replace('api.', '').replace('.call', '');
-        html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">' +
-          '<span>' + name + '</span><span style="font-weight:600;">' + p.calls + '</span><span>' + (p.avg_latency_ms || 0) + 'ms</span></div>';
+        html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>' + name + '</span><span style="font-weight:600">' + p.calls + '</span><span>' + (p.avg_latency_ms || 0) + 'ms</span></div>';
       });
       if (apiData.rateLimitHits?.length) {
-        html += '<p style="color:#D97706;margin-top:8px;font-size:12px;">\u26A0 ' + apiData.rateLimitHits.length + ' rate limit hit(s)</p>';
+        html += '<p style="color:#D97706;margin-top:8px;font-size:12px">\u26A0 ' + apiData.rateLimitHits.length + ' rate limit hit(s)</p>';
       }
-      html += '<p style="color:#999;margin-top:8px;font-size:12px;">Total: ' + apiData.totalCalls + ' API calls in ' + apiData.period + '</p>';
+      html += '<p style="color:var(--text2);margin-top:8px;font-size:12px">Total: ' + apiData.totalCalls + ' calls in ' + apiData.period + '</p>';
       html += '</div>';
       au.innerHTML = html;
     } else {
-      au.innerHTML = '<p style="color:#999;font-size:14px;">No API calls recorded yet.</p>';
+      au.innerHTML = '<p style="color:var(--text2);font-size:14px">No API calls recorded yet.</p>';
     }
 
     // Alerts
@@ -6971,15 +12726,14 @@ async function loadMonitoring() {
     if (alerts.length) {
       al.innerHTML = alerts.map(a => {
         const dot = a.severity === 'critical' ? '\u{1F534}' : '\u{1F7E1}';
-        return '<div style="padding:10px 0;border-bottom:1px solid var(--border);">' +
-          '<div style="display:flex;align-items:center;gap:8px;">' + dot +
-          ' <strong style="font-size:13px;">' + a.title + '</strong>' +
-          '<button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:11px;padding:2px 10px;" onclick="resolveAlert(' + a.id + ')">Resolve</button></div>' +
-          '<p style="font-size:12px;color:#888;margin-top:4px;">' + (a.message || '').slice(0, 120) + '</p>' +
-          '<p style="font-size:11px;color:#bbb;">' + fmtDate(a.created_at) + '</p></div>';
+        return '<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:8px">' + dot +
+          ' <strong style="font-size:13px">' + a.title + '</strong>' +
+          '<button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="resolveAlert(' + a.id + ')">Resolve</button></div>' +
+          '<p style="font-size:12px;color:var(--text2);margin-top:4px">' + (a.message || '').slice(0, 120) + '</p>' +
+          '<p style="font-size:11px;color:var(--text3)">' + fmtDate(a.created_at) + '</p></div>';
       }).join('');
     } else {
-      al.innerHTML = '<p style="color:#16A34A;font-size:14px;">\u2705 No active alerts</p>';
+      al.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No active alerts</p>';
     }
 
     // Errors
@@ -6987,31 +12741,38 @@ async function loadMonitoring() {
     const errors = monData.errors || [];
     if (errors.length) {
       el.innerHTML = errors.slice(0, 15).map(e =>
-        '<div style="padding:8px 0;border-bottom:1px solid var(--border);">' +
-        '<div style="font-size:12px;font-weight:600;color:var(--text);">' + (e.endpoint || '?') + ' <span style="color:#DC2626;">' + (e.status_code || 500) + '</span></div>' +
-        '<div style="font-size:12px;color:#888;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (e.error_message || '').slice(0, 100) + '</div>' +
-        '<div style="font-size:11px;color:#bbb;">' + fmtDate(e.created_at) + '</div></div>'
+        '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:12px;font-weight:600;color:var(--text)">' + (e.endpoint || '?') + ' <span style="color:var(--red)">' + (e.status_code || 500) + '</span></div>' +
+        '<div style="font-size:12px;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (e.error_message || '').slice(0, 100) + '</div>' +
+        '<div style="font-size:11px;color:var(--text3)">' + fmtDate(e.created_at) + '</div></div>'
       ).join('');
     } else {
-      el.innerHTML = '<p style="color:#16A34A;font-size:14px;">No errors in the log</p>';
+      el.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No errors in log</p>';
     }
   } catch (err) {
     toast('Failed to load monitoring: ' + err.message);
   }
 }
 
-function statMini(label, value) {
-  return '<div style="background:var(--bg);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:20px;font-weight:700;">' + value + '</div><div style="font-size:11px;color:#888;text-transform:uppercase;">' + label + '</div></div>';
-}
-
 async function runHealthCheck() {
-  toast('Running health checks...');
+  const el = document.getElementById('health-results');
+  el.innerHTML = '<div style="color:var(--text2);font-size:13px">Checking all systems...</div>';
+
   try {
-    const res = await api('GET', '/api/admin/health');
-    toast('Health check complete: ' + res.status);
-    loadMonitoring();
+    const res = await api('GET', '/api/admin/system-health');
+    const checks = res.checks || [];
+
+    el.innerHTML = checks.map(c => \`
+      <div class="health-row">
+        <span class="health-label">\${c.name}</span>
+        <span class="health-status \${c.ok ? 'health-ok' : 'health-fail'}">\${c.ok ? '\u2713 OK' : '\u2717 ' + (c.error || 'Failed')}</span>
+      </div>
+    \`).join('') || '<div style="color:var(--text2);font-size:13px">No results returned.</div>';
+
+    const passed = checks.filter(c => c.ok).length;
+    const total = checks.length;
+    toast(passed + '/' + total + ' systems healthy');
   } catch (err) {
-    toast('Health check failed: ' + err.message);
+    el.innerHTML = \`<div style="color:var(--red);font-size:13px">Health check failed: \${err.message}</div>\`;
   }
 }
 
@@ -7019,7 +12780,7 @@ async function sendDigest() {
   toast('Generating digest...');
   try {
     const res = await api('POST', '/api/admin/digest');
-    toast('Digest sent! Sessions: ' + (res.newSessions || 0) + ', Errors: ' + (res.errorsLogged || 0));
+    toast('Digest sent. Sessions: ' + (res.newSessions || 0) + ', Errors: ' + (res.errorsLogged || 0));
   } catch (err) {
     toast('Digest failed: ' + err.message);
   }
@@ -7035,54 +12796,177 @@ async function resolveAlert(id) {
   }
 }
 
-// \u2500\u2500 TESTING PAGE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// TESTING PAGE
 const CHECKLIST = {
   purchase: [
-    { id: 'p1', label: 'DWI Stripe payment link ($67) loads without errors' },
-    { id: 'p2', label: 'Completing a test purchase redirects to /thank-you' },
-    { id: 'p3', label: 'Stripe webhook fires and stripe-ghl-webhook receives it' },
-    { id: 'p4', label: 'GHL contact is created or updated with dwi_purchased tag' },
-    { id: 'p5', label: 'Magic login link is generated and delivered by email' },
+    { id: 'p1', label: 'DWI Stripe payment link loads without errors' },
+    { id: 'p2', label: 'Completing test purchase redirects to thank you page' },
+    { id: 'p3', label: 'Stripe webhook fires and is received' },
+    { id: 'p4', label: 'GHL contact created or updated with purchase tag' },
+    { id: 'p5', label: 'Magic login link generated and delivered by email' },
   ],
   app: [
     { id: 'a1', label: 'App loads at love.jamesguldan.com without errors' },
-    { id: 'a2', label: 'Intake form collects name, email, and optional phone' },
-    { id: 'a3', label: 'Phase 1 question appears after intake is submitted' },
-    { id: 'a4', label: 'Microphone input works on mobile (test in Safari)' },
-    { id: 'a5', label: 'Phase banner shows on completion of each phase (1 through 7)' },
-    { id: 'a6', label: 'Session saves and restores after closing and reopening browser' },
+    { id: 'a2', label: 'Intake form collects name, email, and phone' },
+    { id: 'a3', label: 'Phase 1 question appears after intake submission' },
+    { id: 'a4', label: 'Microphone input works on mobile' },
+    { id: 'a5', label: 'Phase banner shows on completion of each phase' },
+    { id: 'a6', label: 'Session saves and restores after closing browser' },
   ],
   blueprint: [
-    { id: 'b1', label: 'Phase 8 generates a blueprint (no raw JSON visible in chat)' },
-    { id: 'b2', label: 'Blueprint screen renders with all sections (not the raw code block)' },
-    { id: 'b3', label: 'Download Blueprint button produces a valid PDF or file' },
+    { id: 'b1', label: 'Phase 8 generates a blueprint with no raw JSON visible' },
+    { id: 'b2', label: 'Blueprint screen renders with all sections' },
+    { id: 'b3', label: 'Download Blueprint button produces valid file' },
     { id: 'b4', label: 'Upsell to Site in Sixty shows on blueprint screen' },
   ],
   email: [
     { id: 'e1', label: 'interview_started fires to drip worker on session start' },
-    { id: 'e2', label: 'DWI email_1 (delivery) arrives within 5 minutes of trigger' },
-    { id: 'e3', label: 'DWI email_2 (nudge) is queued for 24 hours after interview_started' },
-    { id: 'e4', label: 'SMS_1 fires within 5 minutes of purchase (if phone provided)' },
+    { id: 'e2', label: 'DWI email arrives within 5 minutes of trigger' },
+    { id: 'e3', label: 'Nudge email queued for 24 hours after interview start' },
+    { id: 'e4', label: 'SMS fires within 5 minutes of purchase' },
     { id: 'e5', label: 'interview_completed fires when blueprint generates' },
-    { id: 'e6', label: 'SIS pitch email_1 queues for 2 days after interview_completed' },
-    { id: 'e7', label: 'Conditional logic: SIS emails stop when sis_purchased tag is added' },
+    { id: 'e6', label: 'SIS pitch email queued for 2 days after interview' },
+    { id: 'e7', label: 'SIS emails stop when purchase tag is added' },
     { id: 'e8', label: 'Strategy call pitch starts after SIS sequence ends' },
   ],
   abandon: [
-    { id: 'ab1', label: 'Use manual trigger above to fire interview_abandoned event' },
-    { id: 'ab2', label: 'Recovery email (email_20) arrives within 5 minutes' },
+    { id: 'ab1', label: 'Use manual trigger to fire interview_abandoned event' },
+    { id: 'ab2', label: 'Recovery email arrives within 5 minutes' },
     { id: 'ab3', label: 'Email link returns to app and resumes correct phase' },
-    { id: 'ab4', label: 'Cron abandonment check runs every 2 hours (check worker logs)' },
-    { id: 'ab5', label: 'Sessions inactive 24h+ appear in D1 with abandonment_notified_at set' },
+    { id: 'ab4', label: 'Cron abandonment check runs every 2 hours' },
+    { id: 'ab5', label: 'Inactive sessions appear in D1 with abandonment flag' },
   ],
   ghl: [
-    { id: 'g1', label: 'GHL Pipeline: DWI buyers land in dwi_purchased stage' },
-    { id: 'g2', label: 'GHL Pipeline: SIS buyers move to sis_purchased stage' },
-    { id: 'g3', label: 'GHL Pipeline: Call bookings land in call_booked stage' },
-    { id: 'g4', label: 'Tags are applied correctly (dwi_purchased, interview_completed, etc.)' },
-    { id: 'g5', label: 'Daily 9am health check fires and results log in Cloudflare (check /api/admin/system-health)' },
+    { id: 'g1', label: 'GHL Pipeline: DWI buyers land in correct stage' },
+    { id: 'g2', label: 'GHL Pipeline: SIS buyers move to correct stage' },
+    { id: 'g3', label: 'GHL Pipeline: Call bookings land in correct stage' },
+    { id: 'g4', label: 'Tags applied correctly to all contacts' },
+    { id: 'g5', label: 'Daily 9am health check fires and logs results' },
   ],
 };
+
+// API COSTS
+async function loadApiCosts() {
+  const days = document.getElementById('cost-days-filter')?.value || '30';
+  try {
+    const data = await api('GET', '/api/admin/usage?days=' + days);
+
+    // Summary cards
+    document.getElementById('cost-this-month').textContent = data.thisMonth?.costDollars || '$0.00';
+    document.getElementById('cost-month-calls').textContent = (data.thisMonth?.calls || 0) + ' API calls this month';
+    document.getElementById('cost-all-time').textContent = data.allTime?.costDollars || '$0.00';
+    document.getElementById('cost-all-calls').textContent = (data.allTime?.calls || 0) + ' total API calls';
+    document.getElementById('cost-per-user').textContent = '$' + ((data.avgPerUser?.avgCostCents || 0) / 100).toFixed(2);
+    document.getElementById('cost-per-user-calls').textContent = (data.avgPerUser?.avgCalls || 0) + ' avg calls per user';
+    document.getElementById('cost-users').textContent = data.allTime?.users || 0;
+    document.getElementById('cost-sessions').textContent = (data.allTime?.sessions || 0) + ' total sessions';
+
+    // Cost by model
+    const modelEl = document.getElementById('cost-by-model');
+    if (data.byModel && data.byModel.length) {
+      const totalCost = data.byModel.reduce((s,m) => s + (m.cost_cents || 0), 0);
+      modelEl.innerHTML = data.byModel.map(m => {
+        const pct = totalCost > 0 ? Math.round((m.cost_cents / totalCost) * 100) : 0;
+        const cost = '$' + ((m.cost_cents || 0) / 100).toFixed(2);
+        const tokens = ((m.input || 0) + (m.output || 0)).toLocaleString();
+        return '<div style="margin-bottom:16px">' +
+          '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">' +
+            '<span style="font-weight:600">' + esc(m.model) + '</span>' +
+            '<span>' + cost + ' (' + pct + '%)</span>' +
+          '</div>' +
+          '<div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden">' +
+            '<div style="background:var(--gold);height:100%;width:' + pct + '%;border-radius:4px"></div>' +
+          '</div>' +
+          '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + (m.calls || 0) + ' calls, ' + tokens + ' tokens</div>' +
+        '</div>';
+      }).join('');
+    } else {
+      modelEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No usage data yet.</div>';
+    }
+
+    // Projections
+    const projEl = document.getElementById('cost-projections');
+    const monthCost = (data.thisMonth?.costCents || 0) / 100;
+    const dayOfMonth = new Date().getDate();
+    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+    const projected = dayOfMonth > 0 ? (monthCost / dayOfMonth) * daysInMonth : 0;
+    const dailyAvg = dayOfMonth > 0 ? monthCost / dayOfMonth : 0;
+    const usersPerDay = data.thisMonth?.sessions > 0 ? (data.thisMonth.sessions / dayOfMonth).toFixed(1) : '0';
+    const costPerSession = data.thisMonth?.sessions > 0 ? (monthCost / data.thisMonth.sessions).toFixed(2) : '0.00';
+
+    projEl.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
+        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +
+          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Projected This Month</div>' +
+          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + projected.toFixed(2) + '</div>' +
+        '</div>' +
+        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +
+          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Daily Average</div>' +
+          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + dailyAvg.toFixed(2) + '</div>' +
+        '</div>' +
+        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +
+          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Avg Sessions/Day</div>' +
+          '<div style="font-size:24px;font-weight:700;color:var(--text)">' + usersPerDay + '</div>' +
+        '</div>' +
+        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +
+          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Cost Per Session</div>' +
+          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + costPerSession + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top:16px;padding:12px;background:rgba(196,112,63,0.08);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text)">' +
+        '<strong style="color:var(--gold)">Cost Breakdown by Service (estimated):</strong><br>' +
+        'Anthropic API (Claude Opus/Sonnet): ~85% of total<br>' +
+        'Gemini/Imagen (image generation): ~5% of total<br>' +
+        'Resend (transactional emails): ~1% of total<br>' +
+        'Cloudflare (D1, KV, R2, Workers): ~1% of total<br>' +
+        'Stripe processing: 2.9% + $0.30 per transaction' +
+      '</div>';
+
+    // Daily trend chart (simple bar chart)
+    const chartEl = document.getElementById('cost-daily-chart');
+    if (data.daily && data.daily.length) {
+      const maxCost = Math.max(...data.daily.map(d => d.cost_cents || 0), 1);
+      chartEl.innerHTML =
+        '<div style="display:flex;align-items:flex-end;gap:3px;height:160px;padding-bottom:24px;position:relative">' +
+        data.daily.slice().reverse().map(d => {
+          const h = Math.max(((d.cost_cents || 0) / maxCost) * 130, 2);
+          const cost = '$' + ((d.cost_cents || 0) / 100).toFixed(2);
+          const label = d.day?.slice(5) || '';
+          return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0">' +
+            '<div title="' + label + ': ' + cost + ' (' + (d.calls||0) + ' calls)" style="width:100%;max-width:32px;height:' + h + 'px;background:var(--gold);border-radius:3px 3px 0 0;cursor:pointer;opacity:0.85;transition:opacity 0.2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85"></div>' +
+            '<div style="font-size:9px;color:var(--text2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">' + label + '</div>' +
+          '</div>';
+        }).join('') +
+        '</div>';
+    } else {
+      chartEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No daily data yet.</div>';
+    }
+
+    // Top users table
+    const tbody = document.getElementById('cost-users-tbody');
+    if (data.topUsers && data.topUsers.length) {
+      tbody.innerHTML = data.topUsers.map(u => {
+        const tokens = ((u.input || 0) + (u.output || 0)).toLocaleString();
+        const cost = '$' + ((u.cost_cents || 0) / 100).toFixed(2);
+        return '<tr>' +
+          '<td>' + esc(u.email || 'unknown') + '</td>' +
+          '<td>' + esc(u.name || '') + '</td>' +
+          '<td>' + (u.sessions || 0) + '</td>' +
+          '<td>' + (u.calls || 0) + '</td>' +
+          '<td>' + tokens + '</td>' +
+          '<td style="font-weight:600">' + cost + '</td>' +
+          '<td>' + fmtDate(u.last_active) + '</td>' +
+        '</tr>';
+      }).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No usage data yet.</td></tr>';
+    }
+
+  } catch(e) {
+    console.error('Failed to load API costs:', e);
+    document.getElementById('cost-by-model').innerHTML = '<div style="color:var(--red)">Failed to load cost data.</div>';
+  }
+}
 
 let checklistState = JSON.parse(localStorage.getItem('dw_checklist') || '{}');
 
@@ -7131,46 +13015,22 @@ async function runTestTrigger() {
 
   if (!email) { result.innerHTML = '<span style="color:var(--red)">Enter an email address.</span>'; return; }
 
-  result.innerHTML = '<span style="color:var(--text3)">Firing event...</span>';
+  result.innerHTML = '<span style="color:var(--text2)">Firing event...</span>';
 
   try {
     const res = await api('POST', '/api/admin/test-trigger', {
       email, name, phone, event_type, phase: phase ? parseInt(phase) : undefined
     });
     result.innerHTML = \`<span style="color:var(--green)">\u2713 Event fired successfully.</span>
-      <pre style="margin-top:8px;font-size:11px;background:var(--bg3);padding:10px;border-radius:6px;overflow:auto">\${JSON.stringify(res, null, 2)}</pre>\`;
+      <pre style="margin-top:8px;font-size:11px;background:var(--bg2);padding:10px;border-radius:6px;overflow:auto">\${JSON.stringify(res, null, 2)}</pre>\`;
   } catch (err) {
     result.innerHTML = \`<span style="color:var(--red)">\u2717 Failed: \${err.message}</span>\`;
   }
 }
-
-async function runHealthCheck() {
-  const el = document.getElementById('health-results');
-  el.innerHTML = '<div style="color:var(--text3);font-size:13px">Checking all systems...</div>';
-
-  try {
-    const res = await api('GET', '/api/admin/system-health');
-    const checks = res.checks || [];
-
-    el.innerHTML = checks.map(c => \`
-      <div class="health-row">
-        <span class="health-label">\${c.name}</span>
-        <span class="health-status \${c.ok ? 'health-ok' : 'health-fail'}">\${c.ok ? '\u2713 OK' : '\u2717 ' + (c.error || 'Failed')}</span>
-      </div>
-    \`).join('') || '<div style="color:var(--text3);font-size:13px">No results returned.</div>';
-
-    const passed = checks.filter(c => c.ok).length;
-    const total = checks.length;
-    toast(passed + '/' + total + ' systems healthy');
-  } catch (err) {
-    el.innerHTML = \`<div style="color:var(--red);font-size:13px">Health check failed: \${err.message}</div>\`;
-  }
-}
 <\/script>
 </body>
-</html>`, "getAdminHTML");
-
-// src/login.js
+</html>
+`, "getAdminHTML");
 function getLoginHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -7182,21 +13042,22 @@ function getLoginHTML() {
 <link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:      #FDFCFA;
-    --bg2:     #F5F2EE;
-    --accent:  #c4703f;
-    --accent2: #d4855a;
-    --text:    #111111;
-    --muted:   #6B6B6B;
-    --border:  #E8E5E1;
-    --border2: #D4D0CB;
+    --bg:      #FFFFFF;
+    --bg2:     #FAFAFA;
+    --accent:  #1D1D1F;
+    --accent2: #2d2d2f;
+    --text:    #1D1D1F;
+    --muted:   #86868B;
+    --border:  #F0F0F0;
+    --border2: #E8E8E8;
     --error:   #c0392b;
     --success: #2d7a4f;
+    --gold:    #C4703F;
   }
 
   html, body {
@@ -7335,7 +13196,6 @@ function getLoginHTML() {
 
   .btn-primary:hover {
     background: var(--accent2);
-    box-shadow: 0 4px 16px rgba(196,112,63,0.3);
   }
   .btn-primary:active { transform: scale(0.99); }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
@@ -7533,13 +13393,20 @@ function getLoginHTML() {
 
   </div>
 
+  <div style="margin:20px auto 4px;max-width:400px;text-align:center;">
+    <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:12px;">
+      <span style="font-size:12px;color:#B8B4AF;display:inline-flex;align-items:center;gap:4px;">Encrypted &amp; private</span>
+      <span style="font-size:12px;color:#B8B4AF;display:inline-flex;align-items:center;gap:4px;">60&ndash;90 min session</span>
+      <span style="font-size:12px;color:#B8B4AF;display:inline-flex;align-items:center;gap:4px;">&#10003; Pause &amp; resume any time</span>
+    </div>
+  </div>
   <p class="footer-note" id="footerNote">Don't have access yet? <a href="https://jamesguldan.com/deep-work" target="_blank">Learn more \u2192</a></p>
   <div class="legal-links">
     <a href="/terms" target="_blank">Terms</a>
     &nbsp;&middot;&nbsp;
     <a href="/privacy" target="_blank">Privacy</a>
     &nbsp;&middot;&nbsp;
-    &copy; 2026 Align Growth LLC
+    &copy; 2026 Align Consulting LLC
   </div>
 </div>
 
@@ -7685,8 +13552,9 @@ function setBtnLoading(id, loading, label) {
 </html>`;
 }
 __name(getLoginHTML, "getLoginHTML");
-
-// src/legal.js
+__name2(getLoginHTML, "getLoginHTML");
+__name22(getLoginHTML, "getLoginHTML");
+__name222(getLoginHTML, "getLoginHTML");
 function legalPageShell(title, content) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -7698,7 +13566,7 @@ function legalPageShell(title, content) {
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #FDFCFA;
+    --bg: #FFFFFF;
     --text: #1a1a1a;
     --text2: #666;
     --accent: #C4703F;
@@ -7767,12 +13635,15 @@ function legalPageShell(title, content) {
 </html>`;
 }
 __name(legalPageShell, "legalPageShell");
+__name2(legalPageShell, "legalPageShell");
+__name22(legalPageShell, "legalPageShell");
+__name222(legalPageShell, "legalPageShell");
 function getPrivacyPolicyHTML() {
   return legalPageShell("Privacy Policy", `
   <h1>Privacy Policy</h1>
   <p class="effective-date">Effective Date: March 20, 2026</p>
 
-  <p>This Privacy Policy describes how Align Growth LLC ("we," "us," or "our") collects, uses, and protects your personal information when you use the Deep Work brand strategy application at love.jamesguldan.com (the "Service").</p>
+  <p>This Privacy Policy describes how Align Consulting LLC ("we," "us," or "our") collects, uses, and protects your personal information when you use the Deep Work brand strategy application at love.jamesguldan.com (the "Service").</p>
 
   <h2>1. Information We Collect</h2>
 
@@ -7829,19 +13700,22 @@ function getPrivacyPolicyHTML() {
   <h2>10. Contact Us</h2>
 
   <div class="contact-block">
-    <p><strong>Align Growth LLC</strong></p>
+    <p><strong>Align Consulting LLC</strong></p>
     <p>Email: james@jamesguldan.com</p>
     <p>Website: jamesguldan.com</p>
   </div>
   `);
 }
 __name(getPrivacyPolicyHTML, "getPrivacyPolicyHTML");
+__name2(getPrivacyPolicyHTML, "getPrivacyPolicyHTML");
+__name22(getPrivacyPolicyHTML, "getPrivacyPolicyHTML");
+__name222(getPrivacyPolicyHTML, "getPrivacyPolicyHTML");
 function getTermsOfServiceHTML() {
   return legalPageShell("Terms of Service", `
   <h1>Terms of Service</h1>
   <p class="effective-date">Effective Date: March 20, 2026</p>
 
-  <p>These Terms of Service ("Terms") govern your use of the Deep Work brand strategy application at love.jamesguldan.com (the "Service"), operated by Align Growth LLC ("we," "us," or "our"). By creating an account or using the Service, you agree to be bound by these Terms.</p>
+  <p>These Terms of Service ("Terms") govern your use of the Deep Work brand strategy application at love.jamesguldan.com (the "Service"), operated by Align Consulting LLC ("we," "us," or "our"). By creating an account or using the Service, you agree to be bound by these Terms.</p>
 
   <h2>1. Description of Service</h2>
 
@@ -7865,7 +13739,7 @@ function getTermsOfServiceHTML() {
 
   <p><strong>Generated Content:</strong> Upon payment, you receive a perpetual, non exclusive license to use the brand blueprint, brand guide, and any other generated deliverables for your personal and commercial purposes. We retain the right to use anonymized, aggregated insights from our platform to improve the Service.</p>
 
-  <p><strong>Our Platform:</strong> The Deep Work platform, including its design, code, AI prompts, and methodology, remains the intellectual property of Align Growth LLC.</p>
+  <p><strong>Our Platform:</strong> The Deep Work platform, including its design, code, AI prompts, and methodology, remains the intellectual property of Align Consulting LLC.</p>
 
   <h2>6. Blueprint Access and Sessions</h2>
 
@@ -7877,7 +13751,7 @@ function getTermsOfServiceHTML() {
 
   <h2>8. Limitation of Liability</h2>
 
-  <p>To the maximum extent permitted by law, Align Growth LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service, including but not limited to loss of profits, business opportunities, or data. Our total liability for any claim arising from the Service shall not exceed the amount you paid for the Service in the twelve months preceding the claim.</p>
+  <p>To the maximum extent permitted by law, Align Consulting LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service, including but not limited to loss of profits, business opportunities, or data. Our total liability for any claim arising from the Service shall not exceed the amount you paid for the Service in the twelve months preceding the claim.</p>
 
   <h2>9. Disclaimer of Warranties</h2>
 
@@ -7894,18 +13768,17 @@ function getTermsOfServiceHTML() {
   <h2>12. Contact Us</h2>
 
   <div class="contact-block">
-    <p><strong>Align Growth LLC</strong></p>
+    <p><strong>Align Consulting LLC</strong></p>
     <p>Email: james@jamesguldan.com</p>
     <p>Website: jamesguldan.com</p>
   </div>
   `);
 }
 __name(getTermsOfServiceHTML, "getTermsOfServiceHTML");
-
-// src/index.js
+__name2(getTermsOfServiceHTML, "getTermsOfServiceHTML");
+__name22(getTermsOfServiceHTML, "getTermsOfServiceHTML");
+__name222(getTermsOfServiceHTML, "getTermsOfServiceHTML");
 init_prompts();
-
-// src/auth.js
 async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const keyMaterial = await crypto.subtle.importKey(
@@ -7925,6 +13798,9 @@ async function hashPassword(password) {
   return `pbkdf2:${saltHex}:${hashHex}`;
 }
 __name(hashPassword, "hashPassword");
+__name2(hashPassword, "hashPassword");
+__name22(hashPassword, "hashPassword");
+__name222(hashPassword, "hashPassword");
 async function verifyPassword(password, stored) {
   try {
     const [, saltHex, hashHex] = stored.split(":");
@@ -7947,6 +13823,9 @@ async function verifyPassword(password, stored) {
   }
 }
 __name(verifyPassword, "verifyPassword");
+__name2(verifyPassword, "verifyPassword");
+__name22(verifyPassword, "verifyPassword");
+__name222(verifyPassword, "verifyPassword");
 async function createSessionToken(userId, role, secret) {
   const payload = {
     userId,
@@ -7960,6 +13839,9 @@ async function createSessionToken(userId, role, secret) {
   return `${data}.${sig}`;
 }
 __name(createSessionToken, "createSessionToken");
+__name2(createSessionToken, "createSessionToken");
+__name22(createSessionToken, "createSessionToken");
+__name222(createSessionToken, "createSessionToken");
 async function verifySessionToken(token, secret) {
   try {
     const lastDot = token.lastIndexOf(".");
@@ -7979,11 +13861,17 @@ async function verifySessionToken(token, secret) {
   }
 }
 __name(verifySessionToken, "verifySessionToken");
+__name2(verifySessionToken, "verifySessionToken");
+__name22(verifySessionToken, "verifySessionToken");
+__name222(verifySessionToken, "verifySessionToken");
 function generateMagicToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return toHex(bytes);
 }
 __name(generateMagicToken, "generateMagicToken");
+__name2(generateMagicToken, "generateMagicToken");
+__name22(generateMagicToken, "generateMagicToken");
+__name222(generateMagicToken, "generateMagicToken");
 async function storeMagicToken(env, token, userId, type = "magic_login", ttlHours = 24) {
   const expires = new Date(Date.now() + ttlHours * 60 * 60 * 1e3).toISOString();
   await env.DB.prepare(`
@@ -7992,6 +13880,9 @@ async function storeMagicToken(env, token, userId, type = "magic_login", ttlHour
   `).bind(token, userId, type, expires).run();
 }
 __name(storeMagicToken, "storeMagicToken");
+__name2(storeMagicToken, "storeMagicToken");
+__name22(storeMagicToken, "storeMagicToken");
+__name222(storeMagicToken, "storeMagicToken");
 async function consumeMagicToken(env, token) {
   const row = await env.DB.prepare(`
     SELECT * FROM auth_tokens WHERE token = ? AND used = 0 AND expires_at > datetime('now')
@@ -8002,14 +13893,23 @@ async function consumeMagicToken(env, token) {
   return row;
 }
 __name(consumeMagicToken, "consumeMagicToken");
+__name2(consumeMagicToken, "consumeMagicToken");
+__name22(consumeMagicToken, "consumeMagicToken");
+__name222(consumeMagicToken, "consumeMagicToken");
 async function getUserByEmail(env, email) {
   return env.DB.prepare(`SELECT * FROM users WHERE email = ?`).bind(email.toLowerCase().trim()).first();
 }
 __name(getUserByEmail, "getUserByEmail");
+__name2(getUserByEmail, "getUserByEmail");
+__name22(getUserByEmail, "getUserByEmail");
+__name222(getUserByEmail, "getUserByEmail");
 async function getUserById(env, userId) {
   return env.DB.prepare(`SELECT * FROM users WHERE id = ?`).bind(userId).first();
 }
 __name(getUserById, "getUserById");
+__name2(getUserById, "getUserById");
+__name22(getUserById, "getUserById");
+__name222(getUserById, "getUserById");
 async function createUser(env, { email, name, role = "user", tier = null, stripeCustomerId = null }) {
   const id = `usr_${Date.now()}_${crypto.getRandomValues(new Uint8Array(4)).reduce((s, b) => s + b.toString(16).padStart(2, "0"), "")}`;
   await env.DB.prepare(`
@@ -8019,25 +13919,37 @@ async function createUser(env, { email, name, role = "user", tier = null, stripe
   return getUserById(env, id);
 }
 __name(createUser, "createUser");
+__name2(createUser, "createUser");
+__name22(createUser, "createUser");
+__name222(createUser, "createUser");
 async function updateUserPassword(env, userId, passwordHash) {
   await env.DB.prepare(`UPDATE users SET password_hash = ? WHERE id = ?`).bind(passwordHash, userId).run();
 }
 __name(updateUserPassword, "updateUserPassword");
+__name2(updateUserPassword, "updateUserPassword");
+__name22(updateUserPassword, "updateUserPassword");
+__name222(updateUserPassword, "updateUserPassword");
 async function updateLastLogin(env, userId) {
   await env.DB.prepare(`UPDATE users SET last_login = datetime('now') WHERE id = ?`).bind(userId).run();
 }
 __name(updateLastLogin, "updateLastLogin");
+__name2(updateLastLogin, "updateLastLogin");
+__name22(updateLastLogin, "updateLastLogin");
+__name222(updateLastLogin, "updateLastLogin");
 async function requireAuth(request, env) {
   const token = extractToken(request);
   if (!token)
     return null;
-  const payload = await verifySessionToken(token, env.JWT_SECRET || "dev-secret-change-me");
+  const payload = await verifySessionToken(token, getJWTSecret(env));
   if (!payload)
     return null;
   const user = await getUserById(env, payload.userId);
   return user || null;
 }
 __name(requireAuth, "requireAuth");
+__name2(requireAuth, "requireAuth");
+__name22(requireAuth, "requireAuth");
+__name222(requireAuth, "requireAuth");
 async function requireAdmin(request, env) {
   const user = await requireAuth(request, env);
   if (!user || user.role !== "admin")
@@ -8045,6 +13957,9 @@ async function requireAdmin(request, env) {
   return user;
 }
 __name(requireAdmin, "requireAdmin");
+__name2(requireAdmin, "requireAdmin");
+__name22(requireAdmin, "requireAdmin");
+__name222(requireAdmin, "requireAdmin");
 function extractToken(request) {
   const auth = request.headers.get("Authorization");
   if (auth?.startsWith("Bearer "))
@@ -8057,6 +13972,9 @@ function extractToken(request) {
   return url.searchParams.get("token") || null;
 }
 __name(extractToken, "extractToken");
+__name2(extractToken, "extractToken");
+__name22(extractToken, "extractToken");
+__name222(extractToken, "extractToken");
 async function setSetting(env, key, value) {
   await env.DB.prepare(`
     INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
@@ -8064,11 +13982,17 @@ async function setSetting(env, key, value) {
   `).bind(key, value).run();
 }
 __name(setSetting, "setSetting");
+__name2(setSetting, "setSetting");
+__name22(setSetting, "setSetting");
+__name222(setSetting, "setSetting");
 async function getAllSettings(env) {
   const { results } = await env.DB.prepare(`SELECT key, value FROM settings ORDER BY key`).all();
   return Object.fromEntries(results.map((r) => [r.key, r.value]));
 }
 __name(getAllSettings, "getAllSettings");
+__name2(getAllSettings, "getAllSettings");
+__name22(getAllSettings, "getAllSettings");
+__name222(getAllSettings, "getAllSettings");
 async function hmacSign(data, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -8081,6 +14005,9 @@ async function hmacSign(data, secret) {
   return toHex(new Uint8Array(sig));
 }
 __name(hmacSign, "hmacSign");
+__name2(hmacSign, "hmacSign");
+__name22(hmacSign, "hmacSign");
+__name222(hmacSign, "hmacSign");
 async function hmacVerify(data, sigHex, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -8093,16 +14020,23 @@ async function hmacVerify(data, sigHex, secret) {
   return crypto.subtle.verify("HMAC", key, sig, new TextEncoder().encode(data));
 }
 __name(hmacVerify, "hmacVerify");
+__name2(hmacVerify, "hmacVerify");
+__name22(hmacVerify, "hmacVerify");
+__name222(hmacVerify, "hmacVerify");
 function toHex(bytes) {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 __name(toHex, "toHex");
+__name2(toHex, "toHex");
+__name22(toHex, "toHex");
+__name222(toHex, "toHex");
 function fromHex(hex) {
   return new Uint8Array(hex.match(/.{2}/g).map((b) => parseInt(b, 16)));
 }
 __name(fromHex, "fromHex");
-
-// src/monitor.js
+__name2(fromHex, "fromHex");
+__name22(fromHex, "fromHex");
+__name222(fromHex, "fromHex");
 var ALERT_EMAIL = "james@jamesguldan.com";
 var ALERT_COOLDOWN_MINUTES = 60;
 async function logError(env, { endpoint, method, statusCode, errorType, errorMessage, stack, userId, sessionId, requestId }) {
@@ -8126,6 +14060,9 @@ async function logError(env, { endpoint, method, statusCode, errorType, errorMes
   }
 }
 __name(logError, "logError");
+__name2(logError, "logError");
+__name22(logError, "logError");
+__name222(logError, "logError");
 async function trackMetric(env, name, value, tags = null) {
   try {
     await env.DB.prepare(`
@@ -8136,6 +14073,9 @@ async function trackMetric(env, name, value, tags = null) {
   }
 }
 __name(trackMetric, "trackMetric");
+__name2(trackMetric, "trackMetric");
+__name22(trackMetric, "trackMetric");
+__name222(trackMetric, "trackMetric");
 async function runFullHealthCheck(env) {
   const results = {};
   results.d1 = await checkD1(env);
@@ -8159,6 +14099,9 @@ async function runFullHealthCheck(env) {
   return { status: overallStatus, checks: results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runFullHealthCheck, "runFullHealthCheck");
+__name2(runFullHealthCheck, "runFullHealthCheck");
+__name22(runFullHealthCheck, "runFullHealthCheck");
+__name222(runFullHealthCheck, "runFullHealthCheck");
 async function checkD1(env) {
   const start = Date.now();
   try {
@@ -8169,6 +14112,9 @@ async function checkD1(env) {
   }
 }
 __name(checkD1, "checkD1");
+__name2(checkD1, "checkD1");
+__name22(checkD1, "checkD1");
+__name222(checkD1, "checkD1");
 async function checkKV(env) {
   const start = Date.now();
   try {
@@ -8182,6 +14128,9 @@ async function checkKV(env) {
   }
 }
 __name(checkKV, "checkKV");
+__name2(checkKV, "checkKV");
+__name22(checkKV, "checkKV");
+__name222(checkKV, "checkKV");
 async function checkR2(env) {
   const start = Date.now();
   try {
@@ -8192,6 +14141,9 @@ async function checkR2(env) {
   }
 }
 __name(checkR2, "checkR2");
+__name2(checkR2, "checkR2");
+__name22(checkR2, "checkR2");
+__name222(checkR2, "checkR2");
 async function checkStripe(env) {
   if (!env.STRIPE_SECRET_KEY)
     return { status: "warning", error: "STRIPE_SECRET_KEY not configured" };
@@ -8211,6 +14163,9 @@ async function checkStripe(env) {
   }
 }
 __name(checkStripe, "checkStripe");
+__name2(checkStripe, "checkStripe");
+__name22(checkStripe, "checkStripe");
+__name222(checkStripe, "checkStripe");
 async function checkAnthropic(env) {
   if (!env.ANTHROPIC_API_KEY)
     return { status: "warning", error: "ANTHROPIC_API_KEY not configured" };
@@ -8240,6 +14195,9 @@ async function checkAnthropic(env) {
   }
 }
 __name(checkAnthropic, "checkAnthropic");
+__name2(checkAnthropic, "checkAnthropic");
+__name22(checkAnthropic, "checkAnthropic");
+__name222(checkAnthropic, "checkAnthropic");
 async function checkResend(env) {
   if (!env.RESEND_API_KEY)
     return { status: "warning", error: "RESEND_API_KEY not configured \u2014 emails disabled" };
@@ -8261,6 +14219,9 @@ async function checkResend(env) {
   }
 }
 __name(checkResend, "checkResend");
+__name2(checkResend, "checkResend");
+__name22(checkResend, "checkResend");
+__name222(checkResend, "checkResend");
 async function checkFunnelHealth(env) {
   try {
     const recentSessions = await env.DB.prepare(`
@@ -8311,6 +14272,9 @@ async function checkFunnelHealth(env) {
   }
 }
 __name(checkFunnelHealth, "checkFunnelHealth");
+__name2(checkFunnelHealth, "checkFunnelHealth");
+__name22(checkFunnelHealth, "checkFunnelHealth");
+__name222(checkFunnelHealth, "checkFunnelHealth");
 async function checkErrorRate(env) {
   try {
     const hourAgo = await env.DB.prepare(`
@@ -8345,6 +14309,9 @@ async function checkErrorRate(env) {
   }
 }
 __name(checkErrorRate, "checkErrorRate");
+__name2(checkErrorRate, "checkErrorRate");
+__name22(checkErrorRate, "checkErrorRate");
+__name222(checkErrorRate, "checkErrorRate");
 async function trackAPICall(env, provider, endpoint, statusCode, latencyMs, tokensUsed = null) {
   const tags = { provider, endpoint, statusCode: String(statusCode) };
   if (tokensUsed)
@@ -8360,6 +14327,9 @@ async function trackAPICall(env, provider, endpoint, statusCode, latencyMs, toke
   }
 }
 __name(trackAPICall, "trackAPICall");
+__name2(trackAPICall, "trackAPICall");
+__name22(trackAPICall, "trackAPICall");
+__name222(trackAPICall, "trackAPICall");
 async function createAlert(env, { alertType, severity, title, message }) {
   try {
     const recent = await env.DB.prepare(`
@@ -8380,6 +14350,9 @@ async function createAlert(env, { alertType, severity, title, message }) {
   }
 }
 __name(createAlert, "createAlert");
+__name2(createAlert, "createAlert");
+__name22(createAlert, "createAlert");
+__name222(createAlert, "createAlert");
 async function sendAlertEmail(env, { alertType, severity, title, message }) {
   try {
     const isCritical = severity === "critical";
@@ -8405,6 +14378,9 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   }
 }
 __name(sendAlertEmail, "sendAlertEmail");
+__name2(sendAlertEmail, "sendAlertEmail");
+__name22(sendAlertEmail, "sendAlertEmail");
+__name222(sendAlertEmail, "sendAlertEmail");
 async function trackFunnelEvent(env, eventName, data = {}) {
   try {
     await trackMetric(env, `funnel.${eventName}`, 1, data);
@@ -8468,6 +14444,9 @@ async function trackFunnelEvent(env, eventName, data = {}) {
   }
 }
 __name(trackFunnelEvent, "trackFunnelEvent");
+__name2(trackFunnelEvent, "trackFunnelEvent");
+__name22(trackFunnelEvent, "trackFunnelEvent");
+__name222(trackFunnelEvent, "trackFunnelEvent");
 async function generateDailyDigest(env) {
   try {
     const [sessions24h, errors24h, payments24h, completions24h, activeAlerts] = await Promise.all([
@@ -8505,6 +14484,9 @@ async function generateDailyDigest(env) {
   }
 }
 __name(generateDailyDigest, "generateDailyDigest");
+__name2(generateDailyDigest, "generateDailyDigest");
+__name22(generateDailyDigest, "generateDailyDigest");
+__name222(generateDailyDigest, "generateDailyDigest");
 async function sendDigestEmail(env, digest) {
   const html = getDigestEmailHTML(digest);
   try {
@@ -8526,6 +14508,9 @@ async function sendDigestEmail(env, digest) {
   }
 }
 __name(sendDigestEmail, "sendDigestEmail");
+__name2(sendDigestEmail, "sendDigestEmail");
+__name22(sendDigestEmail, "sendDigestEmail");
+__name222(sendDigestEmail, "sendDigestEmail");
 async function handleMonitoringDashboard(env) {
   const [healthResult, funnel, recentAlerts, recentErrors, apiMetrics] = await Promise.all([
     getLatestHealthChecks(env),
@@ -8547,6 +14532,9 @@ async function handleMonitoringDashboard(env) {
   };
 }
 __name(handleMonitoringDashboard, "handleMonitoringDashboard");
+__name2(handleMonitoringDashboard, "handleMonitoringDashboard");
+__name22(handleMonitoringDashboard, "handleMonitoringDashboard");
+__name222(handleMonitoringDashboard, "handleMonitoringDashboard");
 async function getLatestHealthChecks(env) {
   const checks = await env.DB.prepare(`
     SELECT check_type, status, latency_ms, details, created_at
@@ -8557,6 +14545,9 @@ async function getLatestHealthChecks(env) {
   return checks.results || [];
 }
 __name(getLatestHealthChecks, "getLatestHealthChecks");
+__name2(getLatestHealthChecks, "getLatestHealthChecks");
+__name22(getLatestHealthChecks, "getLatestHealthChecks");
+__name222(getLatestHealthChecks, "getLatestHealthChecks");
 function getAlertEmailHTML({ alertType, severity, title, message, isCritical }) {
   const bgColor = isCritical ? "#FEF2F2" : "#FFFBEB";
   const accentColor = isCritical ? "#DC2626" : "#D97706";
@@ -8581,12 +14572,15 @@ function getAlertEmailHTML({ alertType, severity, title, message, isCritical }) 
     </div>
   </div>
   <div style="padding:16px 32px;background:#FAFAF8;border-top:1px solid #EAE7E2;text-align:center;">
-    <p style="margin:0;font-size:12px;color:#aaa;">Deep Work App by Align Growth LLC</p>
+    <p style="margin:0;font-size:12px;color:#aaa;">Deep Work App by Align Consulting LLC</p>
   </div>
 </div>
 </body></html>`;
 }
 __name(getAlertEmailHTML, "getAlertEmailHTML");
+__name2(getAlertEmailHTML, "getAlertEmailHTML");
+__name22(getAlertEmailHTML, "getAlertEmailHTML");
+__name222(getAlertEmailHTML, "getAlertEmailHTML");
 function getDigestEmailHTML(digest) {
   const hasWarnings = digest.funnelWarnings.length > 0 || digest.errorsLogged > 10;
   const headerBg = hasWarnings ? "#FFFBEB" : "#F0FDF4";
@@ -8626,12 +14620,15 @@ function getDigestEmailHTML(digest) {
     </div>
   </div>
   <div style="padding:16px 32px;background:#FAFAF8;border-top:1px solid #EAE7E2;text-align:center;">
-    <p style="margin:0;font-size:12px;color:#aaa;">Deep Work App by Align Growth LLC</p>
+    <p style="margin:0;font-size:12px;color:#aaa;">Deep Work App by Align Consulting LLC</p>
   </div>
 </div>
 </body></html>`;
 }
 __name(getDigestEmailHTML, "getDigestEmailHTML");
+__name2(getDigestEmailHTML, "getDigestEmailHTML");
+__name22(getDigestEmailHTML, "getDigestEmailHTML");
+__name222(getDigestEmailHTML, "getDigestEmailHTML");
 function statCard(label, value) {
   return `<div style="flex:1;min-width:100px;background:#F9FAFB;border-radius:10px;padding:14px 16px;text-align:center;">
     <p style="margin:0;font-size:24px;font-weight:700;color:#1a1a1a;">${value}</p>
@@ -8639,6 +14636,9 @@ function statCard(label, value) {
   </div>`;
 }
 __name(statCard, "statCard");
+__name2(statCard, "statCard");
+__name22(statCard, "statCard");
+__name222(statCard, "statCard");
 function getErrorPageHTML(statusCode, title, message) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -8682,6 +14682,9 @@ function getErrorPageHTML(statusCode, title, message) {
 </html>`;
 }
 __name(getErrorPageHTML, "getErrorPageHTML");
+__name2(getErrorPageHTML, "getErrorPageHTML");
+__name22(getErrorPageHTML, "getErrorPageHTML");
+__name222(getErrorPageHTML, "getErrorPageHTML");
 var ERROR_PAGES = {
   400: { title: "Bad Request", message: "Something didn't look right with that request. Please try again or head back to the home page." },
   401: { title: "Not Authorized", message: "You'll need to sign in to access this page. If you believe this is an error, try signing out and back in." },
@@ -8692,14 +14695,15 @@ var ERROR_PAGES = {
   502: { title: "Service Unavailable", message: "One of our services is temporarily unavailable. Please try again in a few minutes." },
   503: { title: "Temporarily Down", message: "We're doing some quick maintenance. Please check back in a few minutes." }
 };
-
-// src/index.js
 function esc(s) {
   if (!s)
     return "";
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 __name(esc, "esc");
+__name2(esc, "esc");
+__name22(esc, "esc");
+__name222(esc, "esc");
 var KNOWN_FONTS = /* @__PURE__ */ new Set(["Inter", "Playfair Display", "Lora", "Merriweather", "Roboto", "Open Sans", "Montserrat", "Raleway", "Poppins", "Oswald", "Source Sans Pro", "Nunito", "PT Serif", "Libre Baskerville", "Cormorant Garamond", "DM Sans", "Work Sans", "Space Grotesk", "Bitter", "Crimson Text", "Georgia", "Arial", "Helvetica", "Times New Roman"]);
 function safeFont(f, fallback) {
   if (!f)
@@ -8710,6 +14714,9 @@ function safeFont(f, fallback) {
   return close || fallback;
 }
 __name(safeFont, "safeFont");
+__name2(safeFont, "safeFont");
+__name22(safeFont, "safeFont");
+__name222(safeFont, "safeFont");
 var MODEL_OPUS = "claude-opus-4-6";
 var MODEL_SONNET = "claude-sonnet-4-6";
 var OPUS_MESSAGE_THRESHOLD = 16;
@@ -8724,6 +14731,9 @@ function pickChatModel(session) {
   return MODEL_SONNET;
 }
 __name(pickChatModel, "pickChatModel");
+__name2(pickChatModel, "pickChatModel");
+__name22(pickChatModel, "pickChatModel");
+__name222(pickChatModel, "pickChatModel");
 var MODEL_COSTS = {
   [MODEL_OPUS]: { input: 1500, output: 7500, cacheRead: 150, cacheWrite: 1875 },
   [MODEL_SONNET]: { input: 300, output: 1500, cacheRead: 30, cacheWrite: 375 },
@@ -8734,6 +14744,9 @@ function calcCostCents(model, inputTokens, outputTokens, cacheRead, cacheWrite) 
   return (inputTokens * r.input + outputTokens * r.output + (cacheRead || 0) * r.cacheRead + (cacheWrite || 0) * r.cacheWrite) / 1e6;
 }
 __name(calcCostCents, "calcCostCents");
+__name2(calcCostCents, "calcCostCents");
+__name22(calcCostCents, "calcCostCents");
+__name222(calcCostCents, "calcCostCents");
 async function trackTokenUsage(env, { sessionId, userId, model, endpoint, inputTokens, outputTokens, cacheRead, cacheWrite, phase }) {
   try {
     const cost = calcCostCents(model, inputTokens || 0, outputTokens || 0, cacheRead || 0, cacheWrite || 0);
@@ -8742,6 +14755,9 @@ async function trackTokenUsage(env, { sessionId, userId, model, endpoint, inputT
   }
 }
 __name(trackTokenUsage, "trackTokenUsage");
+__name2(trackTokenUsage, "trackTokenUsage");
+__name22(trackTokenUsage, "trackTokenUsage");
+__name222(trackTokenUsage, "trackTokenUsage");
 async function generateStrategistDebrief(env, session, blueprint, sessionId) {
   try {
     const interviewMessages = (session.messages || []).filter((m) => m.role === "user" || m.role === "assistant").map((m) => {
@@ -8814,11 +14830,32 @@ Now write the strategist debrief as a personal letter to this person. Return ONL
   }
 }
 __name(generateStrategistDebrief, "generateStrategistDebrief");
-var CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization"
-};
+__name2(generateStrategistDebrief, "generateStrategistDebrief");
+__name22(generateStrategistDebrief, "generateStrategistDebrief");
+__name222(generateStrategistDebrief, "generateStrategistDebrief");
+function getJWTSecret(env) {
+  if (!env.JWT_SECRET)
+    throw new Error("JWT_SECRET environment variable is required");
+  return env.JWT_SECRET;
+}
+__name(getJWTSecret, "getJWTSecret");
+var ALLOWED_ORIGINS = [
+  "https://love.jamesguldan.com",
+  "https://jamesguldan.com",
+  "https://dev.jamesguldan-site.pages.dev"
+];
+function getCORSHeaders(request) {
+  const origin = request && request.headers && request.headers.get("Origin") || "";
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : "https://love.jamesguldan.com";
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Vary": "Origin"
+  };
+}
+__name(getCORSHeaders, "getCORSHeaders");
+var CORS = getCORSHeaders(null);
 var SEC_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
@@ -8827,9 +14864,23 @@ var SEC_HEADERS = {
   "Permissions-Policy": "camera=(), microphone=(self), geolocation=()"
 };
 function htmlHeaders(extra = {}) {
-  return { "Content-Type": "text/html;charset=UTF-8", ...SEC_HEADERS, ...extra };
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
+    "font-src https://fonts.googleapis.com https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https:",
+    "connect-src 'self' https://api.stripe.com https://api.resend.com https://api.anthropic.com",
+    "frame-src 'self' https://js.stripe.com",
+    "object-src 'none'",
+    "base-uri 'self'"
+  ].join("; ");
+  return { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "no-store, no-cache, must-revalidate", "Content-Security-Policy": csp, ...SEC_HEADERS, ...extra };
 }
 __name(htmlHeaders, "htmlHeaders");
+__name2(htmlHeaders, "htmlHeaders");
+__name22(htmlHeaders, "htmlHeaders");
+__name222(htmlHeaders, "htmlHeaders");
 var src_default = {
   // Cron triggers:
   //   Every 2 hours — abandonment check
@@ -8850,7 +14901,7 @@ var src_default = {
     const url = new URL(request.url);
     const path = url.pathname;
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS });
+      return new Response(null, { status: 204, headers: getCORSHeaders(request) });
     }
     try {
       if (path === "/" || path === "") {
@@ -8863,7 +14914,7 @@ var src_default = {
         const html = getHTML({
           STRIPE_PRICE_BLUEPRINT: "price_1TCXL7FArNSFW9mB5DDauxQg",
           STRIPE_PRICE_CALL: "price_1TCXL8FArNSFW9mBBtiWVRCb",
-          STRIPE_PRICE_SITE: "price_1TCXL9FArNSFW9mBr189gJuC"
+          STRIPE_PRICE_SITE: "price_1TCpHrFArNSFW9mBu0kQISZi"
         });
         return new Response(html, { headers: htmlHeaders() });
       }
@@ -8883,14 +14934,10 @@ var src_default = {
         return handleRequestMagic(request, env);
       if (path === "/api/auth/me" && request.method === "GET")
         return handleAuthMe(request, env);
+      if (path === "/api/auth/fast-resume" && request.method === "GET")
+        return handleFastResume(request, env);
       if (path === "/api/auth/set-password" && request.method === "POST")
         return handleSetPassword(request, env);
-      if (path === "/api/auth/forgot-password" && request.method === "POST")
-        return handleForgotPassword(request, env);
-      if (path === "/api/auth/reset-password" && request.method === "POST")
-        return handleResetPassword(request, env);
-      if (path === "/reset-password")
-        return serveResetPasswordPage(request, env, url);
       if (path === "/magic")
         return handleMagicLink(request, env, url);
       if (path === "/logout") {
@@ -8907,7 +14954,7 @@ window.location.replace('/');
           status: 200,
           headers: {
             "Content-Type": "text/html;charset=UTF-8",
-            "Set-Cookie": "dw_session=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=Lax"
+            "Set-Cookie": "dw_session=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; SameSite=Lax; HttpOnly"
           }
         });
       }
@@ -8937,6 +14984,8 @@ window.location.replace('/');
         return handleAdminSavePrompt(request, env);
       if (path === "/api/admin/generate-debrief" && request.method === "POST")
         return handleAdminGenerateDebrief(request, env);
+      if (path === "/api/admin/inject-debrief" && request.method === "POST")
+        return handleAdminInjectDebrief(request, env);
       if (path === "/api/admin/generate-test-blueprint" && request.method === "POST")
         return handleAdminTestBlueprint(request, env);
       if (path === "/api/admin/quick-test-session" && request.method === "POST")
@@ -8977,8 +15026,43 @@ window.location.replace('/');
       if (path === "/api/upload" && request.method === "POST") {
         return handleUpload(request, env);
       }
+      if (path === "/api/photo/process" && request.method === "POST") {
+        return handlePhotoProcess(request, env);
+      }
       if (path === "/api/generate/images" && request.method === "POST") {
         return handleGenerateImages(request, env);
+      }
+      if (path === "/api/generate/section-image" && request.method === "POST") {
+        return handleGenerateSectionImage(request, env);
+      }
+      if (path === "/api/section-image" && request.method === "GET") {
+        const siUrl = new URL(request.url);
+        const siSid = siUrl.searchParams.get("sessionId");
+        const siIdx = siUrl.searchParams.get("idx");
+        if (!siSid || siIdx === null)
+          return new Response("Missing params", { status: 400 });
+        const siKey = `sessions/${siSid}/picker-images/section_${siIdx}.png`;
+        try {
+          const siObj = await env.UPLOADS.get(siKey);
+          if (!siObj)
+            return new Response("Not found", { status: 404 });
+          const siBytes = await siObj.arrayBuffer();
+          return new Response(siBytes, { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" } });
+        } catch (e) {
+          return new Response("Error", { status: 500 });
+        }
+      }
+      if (path === "/api/generate/section-variants" && request.method === "POST") {
+        return handleGenerateSectionVariants(request, env);
+      }
+      if (path === "/api/generate/save-section-choices" && request.method === "POST") {
+        return handleSaveSectionChoices(request, env);
+      }
+      if (path === "/api/generate/deploy-picker-site" && request.method === "POST") {
+        return handleDeployPickerSite(request, env);
+      }
+      if (path === "/api/intake/chat" && request.method === "POST") {
+        return handleIntakeChat(request, env);
       }
       if (path === "/api/generate/site" && request.method === "POST") {
         return handleGenerateSite(request, env);
@@ -9007,6 +15091,15 @@ window.location.replace('/');
       if (path === "/api/test/blueprint" && request.method === "POST") {
         return handleTestBlueprint(request, env);
       }
+      if (path.match(/^\/api\/sessions\/[^/]+\/phone$/) && request.method === "POST") {
+        const sessionId = path.split("/")[3];
+        const body = await request.json();
+        const phone = (body.phone || "").replace(/[^0-9+]/g, "");
+        if (phone.length >= 10) {
+          await env.DB.prepare("UPDATE sessions SET phone = ? WHERE id = ?").bind(phone, sessionId).run();
+        }
+        return new Response(JSON.stringify({ ok: true }), { headers: { ...CORS, "Content-Type": "application/json" } });
+      }
       if (path.startsWith("/api/session/") && request.method === "GET") {
         return handleGetSession(request, env, path);
       }
@@ -9014,11 +15107,11 @@ window.location.replace('/');
         return new Response(getLegalHTML("Terms of Service", `
           <p>Last updated: March 2025</p>
           <h2>1. Service Description</h2>
-          <p>Deep Work App is an AI-powered brand strategy tool provided by Align Growth LLC ("we", "us", "our"). By purchasing and using this service, you agree to these terms.</p>
+          <p>Deep Work App is an AI-powered brand strategy tool provided by Align Consulting LLC ("we", "us", "our"). By purchasing and using this service, you agree to these terms.</p>
           <h2>2. Payment & Refunds</h2>
           <p>Payments are processed securely via Stripe. Due to the digital and instant-delivery nature of this product, all sales are final. If you experience a technical issue that prevents access, contact us at james@jamesguldan.com within 7 days.</p>
           <h2>3. Intellectual Property</h2>
-          <p>All content you generate through the service is owned by you. The platform, prompts, and software are owned by Align Growth LLC.</p>
+          <p>All content you generate through the service is owned by you. The platform, prompts, and software are owned by Align Consulting LLC.</p>
           <h2>4. Acceptable Use</h2>
           <p>You may not use this service for unlawful purposes, to generate spam, or to reverse-engineer our AI systems. We reserve the right to terminate access for misuse.</p>
           <h2>5. Disclaimer</h2>
@@ -9069,6 +15162,8 @@ window.location.replace('/');
         return handleAdminUsage(request, env);
       if (path === "/api/admin/usage/user" && request.method === "GET")
         return handleAdminUserUsage(request, env);
+      if (path === "/api/admin/purge-kv" && request.method === "POST")
+        return handleAdminPurgeKV(request, env);
       return new Response(getErrorPageHTML(404, "Page Not Found", ERROR_PAGES[404].message), {
         status: 404,
         headers: htmlHeaders()
@@ -9140,17 +15235,19 @@ function getLegalHTML(title, content) {
 </nav>
 <main>
   <h1>${title}</h1>
-  <p class="meta">Align Growth LLC &nbsp;\xB7&nbsp; james@jamesguldan.com</p>
+  <p class="meta">Align Consulting LLC &nbsp;\xB7&nbsp; james@jamesguldan.com</p>
   ${content}
 </main>
-<footer>&copy; 2025 Align Growth LLC &nbsp;\xB7&nbsp; <a href="/legal/terms">Terms</a> &nbsp;\xB7&nbsp; <a href="/legal/privacy">Privacy</a></footer>
+<footer>&copy; 2025 Align Consulting LLC &nbsp;\xB7&nbsp; <a href="/legal/terms">Terms</a> &nbsp;\xB7&nbsp; <a href="/legal/privacy">Privacy</a></footer>
 </body>
 </html>`;
 }
 __name(getLegalHTML, "getLegalHTML");
+__name2(getLegalHTML, "getLegalHTML");
+__name22(getLegalHTML, "getLegalHTML");
+__name222(getLegalHTML, "getLegalHTML");
 function getStripeKeys(request, env) {
-  const origin = request.headers.get("Origin") || request.headers.get("Referer") || "";
-  const isTest = origin.includes("dev.") || origin.includes("localhost") || origin.includes("127.0.0.1");
+  const isTest = env.STRIPE_MODE === "test" || env.ENVIRONMENT === "development";
   return {
     secretKey: isTest ? env.STRIPE_TEST_SECRET_KEY || env.STRIPE_SECRET_KEY : env.STRIPE_SECRET_KEY,
     publishableKey: isTest ? env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY : env.STRIPE_PUBLISHABLE_KEY,
@@ -9158,20 +15255,23 @@ function getStripeKeys(request, env) {
   };
 }
 __name(getStripeKeys, "getStripeKeys");
+__name2(getStripeKeys, "getStripeKeys");
+__name22(getStripeKeys, "getStripeKeys");
+__name222(getStripeKeys, "getStripeKeys");
 async function handleCreatePaymentIntent(request, env) {
   try {
     const body = await request.json();
     const { tiers } = body;
     if (!Array.isArray(tiers) || tiers.length === 0) {
-      return json({ error: "Invalid tiers" }, 400);
+      return jsonCORS({ error: "Invalid tiers" }, 400, request);
     }
     const PRICES = { blueprint: 6700, site: 13e3, call: 13e3 };
     const amount = tiers.reduce((sum, t) => sum + (PRICES[t] || 0), 0);
     if (amount === 0)
-      return json({ error: "Invalid tiers: no known products" }, 400);
+      return jsonCORS({ error: "Invalid tiers: no known products" }, 400, request);
     const { secretKey, publishableKey, testMode } = getStripeKeys(request, env);
     if (!secretKey)
-      return json({ error: "Stripe not configured" }, 500);
+      return jsonCORS({ error: "Stripe not configured" }, 500, request);
     const params = new URLSearchParams({
       amount: amount.toString(),
       currency: "usd",
@@ -9188,56 +15288,73 @@ async function handleCreatePaymentIntent(request, env) {
     });
     const pi = await res.json();
     if (!pi.client_secret) {
-      return json({ error: pi.error?.message || "Failed to create payment intent" }, 500);
+      return jsonCORS({ error: pi.error?.message || "Failed to create payment intent" }, 500, request);
     }
-    return json({ clientSecret: pi.client_secret, publishableKey, amount, paymentIntentId: pi.id, testMode });
+    return jsonCORS({ clientSecret: pi.client_secret, publishableKey, amount, paymentIntentId: pi.id, testMode }, 200, request);
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return jsonCORS({ error: e.message }, 500, request);
   }
 }
 __name(handleCreatePaymentIntent, "handleCreatePaymentIntent");
+__name2(handleCreatePaymentIntent, "handleCreatePaymentIntent");
+__name22(handleCreatePaymentIntent, "handleCreatePaymentIntent");
+__name222(handleCreatePaymentIntent, "handleCreatePaymentIntent");
 async function handleFulfillPayment(request, env) {
   try {
-    const { paymentIntentId, email, tiers } = await request.json();
+    const { paymentIntentId, email, tiers, name, phone } = await request.json();
     if (!paymentIntentId || !email) {
       return json({ error: "Missing paymentIntentId or email" }, 400);
     }
     const { secretKey, testMode } = getStripeKeys(request, env);
-    let verified = false;
+    let verified = testMode;
     let resolvedTiers = tiers || ["blueprint"];
-    try {
-      const res = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
-        headers: { "Authorization": `Bearer ${secretKey}` }
-      });
-      const pi = await res.json();
-      verified = pi.status === "succeeded";
-      if (pi.metadata?.tiers)
-        resolvedTiers = pi.metadata.tiers.split(",");
-    } catch (e) {
-      verified = testMode;
+    if (!testMode) {
+      try {
+        const res = await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntentId}`, {
+          headers: { "Authorization": `Bearer ${secretKey}` }
+        });
+        const pi = await res.json();
+        verified = pi.status === "succeeded";
+        if (pi.metadata?.tiers)
+          resolvedTiers = pi.metadata.tiers.split(",");
+      } catch (e) {
+        verified = false;
+      }
     }
     if (!verified) {
       return json({ error: "Payment not verified" }, 402);
     }
     const tier = resolvedTiers[0] || "blueprint";
+    let user = null;
     try {
-      await createUser(env, email, null, { tier, source: "payment", paymentIntentId });
+      user = await createUser(env, { email, name: name || "", tier, stripeCustomerId: null });
     } catch (e) {
+      user = await getUserByEmail(env, email);
+    }
+    if (user && phone) {
+      try {
+        await env.DB.prepare("UPDATE users SET phone = ? WHERE id = ?").bind(phone, user.id).run();
+      } catch (e) {
+      }
     }
     const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     let sessionUrl = appOrigin;
     try {
       const token = await generateMagicToken();
-      await storeMagicToken(env, token, email);
+      const userId = user ? user.id : email;
+      await storeMagicToken(env, token, userId);
       sessionUrl = `${appOrigin}/magic?token=${token}&redirect=/app`;
     } catch (e) {
     }
-    return json({ success: true, sessionUrl });
+    return jsonCORS({ success: true, sessionUrl }, 200, request);
   } catch (e) {
-    return json({ error: e.message }, 500);
+    return jsonCORS({ error: e.message }, 500, request);
   }
 }
 __name(handleFulfillPayment, "handleFulfillPayment");
+__name2(handleFulfillPayment, "handleFulfillPayment");
+__name22(handleFulfillPayment, "handleFulfillPayment");
+__name222(handleFulfillPayment, "handleFulfillPayment");
 async function handlePaymentStatus(request, env, url) {
   const piId = url.searchParams.get("pi");
   if (!piId)
@@ -9254,6 +15371,9 @@ async function handlePaymentStatus(request, env, url) {
   }
 }
 __name(handlePaymentStatus, "handlePaymentStatus");
+__name2(handlePaymentStatus, "handlePaymentStatus");
+__name22(handlePaymentStatus, "handlePaymentStatus");
+__name222(handlePaymentStatus, "handlePaymentStatus");
 async function handleCheckout(request, env) {
   const body = await request.json();
   const { tier, sessionId: existingSessionId } = body;
@@ -9282,7 +15402,8 @@ async function handleCheckout(request, env) {
   if (existingSessionId)
     params.set("metadata[existing_session_id]", existingSessionId);
   const apiStart = Date.now();
-  const res = await stripePost(env, "/v1/checkout/sessions", params);
+  const idempotencyKey = `checkout_${tier}_${existingSessionId || Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const res = await stripePost(env, "/v1/checkout/sessions", params, { "Idempotency-Key": idempotencyKey });
   trackAPICall(env, "stripe", "/v1/checkout/sessions", res.status, Date.now() - apiStart);
   trackFunnelEvent(env, "checkout_started", { tier });
   const session = await res.json();
@@ -9294,6 +15415,9 @@ async function handleCheckout(request, env) {
   return json({ error: "Failed to create checkout session", detail: session.error }, 500);
 }
 __name(handleCheckout, "handleCheckout");
+__name2(handleCheckout, "handleCheckout");
+__name22(handleCheckout, "handleCheckout");
+__name222(handleCheckout, "handleCheckout");
 async function handlePaymentSuccess(request, env, url) {
   const checkoutSessionId = url.searchParams.get("session_id");
   const tier = url.searchParams.get("tier") || "blueprint";
@@ -9327,7 +15451,8 @@ async function handlePaymentSuccess(request, env, url) {
     const raw = await env.SESSIONS.get(existingSessionId);
     if (raw) {
       const existingSession = JSON.parse(raw);
-      existingSession.tier = tier;
+      existingSession.tier = "site";        // always grant full access on purchase
+      existingSession.blueprintTier = tier;  // preserve original tier for analytics
       existingSession.stripeCheckoutId = checkoutSessionId;
       await env.SESSIONS.put(existingSessionId, JSON.stringify(existingSession), { expirationTtl: 60 * 60 * 24 * 30 });
       await logEvent(env, existingSessionId, "tier_upgraded", { from: existingSession.tier, to: tier });
@@ -9338,7 +15463,8 @@ async function handlePaymentSuccess(request, env, url) {
   const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   await env.SESSIONS.put(sessionId, JSON.stringify({
     id: sessionId,
-    tier,
+    tier: "site",              // always grant site tier -- blueprint + deploy included in any purchase
+    blueprintTier: tier,       // preserve original tier for analytics
     stripeCheckoutId: checkoutSessionId,
     phase: 1,
     messages: [],
@@ -9348,15 +15474,40 @@ async function handlePaymentSuccess(request, env, url) {
     createdAt: (/* @__PURE__ */ new Date()).toISOString()
   }), { expirationTtl: 60 * 60 * 24 * 30 });
   const accessToken = await generateSessionAccessToken(env, sessionId);
+  if (env.RESEND_API_KEY) {
+    const checkoutDetails = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`).then((r) => r.json()).catch(() => ({}));
+    const customerEmail = checkoutDetails.customer_details?.email || checkoutDetails.customer_email || null;
+    const tierLabel = tier === "site" ? "Site In Sixty ($130)" : "Blueprint Session ($67)";
+    const startUrl = `${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`;
+    if (customerEmail) {
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+          to: [customerEmail],
+          subject: "You're in \u2014 your Deep Work session is ready",
+          html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">You're in.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Payment confirmed. Your Deep Work Interview is ready. Eight conversations. One complete brand blueprint built around who you actually are.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:36px 40px 40px;"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border:1px solid #f0f0f0;border-radius:12px;overflow:hidden;"><tr><td style="padding:20px 24px;"><p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">What to expect</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.7;">About 60-90 minutes total. Pause and come back any time - your session saves automatically.</p></td></tr></table><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${startUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Begin My Session &rarr;</a></td></tr></table><p style="margin:0 0 24px;font-size:13px;color:#86868b;line-height:1.7;">This link is your direct access. Bookmark it or save this email.</p><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Questions? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`
+        })
+      }).catch(() => {
+      });
+    }
+  }
   return Response.redirect(`${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`, 302);
 }
 __name(handlePaymentSuccess, "handlePaymentSuccess");
+__name2(handlePaymentSuccess, "handlePaymentSuccess");
+__name22(handlePaymentSuccess, "handlePaymentSuccess");
+__name222(handlePaymentSuccess, "handlePaymentSuccess");
 async function generateSessionAccessToken(env, sessionId) {
   const token = Array.from(crypto.getRandomValues(new Uint8Array(24))).map((b) => b.toString(16).padStart(2, "0")).join("");
   await env.SESSIONS.put(`session_access:${token}`, JSON.stringify({ sessionId, createdAt: Date.now() }), { expirationTtl: 60 * 60 * 4 });
   return token;
 }
 __name(generateSessionAccessToken, "generateSessionAccessToken");
+__name2(generateSessionAccessToken, "generateSessionAccessToken");
+__name22(generateSessionAccessToken, "generateSessionAccessToken");
+__name222(generateSessionAccessToken, "generateSessionAccessToken");
 async function handleSessionClaim(request, env) {
   try {
     const { accessToken, sessionId } = await request.json();
@@ -9370,22 +15521,27 @@ async function handleSessionClaim(request, env) {
     if (record.sessionId !== sessionId)
       return json({ error: "Token does not match session" }, 401);
     await env.SESSIONS.delete(kvKey);
-    const jwt = await createSessionToken({ sessionId, type: "session_access" }, env.JWT_SECRET || "dev-secret-change-me", 60 * 60 * 24 * 30);
+    const jwt = await createSessionToken({ sessionId, type: "session_access" }, getJWTSecret(env), 60 * 60 * 24 * 30);
     return json({ token: jwt, sessionId });
   } catch (e) {
     return json({ error: "Claim failed", detail: e.message }, 500);
   }
 }
 __name(handleSessionClaim, "handleSessionClaim");
+__name2(handleSessionClaim, "handleSessionClaim");
+__name22(handleSessionClaim, "handleSessionClaim");
+__name222(handleSessionClaim, "handleSessionClaim");
 async function handleWebhook(request, env) {
   const body = await request.text();
-  if (env.STRIPE_WEBHOOK_SECRET) {
-    const sigHeader = request.headers.get("stripe-signature") || "";
-    const valid = await verifyStripeSignature(body, sigHeader, env.STRIPE_WEBHOOK_SECRET);
-    if (!valid) {
-      await logError(env, { endpoint: "/api/webhook", method: "POST", statusCode: 400, errorType: "invalid_stripe_signature", errorMessage: "Webhook signature mismatch" });
-      return json({ error: "Invalid signature" }, 400);
-    }
+  if (!env.STRIPE_WEBHOOK_SECRET) {
+    await logError(env, { endpoint: "/api/webhook", method: "POST", statusCode: 500, errorType: "config_error", errorMessage: "STRIPE_WEBHOOK_SECRET not configured" });
+    return json({ error: "Webhook verification not configured" }, 500);
+  }
+  const sigHeader = request.headers.get("stripe-signature") || "";
+  const valid = await verifyStripeSignature(body, sigHeader, env.STRIPE_WEBHOOK_SECRET);
+  if (!valid) {
+    await logError(env, { endpoint: "/api/webhook", method: "POST", statusCode: 400, errorType: "invalid_stripe_signature", errorMessage: "Webhook signature mismatch" });
+    return json({ error: "Invalid signature" }, 400);
   }
   try {
     const event = JSON.parse(body);
@@ -9398,10 +15554,16 @@ async function handleWebhook(request, env) {
       });
     }
   } catch (e) {
+    await logError(env, { endpoint: "/api/webhook", method: "POST", statusCode: 400, errorType: "json_parse_error", errorMessage: e.message }).catch(() => {
+    });
+    return json({ error: "Invalid webhook payload" }, 400);
   }
   return json({ received: true });
 }
 __name(handleWebhook, "handleWebhook");
+__name2(handleWebhook, "handleWebhook");
+__name22(handleWebhook, "handleWebhook");
+__name222(handleWebhook, "handleWebhook");
 async function verifyStripeSignature(payload, sigHeader, secret) {
   try {
     const parts = Object.fromEntries(sigHeader.split(",").map((p) => p.split("=")));
@@ -9422,6 +15584,9 @@ async function verifyStripeSignature(payload, sigHeader, secret) {
   }
 }
 __name(verifyStripeSignature, "verifyStripeSignature");
+__name2(verifyStripeSignature, "verifyStripeSignature");
+__name22(verifyStripeSignature, "verifyStripeSignature");
+__name222(verifyStripeSignature, "verifyStripeSignature");
 async function handleSessionStart(request, env) {
   const body = await request.json();
   const { sessionId, tier, existingWebsiteUrl, linkedinUrl, competitorUrls, testimonials, uploadedKeys, phone } = body;
@@ -9430,7 +15595,7 @@ async function handleSessionStart(request, env) {
     const authHeader = request.headers.get("Authorization") || "";
     if (authHeader.startsWith("Bearer ")) {
       const token = authHeader.slice(7);
-      const payload = await verifySessionToken(token, env.JWT_SECRET || "dev-secret-change-me");
+      const payload = await verifySessionToken(token, getJWTSecret(env));
       if (payload)
         userId = payload.userId;
     }
@@ -9527,6 +15692,9 @@ async function handleSessionStart(request, env) {
   return json({ ok: true, sessionId: session.id, firstMessage: cleanFirst });
 }
 __name(handleSessionStart, "handleSessionStart");
+__name2(handleSessionStart, "handleSessionStart");
+__name22(handleSessionStart, "handleSessionStart");
+__name222(handleSessionStart, "handleSessionStart");
 async function handleGetSession(request, env, path) {
   const sessionId = path.split("/").pop();
   const raw = await env.SESSIONS.get(sessionId);
@@ -9538,10 +15706,15 @@ async function handleGetSession(request, env, path) {
     tier: session.tier,
     phase: session.phase,
     blueprintGenerated: session.blueprintGenerated,
-    siteGenerated: session.siteGenerated
+    siteGenerated: session.siteGenerated,
+    siteUrl: session.siteUrl || null,
+    siteSlug: session.siteSlug || null
   });
 }
 __name(handleGetSession, "handleGetSession");
+__name2(handleGetSession, "handleGetSession");
+__name22(handleGetSession, "handleGetSession");
+__name222(handleGetSession, "handleGetSession");
 async function handleUserActiveSession(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -9606,6 +15779,9 @@ async function handleUserActiveSession(request, env) {
   }
 }
 __name(handleUserActiveSession, "handleUserActiveSession");
+__name2(handleUserActiveSession, "handleUserActiveSession");
+__name22(handleUserActiveSession, "handleUserActiveSession");
+__name222(handleUserActiveSession, "handleUserActiveSession");
 async function handleSessionResume(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -9638,13 +15814,91 @@ async function handleSessionResume(request, env) {
       messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
       blueprintGenerated: session.blueprintGenerated || false,
       blueprint: session.blueprint || null,
-      strategistDebrief: session.strategistDebrief || null
+      strategistDebrief: session.strategistDebrief || null,
+      siteGenerated: session.siteGenerated || false,
+      siteUrl: session.siteUrl || null,
+      siteSlug: session.siteSlug || null
     });
   } catch (e) {
     return json({ error: "Failed to resume session", detail: e.message }, 500);
   }
 }
 __name(handleSessionResume, "handleSessionResume");
+__name2(handleSessionResume, "handleSessionResume");
+__name22(handleSessionResume, "handleSessionResume");
+__name222(handleSessionResume, "handleSessionResume");
+async function handleFastResume(request, env) {
+  const user = await requireAuth(request, env);
+  if (!user)
+    return json({ error: "Not authenticated" }, 401);
+  try {
+    const userInfo = { id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier };
+    const completedRow = await env.DB.prepare(
+      "SELECT id, tier, phase, message_count, blueprint_generated, created_at, updated_at, status FROM sessions WHERE user_id = ? AND blueprint_generated = 1 AND (status != 'expired' OR status IS NULL) ORDER BY created_at DESC LIMIT 1"
+    ).bind(user.id).first();
+    if (completedRow) {
+      const age = Date.now() - new Date(completedRow.created_at).getTime();
+      if (age < 30 * 24 * 3600 * 1e3) {
+        const kvData = await env.SESSIONS.get(completedRow.id);
+        if (kvData) {
+          const session = JSON.parse(kvData);
+          const displayMessages = (session.messages || []).filter((m, i) => !(i === 0 && m.role === "user" && m.content === "Start the interview."));
+          await logEvent(env, completedRow.id, "session_resumed", { phase: session.phase, messageCount: displayMessages.length, fast: true });
+          return json({
+            ok: true,
+            user: userInfo,
+            hasActiveSession: true,
+            blueprintComplete: true,
+            sessionId: completedRow.id,
+            tier: session.tier || completedRow.tier,
+            phase: session.phase || completedRow.phase || 8,
+            messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
+            blueprintGenerated: true,
+            blueprint: session.blueprint || null,
+            strategistDebrief: session.strategistDebrief || null
+          });
+        }
+      } else {
+        await env.DB.prepare("UPDATE sessions SET status = 'expired' WHERE id = ?").bind(completedRow.id).run().catch(() => null);
+      }
+    }
+    const activeRow = await env.DB.prepare(
+      "SELECT id, tier, phase, message_count, created_at, updated_at FROM sessions WHERE user_id = ? AND (status = 'active' OR status IS NULL) AND blueprint_generated = 0 ORDER BY created_at DESC LIMIT 1"
+    ).bind(user.id).first();
+    if (activeRow) {
+      const kvData = await env.SESSIONS.get(activeRow.id);
+      if (kvData) {
+        const session = JSON.parse(kvData);
+        if (session.messages && session.messages.length > 0) {
+          const displayMessages = session.messages.filter((m, i) => !(i === 0 && m.role === "user" && m.content === "Start the interview."));
+          await logEvent(env, activeRow.id, "session_resumed", { phase: session.phase, messageCount: displayMessages.length, fast: true });
+          return json({
+            ok: true,
+            user: userInfo,
+            hasActiveSession: true,
+            blueprintComplete: false,
+            sessionId: activeRow.id,
+            tier: session.tier || activeRow.tier,
+            phase: session.phase || activeRow.phase || 1,
+            messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
+            blueprintGenerated: false,
+            blueprint: null,
+            strategistDebrief: null
+          });
+        }
+      } else {
+        await env.DB.prepare("UPDATE sessions SET status = 'expired' WHERE id = ?").bind(activeRow.id).run().catch(() => null);
+      }
+    }
+    return json({ ok: true, user: userInfo, hasActiveSession: false });
+  } catch (e) {
+    return json({ error: "Fast resume failed", detail: e.message }, 500);
+  }
+}
+__name(handleFastResume, "handleFastResume");
+__name2(handleFastResume, "handleFastResume");
+__name22(handleFastResume, "handleFastResume");
+__name222(handleFastResume, "handleFastResume");
 async function handleTestBlueprint(request, env) {
   const fakeMessages = [
     { role: "assistant", content: `Before we dive in, let\u2019s take a breath. Seriously. This work goes a lot deeper when you\u2019re not still half-distracted by whatever was happening 10 minutes ago. Take three slow breaths with me. In through the nose, hold for a beat, out through the mouth. I\u2019ll be here.
@@ -9746,7 +16000,7 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
-  const sendEvent = /* @__PURE__ */ __name(async (data) => {
+  const sendEvent = /* @__PURE__ */ __name222(async (data) => {
     await writer.write(encoder.encode(`data: ${JSON.stringify(data)}
 
 `));
@@ -9829,13 +16083,45 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
       }
       trackTokenUsage(env, { sessionId, userId: session.userId, model: MODEL_OPUS, endpoint: "/api/generate-blueprint", inputTokens: bpUsage.input, outputTokens: bpUsage.output, cacheRead: bpUsage.cacheRead, cacheWrite: bpUsage.cacheWrite, phase: 8 });
       let blueprint = null;
-      const blueprintMatch = fullContent.match(/```json\n([\s\S]*?)\n```/);
+      const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       if (blueprintMatch) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
+          const tbpValidation = validateBlueprint(blueprint);
+          console.log("[Blueprint QA][test] score=" + tbpValidation.score + " summary=" + tbpValidation.summary);
+          if (!tbpValidation.passed) {
+            const tbpRepair = autoRepairBlueprint(blueprint);
+            blueprint = tbpRepair.blueprint;
+            if (tbpRepair.repairCount > 0)
+              console.log("[Blueprint QA][test] Repaired " + tbpRepair.repairCount + ": " + tbpRepair.repairs.join("; "));
+          }
           session.blueprint = blueprint;
           session.blueprintGenerated = true;
           await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
+          if (session.email && env.RESEND_API_KEY) {
+            const bp = blueprint.blueprint || blueprint;
+            const userName = bp.name || session.name || "";
+            const firstName = userName.split(" ")[0] || "";
+            const nicheStatement = bp.part3?.nicheStatement || "";
+            const brandPromise = bp.part1?.coreBrandPromise || "";
+            const brandNames = (bp.part1?.brandNames || []).join(" / ");
+            const tagline = (bp.part1?.taglines || [])[0] || "";
+            const idealClient = bp.part2?.name || "your ideal client";
+            const coreOfferName = bp.part4?.coreOffer?.name || "";
+            const heroHeadline = (bp.part7?.heroHeadlineOptions || [])[0] || "";
+            const emailGreeting = firstName ? `${firstName}, your` : "Your";
+            fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+                to: [session.email],
+                subject: `${emailGreeting} Deep Work Blueprint is ready`,
+                html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Blueprint</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p></td></tr>` + (nicheStatement ? `<tr><td style="background:linear-gradient(180deg, #1d1d1f 0%, #2a2118 100%);padding:0 40px 40px;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid rgba(196,112,63,0.2);padding-top:28px;"><p style="margin:0 0 10px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Your Niche Statement</p><p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-style:italic;color:rgba(255,255,255,0.85);line-height:1.7;">${nicheStatement}</p></td></tr></table></td></tr>` : "") + `<tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:36px 40px 0;"><p style="margin:0 0 20px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;">Your Blueprint Includes</p>` + (brandNames ? `<table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:14px 0;border-bottom:1px solid #f5f5f5;"><p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Brand Names</p><p style="margin:0;font-size:14px;font-weight:600;color:#1d1d1f;line-height:1.5;">${brandNames}</p></td></tr></table>` : "") + (tagline ? `<table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:14px 0;border-bottom:1px solid #f5f5f5;"><p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Lead Tagline</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.5;font-style:italic;">"${tagline}"</p></td></tr></table>` : "") + (heroHeadline ? `<table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:14px 0;border-bottom:1px solid #f5f5f5;"><p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Hero Headline</p><p style="margin:0;font-size:14px;font-weight:600;color:#1d1d1f;line-height:1.5;">${heroHeadline}</p></td></tr></table>` : "") + (coreOfferName ? `<table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:14px 0;border-bottom:1px solid #f5f5f5;"><p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Core Offer</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.5;">${coreOfferName}</p></td></tr></table>` : "") + `<table width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:14px 0;border-bottom:1px solid #f5f5f5;font-size:13px;color:#555;line-height:1.6;">Complete color palette, typography, and visual direction</td></tr><tr><td style="padding:14px 0;border-bottom:1px solid #f5f5f5;font-size:13px;color:#555;line-height:1.6;">Ideal client profile and positioning strategy</td></tr><tr><td style="padding:14px 0;font-size:13px;color:#555;line-height:1.6;">Website blueprint with page sections and CTAs</td></tr></table><p style="margin:28px 0 0;font-size:13px;color:#86868b;line-height:1.65;">Your full blueprint and downloadable brand guide are waiting inside. Open it up, save your brand guide, and share it with your team.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:28px 40px;"><table cellpadding="0" cellspacing="0" width="100%"><tr><td align="center"><table cellpadding="0" cellspacing="0"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="https://love.jamesguldan.com/app" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">View My Blueprint</a></td></tr></table></td></tr></table></td></tr><tr><td style="background:#faf8f6;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:28px 40px;text-align:center;"><p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;">Save Your Brand Guide</p><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Once inside, tap "Save Your Brand Guide" to download a shareable PDF of your complete brand strategy. Share it with designers, partners, or anyone who needs to understand your brand.</p></td></tr><tr><td style="padding-top:28px;text-align:center;"><p style="margin:0 0 4px;font-size:11px;color:#c0c0c0;">Generated by Deep Work &middot; love.jamesguldan.com</p><p style="margin:0;font-size:11px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`
+              })
+            }).catch(() => {
+            });
+          }
           const li = blueprint?.leadIntel;
           if (li) {
             try {
@@ -9868,6 +16154,16 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
         }
       }
       session.messages.push({ role: "assistant", content: fullContent });
+      env.UPLOADS.put(`sessions/${sessionId}/messages_backup.json`, JSON.stringify({
+        sessionId,
+        messages: session.messages,
+        phase: session.phase,
+        tier: session.tier,
+        userId: session.userId,
+        email: session.email,
+        updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      }), { httpMetadata: { contentType: "application/json" } }).catch(() => {
+      });
       if (blueprint) {
         try {
           await sendEvent({ type: "debrief_status", message: "Your strategist is writing you a personal note..." });
@@ -9896,6 +16192,9 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
   });
 }
 __name(handleTestBlueprint, "handleTestBlueprint");
+__name2(handleTestBlueprint, "handleTestBlueprint");
+__name22(handleTestBlueprint, "handleTestBlueprint");
+__name222(handleTestBlueprint, "handleTestBlueprint");
 async function isRateLimited(env, userId, sessionId) {
   const key = `rl:${userId || sessionId}`;
   const windowMs = 60 * 60 * 1e3;
@@ -9918,9 +16217,41 @@ async function isRateLimited(env, userId, sessionId) {
   }
 }
 __name(isRateLimited, "isRateLimited");
+__name2(isRateLimited, "isRateLimited");
+__name22(isRateLimited, "isRateLimited");
+__name222(isRateLimited, "isRateLimited");
+async function authRateLimit(env, identifier) {
+  const key = `auth_rl:${identifier.toLowerCase().trim().substring(0, 100)}`;
+  const windowMs = 15 * 60 * 1e3;
+  const maxAttempts = 5;
+  try {
+    const raw = await env.SESSIONS.get(key);
+    const now = Date.now();
+    const rec = raw ? JSON.parse(raw) : { count: 0, windowStart: now };
+    if (now - rec.windowStart > windowMs) {
+      await env.SESSIONS.put(key, JSON.stringify({ count: 1, windowStart: now }), { expirationTtl: 900 });
+      return false;
+    }
+    if (rec.count >= maxAttempts)
+      return true;
+    rec.count += 1;
+    await env.SESSIONS.put(key, JSON.stringify(rec), { expirationTtl: 900 });
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
+__name(authRateLimit, "authRateLimit");
+__name2(authRateLimit, "authRateLimit");
+__name22(authRateLimit, "authRateLimit");
+__name222(authRateLimit, "authRateLimit");
 async function handleChat(request, env) {
   const body = await request.json();
   const { sessionId, message } = body;
+  if (!message || typeof message !== "string" || message.trim().length === 0)
+    return json({ error: "Message is required" }, 400);
+  if (message.length > 1e4)
+    return json({ error: "Message is too long (max 10,000 characters)" }, 400);
   const raw = await env.SESSIONS.get(sessionId);
   if (!raw)
     return json({ error: "Session not found" }, 404);
@@ -9958,7 +16289,7 @@ async function handleChat(request, env) {
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
-  const sendEvent = /* @__PURE__ */ __name(async (data) => {
+  const sendEvent = /* @__PURE__ */ __name222(async (data) => {
     await writer.write(encoder.encode(`data: ${JSON.stringify(data)}
 
 `));
@@ -9971,7 +16302,8 @@ async function handleChat(request, env) {
     try {
       const apiStart = Date.now();
       const chatAbort = new AbortController();
-      const chatTimeout = setTimeout(() => chatAbort.abort(), 9e4);
+      const isBlueprintPhase = (session.phase || 1) >= 7;
+      const chatTimeout = setTimeout(() => chatAbort.abort(), isBlueprintPhase ? 3e5 : 9e4);
       let res;
       try {
         res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -9985,7 +16317,7 @@ async function handleChat(request, env) {
           },
           body: JSON.stringify({
             model: chatModel,
-            max_tokens: 2048,
+            max_tokens: isBlueprintPhase ? 16384 : 2048,
             stream: true,
             system: [
               {
@@ -10063,10 +16395,21 @@ async function handleChat(request, env) {
         }
       }
       let blueprint = null;
-      const blueprintMatch = fullContent.match(/```json\n([\s\S]*?)\n```/);
+      const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       if (blueprintMatch) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
+          const bpValidation = validateBlueprint(blueprint);
+          console.log("[Blueprint QA] session=" + sessionId + " score=" + bpValidation.score + " summary=" + bpValidation.summary + " issues=" + bpValidation.issues.length + " warnings=" + bpValidation.warnings.length);
+          if (!bpValidation.passed) {
+            const bpRepair = autoRepairBlueprint(blueprint);
+            blueprint = bpRepair.blueprint;
+            if (bpRepair.repairCount > 0) {
+              console.log("[Blueprint QA] Repaired " + bpRepair.repairCount + " issues: " + bpRepair.repairs.join("; "));
+            }
+            const postRepairValidation = validateBlueprint(blueprint);
+            console.log("[Blueprint QA] Post-repair score=" + postRepairValidation.score + " summary=" + postRepairValidation.summary);
+          }
           session.blueprint = blueprint;
           session.blueprintGenerated = true;
           await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
@@ -10164,6 +16507,9 @@ async function handleChat(request, env) {
   });
 }
 __name(handleChat, "handleChat");
+__name2(handleChat, "handleChat");
+__name22(handleChat, "handleChat");
+__name222(handleChat, "handleChat");
 async function handleUpload(request, env) {
   const formData = await request.formData();
   const file = formData.get("file");
@@ -10176,6 +16522,22 @@ async function handleUpload(request, env) {
   const allAllowed = [...ALLOWED_IMAGE_EXTS, ...ALLOWED_DOC_EXTS];
   if (!allAllowed.includes(ext)) {
     return json({ error: `File type .${ext} is not supported. Allowed: images (JPG, PNG, WebP), documents (PDF, TXT).` }, 400);
+  }
+  const declaredType = (file.type || "").toLowerCase();
+  const ALLOWED_MIME = {
+    jpg: ["image/jpeg"],
+    jpeg: ["image/jpeg"],
+    png: ["image/png"],
+    gif: ["image/gif"],
+    webp: ["image/webp"],
+    svg: ["image/svg+xml"],
+    pdf: ["application/pdf"],
+    txt: ["text/plain"],
+    md: ["text/plain", "text/markdown", ""]
+  };
+  const allowedMimes = ALLOWED_MIME[ext] || [];
+  if (allowedMimes.length > 0 && allowedMimes[0] !== "" && !allowedMimes.includes(declaredType)) {
+    return json({ error: `File content does not match extension. Expected ${allowedMimes[0]} for .${ext} files.` }, 400);
   }
   const maxSize = ALLOWED_DOC_EXTS.includes(ext) ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
   const arrayBuffer = await file.arrayBuffer();
@@ -10216,6 +16578,124 @@ ${extractedText}`);
   });
 }
 __name(handleUpload, "handleUpload");
+__name2(handleUpload, "handleUpload");
+__name22(handleUpload, "handleUpload");
+__name222(handleUpload, "handleUpload");
+async function handlePhotoProcess(request, env) {
+  const token = extractToken(request);
+  if (!token)
+    return json({ error: "Authentication required" }, 401);
+  const payload = await verifySessionToken(token, env.JWT_SECRET || "dev-secret-change-me");
+  if (!payload)
+    return json({ error: "Invalid or expired session" }, 401);
+  const contentType = request.headers.get("content-type") || "";
+  let photo, sessionId, mime, originalBuf;
+  if (contentType.includes("application/json")) {
+    let body;
+    try {
+      body = await request.json();
+    } catch (_) {
+      return json({ error: "Invalid JSON body" }, 400);
+    }
+    const { imageDataUrl, sessionId: sid } = body;
+    if (!imageDataUrl || !sid)
+      return json({ error: "imageDataUrl and sessionId are required" }, 400);
+    sessionId = sid;
+    const match = imageDataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/);
+    if (!match)
+      return json({ error: "Invalid imageDataUrl format" }, 400);
+    mime = match[1];
+    try {
+      const b64 = match[2];
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++)
+        bytes[i] = binary.charCodeAt(i);
+      originalBuf = bytes.buffer;
+    } catch (_) {
+      return json({ error: "Could not decode image data" }, 400);
+    }
+  } else {
+    let formData;
+    try {
+      formData = await request.formData();
+    } catch (_) {
+      return json({ error: "Invalid form data" }, 400);
+    }
+    photo = formData.get("photo");
+    sessionId = formData.get("sessionId");
+    if (!photo || !sessionId)
+      return json({ error: "photo and sessionId are required" }, 400);
+    mime = photo.type || "";
+    if (!mime.startsWith("image/"))
+      return json({ error: "Must be an image file" }, 400);
+    try {
+      originalBuf = await photo.arrayBuffer();
+    } catch (_) {
+      return json({ error: "Could not read photo" }, 400);
+    }
+  }
+  if (!mime.startsWith("image/"))
+    return json({ error: "Must be an image file" }, 400);
+  if (originalBuf.byteLength > 10 * 1024 * 1024)
+    return json({ error: "Max 10MB" }, 400);
+  const dbSession = await env.DB.prepare("SELECT id, user_id FROM sessions WHERE id = ?").bind(sessionId).first();
+  if (!dbSession)
+    return json({ error: "Session not found" }, 404);
+  if (dbSession.user_id && dbSession.user_id !== payload.userId)
+    return json({ error: "Unauthorized" }, 403);
+  const ext = mime.split("/")[1]?.replace("jpeg", "jpg").replace("svg+xml", "svg") || "jpg";
+  const originalKey = `sessions/${sessionId}/original.${ext}`;
+  await env.UPLOADS.put(originalKey, originalBuf, {
+    httpMetadata: { contentType: mime },
+    customMetadata: { sessionId, userId: payload.userId, uploadedAt: (/* @__PURE__ */ new Date()).toISOString() }
+  });
+  const PHOTO_BASE = "https://deep-work-photo-processor.james-d13.workers.dev";
+  const originalUrl = `${PHOTO_BASE}/asset/${sessionId}/original.${ext}`;
+  let cutoutUrl = null;
+  let cutoutKey = null;
+  if (env.PHOTOROOM_API_KEY) {
+    try {
+      const prForm = new FormData();
+      prForm.append("image_file", new Blob([originalBuf], { type: mime }), `photo.${ext}`);
+      const prRes = await fetch("https://sdk.photoroom.com/v1/segment", {
+        method: "POST",
+        headers: { "x-api-key": env.PHOTOROOM_API_KEY },
+        body: prForm
+      });
+      if (prRes.ok) {
+        const cutoutBuf = await prRes.arrayBuffer();
+        cutoutKey = `sessions/${sessionId}/cutout.png`;
+        await env.UPLOADS.put(cutoutKey, cutoutBuf, {
+          httpMetadata: { contentType: "image/png" },
+          customMetadata: { sessionId, userId: payload.userId }
+        });
+        cutoutUrl = `${PHOTO_BASE}/asset/${sessionId}/cutout.png`;
+      }
+    } catch (_) {
+    }
+  }
+  try {
+    const kvRaw = await env.SESSIONS.get(sessionId);
+    if (kvRaw) {
+      const kvSession = JSON.parse(kvRaw);
+      if (!kvSession.userData)
+        kvSession.userData = {};
+      kvSession.userData.clientPhoto = {
+        originalKey,
+        cutoutKey,
+        originalUrl,
+        cutoutUrl,
+        processedAt: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      await env.SESSIONS.put(sessionId, JSON.stringify(kvSession), { expirationTtl: 60 * 60 * 24 * 30 });
+    }
+  } catch (_) {
+  }
+  return json({ ok: true, originalUrl, cutoutUrl, sessionId });
+}
+__name(handlePhotoProcess, "handlePhotoProcess");
+__name2(handlePhotoProcess, "handlePhotoProcess");
 async function handleGenerateImages(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -10227,7 +16707,7 @@ async function handleGenerateImages(request, env) {
   if (!blueprint)
     return json({ error: "Blueprint not ready" }, 400);
   const PROXY_URL = "https://gemini-proxy.james-d13.workers.dev";
-  const PROXY_TOKEN = env.GEMINI_PROXY_TOKEN || "U$X2eQQST$mz4$vu";
+  const PROXY_TOKEN = env.GEMINI_PROXY_TOKEN || "";
   const generatedImages = [];
   for (let i = 0; i < 4; i++) {
     try {
@@ -10263,30 +16743,808 @@ async function handleGenerateImages(request, env) {
   return json({ ok: true, images: generatedImages });
 }
 __name(handleGenerateImages, "handleGenerateImages");
+__name2(handleGenerateImages, "handleGenerateImages");
+__name22(handleGenerateImages, "handleGenerateImages");
+__name222(handleGenerateImages, "handleGenerateImages");
+async function handleGenerateSectionImage(request, env) {
+  const body = await request.json().catch(() => ({}));
+  const { sessionId, sectionIndex, imageTheme } = body;
+  if (!sessionId)
+    return json({ error: "sessionId required" }, 400);
+  const raw = await env.SESSIONS.get(sessionId);
+  if (!raw)
+    return json({ error: "Session not found" }, 404);
+  const session = JSON.parse(raw);
+  const bp = session.blueprint?.blueprint || session.blueprint;
+  if (!bp)
+    return json({ error: "Blueprint not ready" }, 400);
+  const cacheKey = `sessions/${sessionId}/picker-images/section_${sectionIndex}.png`;
+  try {
+    const cached = await env.UPLOADS.get(cacheKey);
+    if (cached) {
+      return json({ ok: true, imageUrl: `/api/section-image?sessionId=${sessionId}&idx=${sectionIndex}`, cached: true });
+    }
+  } catch (_) {
+  }
+  const p1 = bp.part1 || {};
+  const aesthetic = p1.visualDirection?.aesthetic || "clean, modern";
+  const colors = (p1.visualDirection?.colors || []).map((c) => c.name || c).filter(Boolean).join(", ");
+  const descriptors = (p1.brandVoice?.descriptors || []).join(", ");
+  const rawSectionName = (bp.part5?.sections?.[sectionIndex]?.name || "").toLowerCase();
+  const sectionMoodMap = {
+    hero: "aspirational open landscape, beginning of a journey, dramatic light",
+    about: "warm intimate workspace, authentic human environment, personal and real",
+    services: "clean professional environment, tools of mastery, precision and craft",
+    offerings: "clean professional environment, tools of mastery, precision and craft",
+    offers: "clean professional environment, tools of mastery, precision and craft",
+    testimonials: "warm community gathering, trust and connection, genuine human warmth",
+    proof: "achievement and transformation, confident energy, results and momentum",
+    results: "achievement and transformation, confident energy, results and momentum",
+    faq: "calm organized space, clarity and simplicity, quiet confidence",
+    contact: "open welcoming space, warmth and approachability, an open door",
+    cta: "decisive powerful moment, forward momentum, confident action",
+    process: "methodical crafted steps, thoughtful progression, elegant workflow",
+    solution: "breakthrough moment, light after darkness, clarity emerging",
+    problem: "quiet tension, relatable struggle, honest and grounded",
+    method: "methodical crafted steps, thoughtful progression, elegant workflow"
+  };
+  const sectionMood = Object.keys(sectionMoodMap).find((k) => rawSectionName.includes(k));
+  const visualMood = sectionMood ? sectionMoodMap[sectionMood] : "atmospheric lifestyle photography, professional environment, thoughtful composition";
+  const resolvedTheme = imageTheme && imageTheme !== "none" && imageTheme.length > 4 ? imageTheme : null;
+  const noTextRule = "IMPORTANT: absolutely no text, words, letters, numbers, labels, captions, watermarks, titles, or typography of any kind anywhere in the image. Pure photography only, zero text.";
+  let prompt;
+  if (resolvedTheme) {
+    prompt = `${resolvedTheme}. Color palette: ${colors || "deep navy, warm copper"}. Style: ${aesthetic}. Mood: ${descriptors || "professional, clean"}. ${noTextRule} Cinematic, high quality photography. Wide 16:9 format.`;
+  } else {
+    prompt = `${visualMood}. Color palette: ${colors || "deep navy, warm copper"}. Style: ${aesthetic}. Mood: ${descriptors || "professional, clean"}. ${noTextRule} Atmospheric, slightly abstract or lifestyle-oriented. Wide 16:9 format.`;
+  }
+  const PROXY_URL = "https://gemini-proxy.james-d13.workers.dev";
+  const PROXY_TOKEN = env.GEMINI_PROXY_TOKEN || "";
+  try {
+    const res = await fetch(`${PROXY_URL}/v1beta/models/imagen-4.0-generate-001:predict`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${PROXY_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        instances: [{ prompt }],
+        parameters: { sampleCount: 1, aspectRatio: "16:9" }
+      })
+    });
+    const data = await res.json();
+    if (!data.predictions?.[0]?.bytesBase64Encoded) {
+      return json({ ok: false, error: "No image returned from Imagen" });
+    }
+    const b64 = data.predictions[0].bytesBase64Encoded;
+    try {
+      const imgBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      await env.UPLOADS.put(cacheKey, imgBytes, { httpMetadata: { contentType: "image/png" } });
+    } catch (_) {
+    }
+    return json({ ok: true, imageUrl: `/api/section-image?sessionId=${sessionId}&idx=${sectionIndex}` });
+  } catch (e) {
+    console.error("Section image gen error:", e);
+    return json({ ok: false, error: e.message });
+  }
+}
+__name(handleGenerateSectionImage, "handleGenerateSectionImage");
+__name2(handleGenerateSectionImage, "handleGenerateSectionImage");
+function validateSiteHTML(html) {
+  const issues = [];
+  const warnings = [];
+  const len = html.length;
+  if (len < 4e3)
+    issues.push({ id: "TRUNCATED", msg: "HTML is only " + len + " chars \u2014 likely truncated mid-generation", severity: "critical" });
+  if (!/<nav[\s>]/i.test(html))
+    issues.push({ id: "NO_NAV", msg: "Missing <nav> element", severity: "major" });
+  if (!/<footer[\s>]/i.test(html))
+    warnings.push({ id: "NO_FOOTER", msg: "Missing <footer> \u2014 will be auto-repaired", severity: "minor" });
+  const sectionCount = (html.match(/<section[\s>]/gi) || []).length;
+  if (sectionCount < 4)
+    issues.push({ id: "FEW_SECTIONS", msg: "Only " + sectionCount + " sections found (minimum 4)", severity: "major" });
+  const heroMatch = html.match(/<section[^>]*class="[^"]*hero[^"]*"[^>]*>([\s\S]*?)<\/section>/i) || html.match(/<section[^>]*class="hero"[^>]*>([\s\S]*?)<\/section>/i);
+  if (!heroMatch) {
+    const hasHero = /<[^>]+class="[^"]*hero[^"]*"[^>]*>/i.test(html);
+    if (!hasHero)
+      issues.push({ id: "NO_HERO", msg: "No hero section found", severity: "critical" });
+  }
+  if (!/<h1[\s>]/i.test(html))
+    issues.push({ id: "NO_H1", msg: "No <h1> headline found", severity: "critical" });
+  const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+  if (h1Match) {
+    const h1Text = h1Match[1].replace(/<[^>]+>/g, "").trim();
+    if (h1Text.length < 5)
+      issues.push({ id: "EMPTY_H1", msg: "Hero headline is empty or too short", severity: "critical" });
+  }
+  if (!/<a[^>]*class="[^"]*btn[^"]*"[^>]*>/i.test(html))
+    issues.push({ id: "NO_CTA", msg: "No CTA button found anywhere on page", severity: "major" });
+  const offerCards = html.match(/<div[^>]*class="[^"]*offer-card[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/gi) || [];
+  if (offerCards.length > 0) {
+    offerCards.forEach((card, i) => {
+      const nameMatch = card.match(/class="[^"]*offer-name[^"]*"[^>]*>([\s\S]*?)<\//i);
+      const priceMatch = card.match(/class="[^"]*offer-price[^"]*"[^>]*>([\s\S]*?)<\//i);
+      const nameText = nameMatch ? nameMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+      const priceText = priceMatch ? priceMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+      if (!nameText)
+        warnings.push({ id: "EMPTY_OFFER_NAME_" + i, msg: "Offer card " + (i + 1) + " has no name", severity: "minor" });
+      if (!priceText)
+        issues.push({ id: "EMPTY_OFFER_PRICE_" + i, msg: "Offer card " + (i + 1) + " has no price", severity: "major" });
+    });
+  }
+  const sections = html.match(/<section[^>]*>[\s\S]*?<\/section>/gi) || [];
+  sections.forEach((sec, i) => {
+    const innerText = sec.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    if (innerText.length < 20)
+      warnings.push({ id: "EMPTY_SECTION_" + i, msg: "Section " + (i + 1) + " has very little content (" + innerText.length + " chars)", severity: "minor" });
+  });
+  const criticalCount = issues.filter((i) => i.severity === "critical").length;
+  const majorCount = issues.filter((i) => i.severity === "major").length;
+  const passed = criticalCount === 0 && majorCount <= 1;
+  return {
+    passed,
+    score: Math.max(0, 100 - criticalCount * 30 - majorCount * 15 - warnings.length * 5),
+    issues,
+    warnings,
+    summary: passed ? "PASS" : criticalCount > 0 ? "FAIL_CRITICAL" : "FAIL_MAJOR"
+  };
+}
+__name(validateSiteHTML, "validateSiteHTML");
+__name2(validateSiteHTML, "validateSiteHTML");
+__name22(validateSiteHTML, "validateSiteHTML");
+__name222(validateSiteHTML, "validateSiteHTML");
+function autoRepairSiteHTML(html, blueprint) {
+  let repaired = html;
+  const repairs = [];
+  const bp = blueprint?.blueprint || blueprint || {};
+  const brandName = (bp.part1?.brandNames || [])[0] || "Brand";
+  const year = (/* @__PURE__ */ new Date()).getFullYear();
+  const contactEmail = bp.part1?.contactEmail || "";
+  // Fix missing spaces after periods in heading text (e.g. "word.Next" -> "word. Next")
+  repaired = repaired.replace(/(<h[1-6][^>]*>)([\s\S]*?)(<\/h[1-6]>)/gi, (match, open, content, close) => {
+    const fixed = content.replace(/\.([A-Z])/g, ". $1");
+    if (fixed !== content) repairs.push("Fixed heading period spacing");
+    return open + fixed + close;
+  });
+  // Fix zero placeholder stats using blueprint proof numbers
+  const _pNums = ((bp.part5 || {}).proofNumbers || []).filter(n => n && n.stat && n.label).slice(0, 3);
+  if (_pNums.length > 0) {
+    let _si = 0;
+    repaired = repaired.replace(/(<span[^>]*class="[^"]*hero-stat-num[^"]*"[^>]*>)(\$?0[+%kKmM]?|0\.?\d*[+%]?)(<\/span>)/gi, (match, open, val, close) => {
+      if (_si < _pNums.length) { const pn = _pNums[_si++]; repairs.push("Replaced zero stat with: " + pn.stat); return open + pn.stat + close; }
+      return match;
+    });
+  }
+  repaired = repaired.replace(/(<[^>]*class="[^"]*offer-price[^"]*"[^>]*>)\s*(<\/)/gi, (match, open, close) => {
+    repairs.push('Injected "Book a Call" into empty offer price');
+    return open + "Book a Call" + close;
+  });
+  if (!/<footer[\s>]/i.test(repaired)) {
+    repairs.push("Injected fallback footer");
+    repaired += '\n<footer><div class="container footer-inner"><div class="footer-logo">' + brandName + '</div><div class="footer-copy">&copy; ' + year + " " + brandName + '. All rights reserved.</div><div class="footer-links"><a href="#about">About</a><a href="#contact">Contact</a></div></div></footer>';
+  }
+  if (!/<section[^>]*class="[^"]*cta[^"]*"[^>]*>/i.test(repaired) && !/#contact/i.test(repaired)) {
+    repairs.push("Injected fallback CTA section");
+    const ctaHtml = `<section class="cta-section dark" id="contact"><div class="container text-center"><p class="eyebrow">Ready?</p><h2>Let's start a conversation.</h2>` + (contactEmail ? '<a href="mailto:' + contactEmail + '" class="btn btn--primary" style="margin-top:28px">Get In Touch</a>' : '<a href="#" class="btn btn--primary" style="margin-top:28px">Get In Touch</a>') + "</div></section>";
+    if (/<footer[\s>]/i.test(repaired)) {
+      repaired = repaired.replace(/(<footer[\s>])/i, ctaHtml + "\n$1");
+    } else {
+      repaired += "\n" + ctaHtml;
+    }
+  }
+  const cssStripped = repaired.replace(/<style[\s\S]*?<\/style>/gi, "");
+  if (cssStripped.length < repaired.length) {
+    repairs.push("Stripped " + (repaired.length - cssStripped.length) + " chars of rogue CSS");
+    repaired = cssStripped;
+  }
+  repaired = repaired.replace(/<\/html>/gi, "").replace(/<\/body>/gi, "").replace(/<html[^>]*>/gi, "").replace(/<body[^>]*>/gi, "").replace(/<\/head>/gi, "").replace(/<head[\s\S]*?>/gi, "").replace(/<!DOCTYPE[^>]*>/gi, "").trim();
+  return { html: repaired, repairs, repairCount: repairs.length };
+}
+__name(autoRepairSiteHTML, "autoRepairSiteHTML");
+__name2(autoRepairSiteHTML, "autoRepairSiteHTML");
+__name22(autoRepairSiteHTML, "autoRepairSiteHTML");
+__name222(autoRepairSiteHTML, "autoRepairSiteHTML");
+function validateBlueprint(blueprint) {
+  const issues = [];
+  const warnings = [];
+  const bp = blueprint?.blueprint || blueprint || {};
+  if (!bp.name || bp.name.trim().length < 2)
+    issues.push({ id: "NO_NAME", msg: "Blueprint missing client name", severity: "major" });
+  if (!bp.part1)
+    issues.push({ id: "NO_PART1", msg: "Missing Part 1 (Brand Foundation)", severity: "critical" });
+  if (!bp.part2)
+    issues.push({ id: "NO_PART2", msg: "Missing Part 2 (Ideal Customer Avatar)", severity: "major" });
+  if (!bp.part3)
+    issues.push({ id: "NO_PART3", msg: "Missing Part 3 (Niche Positioning)", severity: "major" });
+  if (!bp.part4)
+    issues.push({ id: "NO_PART4", msg: "Missing Part 4 (Offer Suite)", severity: "critical" });
+  if (!bp.part5)
+    issues.push({ id: "NO_PART5", msg: "Missing Part 5 (Website Blueprint)", severity: "critical" });
+  if (!bp.part7)
+    warnings.push({ id: "NO_PART7", msg: "Missing Part 7 (Headlines)", severity: "minor" });
+  if (!bp.part8)
+    warnings.push({ id: "NO_PART8", msg: "Missing Part 8 (Next Step)", severity: "minor" });
+  const p1 = bp.part1 || {};
+  if (!p1.brandNames || !p1.brandNames.length || !p1.brandNames[0])
+    issues.push({ id: "NO_BRAND_NAME", msg: "No brand name provided in part1.brandNames", severity: "critical" });
+  const colors = p1.visualDirection?.colors || [];
+  if (colors.length < 3)
+    issues.push({ id: "FEW_COLORS", msg: "Only " + colors.length + " colors defined (minimum 3: primary, secondary, accent)", severity: "major" });
+  colors.forEach((c, i) => {
+    if (!c.hex || !/^#[0-9A-Fa-f]{6}$/.test(c.hex))
+      issues.push({ id: "BAD_COLOR_" + i, msg: "Color " + (i + 1) + " (" + (c.name || "unnamed") + ") has invalid hex: " + (c.hex || "missing"), severity: "major" });
+  });
+  if (!p1.visualDirection?.fonts)
+    warnings.push({ id: "NO_FONTS", msg: "No font definitions in visualDirection", severity: "minor" });
+  if (!p1.coreBrandPromise || p1.coreBrandPromise.length < 10)
+    warnings.push({ id: "WEAK_PROMISE", msg: "Brand promise is missing or very short", severity: "minor" });
+  const p2 = bp.part2 || {};
+  if (!p2.name || p2.name.length < 2)
+    warnings.push({ id: "NO_AVATAR_NAME", msg: "Ideal client avatar has no name", severity: "minor" });
+  const p3 = bp.part3 || {};
+  if (!p3.nicheStatement || p3.nicheStatement.length < 10)
+    issues.push({ id: "NO_NICHE", msg: "Niche statement is missing or too short", severity: "major" });
+  const p4 = bp.part4 || {};
+  const offerSlots = ["entryOffer", "coreOffer", "premiumOffer"];
+  let validOffers = 0;
+  offerSlots.forEach((slot) => {
+    const o = p4[slot];
+    if (o && o.name && o.name.length > 2) {
+      validOffers++;
+      if (!o.price || o.price.length < 1)
+        warnings.push({ id: "NO_PRICE_" + slot, msg: slot + " (" + o.name + ") has no price", severity: "minor" });
+    }
+  });
+  if (validOffers === 0)
+    issues.push({ id: "NO_OFFERS", msg: "No valid offers defined (need at least one with a name)", severity: "critical" });
+  const p5 = bp.part5 || {};
+  const heroHeadlines = p5.heroHeadlines || [];
+  if (heroHeadlines.length === 0 || !heroHeadlines[0] || heroHeadlines[0].length < 5) {
+    issues.push({ id: "NO_HERO_HEADLINES", msg: "No hero headlines defined or first headline too short", severity: "critical" });
+  }
+  if (!p5.heroSubheadline || p5.heroSubheadline.length < 10)
+    warnings.push({ id: "WEAK_HERO_SUB", msg: "Hero subheadline missing or too short", severity: "minor" });
+  if (!p5.heroCTA || p5.heroCTA.length < 3)
+    issues.push({ id: "NO_HERO_CTA", msg: "Hero CTA button text missing", severity: "major" });
+  const sections = p5.sections || [];
+  if (sections.length < 3)
+    issues.push({ id: "FEW_SECTIONS", msg: "Only " + sections.length + " website sections defined (minimum 3)", severity: "critical" });
+  if (sections.length > 12)
+    warnings.push({ id: "MANY_SECTIONS", msg: sections.length + " sections defined, may produce a very long page", severity: "minor" });
+  const sectionNames = /* @__PURE__ */ new Set();
+  sections.forEach((s, i) => {
+    if (!s.name || s.name.length < 2)
+      issues.push({ id: "EMPTY_SECTION_NAME_" + i, msg: "Section " + (i + 1) + " has no name", severity: "major" });
+    if (!s.purpose || s.purpose.length < 5)
+      issues.push({ id: "EMPTY_SECTION_PURPOSE_" + i, msg: "Section " + (i + 1) + " (" + (s.name || "?") + ") has no purpose", severity: "major" });
+    if (!s.content || s.content.length < 5)
+      warnings.push({ id: "EMPTY_SECTION_CONTENT_" + i, msg: "Section " + (i + 1) + " (" + (s.name || "?") + ") has empty or very short content guidance", severity: "minor" });
+    if (s.name && sectionNames.has(s.name.toLowerCase()))
+      warnings.push({ id: "DUP_SECTION_" + i, msg: "Duplicate section name: " + s.name, severity: "minor" });
+    if (s.name)
+      sectionNames.add(s.name.toLowerCase());
+  });
+  const sectionNamesLower = sections.map((s) => (s.name || "").toLowerCase());
+  const hasOfferSection = sectionNamesLower.some((n) => n.includes("offer") || n.includes("pricing") || n.includes("package") || n.includes("service") || n.includes("work with"));
+  const hasAboutSection = sectionNamesLower.some((n) => n.includes("about") || n.includes("story") || n.includes("who") || n.includes("meet"));
+  if (!hasOfferSection)
+    warnings.push({ id: "NO_OFFER_SECTION", msg: "No offers/pricing section found in website sections", severity: "minor" });
+  if (!hasAboutSection)
+    warnings.push({ id: "NO_ABOUT_SECTION", msg: "No about/story section found in website sections", severity: "minor" });
+  if (!p5.pageNarrative)
+    warnings.push({ id: "NO_PAGE_NARRATIVE", msg: "No page narrative / story arc defined for cohesive flow", severity: "minor" });
+  if (!p5.heroImageTheme)
+    warnings.push({ id: "NO_HERO_IMAGE_THEME", msg: "No hero image theme defined", severity: "minor" });
+  const sectionsWithRationale = sections.filter((s) => s.rationale && s.rationale.length > 10).length;
+  const sectionsWithConfidence = sections.filter((s) => typeof s.confidence === "number").length;
+  if (sections.length > 0 && sectionsWithRationale === 0)
+    warnings.push({ id: "NO_SECTION_RATIONALE", msg: "No sections have rationale explaining why they exist", severity: "minor" });
+  if (sections.length > 0 && sectionsWithConfidence === 0)
+    warnings.push({ id: "NO_SECTION_CONFIDENCE", msg: "No sections have confidence scores", severity: "minor" });
+  const p7 = bp.part7 || {};
+  if (!p7.heroHeadlineOptions || p7.heroHeadlineOptions.length < 3)
+    warnings.push({ id: "FEW_HEADLINES", msg: "Fewer than 3 headline options in part7", severity: "minor" });
+  const criticalCount = issues.filter((i) => i.severity === "critical").length;
+  const majorCount = issues.filter((i) => i.severity === "major").length;
+  const passed = criticalCount === 0 && majorCount <= 2;
+  return {
+    passed,
+    score: Math.max(0, 100 - criticalCount * 25 - majorCount * 10 - warnings.length * 3),
+    issues,
+    warnings,
+    summary: passed ? "PASS" : criticalCount > 0 ? "FAIL_CRITICAL" : "FAIL_MAJOR"
+  };
+}
+__name(validateBlueprint, "validateBlueprint");
+__name2(validateBlueprint, "validateBlueprint");
+__name22(validateBlueprint, "validateBlueprint");
+__name222(validateBlueprint, "validateBlueprint");
+function autoRepairBlueprint(blueprint) {
+  const bp = blueprint?.blueprint || blueprint || {};
+  const repairs = [];
+  if (!blueprint.blueprint && bp.part1) {
+    blueprint = { blueprint: bp };
+    repairs.push("Wrapped raw blueprint in { blueprint: ... } envelope");
+  }
+  const b = blueprint.blueprint || blueprint;
+  if (!b.part1)
+    b.part1 = { title: "Brand Foundation" };
+  if (!b.part1.brandNames || !b.part1.brandNames.length || !b.part1.brandNames[0]) {
+    const fallbackName = b.name || "My Brand";
+    b.part1.brandNames = [fallbackName];
+    repairs.push('Set brand name to "' + fallbackName + '" from blueprint name');
+  }
+  if (!b.part1.visualDirection)
+    b.part1.visualDirection = {};
+  const colors = b.part1.visualDirection.colors || [];
+  if (colors.length < 5) {
+    const defaults = [
+      { name: "Primary", hex: "#1C2B3A" },
+      { name: "Secondary", hex: "#C4703F" },
+      { name: "Accent", hex: "#E8C97A" },
+      { name: "Background", hex: "#F7F5F0" },
+      { name: "Text", hex: "#1A1A1A" }
+    ];
+    for (let i = colors.length; i < 5; i++) {
+      colors.push(defaults[i]);
+    }
+    b.part1.visualDirection.colors = colors;
+    repairs.push("Filled missing colors to reach 5 (had " + (colors.length - (5 - colors.length)) + ")");
+  }
+  b.part1.visualDirection.colors.forEach((c, i) => {
+    if (!c.hex || !/^#[0-9A-Fa-f]{6}$/.test(c.hex)) {
+      const fallbacks = ["#1C2B3A", "#C4703F", "#E8C97A", "#F7F5F0", "#1A1A1A"];
+      c.hex = fallbacks[i] || "#1C2B3A";
+      repairs.push("Fixed invalid hex for color " + (i + 1) + " (" + (c.name || "unnamed") + ")");
+    }
+  });
+  if (!b.part1.visualDirection.fonts) {
+    b.part1.visualDirection.fonts = { heading: "Playfair Display", body: "Inter" };
+    repairs.push("Set default fonts (Playfair Display / Inter)");
+  }
+  if (!b.part5)
+    b.part5 = { title: "Website Blueprint" };
+  const p5 = b.part5;
+  if (!p5.heroHeadlines || !p5.heroHeadlines.length) {
+    const p7headlines = (b.part7?.heroHeadlineOptions || []).slice(0, 3);
+    if (p7headlines.length) {
+      p5.heroHeadlines = p7headlines;
+      repairs.push("Copied hero headlines from part7.heroHeadlineOptions");
+    } else {
+      p5.heroHeadlines = [b.part1?.coreBrandPromise || b.part3?.nicheStatement || "Transform Your Business Today"];
+      repairs.push("Generated fallback hero headline from brand promise or niche");
+    }
+  }
+  if (!p5.heroCTA || p5.heroCTA.length < 3) {
+    p5.heroCTA = "Get Started";
+    repairs.push('Set default hero CTA: "Get Started"');
+  }
+  if (!p5.heroSubheadline || p5.heroSubheadline.length < 5) {
+    p5.heroSubheadline = b.part3?.nicheStatement || b.part1?.coreBrandPromise || "Discover how we can help you achieve your goals.";
+    repairs.push("Set hero subheadline from niche statement or brand promise");
+  }
+  if (!p5.sections)
+    p5.sections = [];
+  if (p5.sections.length < 3) {
+    const defaultSections = [
+      { name: "The Problem", purpose: "Name the pain your ideal client feels", content: "Describe the struggles and frustrations your audience faces." },
+      { name: "The Solution", purpose: "Introduce your unique method", content: "Show how your approach solves their problem differently." },
+      { name: "How It Works", purpose: "Walk through the process", content: "Break down the steps so it feels achievable." },
+      { name: "Offers", purpose: "Present your packages", content: "Show your entry, core, and premium offers with clear pricing." },
+      { name: "About", purpose: "Build trust and connection", content: "Share your story and why you do this work." },
+      { name: "Testimonials", purpose: "Provide social proof", content: "Let past clients speak to the transformation." },
+      { name: "FAQ", purpose: "Handle objections", content: "Answer the most common questions and concerns." }
+    ];
+    const existingNames = new Set(p5.sections.map((s) => (s.name || "").toLowerCase()));
+    for (const ds of defaultSections) {
+      if (p5.sections.length >= 5)
+        break;
+      if (!existingNames.has(ds.name.toLowerCase())) {
+        p5.sections.push(ds);
+        existingNames.add(ds.name.toLowerCase());
+      }
+    }
+    repairs.push("Added default sections to reach minimum (now " + p5.sections.length + ")");
+  }
+  p5.sections.forEach((s, i) => {
+    if (!s.name || s.name.length < 2) {
+      s.name = "Section " + (i + 1);
+      repairs.push("Named empty section " + (i + 1));
+    }
+    if (!s.purpose || s.purpose.length < 3) {
+      s.purpose = "Support the overall page narrative";
+      repairs.push('Set fallback purpose for section "' + s.name + '"');
+    }
+    if (!s.content)
+      s.content = "";
+  });
+  if (!b.part4)
+    b.part4 = { title: "Offer Suite" };
+  if (!b.part4.coreOffer || !b.part4.coreOffer.name) {
+    b.part4.coreOffer = { name: "Core Program", description: "Our signature offering", price: "Book a Call", delivery: "Custom" };
+    repairs.push("Created placeholder core offer");
+  }
+  if (!b.part7)
+    b.part7 = { title: "Headlines and Positioning Statements" };
+  if (!b.part7.heroHeadlineOptions || b.part7.heroHeadlineOptions.length < 3) {
+    b.part7.heroHeadlineOptions = [...p5.heroHeadlines || []];
+    while (b.part7.heroHeadlineOptions.length < 3) {
+      b.part7.heroHeadlineOptions.push(b.part1?.coreBrandPromise || "Your Transformation Starts Here");
+    }
+    repairs.push("Populated part7 headline options from part5 hero headlines");
+  }
+  if (p5.sections && p5.sections.length) {
+    p5.sections.forEach((s, i) => {
+      if (!s.visualMood) {
+        const name = (s.name || "").toLowerCase();
+        if (/offer|pricing|package|service|program/i.test(name)) {
+          s.visualMood = "dark";
+        } else if (/solution|method|framework|how/i.test(name)) {
+          s.visualMood = "dark";
+        } else {
+          s.visualMood = "light";
+        }
+      }
+      if (typeof s.confidence !== "number") {
+        s.confidence = 85;
+      }
+      if (!s.imageTheme) {
+        s.imageTheme = "none";
+      }
+    });
+    repairs.push("Set default visualMood/confidence/imageTheme on sections missing them");
+  }
+  return { blueprint, repairs, repairCount: repairs.length };
+}
+__name(autoRepairBlueprint, "autoRepairBlueprint");
+__name2(autoRepairBlueprint, "autoRepairBlueprint");
+__name22(autoRepairBlueprint, "autoRepairBlueprint");
+__name222(autoRepairBlueprint, "autoRepairBlueprint");
+async function handleGenerateSectionVariants(request, env) {
+  const user = await requireAuth(request, env);
+  if (!user)
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...CORS, "Content-Type": "application/json" } });
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400, headers: { ...CORS, "Content-Type": "application/json" } });
+  }
+  const { sessionId, sectionIndex, feedback } = body;
+  if (!sessionId)
+    return new Response(JSON.stringify({ error: "Missing sessionId" }), { status: 400, headers: { ...CORS, "Content-Type": "application/json" } });
+  const sessionRaw = await env.SESSIONS.get(sessionId);
+  if (!sessionRaw)
+    return new Response(JSON.stringify({ error: "Session not found" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
+  const session = JSON.parse(sessionRaw);
+  const blueprint = session.blueprint?.blueprint || session.blueprint;
+  if (!blueprint?.part5?.sections)
+    return new Response(JSON.stringify({ error: "No blueprint sections" }), { status: 400, headers: { ...CORS, "Content-Type": "application/json" } });
+  const sections = blueprint.part5.sections;
+  const idx = parseInt(sectionIndex, 10) || 0;
+  const section = sections[idx];
+  if (!section)
+    return new Response(JSON.stringify({ error: "Section index out of range" }), { status: 404, headers: { ...CORS, "Content-Type": "application/json" } });
+  const p1 = blueprint.part1 || {};
+  const p2 = blueprint.part2 || {};
+  const p3 = blueprint.part3 || {};
+  const p4 = blueprint.part4 || {};
+  const brandName = (p1.brandNames || [])[0] || "Your Brand";
+  const vd = p1.visualDirection || {};
+  const vdColors = vd.colors || [];
+  const vdFonts = vd.fonts || {};
+  const primaryColor = vdColors[0] && vdColors[0].hex || "#1d1d1f";
+  const secondaryColor = vdColors[2] && vdColors[2].hex || vdColors[1] && vdColors[1].hex || "#c4703f";
+  const primaryFont = vdFonts.heading || vdFonts.body || "Outfit";
+  const tone = (p1.toneKeywords || []).join(", ") || "professional, approachable";
+  const niche = p3.nicheStatement || "";
+  const avatarName = p2.avatarName || "ideal client";
+  const coreOffer = (p4.offers || []).find((o) => o.tier === "core") || (p4.offers || [])[1] || {};
+  const LAYOUT_DEFS = {
+    A: { name: "Full-width centered", slots: "eyebrow (optional, short), headline, subheadline, cta_text", example: '{"eyebrow":"...","headline":"...","subheadline":"...","cta_text":"..."}' },
+    B: { name: "Split 2-column (text + feature list)", slots: "eyebrow (optional), headline, body (2-3 sentences), cta_text, items (array of 3: {icon, title, body})", example: '{"eyebrow":"...","headline":"...","body":"...","cta_text":"...","items":[{"icon":"\u2713","title":"...","body":"..."},{"icon":"\u2192","title":"...","body":"..."},{"icon":"\u2605","title":"...","body":"..."}]}' },
+    C: { name: "Dark header + card grid", slots: "eyebrow (optional), headline, subheadline, cards (array of 3: {title, body})", example: '{"eyebrow":"...","headline":"...","subheadline":"...","cards":[{"title":"...","body":"..."},{"title":"...","body":"..."},{"title":"...","body":"..."}]}' },
+    D: { name: "Dark full-bleed statement", slots: 'eyebrow (optional), headline (bold and provocative), stat_number (e.g. "87%"), stat_label (e.g. "of clients see results in 30 days"), cta_text (optional)', example: '{"eyebrow":"...","headline":"...","stat_number":"87%","stat_label":"of clients...","cta_text":"..."}' },
+    E: { name: "Numbers / proof strip (3 stats)", slots: 'eyebrow (optional), headline, stats (array of exactly 3: {number (e.g. "4.9\u2605"), label (short ALL CAPS), body (1 short sentence)})', example: '{"eyebrow":"...","headline":"...","stats":[{"number":"4.9\u2605","label":"RATING","body":"..."},{"number":"200+","label":"CLIENTS","body":"..."},{"number":"3x","label":"ROI","body":"..."}]}' },
+    F: { name: "Story split (text + accent panel)", slots: 'eyebrow (optional), headline, body (2-3 sentences), cta_text, accent_word (1-4 bold impactful words shown large on right panel, e.g. "Built for you")', example: '{"eyebrow":"...","headline":"...","body":"...","cta_text":"...","accent_word":"Built for you"}' },
+    G: { name: "Photo story split (headshot right)", slots: "eyebrow (optional), headline, body (2-3 sentences connecting to the person in the photo), cta_text, photo_caption (optional, 3-5 words about the person)", example: '{"eyebrow":"...","headline":"...","body":"...","cta_text":"...","photo_caption":"Coaching since 2018"}' },
+    H: { name: "Cinematic hero (photo/gradient background, text bottom)", slots: "eyebrow (optional), headline (short and punchy, max 8 words), subheadline (1-2 sentences), cta_text", example: '{"eyebrow":"...","headline":"...","subheadline":"...","cta_text":"..."}' },
+    P: { name: "Pull quote / testimonial spotlight", slots: 'headline (optional, e.g. "What clients say"), quote (the testimonial, 1-3 sentences), attribution (client first name + last initial), attribution_title (client role or company)', example: '{"headline":"What clients say","quote":"...","attribution":"Sarah K.","attribution_title":"Marketing Director"}' },
+    N: { name: "Numbered steps (3-step process)", slots: "eyebrow (optional), headline, steps (array of exactly 3: {title, body})", example: '{"eyebrow":"How it works","headline":"...","steps":[{"title":"Step 1 name","body":"..."},{"title":"Step 2 name","body":"..."},{"title":"Step 3 name","body":"..."}]}' }
+  };
+  function getSectionType(sec) {
+    var t = ((sec.name || "") + " " + (sec.purpose || "")).toLowerCase();
+    if (/hero|above.fold|first impression|headline|main intro|landing/.test(t))
+      return "hero";
+    if (/about|story|who.*i am|my journey|background|founder|meet me|personal/.test(t))
+      return "about";
+    if (/service|offer|work with|package|program|solution|what.*do|coaching|consulting/.test(t))
+      return "services";
+    if (/testimonial|review|client.*say|proof|result|case study|success|what.*say/.test(t))
+      return "testimonials";
+    if (/process|how.*work|step|method|approach|framework|system|way i work/.test(t))
+      return "process";
+    if (/cta|call.*action|book|contact|schedule|start|ready|next step|get in touch/.test(t))
+      return "cta";
+    return "generic";
+  }
+  __name(getSectionType, "getSectionType");
+  const SECTION_TYPE_LAYOUTS = {
+    hero: ["H", "A", "G"],
+    // Cinematic, Centered, Photo Story
+    about: ["G", "F", "A"],
+    // Photo Story, Story Split, Centered
+    services: ["C", "B", "N"],
+    // Card Grid, Feature List, Numbered Steps
+    testimonials: ["P", "E", "D"],
+    // Pull Quote, Proof Strip, Dark Statement
+    process: ["N", "B", "C"],
+    // Numbered Steps, Feature List, Cards
+    cta: ["D", "A", "F"],
+    // Dark Statement, Centered, Story Split
+    generic: ["A", "B", "C"]
+    // Safe readable defaults
+  };
+  const sectionType = getSectionType(section);
+  const layoutSet = SECTION_TYPE_LAYOUTS[sectionType] || SECTION_TYPE_LAYOUTS["generic"];
+  const photoHint = sectionType === "hero" || sectionType === "about" ? "\nPHOTO NOTE: Layouts G and H display the person's professional headshot. Write body copy and captions that complement having a personal photo present \u2014 make the person the focus." : sectionType === "testimonials" ? "\nPHOTO NOTE: Layout P shows a small circular avatar next to the testimonial. Write a realistic, specific client testimonial with a real-sounding name and role." : "";
+  const layoutDescs = layoutSet.map((l, i) => `Layout ${l} \u2014 ${LAYOUT_DEFS[l].name}: ${LAYOUT_DEFS[l].slots}`).join("\n");
+  const exampleJson = '{"variants":[' + layoutSet.map((l) => `{"layout":"${l}","title":"...","rationale":"...","confidence":85,"slots":${LAYOUT_DEFS[l].example}}`).join(",") + "]}";
+  const prompt = `You are generating 3 layout variants for a section of ${brandName}'s website.
+
+SECTION: ${section.name}
+SECTION TYPE: ${sectionType}
+PURPOSE: ${section.purpose}${section.content ? "\nCONTENT GUIDANCE: " + section.content.substring(0, 300) : ""}${section.visualMood ? "\nVISUAL MOOD: " + section.visualMood : ""}${section.rationale ? "\nSTRATEGIC RATIONALE: " + section.rationale : ""}${photoHint}
+
+BRAND:
+- Name: ${brandName}
+- Primary color: ${primaryColor} | Accent: ${secondaryColor}
+- Font: ${primaryFont} | Tone: ${tone}
+- Niche: ${niche}
+- Ideal client: ${avatarName}
+- Core offer: ${coreOffer.name || ""} \u2014 ${coreOffer.description || ""}
+${feedback ? "\nUSER FEEDBACK ON PREVIOUS OPTIONS: " + feedback + "\n(The last 3 options did not work. Use this feedback.)" : ""}
+
+Generate exactly 3 content variants using these 3 layouts (one each, in this order):
+${layoutDescs}
+
+Rules:
+- Speak directly to ${avatarName} by name or implied persona
+- Headlines must be specific and outcome-focused, not generic
+- Each layout must feel visually and emotionally distinct \u2014 different energy, different emphasis
+- Match the section's purpose: a Hero should inspire, a Process should clarify, a Testimonial should build trust
+- confidence = honest 50-95 score for how well this layout serves this specific section type
+- title = short evocative name for the picker (e.g. "The Direct Hit", "Proof Points", "The Bold Claim")
+- rationale = one sentence on why this layout is right for this section
+
+Return ONLY valid JSON, no markdown or explanation:
+${exampleJson}`;
+  try {
+    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({ model: "claude-sonnet-4-5", max_tokens: 2800, messages: [{ role: "user", content: prompt }] })
+    });
+    if (!aiResp.ok)
+      throw new Error("AI error " + aiResp.status);
+    const aiData = await aiResp.json();
+    const text = aiData.content?.[0]?.text || "";
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch)
+      throw new Error("No JSON in AI response");
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!parsed.variants?.length)
+      throw new Error("No variants returned");
+    return new Response(JSON.stringify({ variants: parsed.variants }), { headers: { ...CORS, "Content-Type": "application/json" } });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message || "Generation failed" }), { status: 500, headers: { ...CORS, "Content-Type": "application/json" } });
+  }
+}
+__name(handleGenerateSectionVariants, "handleGenerateSectionVariants");
+async function handleSaveSectionChoices(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return new Response(JSON.stringify({ ok: true }), { headers: { ...CORS, "Content-Type": "application/json" } });
+  }
+  const { sessionId, chosen } = body;
+  if (sessionId && chosen) {
+    try {
+      const raw = await env.SESSIONS.get(sessionId);
+      if (raw) {
+        const s = JSON.parse(raw);
+        s.sectionChoices = chosen;
+        await env.SESSIONS.put(sessionId, JSON.stringify(s), { expirationTtl: 60 * 60 * 24 * 30 });
+      }
+    } catch (_) {
+    }
+  }
+  return new Response(JSON.stringify({ ok: true }), { headers: { ...CORS, "Content-Type": "application/json" } });
+}
+__name(handleSaveSectionChoices, "handleSaveSectionChoices");
+async function handleDeployPickerSite(request, env) {
+  const body = await request.json();
+  const { sessionId, html, chosen, segment } = body;
+  if (!sessionId || !html)
+    return json({ error: "sessionId and html required" }, 400);
+  const raw = await env.SESSIONS.get(sessionId);
+  if (!raw)
+    return json({ error: "Session not found" }, 404);
+  const session = JSON.parse(raw);
+  const bp = session.blueprint?.blueprint || session.blueprint || {};
+  try {
+    await env.UPLOADS.put(`sessions/${sessionId}/site.html`, html, {
+      httpMetadata: { contentType: "text/html; charset=utf-8" }
+    });
+  } catch (e) {
+    return json({ error: "Failed to store site: " + e.message }, 500);
+  }
+  const rawBrand = (bp.part1?.brandNames?.[0] || "site").toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 28);
+  const slug = rawBrand + "-" + Math.random().toString(36).slice(2, 6);
+  const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+  const liveUrl = `${origin}/s/${slug}`;
+  try {
+    const optimizedHtml = injectSEO(html, bp, liveUrl, slug);
+    await env.UPLOADS.put(`sites/${slug}/index.html`, optimizedHtml, {
+      httpMetadata: { contentType: "text/html; charset=utf-8" }
+    });
+  } catch (e) {
+    return json({ error: "Deploy failed: " + e.message }, 500);
+  }
+  session.siteGenerated = true;
+  session.cfDeployed = true;
+  session.siteUrl = liveUrl;
+  session.siteSlug = slug;
+  session.seoOptimized = true;
+  if (chosen)
+    session.sectionChoices = chosen;
+  try {
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+  } catch (_) {
+  }
+  try {
+    await env.DB.prepare("UPDATE sessions SET cf_deployed = 1, pages_url = ? WHERE id = ?").bind(liveUrl, sessionId).run();
+  } catch (_) {
+  }
+  try {
+    await logEvent(env, sessionId, "site_deployed_picker", { url: liveUrl, slug, fast: true });
+  } catch (_) {
+  }
+  if (session.email && env.RESEND_API_KEY) {
+    const brandName = bp.part1?.brandNames?.[0] || "Your Brand";
+    fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+        to: [session.email],
+        subject: "Your website is live",
+        html: `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:40px 20px;background:#fff;"><h2>Your site is live.</h2><p>Visit it here: <a href="${liveUrl}">${liveUrl}</a></p></body></html>`
+      })
+    }).catch(() => {
+    });
+  }
+  return json({ ok: true, url: liveUrl, slug });
+}
+__name(handleDeployPickerSite, "handleDeployPickerSite");
+__name2(handleDeployPickerSite, "handleDeployPickerSite");
 async function handleGenerateSite(request, env) {
   const body = await request.json();
-  const { sessionId } = body;
+  const { sessionId, testimonialPref, customTestimonials, segmentIntake, segment, userPhotoUrl } = body;
   const raw = await env.SESSIONS.get(sessionId);
   if (!raw)
     return json({ error: "Session not found" }, 404);
   const session = JSON.parse(raw);
   if (!session.blueprint)
     return json({ error: "Blueprint not ready" }, 400);
+  const preGenValidation = validateBlueprint(session.blueprint);
+  if (!preGenValidation.passed) {
+    console.log("[SiteGen Blueprint QA] Pre-gen validation failed, repairing. score=" + preGenValidation.score);
+    const preGenRepair = autoRepairBlueprint(session.blueprint);
+    session.blueprint = preGenRepair.blueprint;
+    if (preGenRepair.repairCount > 0) {
+      console.log("[SiteGen Blueprint QA] Repaired " + preGenRepair.repairCount + ": " + preGenRepair.repairs.join("; "));
+      await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    }
+  }
+  const bp_for_theme = session.blueprint?.blueprint || session.blueprint || {};
+  const themeAesthetic = bp_for_theme?.part1?.visualDirection?.aesthetic || "";
+  const theme = selectTheme(segment, themeAesthetic);
+  console.log("[SiteGen] theme=" + theme + " segment=" + segment + " aesthetic=" + themeAesthetic.substring(0, 60));
   let prompt, head;
   try {
-    const result = SITE_GENERATION_PROMPT(session.blueprint.blueprint || session.blueprint);
+    const result = SITE_GENERATION_PROMPT(session.blueprint.blueprint || session.blueprint, theme);
     prompt = result.prompt;
     head = result.head;
   } catch (e) {
     return json({ error: "Prompt build failed: " + e.message }, 500);
   }
+  if (testimonialPref === "skip") {
+    prompt = prompt.replace(/TESTIMONIAL STYLE:.*/, "TESTIMONIALS: Do NOT include any testimonials section. Skip it entirely.");
+    prompt = prompt.replace(/- Write 2 testimonials max.*\n?/, "- Do NOT include any testimonials.\n");
+  } else if (testimonialPref === "custom" && customTestimonials) {
+    prompt = prompt.replace(/TESTIMONIAL STYLE:.*/, "TESTIMONIALS: Use these REAL testimonials from the client (use them verbatim, do not invent new ones):\n" + customTestimonials);
+    prompt = prompt.replace(/- Write 2 testimonials max.*\n?/, "- Use the provided real testimonials exactly as given. Do not make up new ones.\n");
+  }
+  if (segmentIntake && !segmentIntake.skipped) {
+    const intake = segmentIntake;
+    const intakeLines = [];
+    if (intake.bookingUrl)
+      intakeLines.push("BOOKING LINK: " + intake.bookingUrl + ' (use this as the href for ALL "Book a Call", "Book Now", "Schedule", and "Book for Your Event" buttons)');
+    if (intake.methodologyName)
+      intakeLines.push('METHODOLOGY NAME: "' + intake.methodologyName + '" \u2014 use this exact name when referencing their process or framework');
+    if (intake.startingPrice)
+      intakeLines.push("STARTING PRICE: " + intake.startingPrice + " \u2014 anchor offers section with this number");
+    if (intake.topCredential)
+      intakeLines.push("TOP CREDENTIAL: " + intake.topCredential + " \u2014 weave into Hero subheadline and About section");
+    if (intake.platformUrl)
+      intakeLines.push("COURSE/COMMUNITY LINK: " + intake.platformUrl + ' (use this as href for ALL "Enroll", "Join Now", "Get Access" buttons)');
+    if (intake.leadMagnet)
+      intakeLines.push("FREE RESOURCE/LEAD MAGNET: " + intake.leadMagnet + " \u2014 use as the Hero CTA offer");
+    if (intake.studentCount)
+      intakeLines.push("STUDENT/MEMBER COUNT: " + intake.studentCount + " \u2014 use in proof/stats section as the real number");
+    if (intake.bestResult)
+      intakeLines.push("BEST CLIENT RESULT: " + intake.bestResult + " \u2014 use verbatim as the testimonial quote");
+    if (intake.portfolioUrl)
+      intakeLines.push("PORTFOLIO LINK: " + intake.portfolioUrl + ' (use as href for "See My Work" and "View Portfolio" buttons)');
+    if (intake.inquiryUrl)
+      intakeLines.push("PROJECT INQUIRY LINK: " + intake.inquiryUrl + ' (use as href for "Start a Project", "Get a Quote", "Work With Me" buttons)');
+    if (intake.coreServices)
+      intakeLines.push("CORE SERVICES: " + intake.coreServices + " \u2014 use these exact service names in the Services section");
+    if (intake.projectTimeline)
+      intakeLines.push("PROJECT TIMELINE: " + intake.projectTimeline + " \u2014 mention in the Process section step 3");
+    if (intake.speakerReelUrl)
+      intakeLines.push("SPEAKER REEL: " + intake.speakerReelUrl + " \u2014 embed as a video below the Hero section");
+    if (intake.bookUrl)
+      intakeLines.push("BOOK LINK: " + intake.bookUrl + ' (use as href for "Buy the Book" and "Order Now" buttons)');
+    if (intake.keynoteTopics)
+      intakeLines.push("KEYNOTE TOPICS: " + intake.keynoteTopics + " \u2014 use these exact topic names in the Speaking Topics section");
+    if (intake.bookingContact)
+      intakeLines.push("SPEAKING BOOKING: " + intake.bookingContact + ' (use as href for "Book for Your Event" and "Inquire" buttons)');
+    if (intake.address)
+      intakeLines.push("OFFICE ADDRESS: " + intake.address + " \u2014 display in footer with map embed if possible");
+    if (intake.hours)
+      intakeLines.push("HOURS: " + intake.hours + " \u2014 display in Contact/Footer section");
+    if (intake.insurancePayment)
+      intakeLines.push("INSURANCE/PAYMENT: " + intake.insurancePayment + " \u2014 display in Contact or Services section");
+    if (intakeLines.length > 0) {
+      prompt += "\n\nSEGMENT INTAKE DATA \u2014 USE THIS REAL INFORMATION:\n" + intakeLines.join("\n") + "\nIMPORTANT: Use this data verbatim wherever relevant. Real links must appear as real href values. Real numbers must appear as real text. Do NOT replace with placeholders.";
+    }
+  }
+  const segmentGuidanceMap = {
+    speaker: 'SEGMENT: SPEAKER \u2014 This person speaks on stages. Prioritize: bold dramatic hero (full-height, .hero with large h1), a prominent pull-quote (.quote-block) from a keynote or talk, a speaking topics card grid, social proof from event organizers. The booking CTA should say "Book [Name] to Speak". Emphasize presence, authority, stage credibility.',
+    creator: "SEGMENT: CREATOR \u2014 This person builds an audience and sells digital products or courses. Prioritize: energetic hero, subscriber or community count in hero stats, course/product offer cards, creator story in about. The primary CTA should drive to the lead magnet or course enrollment.",
+    local: 'SEGMENT: LOCAL/SERVICE \u2014 This person serves local clients or runs a service business. Prioritize: clear value prop hero, trust signals (years in business, clients served, reviews), services section with clear pricing or "get a quote" CTAs, easy contact section with address and hours. Keep it simple and conversion-focused.',
+    service: "SEGMENT: SERVICE \u2014 This person offers a professional service. Prioritize: clear value prop hero, trust signals, services section with clear pricing, easy contact section. Keep it conversion-focused.",
+    expert: "SEGMENT: EXPERT/COACH \u2014 This person has a methodology and coaches individuals or companies. Prioritize: authority-building hero, unique mechanism section explaining their signature system, transformation proof (before/after results), offer ladder from entry to premium. The hero should feel like the start of a journey."
+  };
+  const segmentKey = segment || "expert";
+  const segmentGuidance = segmentGuidanceMap[segmentKey] || segmentGuidanceMap["expert"];
+  prompt += "\n\n\u2501\u2501\u2501 SEGMENT \u2501\u2501\u2501\n" + segmentGuidance;
   const bp = session.blueprint?.blueprint || session.blueprint || {};
-  const imagenPromptText = buildImagenPrompt(bp.part1 || {}, bp.part3 || {});
+  const imagenPromptText = buildImagenPrompt(bp.part1 || {}, bp.part3 || {}, bp.part5?.heroImageTheme);
   const GEMINI_PROXY = "https://gemini-proxy.james-d13.workers.dev";
   const PROXY_AUTH = env.GEMINI_PROXY_TOKEN || "";
   const geminiCall = env.GEMINI_PROXY ? env.GEMINI_PROXY.fetch.bind(env.GEMINI_PROXY) : fetch;
-  const [bodyContent, imagenResult] = await Promise.allSettled([
-    callClaudeSiteGen(env, prompt, 3e3),
+  // Build context photo prompt based on segment/aesthetic for auto about-section photo
+  const _ctxSeg = (segment || bp?.part1?.segment || "expert").toLowerCase();
+  const _ctxAes = (bp?.part1?.visualDirection?.aesthetic || "clean modern professional").toLowerCase();
+  const _ctxDelivery = (bp?.part1?.deliveryMode || "").toLowerCase();
+  let _contextPhotoPrompt;
+  if (/speak|catalyst|stage|keynote/.test(_ctxSeg) || /speak|stage|keynote/.test(_ctxDelivery)) {
+    _contextPhotoPrompt = `Dramatic empty stage with warm amber spotlights, professional auditorium from backstage angle, lectern visible, ${_ctxAes} aesthetic, editorial photography, cinematic depth of field, no people`;
+  } else if (/somatic|wellness|coach|luminary|mind|body|heal/.test(_ctxSeg) || /somatic|heal|wellness/.test(_ctxDelivery)) {
+    _contextPhotoPrompt = `Serene coaching studio, warm natural light through sheer curtains, two comfortable chairs facing each other, small wooden table with a candle and journal, plants, ${_ctxAes} color palette, editorial photography, no people`;
+  } else if (/consult|architect|strategy|b2b|corporate|analyst/.test(_ctxSeg) || /consult|strategy/.test(_ctxDelivery)) {
+    _contextPhotoPrompt = `Clean modern boardroom, dark navy walls, whiteboard with minimal geometric diagrams, copper desk lamp accent, architectural lines, ${_ctxAes} aesthetic, editorial photography, shallow depth of field, no people`;
+  } else if (/local|neighbor|service|trade|landscap/.test(_ctxSeg)) {
+    _contextPhotoPrompt = `Professional service workspace, organized tools and materials, natural light, clean environment, ${_ctxAes} aesthetic, editorial photography, no people`;
+  } else {
+    _contextPhotoPrompt = `Sophisticated home office or studio workspace, clean minimal desk with open notebook and coffee, warm afternoon light through window, bookshelf in background, ${_ctxAes} color palette, editorial photography, no people`;
+  }
+  const [bodyContent, imagenResult, _contextPhotoResult] = await Promise.allSettled([
+    callClaudeSiteGen(env, prompt, 8e3),
     geminiCall(`${GEMINI_PROXY}/v1beta/models/imagen-4.0-generate-001:predict`, {
       method: "POST",
       headers: {
@@ -10297,55 +17555,131 @@ async function handleGenerateSite(request, env) {
         instances: [{ prompt: imagenPromptText }],
         parameters: { sampleCount: 1, aspectRatio: "16:9" }
       })
+    }).then((r) => r.json()).catch(() => null),
+    userPhotoUrl ? Promise.resolve(null) : geminiCall(`${GEMINI_PROXY}/v1beta/models/imagen-4.0-generate-001:predict`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${PROXY_AUTH}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ instances: [{ prompt: _contextPhotoPrompt }], parameters: { sampleCount: 1, aspectRatio: "1:1" } })
     }).then((r) => r.json()).catch(() => null)
   ]);
-  const claudeBody = bodyContent.status === "fulfilled" ? bodyContent.value : "";
+  let claudeBody = bodyContent.status === "fulfilled" ? bodyContent.value : "";
+  let firstValidation = validateSiteHTML(claudeBody);
+  if (firstValidation.summary === "FAIL_CRITICAL" && claudeBody.length < 3e3) {
+    try {
+      const retryBody = await callClaudeSiteGen(env, prompt, 8e3);
+      const retryValidation = validateSiteHTML(retryBody);
+      if (retryValidation.score > firstValidation.score) {
+        claudeBody = retryBody;
+        firstValidation = retryValidation;
+      }
+    } catch (_retryErr) {
+    }
+  }
+  const repairResult = autoRepairSiteHTML(claudeBody, session.blueprint);
+  let bodyHtml = repairResult.html;
+  const navIdx = bodyHtml.search(/<nav[\s>]/i);
+  if (navIdx > 0)
+    bodyHtml = bodyHtml.slice(navIdx);
+  const finalValidation = validateSiteHTML(bodyHtml);
   let heroImageDataUrl = null;
   if (imagenResult.status === "fulfilled" && imagenResult.value?.predictions?.[0]?.bytesBase64Encoded) {
     const b64 = imagenResult.value.predictions[0].bytesBase64Encoded;
     const mimeType = imagenResult.value.predictions[0].mimeType || "image/jpeg";
     heroImageDataUrl = `data:${mimeType};base64,${b64}`;
   }
-  let bodyHtml = claudeBody.replace(/<style[\s\S]*?<\/style>/gi, "");
-  bodyHtml = bodyHtml.replace(/<\/html>/gi, "").replace(/<\/body>/gi, "").replace(/<html[^>]*>/gi, "").replace(/<body[^>]*>/gi, "").replace(/<\/head>/gi, "").replace(/<head[\s\S]*?>/gi, "").trim();
-  const navIdx = bodyHtml.search(/<nav[\s>]/i);
-  if (navIdx > 0)
-    bodyHtml = bodyHtml.slice(navIdx);
-  if (!/<footer[\s>]/i.test(bodyHtml)) {
-    const fallbackBrand = bp.part1?.brandNames?.[0] || "Brand";
-    const fallbackEmail = bp.part1?.contactEmail || "";
-    const year = (/* @__PURE__ */ new Date()).getFullYear();
-    bodyHtml += `
-<section class="cta-section" id="contact">
-  <div class="container text-center">
-    <p class="eyebrow">Let's Work Together</p>
-    <h2>Ready to take the next step?</h2>${fallbackEmail ? `
-    <a href="mailto:${fallbackEmail}" class="btn btn--primary" style="margin-top:28px">Get In Touch</a>` : `
-    <a href="#" class="btn btn--primary" style="margin-top:28px">Get In Touch</a>`}
-  </div>
-</section>
-<footer>
-  <div class="container footer-inner">
-    <div class="footer-logo">${fallbackBrand}</div>
-    <div class="footer-copy">&copy; ${year} ${fallbackBrand}. All rights reserved.</div>
-    <div class="footer-links">
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
-    </div>
-  </div>
-</footer>`;
+  if (!heroImageDataUrl) {
+    const aes = (bp.part1?.visualDirection?.aesthetic || "").toLowerCase();
+    const HERO_FALLBACKS = {
+      executive: "photo-1497366216548-37526070297c",
+      corporate: "photo-1486406146926-c627a92ad1ab",
+      bold: "photo-1519834785169-98be25ec3f84",
+      energetic: "photo-1517836357463-d25dfeac3438",
+      warm: "photo-1506126613408-eca07ce68773",
+      wellness: "photo-1545205597-3d9d02c29597",
+      coach: "photo-1571019613454-1cb2f99b2d8b",
+      modern: "photo-1488590528505-98d2b5aba04b",
+      minimal: "photo-1618005182384-a83a8bd57fbe",
+      creative: "photo-1558618666-fcd25c85f82e"
+    };
+    let fallbackId = "photo-1522202176988-66273c2fd55f";
+    for (const [key, id] of Object.entries(HERO_FALLBACKS)) {
+      if (aes.includes(key)) {
+        fallbackId = id;
+        break;
+      }
+    }
+    heroImageDataUrl = `https://images.unsplash.com/${fallbackId}?w=1600&q=80&auto=format`;
   }
-  let styledHead = head;
-  if (heroImageDataUrl) {
-    const heroStyle = `<style>.hero{background-image:linear-gradient(rgba(0,0,0,0.55),rgba(0,0,0,0.55)),url('${heroImageDataUrl}');background-size:cover;background-position:center;background-repeat:no-repeat;}</style>`;
-    styledHead = head.replace("</head>", `${heroStyle}
+  const segmentCSSMap = {
+    speaker: `
+  /* \u2500\u2500 SPEAKER segment \u2500\u2500 */
+  .hero { min-height: 92vh; }
+  .hero h1 { font-size: clamp(2rem, 3.6vw, 3.2rem); }
+  .hero-sub { font-size: clamp(1.1rem, 2.2vw, 1.35rem); max-width: 640px; margin: 0 auto 36px; }
+  .section-header h2 { font-size: clamp(2rem, 4vw, 3.2rem); }
+  /* Stage presence: large quote pull */
+  .quote-block { font-size: clamp(1.4rem, 2.8vw, 2rem); font-style: italic; text-align: center; max-width: 760px; margin: 0 auto; line-height: 1.4; color: var(--primary); }`,
+    creator: `
+  /* \u2500\u2500 CREATOR segment \u2500\u2500 */
+  .hero { min-height: 80vh; }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); }
+  .card-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .card { padding: 28px 24px; }
+  .offer-card { border-radius: 18px; }
+  /* Creator energy: warm tint alternating sections */
+  section:nth-of-type(even) { background: var(--bg); }`,
+    local: `
+  /* \u2500\u2500 LOCAL/SERVICE segment \u2500\u2500 */
+  .hero { min-height: 70vh; }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); }
+  /* Trust signals prominent */
+  .hero-stats { justify-content: center; gap: 40px; margin-top: 40px; }
+  .hero-stat-num { font-size: clamp(2rem, 4vw, 3rem); }
+  /* Contact CTA more visible */
+  .cta-section { padding: 80px 0; }`,
+    service: `
+  /* \u2500\u2500 SERVICE segment \u2500\u2500 */
+  .hero { min-height: 70vh; }
+  .hero h1 { font-size: clamp(2rem, 3.4vw, 3rem); }
+  .hero-stats { justify-content: center; gap: 40px; margin-top: 40px; }
+  .hero-stat-num { font-size: clamp(2rem, 4vw, 3rem); }
+  .cta-section { padding: 80px 0; }`,
+    expert: `
+  /* \u2500\u2500 EXPERT/COACH segment \u2500\u2500 */
+  .hero { min-height: 84vh; }
+  .hero h1 { font-size: clamp(2rem, 3.6vw, 3.2rem); }
+  .about-inner { gap: 80px; }
+  .section-header h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); }`
+  };
+  const segmentCSS = segmentCSSMap[segment] || segmentCSSMap["expert"];
+  const segmentStyle = `<style>${segmentCSS}</style>`;
+  const heroStyle = `<style>.hero{background-image:url('${heroImageDataUrl}');}</style>`;
+  const styledHead = head.replace("</head>", `${heroStyle}
+${segmentStyle}
 </head>`);
+  let finalBodyHtml = bodyHtml;
+  // Auto context photo: use if no user-provided photo
+  let _effectivePhotoUrl = userPhotoUrl;
+  if (!_effectivePhotoUrl && _contextPhotoResult && _contextPhotoResult.status === "fulfilled" && _contextPhotoResult.value?.predictions?.[0]?.bytesBase64Encoded) {
+    const _cB64 = _contextPhotoResult.value.predictions[0].bytesBase64Encoded;
+    const _cMime = _contextPhotoResult.value.predictions[0].mimeType || "image/jpeg";
+    _effectivePhotoUrl = `data:${_cMime};base64,${_cB64}`;
+  }
+  if (_effectivePhotoUrl) {
+    finalBodyHtml = finalBodyHtml.replace(
+      /(<div[^>]*class="[^"]*about-photo[^"]*"[^>]*>)\s*(<\/div>)/,
+      `$1<img src="${_effectivePhotoUrl}" alt="About photo" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;" />$2`
+    );
+    finalBodyHtml = finalBodyHtml.replace(
+      /(<div[^>]*class="[^"]*about-photo[^"]*"[^>]*>)[^<]*(<\/div>)/,
+      `$1<img src="${_effectivePhotoUrl}" alt="About photo" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;" />$2`
+    );
   }
   const cleanHtml = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-segment="${segment || "expert"}" data-theme="${theme}">
 ${styledHead}
 <body>
-${bodyHtml}
+${finalBodyHtml}
 </body>
 </html>`;
   await env.UPLOADS.put(`sessions/${sessionId}/site.html`, cleanHtml, {
@@ -10354,10 +17688,25 @@ ${bodyHtml}
   session.siteGenerated = true;
   session.siteHtml = cleanHtml.substring(0, 500);
   await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
-  await logEvent(env, sessionId, "site_generated", {});
-  return json({ ok: true, html: cleanHtml });
+  try {
+    await env.DB.prepare("UPDATE sessions SET site_generated = 1, version = version + 1 WHERE id = ?").bind(sessionId).run();
+  } catch (_) {
+  }
+  await logEvent(env, sessionId, "site_generated", {
+    qualityScore: finalValidation.score,
+    qualityPassed: finalValidation.passed,
+    issues: finalValidation.issues.length,
+    warnings: finalValidation.warnings.length,
+    repairs: repairResult.repairCount,
+    htmlSize: cleanHtml.length,
+    hadImagenImage: !!imagenResult.value?.predictions?.[0]?.bytesBase64Encoded
+  });
+  return json({ ok: true, html: cleanHtml, quality: { score: finalValidation.score, passed: finalValidation.passed, issues: finalValidation.issues, repairs: repairResult.repairs } });
 }
 __name(handleGenerateSite, "handleGenerateSite");
+__name2(handleGenerateSite, "handleGenerateSite");
+__name22(handleGenerateSite, "handleGenerateSite");
+__name222(handleGenerateSite, "handleGenerateSite");
 function injectSEO(html, blueprint, liveUrl, slug) {
   const p1 = blueprint.part1 || {};
   const p2 = blueprint.part2 || {};
@@ -10424,6 +17773,9 @@ function injectSEO(html, blueprint, liveUrl, slug) {
   return cleaned;
 }
 __name(injectSEO, "injectSEO");
+__name2(injectSEO, "injectSEO");
+__name22(injectSEO, "injectSEO");
+__name222(injectSEO, "injectSEO");
 async function handleServeSite(path, env) {
   const parts = path.replace(/^\/s\//, "").split("/");
   const slug = parts[0];
@@ -10461,13 +17813,16 @@ h1{font-size:1.4rem;}code{background:#eee;padding:2px 8px;border-radius:4px;}</s
     pdf: "application/pdf"
   };
   const ct = types[ext] || "application/octet-stream";
-  const headers = { "Content-Type": ct, "Cache-Control": "public, max-age=3600", "Access-Control-Allow-Origin": "*" };
+  const headers = { "Content-Type": ct, "Cache-Control": "public, max-age=3600", "Access-Control-Allow-Origin": "https://love.jamesguldan.com" };
   if (ext === "html") {
     headers["X-Content-Type-Options"] = "nosniff";
   }
   return new Response(obj.body, { headers });
 }
 __name(handleServeSite, "handleServeSite");
+__name2(handleServeSite, "handleServeSite");
+__name22(handleServeSite, "handleServeSite");
+__name222(handleServeSite, "handleServeSite");
 async function handleDeploy(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -10497,17 +17852,23 @@ async function handleDeploy(request, env) {
     session.siteSlug = slug;
     session.seoOptimized = true;
     await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    try {
+      await env.DB.prepare("UPDATE sessions SET cf_deployed = 1, pages_url = ? WHERE id = ?").bind(liveUrl, sessionId).run();
+    } catch (_) {
+    }
     await logEvent(env, sessionId, "site_deployed", { url: liveUrl, slug, seoOptimized: true });
-    if (session.userId) {
-      getUserById(env, session.userId).then((user) => {
-        if (user?.email) {
-          fireEventToDripWorker(env, user.email, "site_deployed", {
-            name: user.name || "",
-            phone: session.phone || "",
-            site_url: liveUrl
-          }).catch(() => {});
-        }
-      }).catch(() => {});
+    if (session.email && env.RESEND_API_KEY) {
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+          to: [session.email],
+          subject: "Your website is live",
+          html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">Your site is live.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Your brand strategy is now a real website. Built from your blueprint, deployed, and ready to share with the world.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:36px 40px 0;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:12px;margin-bottom:28px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Your site URL</p><p style="margin:0;font-size:14px;"><a href="${liveUrl}" style="color:#c4703f;text-decoration:none;word-break:break-all;">${liveUrl}</a></p></td></tr></table></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:0 40px 40px;"><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${liveUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Visit My Site &rarr;</a></td></tr></table><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Want a custom domain? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`
+        })
+      }).catch(() => {
+      });
     }
     return json({ ok: true, url: liveUrl, slug, seoOptimized: true });
   } catch (e) {
@@ -10516,6 +17877,9 @@ async function handleDeploy(request, env) {
   }
 }
 __name(handleDeploy, "handleDeploy");
+__name2(handleDeploy, "handleDeploy");
+__name22(handleDeploy, "handleDeploy");
+__name222(handleDeploy, "handleDeploy");
 async function handleRefineSite(request, env) {
   const body = await request.json();
   const { sessionId, category, option, customText } = body;
@@ -10553,6 +17917,9 @@ ${cleanBody}
   return json({ ok: true, refinementCount: session.refinements.length });
 }
 __name(handleRefineSite, "handleRefineSite");
+__name2(handleRefineSite, "handleRefineSite");
+__name22(handleRefineSite, "handleRefineSite");
+__name222(handleRefineSite, "handleRefineSite");
 function buildRefineInstruction(category, option, customText) {
   const instructions = {
     colors: {
@@ -10602,6 +17969,9 @@ Apply this change while keeping the overall structure and content intact.`;
   return customText || "Make the site feel more polished and professional.";
 }
 __name(buildRefineInstruction, "buildRefineInstruction");
+__name2(buildRefineInstruction, "buildRefineInstruction");
+__name22(buildRefineInstruction, "buildRefineInstruction");
+__name222(buildRefineInstruction, "buildRefineInstruction");
 async function callClaudeRefine(env, currentHtml, instruction) {
   const imageMap = {};
   let imgIndex = 0;
@@ -10667,6 +18037,9 @@ Return the updated body content now. Begin with the first element.`
   return restored;
 }
 __name(callClaudeRefine, "callClaudeRefine");
+__name2(callClaudeRefine, "callClaudeRefine");
+__name22(callClaudeRefine, "callClaudeRefine");
+__name222(callClaudeRefine, "callClaudeRefine");
 async function handleExport(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -10686,10 +18059,16 @@ async function handleExport(request, env) {
   });
 }
 __name(handleExport, "handleExport");
+__name2(handleExport, "handleExport");
+__name22(handleExport, "handleExport");
+__name222(handleExport, "handleExport");
 function buildExportHTML(blueprint, session) {
   return buildBrandGuideHTML(blueprint, session);
 }
 __name(buildExportHTML, "buildExportHTML");
+__name2(buildExportHTML, "buildExportHTML");
+__name22(buildExportHTML, "buildExportHTML");
+__name222(buildExportHTML, "buildExportHTML");
 async function handleExportSite(request, env) {
   const url = new URL(request.url);
   const sessionId = url.searchParams.get("sessionId");
@@ -10698,7 +18077,7 @@ async function handleExportSite(request, env) {
   const authHeader = request.headers.get("Authorization") || "";
   if (authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    const payload = await verifySessionToken(token, env.JWT_SECRET || "dev-secret-change-me").catch(() => null);
+    const payload = await verifySessionToken(token, getJWTSecret(env)).catch(() => null);
     if (!payload || payload.sessionId !== sessionId) {
       return json({ error: "Unauthorized" }, 401);
     }
@@ -10724,6 +18103,9 @@ async function handleExportSite(request, env) {
   });
 }
 __name(handleExportSite, "handleExportSite");
+__name2(handleExportSite, "handleExportSite");
+__name22(handleExportSite, "handleExportSite");
+__name222(handleExportSite, "handleExportSite");
 function buildBrandGuideHTML(blueprint, session) {
   const b = blueprint?.blueprint;
   if (!b)
@@ -10801,6 +18183,13 @@ function buildBrandGuideHTML(blueprint, session) {
   const heroCTA = esc(p5.heroCTA || "");
   const testimonialFraming = esc(p5.testimonialFraming || "");
   const coreBrandPromise = esc(p1.coreBrandPromise || nicheStatement);
+  const proofNums = (p5.proofNumbers || []).filter((n) => n && n.stat && n.label).slice(0, 3);
+  const bestStory = p5.bestClientStory || "";
+  const mediaCreds = (p5.mediaCredentials || []).filter(Boolean).slice(0, 6);
+  const bestTest = p5.bestTestimonial || null;
+  const socialH = p5.socialHandles || {};
+  const contBelief = p5.contraryBelief || "";
+  const hasProofData = proofNums.length || bestStory || mediaCreds.length || bestTest || contBelief || Object.values(socialH).filter(Boolean).length;
   const today = (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const siteSections = [
     {
@@ -11367,6 +18756,21 @@ body {
   color: var(--text);
 }
 
+.page-footer {
+  padding: 16px 0.85in;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: rgba(0,0,0,0.25);
+  letter-spacing: 0.06em;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  margin-top: auto;
+}
+.page-footer a {
+  color: var(--secondary);
+  text-decoration: none;
+}
+
 /* \u2500\u2500 PRINT \u2500\u2500 */
 @media print {
   @page {
@@ -11390,11 +18794,11 @@ body {
     page-break-before: always;
     break-before: page;
   }
-  .card {
+  .card, .grid-2, .grid-3, .swatches, .offer-card, .pull-quote, .site-section-card, .plan-month, .belief-item, .font-display, .starter-block {
     page-break-inside: avoid;
     break-inside: avoid;
   }
-  .part-header {
+  .part-header, .section-number, .section-title, .card-label {
     page-break-after: avoid;
     break-after: avoid;
   }
@@ -11425,7 +18829,7 @@ body {
     <span class="cover-label">Brand Guide</span>
     <div class="cover-name">${brandName}</div>
     ${tagline ? `<div class="cover-tagline">"${tagline}"</div>` : ""}
-    <div class="cover-meta">Generated ${today} &nbsp;\xB7&nbsp; Confidential</div>
+    <div class="cover-meta">Generated by Deep Work &nbsp;\xB7&nbsp; love.jamesguldan.com &nbsp;\xB7&nbsp; ${today}</div>
   </div>
   <div class="cover-color-bar">
     ${colors.length ? colors.map((c) => `<div style="background-color:${c.hex} !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;"></div>`).join("") : `<div style="background-color:${primary} !important;"></div><div style="background-color:${secondary} !important;"></div><div style="background-color:${accent} !important;"></div>`}
@@ -11779,6 +19183,60 @@ ${p1.brandNames?.[0] || "Your Name"}</pre>
   </div>
 </div>
 
+${hasProofData ? `<!-- PAGE 9B: PROOF INTELLIGENCE -->
+<div class="page content-page force-break">
+  <div class="page-rule"></div>
+  <div class="page-header">
+    <div class="page-header-brand">${brandName}</div>
+    <div class="page-header-section">Proof Intelligence</div>
+  </div>
+  <div class="inner-page">
+    <span class="section-number">Proof Assets</span>
+    <h2 class="section-title">Your Credibility,<br><em>Quantified</em></h2>
+    <div class="divider"></div>
+    <p class="section-intro">These are the proof assets your site and content should be built around. Numbers, stories, and credentials that make everything else believable.</p>
+
+    ${proofNums.length ? `<div style="margin-bottom:28px;">
+      <div class="card-label" style="margin-bottom:16px;">Proof Numbers</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        ${proofNums.map((n) => `
+        <div style="flex:1;min-width:130px;background-color:${primary};-webkit-print-color-adjust:exact;print-color-adjust:exact;border-radius:12px;padding:20px 18px;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:32px;font-weight:800;color:${accent};line-height:1;">${esc(n.stat)}</div>
+          <div style="font-family:var(--font-body);font-size:12px;font-weight:600;color:rgba(255,255,255,0.9);margin-top:6px;">${esc(n.label)}</div>
+          ${n.context ? `<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:4px;font-style:italic;">${esc(n.context)}</div>` : ""}
+        </div>`).join("")}
+      </div>
+    </div>` : ""}
+
+    ${mediaCreds.length ? `<div class="card" style="margin-bottom:20px;">
+      <div class="card-label">Media Credentials</div>
+      <div class="card-content" style="font-size:13px;">${mediaCreds.map((c) => esc(c)).join(" &nbsp;\xB7&nbsp; ")}</div>
+    </div>` : ""}
+
+    ${bestTest ? `<div style="margin-bottom:20px;padding:22px 26px;border-left:4px solid ${secondary};background:rgba(0,0,0,0.02);border-radius:0 12px 12px 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      <div class="card-label" style="margin-bottom:10px;">Strongest Testimonial \u2014 Use This Verbatim</div>
+      <p style="font-family:var(--font-display);font-style:italic;font-size:15px;line-height:1.7;color:var(--text);">&ldquo;${esc(bestTest.quote)}&rdquo;</p>
+      <p style="font-size:11px;font-weight:700;color:var(--text);opacity:0.5;margin-top:10px;letter-spacing:0.05em;">&mdash; ${esc(bestTest.attribution)}</p>
+    </div>` : ""}
+
+    ${bestStory ? `<div class="card" style="margin-bottom:20px;">
+      <div class="card-label">Best Client Story (Before / After)</div>
+      <div class="card-content" style="font-size:13px;line-height:1.8;">${esc(bestStory)}</div>
+    </div>` : ""}
+
+    ${contBelief ? `<div class="card" style="margin-bottom:20px;border-left:3px solid ${accent};">
+      <div class="card-label">Contrary Belief \u2014 Build a Section Around This</div>
+      <div class="card-content" style="font-style:italic;font-size:14px;line-height:1.8;">${esc(contBelief)}</div>
+    </div>` : ""}
+
+    ${Object.values(socialH).filter(Boolean).length ? `<div class="card" style="margin-bottom:20px;">
+      <div class="card-label">Social Handles for Footer</div>
+      <div class="card-content" style="font-size:13px;">${Object.entries(socialH).filter(([, v]) => v).map(([k, v]) => `<strong style="text-transform:capitalize;">${esc(k)}:</strong> ${esc(v)}`).join(" &nbsp;\xB7&nbsp; ")}</div>
+    </div>` : ""}
+
+  </div>
+</div>` : ""}
+
 <!-- PAGE 10: 90-DAY PLAN -->
 <div class="page content-page force-break">
   <div class="page-rule"></div>
@@ -11916,17 +19374,29 @@ Some starting points you could ask about:
   <a href="https://love.jamesguldan.com/app" style="display:inline-block;background:#fff;color:${secondary};font-weight:700;font-size:16px;padding:18px 42px;border-radius:6px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.2);">Get Your Vision Live</a>
   <div style="color:rgba(255,255,255,.6);font-size:13px;max-width:4in;text-align:center;line-height:1.6;">Your blueprint already has everything we need. One click and the AI turns your strategy into a real, live website.</div>
 </div>
-<div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.15);display:flex;justify-content:center;gap:40px;color:rgba(255,255,255,.5);font-size:12px;">
-  <span>love.jamesguldan.com</span>
-  <span>Powered by Align Growth LLC</span>
+<div style="margin-top:40px;padding-top:24px;border-top:1px solid rgba(255,255,255,.15);text-align:center;">
+  <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:0.06em;margin-bottom:8px;">Generated by Deep Work</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.45);">love.jamesguldan.com &nbsp;\xB7&nbsp; By James Guldan</div>
 </div>
 </div></div>
 
+<script>
+// Add Deep Work branding footer to every content page
+document.querySelectorAll('.page.content-page').forEach(function(page) {
+  var footer = document.createElement('div');
+  footer.className = 'page-footer';
+  footer.innerHTML = 'Generated by <a href="https://love.jamesguldan.com">Deep Work</a> \xB7 love.jamesguldan.com \xB7 By James Guldan';
+  page.appendChild(footer);
+});
+<\/script>
 <button class="pdf-btn no-print" style="position:fixed;bottom:32px;right:32px;background:var(--primary);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:600;padding:14px 28px;border-radius:8px;border:none;cursor:pointer;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:1000" onclick="this.style.display='none';window.print();setTimeout(()=>{this.style.display=''},1000)">Save as PDF \u2193</button>
 </body>
 </html>`;
 }
 __name(buildBrandGuideHTML, "buildBrandGuideHTML");
+__name2(buildBrandGuideHTML, "buildBrandGuideHTML");
+__name22(buildBrandGuideHTML, "buildBrandGuideHTML");
+__name222(buildBrandGuideHTML, "buildBrandGuideHTML");
 async function handleBlueprintPDF(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -11943,6 +19413,131 @@ async function handleBlueprintPDF(request, env) {
   });
 }
 __name(handleBlueprintPDF, "handleBlueprintPDF");
+__name2(handleBlueprintPDF, "handleBlueprintPDF");
+__name22(handleBlueprintPDF, "handleBlueprintPDF");
+__name222(handleBlueprintPDF, "handleBlueprintPDF");
+async function handleIntakeChat(request, env) {
+  const body = await request.json();
+  const { sessionId, fieldKey, messages } = body;
+  if (!fieldKey || !messages || !Array.isArray(messages))
+    return json({ error: "fieldKey and messages are required" }, 400);
+  let blueprintCtx = "";
+  if (sessionId) {
+    try {
+      const raw = await env.SESSIONS.get(sessionId);
+      if (raw) {
+        const session = JSON.parse(raw);
+        const bp = session.blueprint || {};
+        const p3 = bp.part3 || {};
+        const p4 = bp.part4 || {};
+        const p1 = bp.part1 || {};
+        const niche = p3.nicheStatement || "";
+        const offers = (p4.offers || []).map((o) => o.name || "").filter(Boolean).join(", ");
+        const avatar = p3.dreamCustomer || p3.idealClient || "";
+        const tone = (p1.toneKeywords || []).join(", ");
+        blueprintCtx = [
+          niche ? "NICHE: " + niche : "",
+          offers ? "OFFERS: " + offers : "",
+          avatar ? "IDEAL CLIENT: " + avatar : "",
+          tone ? "TONE: " + tone : ""
+        ].filter(Boolean).join("\n");
+      }
+    } catch (_) {
+    }
+  }
+  const FIELD_PROMPTS = {
+    startingPrice: `You are a friendly pricing coach helping a coach or consultant figure out what to charge. Your job is to help them arrive at a confident starting price or price range in 2-3 short messages.
+
+Ask them: (1) What transformation do clients get, and how long does the engagement typically last? (2) What have they charged before, or what feels scary-high but maybe right?
+
+Then, in your final message, give a specific recommended price or range (e.g. "Starting at $2,500" or "$3K\u2013$5K/month") and end with exactly:
+SUGGESTION: [your recommended price text here]
+
+Keep messages short \u2014 2-4 sentences max. Be warm and encouraging. No lecture. Just help them land on a number.`,
+    methodologyName: `You are a brand naming coach helping a consultant or coach name their signature process or framework. Your job is to help them land on a compelling methodology name in 2-3 messages.
+
+Ask them: (1) Walk me through the main steps or phases of what you do with clients \u2014 even roughly. (2) Is there a metaphor, outcome, or feeling that captures the transformation?
+
+Then suggest 3 name options (e.g. "The Clarity Sprint", "The Growth OS", "The 90-Day Breakthrough") and end with exactly:
+SUGGESTION: [your top recommended name here]
+
+Keep messages short and energetic. Make the names feel aspirational and ownable.`,
+    bestResult: `You are a copywriter helping a course creator or coach articulate their best student result as a compelling one-liner. Your goal is a real, specific, before-and-after result in 2 messages.
+
+Ask them: Tell me about a student or client who had a great result \u2014 what did they start with, and what did they achieve? (Ballpark numbers or story, doesn't have to be exact.)
+
+Then craft a punchy result statement (e.g. "Went from 0 to $8K/month in 90 days" or "Landed their first 5 clients in 6 weeks") and end with exactly:
+SUGGESTION: [your result statement here]
+
+One question only. Keep your response under 3 sentences.`,
+    coreServices: `You are a business strategist helping a service provider clearly name their 3 core services. Your goal is 3 clean, client-facing service names in 1-2 messages.
+
+Ask them: What are the 3 main things you do for clients? Just describe them briefly \u2014 I'll help you turn them into clean names.
+
+Then give them 3 polished service names separated by commas (e.g. "Brand Identity, Website Design, Marketing Strategy") and end with exactly:
+SUGGESTION: [service 1, service 2, service 3]
+
+Be direct. Suggest professional-sounding names, not internal jargon.`,
+    keynoteTopics: `You are a speaker agency consultant helping a speaker define their top keynote topics. Your goal is 2-3 tight topic names in 2 messages.
+
+Ask them: What themes do you get booked to speak on most? And who is typically in the audience \u2014 is it corporate, entrepreneurs, women in leadership, etc.?
+
+Then suggest 2-3 sharp keynote topic names (e.g. "Leading Through Uncertainty, Building Resilient Teams, The Future of Work") and end with exactly:
+SUGGESTION: [topic 1, topic 2, topic 3]
+
+Make the topic names feel big-stage worthy. Short, powerful, memorable.`,
+    testimonials: `You are a testimonial writing coach helping a professional get 2-3 compelling client testimonials onto their website. Your goal: help them recall specific client wins, then turn those rough stories into polished, believable quotes in 2-3 exchanges.
+
+Start with: "Think of 1-3 clients who got real results with you \u2014 the ones you're most proud of. For each one, tell me: what were they struggling with when they came to you, what changed while working together, and where are they now? Give me the messy version \u2014 I'll make it shine."
+
+Once you have enough material (even rough), write 2-3 polished testimonials in this exact format:
+"[Transformation quote \u2014 specific result, emotional truth, 2-3 sentences. No generic praise. Real details only.]"
+\u2014 [First Name], [Role or short descriptor]
+
+Then end with exactly:
+SUGGESTION: [all testimonials, each on its own line, separated by a blank line]
+
+Rules: One client story = one testimonial. Make each one feel like a real person said it. Include a specific number, timeframe, or outcome whenever possible. No "working with [name] was amazing" generics.`
+  };
+  const systemPrompt = FIELD_PROMPTS[fieldKey];
+  if (!systemPrompt)
+    return json({ error: "Unknown fieldKey: " + fieldKey }, 400);
+  const FIELD_KICKOFFS = {
+    startingPrice: "What transformation do clients get when they work with you, and how long does the engagement typically last?",
+    methodologyName: "Walk me through the main steps or phases of what you do with clients \u2014 even roughly. What happens from start to finish?",
+    bestResult: "Tell me about a student or client who had a great result \u2014 what did they start with, and what did they achieve? Ballpark numbers or a story, doesn't have to be exact.",
+    coreServices: "What are the 3 main things you do for clients? Just describe them in plain terms \u2014 I'll help turn them into clean service names.",
+    keynoteTopics: "What themes do you get booked to speak on most? And who is typically in the audience \u2014 corporate, entrepreneurs, women in leadership, etc.?",
+    testimonials: "Think of 1\u20133 clients who got real results with you \u2014 the ones you're most proud of. For each one, tell me: what were they struggling with when they came to you, what changed while working together, and where are they now? Give me the messy version \u2014 I'll make it shine."
+  };
+  if (!messages.length) {
+    const kickoff = FIELD_KICKOFFS[fieldKey];
+    if (kickoff)
+      return json({ ok: true, reply: kickoff, suggestion: null });
+  }
+  const fullSystem = systemPrompt + (blueprintCtx ? "\n\nCONTEXT ABOUT THIS PERSON:\n" + blueprintCtx : "");
+  const truncatedMessages = messages.slice(-10);
+  try {
+    const aiResponse = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+      system: fullSystem,
+      messages: truncatedMessages,
+      max_tokens: 300,
+      temperature: 0.7
+    });
+    const reply = (aiResponse.response || "").trim();
+    let suggestion = null;
+    const suggMatch = reply.match(/SUGGESTION:\s*\[?([^\]\n]+)\]?/i);
+    if (suggMatch)
+      suggestion = suggMatch[1].trim();
+    return json({ ok: true, reply, suggestion });
+  } catch (err) {
+    return json({ error: "AI error: " + (err.message || String(err)) }, 500);
+  }
+}
+__name(handleIntakeChat, "handleIntakeChat");
+__name2(handleIntakeChat, "handleIntakeChat");
+__name22(handleIntakeChat, "handleIntakeChat");
+__name222(handleIntakeChat, "handleIntakeChat");
 async function handleFeedback(request, env) {
   const body = await request.json();
   const { sessionId, rating, mostValuable, whatWasOff } = body;
@@ -11958,6 +19553,9 @@ async function handleFeedback(request, env) {
   return json({ ok: true });
 }
 __name(handleFeedback, "handleFeedback");
+__name2(handleFeedback, "handleFeedback");
+__name22(handleFeedback, "handleFeedback");
+__name222(handleFeedback, "handleFeedback");
 async function handleLogEvent(request, env) {
   try {
     const body = await request.json();
@@ -11982,6 +19580,9 @@ async function handleLogEvent(request, env) {
   return json({ ok: true });
 }
 __name(handleLogEvent, "handleLogEvent");
+__name2(handleLogEvent, "handleLogEvent");
+__name22(handleLogEvent, "handleLogEvent");
+__name222(handleLogEvent, "handleLogEvent");
 async function initSessionInD1(env, session) {
   try {
     const migrations = [
@@ -12029,6 +19630,9 @@ async function initSessionInD1(env, session) {
   }
 }
 __name(initSessionInD1, "initSessionInD1");
+__name2(initSessionInD1, "initSessionInD1");
+__name22(initSessionInD1, "initSessionInD1");
+__name222(initSessionInD1, "initSessionInD1");
 async function updateSessionPhaseInD1(env, sessionId, phase, messageCount, blueprintDone = false) {
   try {
     const now = (/* @__PURE__ */ new Date()).toISOString();
@@ -12039,9 +19643,14 @@ async function updateSessionPhaseInD1(env, sessionId, phase, messageCount, bluep
       WHERE id = ?
     `).bind(phase, messageCount, now, now, blueprintDone ? 1 : 0, sessionId).run();
   } catch (e) {
+    logError(env, { endpoint: "updateSessionPhaseInD1", method: "internal", statusCode: 500, errorType: "d1_write_failure", errorMessage: e.message, sessionId }).catch(() => {
+    });
   }
 }
 __name(updateSessionPhaseInD1, "updateSessionPhaseInD1");
+__name2(updateSessionPhaseInD1, "updateSessionPhaseInD1");
+__name22(updateSessionPhaseInD1, "updateSessionPhaseInD1");
+__name222(updateSessionPhaseInD1, "updateSessionPhaseInD1");
 async function logEvent(env, sessionId, eventType, data) {
   try {
     await env.DB.prepare(`
@@ -12058,6 +19667,9 @@ async function logEvent(env, sessionId, eventType, data) {
   }
 }
 __name(logEvent, "logEvent");
+__name2(logEvent, "logEvent");
+__name22(logEvent, "logEvent");
+__name222(logEvent, "logEvent");
 async function saveToRAG(env, session, blueprint) {
   try {
     const b = blueprint.blueprint;
@@ -12087,6 +19699,9 @@ Headlines: ${b.part7?.heroHeadlineOptions?.slice(0, 3).join(" | ")}
   }
 }
 __name(saveToRAG, "saveToRAG");
+__name2(saveToRAG, "saveToRAG");
+__name22(saveToRAG, "saveToRAG");
+__name222(saveToRAG, "saveToRAG");
 async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6e3) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -12110,6 +19725,9 @@ async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6e3) {
   return data.content?.[0]?.text || "";
 }
 __name(callClaudeSiteGen, "callClaudeSiteGen");
+__name2(callClaudeSiteGen, "callClaudeSiteGen");
+__name22(callClaudeSiteGen, "callClaudeSiteGen");
+__name222(callClaudeSiteGen, "callClaudeSiteGen");
 async function callClaude(env, systemPrompt, messages, streaming = false, maxTokens = 1024) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -12131,27 +19749,40 @@ async function callClaude(env, systemPrompt, messages, streaming = false, maxTok
   return data.content?.[0]?.text || "";
 }
 __name(callClaude, "callClaude");
+__name2(callClaude, "callClaude");
+__name22(callClaude, "callClaude");
+__name222(callClaude, "callClaude");
 function stripMetadata(text) {
   return text.replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim();
 }
 __name(stripMetadata, "stripMetadata");
-async function stripePost(env, path, params) {
+__name2(stripMetadata, "stripMetadata");
+__name22(stripMetadata, "stripMetadata");
+__name222(stripMetadata, "stripMetadata");
+async function stripePost(env, path, params, extraHeaders = {}) {
   return fetch(`https://api.stripe.com${path}`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}`,
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
+      ...extraHeaders
     },
     body: params.toString()
   });
 }
 __name(stripePost, "stripePost");
+__name2(stripePost, "stripePost");
+__name22(stripePost, "stripePost");
+__name222(stripePost, "stripePost");
 async function stripeGet(env, path) {
   return fetch(`https://api.stripe.com${path}`, {
     headers: { "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}` }
   });
 }
 __name(stripeGet, "stripeGet");
+__name2(stripeGet, "stripeGet");
+__name22(stripeGet, "stripeGet");
+__name222(stripeGet, "stripeGet");
 async function fetchAndSummarize(env, url, instruction) {
   try {
     const res = await fetch(url, {
@@ -12184,6 +19815,9 @@ ${text}` }]
   }
 }
 __name(fetchAndSummarize, "fetchAndSummarize");
+__name2(fetchAndSummarize, "fetchAndSummarize");
+__name22(fetchAndSummarize, "fetchAndSummarize");
+__name222(fetchAndSummarize, "fetchAndSummarize");
 async function autoResearchCompetitors(env, websiteAnalysis, linkedinData) {
   if (!websiteAnalysis && !linkedinData)
     return "";
@@ -12217,6 +19851,9 @@ ${context}`
   }
 }
 __name(autoResearchCompetitors, "autoResearchCompetitors");
+__name2(autoResearchCompetitors, "autoResearchCompetitors");
+__name22(autoResearchCompetitors, "autoResearchCompetitors");
+__name222(autoResearchCompetitors, "autoResearchCompetitors");
 async function extractDocumentText(env, r2Key) {
   try {
     const obj = await env.UPLOADS.get(r2Key);
@@ -12265,6 +19902,9 @@ async function extractDocumentText(env, r2Key) {
   }
 }
 __name(extractDocumentText, "extractDocumentText");
+__name2(extractDocumentText, "extractDocumentText");
+__name22(extractDocumentText, "extractDocumentText");
+__name222(extractDocumentText, "extractDocumentText");
 function sanitizeDocumentText(text) {
   if (!text)
     return "";
@@ -12272,6 +19912,9 @@ function sanitizeDocumentText(text) {
   return clean.slice(0, 5e3);
 }
 __name(sanitizeDocumentText, "sanitizeDocumentText");
+__name2(sanitizeDocumentText, "sanitizeDocumentText");
+__name22(sanitizeDocumentText, "sanitizeDocumentText");
+__name222(sanitizeDocumentText, "sanitizeDocumentText");
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -12279,11 +19922,24 @@ function json(data, status = 200) {
   });
 }
 __name(json, "json");
+function jsonCORS(data, status, req) {
+  return new Response(JSON.stringify(data), {
+    status: status || 200,
+    headers: { "Content-Type": "application/json", ...getCORSHeaders(req) }
+  });
+}
+__name(jsonCORS, "jsonCORS");
+__name2(json, "json");
+__name22(json, "json");
+__name222(json, "json");
 async function handleAuthLogin(request, env) {
   try {
     const { email, password } = await request.json();
     if (!email || !password)
       return json({ error: "Please enter both your email and password." }, 400);
+    const ip4 = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (await authRateLimit(env, (email || "unknown") + ":" + ip4))
+      return json({ error: "Too many attempts. Please wait 15 minutes before trying again." }, 429);
     const user = await getUserByEmail(env, email);
     if (!user)
       return json({ error: "No account found with that email. Double check your address or try the Magic Link option." }, 401);
@@ -12295,7 +19951,7 @@ async function handleAuthLogin(request, env) {
       return json({ error: 'Incorrect password. Try again or click "Forgot password?" to reset it.' }, 401);
     }
     await updateLastLogin(env, user.id);
-    const secret = env.JWT_SECRET || "dev-secret-change-me";
+    const secret = getJWTSecret(env);
     const token = await createSessionToken(user.id, user.role, secret);
     await trackFunnelEvent(env, "login_success", { userId: user.id, method: "password" });
     return json({
@@ -12308,11 +19964,20 @@ async function handleAuthLogin(request, env) {
   }
 }
 __name(handleAuthLogin, "handleAuthLogin");
+__name2(handleAuthLogin, "handleAuthLogin");
+__name22(handleAuthLogin, "handleAuthLogin");
+__name222(handleAuthLogin, "handleAuthLogin");
 async function handleAuthRegister(request, env) {
   try {
     const { email, name, password } = await request.json();
     if (!email)
       return json({ error: "Email required" }, 400);
+    const ip2 = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (await authRateLimit(env, email + ":" + ip2))
+      return json({ error: "Too many attempts. Please wait 15 minutes before trying again." }, 429);
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!emailRegex.test(email.trim()))
+      return json({ error: "Please enter a valid email address" }, 400);
     const existing = await getUserByEmail(env, email);
     if (existing)
       return json({ error: "Email already registered" }, 409);
@@ -12321,7 +19986,7 @@ async function handleAuthRegister(request, env) {
     if (passwordHash) {
       await updateUserPassword(env, user.id, passwordHash);
     }
-    const secret = env.JWT_SECRET || "dev-secret-change-me";
+    const secret = getJWTSecret(env);
     const token = await createSessionToken(user.id, user.role, secret);
     return json({
       token,
@@ -12332,19 +19997,30 @@ async function handleAuthRegister(request, env) {
   }
 }
 __name(handleAuthRegister, "handleAuthRegister");
+__name2(handleAuthRegister, "handleAuthRegister");
+__name22(handleAuthRegister, "handleAuthRegister");
+__name222(handleAuthRegister, "handleAuthRegister");
 async function handleAuthMagic(request, env) {
   try {
     const { token } = await request.json();
     if (!token)
       return json({ error: "Token required" }, 400);
-    const row = await consumeMagicToken(env, token);
+    const persistentRow = await env.DB.prepare(
+      `SELECT * FROM auth_tokens WHERE token = ? AND type = 'persistent_magic' AND expires_at > datetime('now')`
+    ).bind(token).first().catch(() => null);
+    let row;
+    if (persistentRow) {
+      row = persistentRow;
+    } else {
+      row = await consumeMagicToken(env, token);
+    }
     if (!row)
       return json({ error: "Invalid or expired token" }, 401);
     const user = await getUserById(env, row.user_id);
     if (!user)
       return json({ error: "User not found" }, 404);
     await updateLastLogin(env, user.id);
-    const secret = env.JWT_SECRET || "dev-secret-change-me";
+    const secret = getJWTSecret(env);
     const sessionToken = await createSessionToken(user.id, user.role, secret);
     return json({
       token: sessionToken,
@@ -12355,11 +20031,20 @@ async function handleAuthMagic(request, env) {
   }
 }
 __name(handleAuthMagic, "handleAuthMagic");
+__name2(handleAuthMagic, "handleAuthMagic");
+__name22(handleAuthMagic, "handleAuthMagic");
+__name222(handleAuthMagic, "handleAuthMagic");
 async function handleRequestMagic(request, env) {
   try {
     const { email } = await request.json();
     if (!email)
       return json({ error: "Email required" }, 400);
+    const ip3 = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (await authRateLimit(env, email + ":" + ip3))
+      return json({ error: "Too many sign-in requests. Please wait 15 minutes before trying again." }, 429);
+    const emailRegex2 = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    if (!emailRegex2.test(email.trim()))
+      return json({ error: "Please enter a valid email address" }, 400);
     let user = await getUserByEmail(env, email);
     if (!user) {
       user = await createUser(env, { email, name: "", role: "user" });
@@ -12369,19 +20054,29 @@ async function handleRequestMagic(request, env) {
     const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     const magicUrl = `${origin}/magic?token=${token}`;
     if (env.RESEND_API_KEY) {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-          to: [email],
-          subject: "Your Deep Work session is ready",
-          html: getMagicLinkEmail(magicUrl, email)
-        })
-      });
+      let emailSent = false;
+      try {
+        const emailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+            to: [email],
+            subject: "Your Deep Work session is ready",
+            html: getMagicLinkEmail(magicUrl, email)
+          })
+        });
+        emailSent = emailRes.ok;
+      } catch (_) {
+      }
+      if (!emailSent) {
+        await logError(env, { endpoint: "/api/auth/request-magic", method: "POST", statusCode: 503, errorType: "resend_failure", errorMessage: "Failed to deliver magic link email to " + email }).catch(() => {
+        });
+        return json({ error: "We could not send the login email right now. Please try again in a moment, or contact james@jamesguldan.com for help." }, 503);
+      }
     }
     return json({ ok: true, message: "Magic link sent", debug_url: env.DEBUG_MAGIC ? magicUrl : void 0 });
   } catch (e) {
@@ -12389,6 +20084,9 @@ async function handleRequestMagic(request, env) {
   }
 }
 __name(handleRequestMagic, "handleRequestMagic");
+__name2(handleRequestMagic, "handleRequestMagic");
+__name22(handleRequestMagic, "handleRequestMagic");
+__name222(handleRequestMagic, "handleRequestMagic");
 async function handleAuthMe(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -12396,6 +20094,9 @@ async function handleAuthMe(request, env) {
   return json({ id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier });
 }
 __name(handleAuthMe, "handleAuthMe");
+__name2(handleAuthMe, "handleAuthMe");
+__name22(handleAuthMe, "handleAuthMe");
+__name222(handleAuthMe, "handleAuthMe");
 async function handleSetPassword(request, env) {
   try {
     const user = await requireAuth(request, env);
@@ -12412,111 +20113,11 @@ async function handleSetPassword(request, env) {
   }
 }
 __name(handleSetPassword, "handleSetPassword");
-async function handleForgotPassword(request, env) {
-  try {
-    const { email } = await request.json();
-    if (!email)
-      return json({ error: "Email required" }, 400);
-    const user = await getUserByEmail(env, email);
-    if (!user)
-      return json({ ok: true, message: "If that email exists, a reset link is on its way." });
-    const token = generateMagicToken();
-    await storeMagicToken(env, token, user.id, "password_reset", 2);
-    const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
-    const resetUrl = `${origin}/reset-password?token=${token}`;
-    if (env.RESEND_API_KEY) {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          from: "James Guldan <noreply@jamesguldan.com>",
-          to: [email],
-          subject: "Reset your Deep Work App password",
-          html: getPasswordResetEmail(resetUrl, email)
-        })
-      });
-    }
-    return json({
-      ok: true,
-      message: "If that email exists, a reset link is on its way.",
-      // Only expose URL if debug mode is on (for testing without email)
-      debug_url: env.DEBUG_MAGIC ? resetUrl : void 0
-    });
-  } catch (e) {
-    return json({ error: "Failed to send reset email" }, 500);
-  }
-}
-__name(handleForgotPassword, "handleForgotPassword");
-async function handleResetPassword(request, env) {
-  try {
-    const { token, password } = await request.json();
-    if (!token)
-      return json({ error: "Reset token required" }, 400);
-    if (!password || password.length < 8)
-      return json({ error: "Password must be at least 8 characters" }, 400);
-    const row = await env.DB.prepare(
-      `SELECT user_id, type FROM auth_tokens WHERE token = ? AND used = 0 AND expires_at > datetime('now')`
-    ).bind(token).first().catch(() => null);
-    if (!row || row.type !== "password_reset") {
-      return json({ error: "This reset link is invalid or has expired. Please request a new one." }, 400);
-    }
-    await env.DB.prepare(`UPDATE auth_tokens SET used = 1 WHERE token = ?`).bind(token).run();
-    const hash = await hashPassword(password);
-    await updateUserPassword(env, row.user_id, hash);
-    const user = await getUserById(env, row.user_id);
-    const secret = env.JWT_SECRET || "dev-secret-change-me";
-    const sessionToken = await createSessionToken(user.id, user.role, secret);
-    return json({
-      ok: true,
-      token: sessionToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier }
-    });
-  } catch (e) {
-    return json({ error: "Failed to reset password" }, 500);
-  }
-}
-__name(handleResetPassword, "handleResetPassword");
-function serveResetPasswordPage(request, env, url) {
-  const token = url.searchParams.get("token");
-  return new Response(getResetPasswordHTML(token), { headers: htmlHeaders() });
-}
-__name(serveResetPasswordPage, "serveResetPasswordPage");
-function getPasswordResetEmail(resetUrl, email) {
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#FDFCFA;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-        <tr><td style="padding-bottom:32px;">
-          <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#1a1a1a;">JAMES GULDAN</p>
-        </td></tr>
-        <tr><td style="background:#fff;border:1px solid #EAE7E2;border-radius:20px;padding:40px;">
-          <p style="margin:0 0 8px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;">Deep Work App</p>
-          <h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#1a1a1a;line-height:1.2;">Reset your password</h1>
-          <p style="margin:0 0 32px;font-size:15px;color:#666;line-height:1.6;">Someone requested a password reset for <strong>${email}</strong>. Click the button below to set a new one. This link expires in 2 hours.</p>
-          <a href="${resetUrl}" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:16px 32px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Reset My Password &rarr;</a>
-          <p style="margin:32px 0 0;font-size:13px;color:#999;line-height:1.6;">If you didn't request this, you can safely ignore this email. Your password won't change.</p>
-          <hr style="border:none;border-top:1px solid #EAE7E2;margin:28px 0;">
-          <p style="margin:0;font-size:12px;color:#bbb;">Or copy this link: <a href="${resetUrl}" style="color:#c4703f;word-break:break-all;">${resetUrl}</a></p>
-        </td></tr>
-        <tr><td style="padding-top:24px;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#bbb;">&copy; ${new Date().getFullYear()} Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;">Privacy</a></p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
-__name(getPasswordResetEmail, "getPasswordResetEmail");
-
+__name2(handleSetPassword, "handleSetPassword");
+__name22(handleSetPassword, "handleSetPassword");
+__name222(handleSetPassword, "handleSetPassword");
 function getMagicLinkEmail(magicUrl, email) {
-  const year = new Date().getFullYear();
+  const year = (/* @__PURE__ */ new Date()).getFullYear();
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12524,8 +20125,8 @@ function getMagicLinkEmail(magicUrl, email) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="x-apple-disable-message-reformatting">
 </head>
-<body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#FDFCFA;padding:40px 20px;">
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;">
   <tr><td align="center">
     <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
 
@@ -12557,7 +20158,7 @@ function getMagicLinkEmail(magicUrl, email) {
       <!-- Footer -->
       <tr><td style="padding-top:24px;text-align:center;">
         <p style="margin:0 0 6px;font-size:12px;color:#bbb;">Didn&rsquo;t request this? You can safely ignore it.</p>
-        <p style="margin:0;font-size:12px;color:#bbb;">&copy; ${year} Align Growth LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;text-decoration:none;">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="mailto:james@jamesguldan.com" style="color:#bbb;text-decoration:none;">Support</a></p>
+        <p style="margin:0;font-size:12px;color:#bbb;">&copy; ${year} Align Consulting LLC &nbsp;&middot;&nbsp; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#bbb;text-decoration:none;">Privacy Policy</a> &nbsp;&middot;&nbsp; <a href="mailto:james@jamesguldan.com" style="color:#bbb;text-decoration:none;">Support</a></p>
       </td></tr>
 
     </table>
@@ -12567,203 +20168,77 @@ function getMagicLinkEmail(magicUrl, email) {
 </html>`;
 }
 __name(getMagicLinkEmail, "getMagicLinkEmail");
-
-function getResetPasswordHTML(token) {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reset Password \u2014 Deep Work App</title>
-<link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@1,400&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --bg: #FDFCFA; --bg2: #F5F1EC; --accent: #c4703f; --text: #1a1a1a; --muted: #666; --border: #EAE7E2; --error: #c0392b; --success: #2d7a4f; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-  body {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 32px 20px;
-    background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(196,112,63,0.07) 0%, transparent 70%);
-  }
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; height: 64px;
-    display: flex; align-items: center; padding: 0 48px;
-    background: rgba(253,252,250,0.92); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border); z-index: 10;
-  }
-  .nav-logo { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text); text-decoration: none; }
-  .card { width: 100%; max-width: 420px; margin-top: 32px; }
-  .card-header { text-align: center; margin-bottom: 32px; }
-  .card-header h1 { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-  .card-header p { font-size: 15px; color: var(--muted); line-height: 1.6; }
-  .card-header em { font-style: italic; font-family: 'Playfair Display', serif; color: var(--accent); }
-  .panel { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 36px; box-shadow: 0 2px 12px rgba(26,26,26,0.06), 0 8px 40px rgba(26,26,26,0.06); }
-  .form-group { margin-bottom: 18px; }
-  label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.6px; }
-  input[type="password"] {
-    width: 100%; padding: 13px 16px; background: var(--bg); border: 1px solid var(--border);
-    border-radius: 10px; color: var(--text); font-size: 15px; font-family: 'Inter', sans-serif;
-    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,112,63,0.12); }
-  input::placeholder { color: #bbb; }
-  .password-strength { height: 3px; border-radius: 2px; margin-top: 8px; background: var(--border); overflow: hidden; }
-  .password-strength-bar { height: 100%; border-radius: 2px; width: 0; transition: width 0.3s, background 0.3s; }
-  .strength-hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
-  .btn-primary {
-    width: 100%; padding: 14px 32px; background: var(--text); border: none; border-radius: 50px;
-    color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px;
-    transition: background 0.2s, transform 0.1s; font-family: 'Inter', sans-serif; letter-spacing: 0.01em;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.18);
-  }
-  .btn-primary:hover { background: #333; transform: translateY(-1px); }
-  .btn-primary:active { transform: scale(0.99); }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .status-box { display: none; margin-top: 16px; padding: 13px 16px; border-radius: 10px; font-size: 14px; line-height: 1.5; }
-  .status-box.error { background: rgba(192,57,43,0.06); border: 1px solid rgba(192,57,43,0.2); color: var(--error); display: block; }
-  .status-box.success { background: rgba(45,122,79,0.06); border: 1px solid rgba(45,122,79,0.2); color: var(--success); display: block; }
-  .footer-note { text-align: center; margin-top: 24px; font-size: 13px; color: var(--muted); }
-  .footer-note a { color: var(--accent); text-decoration: none; font-weight: 500; }
-  .btn-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
-</head>
-<body>
-<nav><a href="/" class="nav-logo">James Guldan</a></nav>
-
-<div class="card">
-  <div class="card-header">
-    <h1>Set a new password</h1>
-    <p>Choose something strong for your <em>Deep Work</em> account.</p>
-  </div>
-
-  <div class="panel" id="mainPanel">
-    <div class="form-group">
-      <label>New Password</label>
-      <input type="password" id="pwd1" placeholder="At least 8 characters" oninput="checkStrength(this.value)" autocomplete="new-password">
-      <div class="password-strength"><div class="password-strength-bar" id="strengthBar"></div></div>
-      <div class="strength-hint" id="strengthHint"></div>
-    </div>
-    <div class="form-group">
-      <label>Confirm Password</label>
-      <input type="password" id="pwd2" placeholder="Same password again" autocomplete="new-password" onkeydown="if(event.key==='Enter')doReset()">
-    </div>
-    <button class="btn-primary" id="btnReset" onclick="doReset()">Set New Password \u2192</button>
-    <div class="status-box" id="statusBox"></div>
-  </div>
-
-  <p class="footer-note"><a href="/">\u2190 Back to sign in</a></p>
-</div>
-
-<script>
-const RESET_TOKEN = ${token ? JSON.stringify(token) : "null"};
-
-if (!RESET_TOKEN) {
-  document.querySelector('.panel').innerHTML = '<div style="text-align:center;padding:20px"><p style="font-size:28px;margin-bottom:12px;">\u26A0\uFE0F</p><p style="color:#c0392b;font-size:15px;">No reset token found. Please use the link from your email.</p></div>';
-}
-
-function checkStrength(v) {
-  const bar = document.getElementById('strengthBar');
-  const hint = document.getElementById('strengthHint');
-  if (!v) { bar.style.width = '0'; hint.textContent = ''; return; }
-  let score = 0;
-  if (v.length >= 8)  score++;
-  if (v.length >= 12) score++;
-  if (/[A-Z]/.test(v)) score++;
-  if (/[0-9]/.test(v)) score++;
-  if (/[^A-Za-z0-9]/.test(v)) score++;
-  const configs = [
-    { w: '20%', bg: '#e74c3c', label: 'Too short' },
-    { w: '40%', bg: '#e67e22', label: 'Weak' },
-    { w: '60%', bg: '#f1c40f', label: 'Fair' },
-    { w: '80%', bg: '#2ecc71', label: 'Good' },
-    { w: '100%', bg: '#27ae60', label: 'Strong' },
-  ];
-  const c = configs[Math.min(score, 4)];
-  bar.style.width = c.w;
-  bar.style.background = c.bg;
-  hint.textContent = c.label;
-  hint.style.color = c.bg;
-}
-
-async function doReset() {
-  const p1 = document.getElementById('pwd1').value;
-  const p2 = document.getElementById('pwd2').value;
-  const status = document.getElementById('statusBox');
-  status.className = 'status-box';
-
-  if (!p1 || p1.length < 8) { showStatus('error', 'Password must be at least 8 characters.'); return; }
-  if (p1 !== p2) { showStatus('error', 'Passwords do not match.'); return; }
-  if (!RESET_TOKEN) { showStatus('error', 'Invalid reset link. Please request a new one.'); return; }
-
-  const btn = document.getElementById('btnReset');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="btn-spinner"></span>Setting password...';
-
-  try {
-    const res = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: RESET_TOKEN, password: p1 })
-    });
-    const data = await res.json();
-
-    if (data.ok && data.token) {
-      localStorage.setItem('dw_session', data.token);
-      if (data.user?.role === 'admin') localStorage.setItem('dw_admin_token', data.token);
-      document.cookie = 'dw_session=' + data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
-      showStatus('success', 'Password set! Signing you in...');
-      setTimeout(() => { window.location.href = data.user?.role === 'admin' ? '/admin' : '/app'; }, 1200);
-    } else {
-      showStatus('error', data.error || 'Something went wrong. Please try again.');
-      btn.disabled = false;
-      btn.textContent = 'Set New Password \u2192';
-    }
-  } catch(e) {
-    showStatus('error', 'Connection error. Please try again.');
-    btn.disabled = false;
-    btn.textContent = 'Set New Password \u2192';
-  }
-}
-
-function showStatus(type, msg) {
-  const el = document.getElementById('statusBox');
-  el.className = 'status-box ' + type;
-  el.textContent = msg;
-}
-<\/script>
-</body>
-</html>`;
-}
-__name(getResetPasswordHTML, "getResetPasswordHTML");
+__name2(getMagicLinkEmail, "getMagicLinkEmail");
+__name22(getMagicLinkEmail, "getMagicLinkEmail");
+__name222(getMagicLinkEmail, "getMagicLinkEmail");
 async function handleMagicLink(request, env, url) {
   const token = url.searchParams.get("token");
   if (!token) {
     return new Response("Missing token", { status: 400 });
   }
   const row = await env.DB.prepare(
-    `SELECT type FROM auth_tokens WHERE token = ? AND used = 0 AND expires_at > datetime('now')`
+    `SELECT * FROM auth_tokens WHERE token = ? AND expires_at > datetime('now') AND (used = 0 OR type = 'persistent_magic')`
   ).bind(token).first().catch(() => null);
   if (!row) {
-    return new Response(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    return new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Link Expired</title>
-<style>body{font-family:sans-serif;background:#0a0a0f;color:#e8e8f0;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;}
-a{color:#6c63ff;}</style></head><body>
-<div><h2>This link has expired or already been used.</h2>
-<p style="margin-top:12px"><a href="/">Request a new one</a></p></div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#ffffff;color:#1d1d1f;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 20px;}
+.card{max-width:400px;background:#ffffff;border:1px solid #f0f0f0;border-radius:20px;padding:48px 40px;}
+.wordmark{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#1d1d1f;margin-bottom:24px;}
+.rule{width:40px;height:2px;background:#c4703f;margin:0 auto 32px;}
+h2{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:#1d1d1f;margin-bottom:12px;}
+p{font-size:15px;color:#666;line-height:1.6;margin-bottom:28px;}
+a{display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:14px;font-weight:600;}
+</style>
+</head><body>
+<div class="card">
+  <div class="wordmark">James Guldan</div>
+  <div class="rule"></div>
+  <h2>This link has expired</h2>
+  <p>Magic links can only be used once and expire after 24 hours. Request a new one to sign in.</p>
+  <a href="/">Request a new link</a>
+</div>
 </body></html>`, { status: 410, headers: { "Content-Type": "text/html;charset=UTF-8" } });
   }
   const origin = new URL(request.url).origin;
   const redirect = url.searchParams.get("redirect") || "";
-  const redirectParam = redirect ? `&redirect=${encodeURIComponent(redirect)}` : "";
-  const dest = row.type === "admin_magic" ? `${origin}/admin?magic=${encodeURIComponent(token)}` : `${origin}/?magic=${encodeURIComponent(token)}${redirectParam}`;
+  try {
+    const user = await getUserById(env, row.user_id);
+    if (user) {
+      if (row.type !== "persistent_magic") {
+        await env.DB.prepare(`UPDATE auth_tokens SET used = 1 WHERE token = ?`).bind(token).run().catch(() => null);
+      }
+      await updateLastLogin(env, user.id).catch(() => null);
+      const secret = getJWTSecret(env);
+      const sessionToken = await createSessionToken(user.id, user.role, secret);
+      const maxAge = 30 * 24 * 3600;
+      const isAdmin = row.type === "admin_magic";
+      const baseDest = isAdmin ? `${origin}/admin` : redirect ? `${origin}${redirect}` : `${origin}/app`;
+      const dest2 = `${baseDest}?_s=${encodeURIComponent(sessionToken)}`;
+      return new Response(null, {
+        status: 302,
+        headers: {
+          "Location": dest2,
+          "Set-Cookie": `dw_session=${sessionToken}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Lax; HttpOnly`,
+          "Cache-Control": "no-store"
+        }
+      });
+    }
+  } catch (e) {
+  }
+  const defaultRedirect = redirect ? `${origin}${redirect}` : `${origin}/app`;
+  const dest = row.type === "admin_magic" ? `${origin}/admin?magic=${encodeURIComponent(token)}` : `${defaultRedirect}?magic=${encodeURIComponent(token)}`;
   return Response.redirect(dest, 302);
 }
 __name(handleMagicLink, "handleMagicLink");
+__name2(handleMagicLink, "handleMagicLink");
+__name22(handleMagicLink, "handleMagicLink");
+__name222(handleMagicLink, "handleMagicLink");
 async function handleAdminStats(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12787,13 +20262,18 @@ async function handleAdminStats(request, env) {
       sessions: sessionsRow?.cnt || 0,
       revenue: revenueRow?.total || 0,
       completed: completedRow?.cnt || 0,
-      funnel: funnelRows
+      funnel: funnelRows,
+      sessionsToday: funnelRows?.today || 0,
+      usersThisWeek: 0
     });
   } catch (e) {
     return json({ error: "Stats query failed", detail: e.message }, 500);
   }
 }
 __name(handleAdminStats, "handleAdminStats");
+__name2(handleAdminStats, "handleAdminStats");
+__name22(handleAdminStats, "handleAdminStats");
+__name222(handleAdminStats, "handleAdminStats");
 async function handleAdminListUsers(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12819,6 +20299,9 @@ async function handleAdminListUsers(request, env) {
   }
 }
 __name(handleAdminListUsers, "handleAdminListUsers");
+__name2(handleAdminListUsers, "handleAdminListUsers");
+__name22(handleAdminListUsers, "handleAdminListUsers");
+__name222(handleAdminListUsers, "handleAdminListUsers");
 async function handleAdminCreateUser(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12846,6 +20329,32 @@ async function handleAdminCreateUser(request, env) {
   }
 }
 __name(handleAdminCreateUser, "handleAdminCreateUser");
+__name2(handleAdminCreateUser, "handleAdminCreateUser");
+__name22(handleAdminCreateUser, "handleAdminCreateUser");
+__name222(handleAdminCreateUser, "handleAdminCreateUser");
+async function handleAdminInjectDebrief(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin)
+    return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId, debrief } = await request.json();
+    if (!sessionId || !debrief)
+      return json({ error: "sessionId and debrief required" }, 400);
+    const raw = await env.SESSIONS.get(sessionId);
+    if (!raw)
+      return json({ error: "Session not found in KV" }, 404);
+    const session = JSON.parse(raw);
+    session.strategistDebrief = debrief;
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    return json({ ok: true, message: "Debrief injected successfully" });
+  } catch (e) {
+    return json({ error: "Failed to inject debrief", detail: e.message }, 500);
+  }
+}
+__name(handleAdminInjectDebrief, "handleAdminInjectDebrief");
+__name2(handleAdminInjectDebrief, "handleAdminInjectDebrief");
+__name22(handleAdminInjectDebrief, "handleAdminInjectDebrief");
+__name222(handleAdminInjectDebrief, "handleAdminInjectDebrief");
 async function handleAdminGenerateDebrief(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12871,6 +20380,9 @@ async function handleAdminGenerateDebrief(request, env) {
   }
 }
 __name(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
+__name2(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
+__name22(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
+__name222(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
 async function handleAdminListSessions(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12882,10 +20394,10 @@ async function handleAdminListSessions(request, env) {
     const offset = parseInt(url.searchParams.get("offset") || "0");
     let query, params;
     if (tier) {
-      query = `SELECT id, user_id, tier, phase, completed, created_at, updated_at FROM sessions WHERE tier = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+      query = `SELECT id, user_id, tier, phase, status, blueprint_generated, created_at, updated_at FROM sessions WHERE tier = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`;
       params = [tier, limit, offset];
     } else {
-      query = `SELECT id, user_id, tier, phase, completed, created_at, updated_at FROM sessions ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+      query = `SELECT id, user_id, tier, phase, status, blueprint_generated, created_at, updated_at FROM sessions ORDER BY created_at DESC LIMIT ? OFFSET ?`;
       params = [limit, offset];
     }
     const { results } = await env.DB.prepare(query).bind(...params).all();
@@ -12896,6 +20408,9 @@ async function handleAdminListSessions(request, env) {
   }
 }
 __name(handleAdminListSessions, "handleAdminListSessions");
+__name2(handleAdminListSessions, "handleAdminListSessions");
+__name22(handleAdminListSessions, "handleAdminListSessions");
+__name222(handleAdminListSessions, "handleAdminListSessions");
 async function handleAdminGetSession(request, env, path) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12924,6 +20439,9 @@ async function handleAdminGetSession(request, env, path) {
   }
 }
 __name(handleAdminGetSession, "handleAdminGetSession");
+__name2(handleAdminGetSession, "handleAdminGetSession");
+__name22(handleAdminGetSession, "handleAdminGetSession");
+__name222(handleAdminGetSession, "handleAdminGetSession");
 async function handleAdminMagicLink(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12952,6 +20470,9 @@ async function handleAdminMagicLink(request, env) {
   }
 }
 __name(handleAdminMagicLink, "handleAdminMagicLink");
+__name2(handleAdminMagicLink, "handleAdminMagicLink");
+__name22(handleAdminMagicLink, "handleAdminMagicLink");
+__name222(handleAdminMagicLink, "handleAdminMagicLink");
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -12960,17 +20481,38 @@ async function handleAdminTestBlueprint(request, env) {
     const { email, brandName, niche } = await request.json();
     if (!email)
       return json({ error: "Email required" }, 400);
-    const user = await getUserByEmail(env, email);
-    if (!user)
-      return json({ error: "User not found. Create them first." }, 404);
+    let user = await getUserByEmail(env, email);
+    let userCreated = false;
+    if (!user) {
+      user = await createUser(env, { email, name: brandName || "", role: "user" });
+      userCreated = true;
+    }
+    let sessionId;
+    let session;
     const sessionRow = await env.DB.prepare("SELECT id FROM sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1").bind(user.id).first();
-    if (!sessionRow)
-      return json({ error: "No session found for this user. They need to start the app first." }, 404);
-    const sessionId = sessionRow.id;
-    const raw = await env.SESSIONS.get(sessionId);
-    if (!raw)
-      return json({ error: "Session not found in KV." }, 404);
-    const session = JSON.parse(raw);
+    if (sessionRow) {
+      sessionId = sessionRow.id;
+      const raw = await env.SESSIONS.get(sessionId);
+      session = raw ? JSON.parse(raw) : null;
+    }
+    if (!session) {
+      sessionId = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+      session = {
+        id: sessionId,
+        tier: "blueprint",
+        phase: 1,
+        messages: [],
+        userData: {},
+        userId: user.id,
+        email,
+        blueprintGenerated: false,
+        siteGenerated: false,
+        createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+        systemPrompt: DEEP_WORK_SYSTEM_PROMPT
+      };
+      const now = (/* @__PURE__ */ new Date()).toISOString();
+      await env.DB.prepare("INSERT INTO sessions (id, user_id, tier, phase, status, email, created_at, message_count) VALUES (?,?,?,?,?,?,?,?)").bind(sessionId, user.id, "blueprint", 1, "active", email, now, 0).run();
+    }
     const bpRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -12980,7 +20522,7 @@ async function handleAdminTestBlueprint(request, env) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 4e3,
+        max_tokens: 8e3,
         messages: [{
           role: "user",
           content: `Generate a complete brand blueprint JSON for a person named "${brandName}" in the niche "${niche}". The blueprint should be realistic and detailed with all 8 parts filled out. Follow this exact JSON structure:
@@ -12993,7 +20535,7 @@ async function handleAdminTestBlueprint(request, env) {
     "part2": { "title": "Ideal Customer Avatar", "name": "First name", "ageRange": "range", "lifeSituation": "2 sentences", "tryingToAchieve": "goal", "whatIsStoppingThem": "obstacle", "exactWords": ["phrase1","phrase2","phrase3"], "alreadyTried": ["thing1","thing2"], "whyItDidNotWork": "pattern" },
     "part3": { "title": "Niche Positioning", "nicheStatement": "I help X do Y without Z", "whoTheyServe": "desc", "whoTheyDoNotServe": "desc", "uniqueMechanism": "methodology name", "competitorGap": "differentiation" },
     "part4": { "title": "Offer Suite", "entryOffer": {"name":"","description":"","price":"","delivery":""}, "coreOffer": {"name":"","description":"","price":"","delivery":""}, "premiumOffer": {"name":"","description":"","price":"","delivery":""}, "ascensionLogic": "how each leads to next" },
-    "part5": { "title": "Website Blueprint", "heroHeadlines": ["1","2","3"], "heroSubheadline": "one line", "heroCTA": "button text", "sections": [{"name":"Section","purpose":"purpose","content":"content"}], "testimonialFraming": "approach" },
+    "part5": { "title": "Website Blueprint", "pageNarrative": "2-3 sentences describing the emotional arc of the page", "heroHeadlines": ["1","2","3"], "heroSubheadline": "one line", "heroCTA": "button text", "heroImageTheme": "specific evocative image description for hero background", "sections": [{"name":"Section","purpose":"purpose","content":"content","rationale":"why this section exists here in this order","confidence":85,"imageTheme":"specific image description or none","visualMood":"light or dark or accent"}], "testimonialFraming": "approach" },
     "part6": { "title": "Gap Analysis", "credibilityGaps": ["gap1","gap2","gap3"], "marketingOpportunities": ["opp1","opp2","opp3"], "firstMove": "most important first step" },
     "part7": { "title": "Headlines and Positioning Statements", "heroHeadlineOptions": ["1","2","3","4","5","6","7","8","9","10"], "taglineOptions": ["1","2","3","4","5"], "positioningStatements": {"website":"for homepage","social":"for bios","inPerson":"for introductions"} },
     "part8": { "title": "Your Recommended Next Step", "recommendation": "site_in_sixty", "headline": "compelling one liner", "personalizedMessage": "3 to 5 sentences", "whyNow": "1 to 2 sentences", "specificBenefit": "concrete benefit" },
@@ -13014,9 +20556,54 @@ Return ONLY the JSON, no other text.`
     } catch (parseErr) {
       return json({ error: "Failed to parse generated blueprint JSON", detail: blueprintText.slice(0, 500) }, 500);
     }
+    const adminBpVal = validateBlueprint(blueprint);
+    console.log("[Blueprint QA][admin] score=" + adminBpVal.score + " summary=" + adminBpVal.summary);
+    if (!adminBpVal.passed) {
+      const adminBpRepair = autoRepairBlueprint(blueprint);
+      blueprint = adminBpRepair.blueprint;
+      if (adminBpRepair.repairCount > 0)
+        console.log("[Blueprint QA][admin] Repaired " + adminBpRepair.repairCount + ": " + adminBpRepair.repairs.join("; "));
+    }
     session.blueprint = blueprint;
     session.blueprintGenerated = true;
     session.phase = 8;
+    try {
+      const b = blueprint?.blueprint || {};
+      const debriefRes = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 1024,
+          system: STRATEGIST_DEBRIEF_PROMPT,
+          messages: [{
+            role: "user",
+            content: `Imagine you just had an incredible hour-long brand strategy conversation with ${b.name || brandName}. They are in the ${niche || "business coaching"} space. Their niche statement is: "${b.part3?.nicheStatement || "helping people transform their business"}". Their ideal client is ${b.part2?.name || "someone"} who is ${b.part2?.lifeSituation || "stuck and looking for clarity"}. Their brand promise is: "${b.part1?.coreBrandPromise || "transformation"}". Their biggest pain point is ${b.part2?.whatIsStoppingThem || "not knowing where to start"}. They do not have a website yet and have been relying on referrals. During the interview they said something powerful like: "I know I am good at what I do, I just do not know how to show that to the world yet." Their recommended next step is Site in Sixty.
+
+Now write the strategist debrief as a personal letter to this person. Return ONLY the JSON object.`
+          }]
+        })
+      });
+      const debriefData = await debriefRes.json();
+      const debriefText = debriefData.content?.[0]?.text || "";
+      try {
+        const djm = debriefText.match(/```json\n?([\s\S]*?)\n?```/) || debriefText.match(/\{[\s\S]*"reflection"[\s\S]*\}/);
+        if (djm) {
+          const debriefJson = JSON.parse(djm[djm[1] ? 1 : 0]);
+          if (debriefJson.reflection && debriefJson.insight) {
+            session.strategistDebrief = debriefJson;
+          }
+        }
+      } catch (_debriefParseErr) {
+        console.error("Test debrief parse failed, continuing without debrief");
+      }
+    } catch (_debriefErr) {
+      console.error("Test debrief generation failed, continuing without debrief");
+    }
     await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
     await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
     await env.DB.prepare("UPDATE sessions SET status = ?, phase = ?, blueprint_generated = 1 WHERE id = ?").bind("blueprint_complete", 8, sessionId).run();
@@ -13024,12 +20611,15 @@ Return ONLY the JSON, no other text.`
     await storeMagicToken(env, token, user.id, "magic_login", 72);
     const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     const magicLink = `${origin}/magic?token=${token}`;
-    return json({ ok: true, sessionId, magicLink, brandName: blueprint?.blueprint?.part1?.brandNames?.[0] || brandName });
+    return json({ ok: true, sessionId, magicLink, hasDebrief: !!session.strategistDebrief, userCreated, brandName: blueprint?.blueprint?.part1?.brandNames?.[0] || brandName });
   } catch (e) {
     return json({ error: "Failed to generate test blueprint", detail: e.message }, 500);
   }
 }
 __name(handleAdminTestBlueprint, "handleAdminTestBlueprint");
+__name2(handleAdminTestBlueprint, "handleAdminTestBlueprint");
+__name22(handleAdminTestBlueprint, "handleAdminTestBlueprint");
+__name222(handleAdminTestBlueprint, "handleAdminTestBlueprint");
 async function handleAdminQuickTestSession(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13067,7 +20657,7 @@ async function handleAdminQuickTestSession(request, env) {
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 4e3,
+          max_tokens: 8e3,
           messages: [{
             role: "user",
             content: 'Generate a complete brand blueprint JSON for a fictional executive coaching business. The person is "Alex Rivera" who helps mid-level tech managers become better leaders. Return ONLY valid JSON with this structure: {"blueprint":{"name":"Alex Rivera","generatedAt":"' + (/* @__PURE__ */ new Date()).toISOString() + '","part1":{"title":"Brand Foundation","brandNames":["Rivera Leadership","The Rivera Method","Alex Rivera Coaching"],"taglines":["tag1","tag2","tag3"],"visualDirection":{"colors":[{"name":"Primary","hex":"#2C3E50"},{"name":"Secondary","hex":"#C0842D"},{"name":"Accent","hex":"#E8B86D"},{"name":"Background","hex":"#FAFAF8"},{"name":"Text","hex":"#1A1A1A"}],"fonts":{"heading":"Playfair Display","body":"Inter"},"aesthetic":"desc"},"brandVoice":{"descriptors":["w1","w2","w3","w4","w5"],"doSay":["s1","s2","s3"],"neverSay":["s1","s2","s3"]},"coreBrandPromise":"promise"},"part2":{"title":"Ideal Customer Avatar","name":"Name","ageRange":"30 to 45","lifeSituation":"desc","tryingToAchieve":"goal","whatIsStoppingThem":"obstacle","exactWords":["p1","p2","p3"],"alreadyTried":["t1","t2"],"whyItDidNotWork":"reason"},"part3":{"title":"Niche Positioning","nicheStatement":"statement","whoTheyServe":"desc","whoTheyDoNotServe":"desc","uniqueMechanism":"method","competitorGap":"gap"},"part4":{"title":"Offer Suite","entryOffer":{"name":"n","description":"d","price":"$497","delivery":"del"},"coreOffer":{"name":"n","description":"d","price":"$5000","delivery":"del"},"premiumOffer":{"name":"n","description":"d","price":"$2500/mo","delivery":"del"},"ascensionLogic":"logic"},"part5":{"title":"Website Blueprint","heroHeadlines":["h1","h2","h3"],"heroSubheadline":"sub","heroCTA":"cta","sections":[{"name":"s","purpose":"p","content":"c"}],"testimonialFraming":"frame"},"part6":{"title":"Gap Analysis","credibilityGaps":["g1","g2","g3"],"marketingOpportunities":["o1","o2","o3"],"firstMove":"move"},"part7":{"title":"Headlines and Positioning Statements","heroHeadlineOptions":["1","2","3","4","5","6","7","8","9","10"],"taglineOptions":["1","2","3","4","5"],"positioningStatements":{"website":"w","social":"s","inPerson":"p"}},"part8":{"title":"Your Recommended Next Step","recommendation":"site_in_sixty","headline":"h","personalizedMessage":"msg","whyNow":"why","specificBenefit":"benefit"},"leadIntel":{"estimatedRevenue":"100K to 500K","industry":"Executive coaching","yearsInBusiness":"1 to 3","teamSize":"Solo","hasExistingBrand":false,"hasExistingWebsite":false,"hasInternalTeam":false,"brandMaturity":"Starting fresh","buyingTemperature":"Hot","biggestPainPoint":"pain","budgetSignals":"signal","bestFitService":"site_in_sixty","bestFitReason":"reason","notableQuotes":["q1","q2","q3"],"followUpAngle":"angle"}}}'
@@ -13084,6 +20674,42 @@ async function handleAdminQuickTestSession(request, env) {
         session.phase = 8;
         hasBlueprint = true;
         await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
+        try {
+          const b = blueprint?.blueprint || {};
+          const debriefRes = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "x-api-key": env.ANTHROPIC_API_KEY,
+              "anthropic-version": "2023-06-01",
+              "content-type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "claude-haiku-4-5-20251001",
+              max_tokens: 1024,
+              system: STRATEGIST_DEBRIEF_PROMPT,
+              messages: [{
+                role: "user",
+                content: `Imagine you just had an incredible hour-long brand strategy conversation with ${b.name || "Alex Rivera"}. They are in the executive coaching space. Their niche statement is: "${b.part3?.nicheStatement || "helping mid-level tech managers become better leaders"}". Their ideal client is ${b.part2?.name || "someone"} who is ${b.part2?.lifeSituation || "stuck and looking for clarity"}. Their brand promise is: "${b.part1?.coreBrandPromise || "transformation"}". Their biggest pain point is ${b.part2?.whatIsStoppingThem || "not knowing where to start"}. They do not have a website yet and have been relying on referrals. During the interview they said something powerful like: "I know I am good at what I do, I just do not know how to show that to the world yet." Their recommended next step is Site in Sixty.
+
+Now write the strategist debrief as a personal letter to this person. Return ONLY the JSON object.`
+              }]
+            })
+          });
+          const debriefData = await debriefRes.json();
+          const debriefText = debriefData.content?.[0]?.text || "";
+          try {
+            const djm = debriefText.match(/```json\n?([\s\S]*?)\n?```/) || debriefText.match(/\{[\s\S]*"reflection"[\s\S]*\}/);
+            if (djm) {
+              const debriefJson = JSON.parse(djm[djm[1] ? 1 : 0]);
+              if (debriefJson.reflection && debriefJson.insight) {
+                session.strategistDebrief = debriefJson;
+              }
+            }
+          } catch (_dpe) {
+          }
+        } catch (_de) {
+          console.error("Quick test debrief generation failed, continuing without debrief");
+        }
       } catch (_) {
       }
     }
@@ -13094,12 +20720,15 @@ async function handleAdminQuickTestSession(request, env) {
     await storeMagicToken(env, magicToken, user.id, "magic_login", 72);
     const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     const magicLink = `${origin}/magic?token=${magicToken}`;
-    return json({ ok: true, userId: user.id, sessionId, tier: tier || "blueprint", hasBlueprint, magicLink });
+    return json({ ok: true, userId: user.id, sessionId, tier: tier || "blueprint", hasBlueprint, hasDebrief: !!session.strategistDebrief, magicLink });
   } catch (e) {
     return json({ error: "Failed to create test session", detail: e.message }, 500);
   }
 }
 __name(handleAdminQuickTestSession, "handleAdminQuickTestSession");
+__name2(handleAdminQuickTestSession, "handleAdminQuickTestSession");
+__name22(handleAdminQuickTestSession, "handleAdminQuickTestSession");
+__name222(handleAdminQuickTestSession, "handleAdminQuickTestSession");
 async function handleAdminGetSettings(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13112,6 +20741,9 @@ async function handleAdminGetSettings(request, env) {
   }
 }
 __name(handleAdminGetSettings, "handleAdminGetSettings");
+__name2(handleAdminGetSettings, "handleAdminGetSettings");
+__name22(handleAdminGetSettings, "handleAdminGetSettings");
+__name222(handleAdminGetSettings, "handleAdminGetSettings");
 async function handleAdminSaveSettings(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13130,6 +20762,9 @@ async function handleAdminSaveSettings(request, env) {
   }
 }
 __name(handleAdminSaveSettings, "handleAdminSaveSettings");
+__name2(handleAdminSaveSettings, "handleAdminSaveSettings");
+__name22(handleAdminSaveSettings, "handleAdminSaveSettings");
+__name222(handleAdminSaveSettings, "handleAdminSaveSettings");
 async function handleAdminGetPrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13148,6 +20783,9 @@ async function handleAdminGetPrompt(request, env) {
   }
 }
 __name(handleAdminGetPrompt, "handleAdminGetPrompt");
+__name2(handleAdminGetPrompt, "handleAdminGetPrompt");
+__name22(handleAdminGetPrompt, "handleAdminGetPrompt");
+__name222(handleAdminGetPrompt, "handleAdminGetPrompt");
 async function handleAdminSavePrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13159,7 +20797,7 @@ async function handleAdminSavePrompt(request, env) {
     const vRow = await env.DB.prepare(`SELECT MAX(version) as max_v FROM prompt_versions`).first().catch(() => ({ max_v: 0 }));
     const nextVersion = (vRow?.max_v || 0) + 1;
     await env.DB.prepare(`
-      INSERT INTO prompt_versions (version, prompt, notes, active, created_at)
+      INSERT INTO prompt_versions (version, system_prompt, notes, active, created_at)
       VALUES (?, ?, ?, 1, datetime('now'))
     `).bind(nextVersion, prompt, notes || "").run();
     await env.DB.prepare(`UPDATE prompt_versions SET active = 0 WHERE version != ?`).bind(nextVersion).run();
@@ -13169,6 +20807,9 @@ async function handleAdminSavePrompt(request, env) {
   }
 }
 __name(handleAdminSavePrompt, "handleAdminSavePrompt");
+__name2(handleAdminSavePrompt, "handleAdminSavePrompt");
+__name22(handleAdminSavePrompt, "handleAdminSavePrompt");
+__name222(handleAdminSavePrompt, "handleAdminSavePrompt");
 async function handleHealthCheck(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13177,6 +20818,9 @@ async function handleHealthCheck(request, env) {
   return json(result);
 }
 __name(handleHealthCheck, "handleHealthCheck");
+__name2(handleHealthCheck, "handleHealthCheck");
+__name22(handleHealthCheck, "handleHealthCheck");
+__name222(handleHealthCheck, "handleHealthCheck");
 async function handleMonitoring(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13185,6 +20829,9 @@ async function handleMonitoring(request, env) {
   return json(data);
 }
 __name(handleMonitoring, "handleMonitoring");
+__name2(handleMonitoring, "handleMonitoring");
+__name22(handleMonitoring, "handleMonitoring");
+__name222(handleMonitoring, "handleMonitoring");
 async function handleDigest(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13193,6 +20840,9 @@ async function handleDigest(request, env) {
   return json(digest);
 }
 __name(handleDigest, "handleDigest");
+__name2(handleDigest, "handleDigest");
+__name22(handleDigest, "handleDigest");
+__name222(handleDigest, "handleDigest");
 async function handleAdminErrors(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13203,6 +20853,9 @@ async function handleAdminErrors(request, env) {
   return json({ errors: errors.results || [] });
 }
 __name(handleAdminErrors, "handleAdminErrors");
+__name2(handleAdminErrors, "handleAdminErrors");
+__name22(handleAdminErrors, "handleAdminErrors");
+__name222(handleAdminErrors, "handleAdminErrors");
 async function handleAPIUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13244,6 +20897,9 @@ async function handleAPIUsage(request, env) {
   });
 }
 __name(handleAPIUsage, "handleAPIUsage");
+__name2(handleAPIUsage, "handleAPIUsage");
+__name22(handleAPIUsage, "handleAPIUsage");
+__name222(handleAPIUsage, "handleAPIUsage");
 async function handleResolveAlert(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13253,6 +20909,9 @@ async function handleResolveAlert(request, env) {
   return json({ ok: true });
 }
 __name(handleResolveAlert, "handleResolveAlert");
+__name2(handleResolveAlert, "handleResolveAlert");
+__name22(handleResolveAlert, "handleResolveAlert");
+__name222(handleResolveAlert, "handleResolveAlert");
 var DRIP_WORKER_URL = "https://email-drip-worker.james-d13.workers.dev";
 async function fireEventToDripWorker(env, email, eventType, data = {}) {
   try {
@@ -13271,6 +20930,9 @@ async function fireEventToDripWorker(env, email, eventType, data = {}) {
   }
 }
 __name(fireEventToDripWorker, "fireEventToDripWorker");
+__name2(fireEventToDripWorker, "fireEventToDripWorker");
+__name22(fireEventToDripWorker, "fireEventToDripWorker");
+__name222(fireEventToDripWorker, "fireEventToDripWorker");
 async function runAbandonmentCheck(env) {
   try {
     const abandoned = await env.DB.prepare(`
@@ -13308,6 +20970,9 @@ async function runAbandonmentCheck(env) {
   }
 }
 __name(runAbandonmentCheck, "runAbandonmentCheck");
+__name2(runAbandonmentCheck, "runAbandonmentCheck");
+__name22(runAbandonmentCheck, "runAbandonmentCheck");
+__name222(runAbandonmentCheck, "runAbandonmentCheck");
 async function runDailyHealthCheck(env) {
   const results = {};
   const checks = [
@@ -13342,6 +21007,9 @@ async function runDailyHealthCheck(env) {
   return { allOk, results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runDailyHealthCheck, "runDailyHealthCheck");
+__name2(runDailyHealthCheck, "runDailyHealthCheck");
+__name22(runDailyHealthCheck, "runDailyHealthCheck");
+__name222(runDailyHealthCheck, "runDailyHealthCheck");
 async function handleSystemHealthCheck(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13350,6 +21018,9 @@ async function handleSystemHealthCheck(request, env) {
   return json(result);
 }
 __name(handleSystemHealthCheck, "handleSystemHealthCheck");
+__name2(handleSystemHealthCheck, "handleSystemHealthCheck");
+__name22(handleSystemHealthCheck, "handleSystemHealthCheck");
+__name222(handleSystemHealthCheck, "handleSystemHealthCheck");
 async function handleAdminUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13376,6 +21047,9 @@ async function handleAdminUsage(request, env) {
   });
 }
 __name(handleAdminUsage, "handleAdminUsage");
+__name2(handleAdminUsage, "handleAdminUsage");
+__name22(handleAdminUsage, "handleAdminUsage");
+__name222(handleAdminUsage, "handleAdminUsage");
 async function handleAdminUserUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -13397,11 +21071,46 @@ async function handleAdminUserUsage(request, env) {
   return json({ error: "Provide userId or sessionId query param" }, 400);
 }
 __name(handleAdminUserUsage, "handleAdminUserUsage");
-
-// ── SESSION RESTART ──────────────────────────────────────────────────────────
+__name2(handleAdminUserUsage, "handleAdminUserUsage");
+__name22(handleAdminUserUsage, "handleAdminUserUsage");
+__name222(handleAdminUserUsage, "handleAdminUserUsage");
+async function handleAdminPurgeKV(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin)
+    return json({ error: "Forbidden" }, 403);
+  let deleted = 0;
+  let cursor = void 0;
+  let errors = [];
+  try {
+    while (true) {
+      const listOpts = cursor ? { limit: 1e3, cursor } : { limit: 1e3 };
+      const result = await env.SESSIONS.list(listOpts);
+      const keys = result.keys || [];
+      for (const k of keys) {
+        try {
+          await env.SESSIONS.delete(k.name);
+          deleted++;
+        } catch (e) {
+          errors.push(k.name);
+        }
+      }
+      if (result.list_complete)
+        break;
+      cursor = result.cursor;
+    }
+    return json({ ok: true, deleted, errors: errors.length ? errors : void 0 });
+  } catch (err) {
+    return json({ error: err.message || String(err), deleted }, 500);
+  }
+}
+__name(handleAdminPurgeKV, "handleAdminPurgeKV");
+__name2(handleAdminPurgeKV, "handleAdminPurgeKV");
+__name22(handleAdminPurgeKV, "handleAdminPurgeKV");
+__name222(handleAdminPurgeKV, "handleAdminPurgeKV");
 async function handleSessionRestart(request, env) {
   const user = await requireAuth(request, env);
-  if (!user) return json({ error: "Not authenticated" }, 401);
+  if (!user)
+    return json({ error: "Not authenticated" }, 401);
   try {
     const userRow = await env.DB.prepare("SELECT restart_count FROM users WHERE id = ?").bind(user.id).first();
     const restartCount = userRow?.restart_count || 0;
@@ -13411,27 +21120,32 @@ async function handleSessionRestart(request, env) {
     const activeSessions = await env.DB.prepare(
       "SELECT id FROM sessions WHERE user_id = ? AND (status = 'active' OR status IS NULL)"
     ).bind(user.id).all();
-    for (const row of (activeSessions?.results || [])) {
-      try { await env.SESSIONS.delete(row.id); } catch (_) {}
+    for (const row of activeSessions?.results || []) {
+      try {
+        await env.SESSIONS.delete(row.id);
+      } catch (_) {
+      }
     }
     await env.DB.prepare(
       "UPDATE sessions SET status = 'restarted', updated_at = ? WHERE user_id = ? AND (status = 'active' OR status IS NULL)"
-    ).bind(new Date().toISOString(), user.id).run();
+    ).bind((/* @__PURE__ */ new Date()).toISOString(), user.id).run();
     await env.DB.prepare("UPDATE users SET restart_count = restart_count + 1 WHERE id = ?").bind(user.id).run();
     try {
       await env.DB.prepare(
         "INSERT INTO event_log (type, data, created_at) VALUES ('session_restart', ?, ?)"
-      ).bind(JSON.stringify({ userId: user.id, email: user.email }), new Date().toISOString()).run();
-    } catch (_) {}
+      ).bind(JSON.stringify({ userId: user.id, email: user.email }), (/* @__PURE__ */ new Date()).toISOString()).run();
+    } catch (_) {
+    }
     return json({ ok: true });
   } catch (e) {
     return json({ error: "Failed to restart", detail: e.message }, 500);
   }
 }
 __name(handleSessionRestart, "handleSessionRestart");
-
+__name2(handleSessionRestart, "handleSessionRestart");
+__name22(handleSessionRestart, "handleSessionRestart");
+__name222(handleSessionRestart, "handleSessionRestart");
 export {
   src_default as default
 };
 //# sourceMappingURL=index.js.map
-
