@@ -4112,8 +4112,7 @@ var getHTML = /* @__PURE__ */ __name222((config) => `<!DOCTYPE html>
     </div>
     <div class="intake-card-body">
       <div class="intake-eyebrow">These go directly into your website</div>
-      <div class="intake-headline" id="intake-headline">A few things that'll make your site feel real</div>
-      <div class="intake-sub">All optional. Skip anything you don't have yet \u2014 you can always update later.</div>
+      <div class="intake-headline" id="intake-headline">A few things that'll make your site feel real</div>\n      <div class="intake-sub">All optional. Skip anything you don't have yet \u2014 you can always update later.</div>
       <div id="intake-fields-container">
         <!-- Dynamically populated by intakeRenderFields() -->
       </div>
@@ -4159,888 +4158,7 @@ var getHTML = /* @__PURE__ */ __name222((config) => `<!DOCTYPE html>
       </div>
 
       <button class="intake-btn" onclick="intakeSubmit()">Build My Website \u2192</button>
-      <div class="intake-skip" onclick="intakeSkipAll()">Skip all \u2014 I'll add these later</div>
-    </div>
-  </div>
-</div>
-
-<div id="photo-gate-screen" class="screen">
-  <div class="photo-gate-card">
-    <button class="photo-gate-skip-x" onclick="photoGateSkip()">Skip</button>
-
-    <div class="photo-gate-eyebrow">One quick thing</div>
-    <div class="photo-gate-headline">Do you have a professional headshot?</div>
-    <div class="photo-gate-sub">A great photo makes your site feel personal and trustworthy. It appears in your hero and about sections \u2014 the first things visitors see.</div>
-
-    <!-- Visual: where photo appears -->
-    <div class="photo-gate-visual">
-      <div class="photo-gate-vis-hero">
-        <div class="photo-gate-vis-lines">
-          <div class="photo-gate-vis-line long"></div>
-          <div class="photo-gate-vis-line medium"></div>
-          <div class="photo-gate-vis-line short"></div>
-        </div>
-        <div class="photo-gate-vis-avatar">\u{1F464}</div>
-      </div>
-      <div class="photo-gate-vis-label">Your photo appears here</div>
-    </div>
-
-    <!-- State 1: Choose yes/no -->
-    <div id="photo-gate-choose">
-      <button class="photo-gate-btn-primary" onclick="photoGateYes()">Yes, upload a photo \u2726</button>
-      <button class="photo-gate-btn-secondary" onclick="photoGateSkip()">Continue without photos</button>
-    </div>
-
-    <!-- State 2: Upload zone -->
-    <div id="photo-gate-upload" style="display:none;">
-      <div id="photo-gate-upload-zone" class="photo-gate-upload-zone" onclick="document.getElementById('photo-gate-file').click()">
-        <div class="photo-gate-upload-icon">\u2B06</div>
-        <div class="photo-gate-upload-text">Tap to choose your photo</div>
-        <div class="photo-gate-upload-hint">JPG, PNG or WebP &middot; Best: chin up, good lighting, plain background</div>
-      </div>
-      <input type="file" id="photo-gate-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="photoGateUpload(this)">
-
-      <!-- Processing state -->
-      <div id="photo-gate-processing" style="display:none;">
-        <div class="photo-gate-proc-text">\u2726 Processing with Photoroom\u2026</div>
-      </div>
-
-      <!-- Done state -->
-      <div id="photo-gate-done" style="display:none;">
-        <img id="photo-gate-preview" src="" alt="Your photo" class="photo-gate-done-preview">
-        <div class="photo-gate-done-label">Looking great! \u2726</div>
-        <button class="photo-gate-btn-primary" onclick="photoGateProceed()">Continue to site builder \u2192</button>
-      </div>
-
-      <button class="photo-gate-skip-link" onclick="photoGateSkip()">Skip for now</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- \u2550\u2550 SITE GENERATION SCREEN \u2550\u2550 -->
-<!-- \u2550\u2550\u2550 SITE GENERATION SCREEN \u2014 The Atelier \u2550\u2550\u2550 -->
-<div id="site-screen" class="screen" style="flex-direction:row;min-height:100vh;">
-
-  <!-- Left: dark editorial timeline -->
-  <div id="site-gen-left" style="width:40%;min-width:300px;background:#ffffff;padding:64px 48px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #f0ece6;position:relative;overflow:hidden;">
-    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:11px;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;color:rgba(196,112,63,0.7);margin-bottom:20px;">Building your site</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1d1d1f;letter-spacing:-0.01em;margin-bottom:8px;" id="site-gen-name">Your Website</h2>
-    <p style="font-size:13px;color:#b0a89e;line-height:1.7;margin-bottom:44px;font-family:'Outfit',sans-serif;" id="site-gen-sub">Each section designed to your blueprint. About 2 to 4 minutes.</p>
-
-    <!-- Steps as vertical timeline -->
-    <div id="gen-steps" style="display:flex;flex-direction:column;">
-
-      <div class="gen-step" id="gen-step-row-1" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
-        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
-          <div class="step-icon active" id="step-1-icon" style="width:8px;height:8px;border-radius:50%;background:#c4703f;flex-shrink:0;"></div>
-          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
-        </div>
-        <div style="padding-bottom:10px;">
-          <div style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;">Brand context prepared</div>
-          <div style="font-size:11px;color:#b0a89e;margin-top:2px;">Strategy, messaging, and identity structured</div>
-        </div>
-      </div>
-
-      <div class="gen-step" id="gen-step-row-2" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
-        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
-          <div class="step-icon pending" id="step-2-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
-          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
-        </div>
-        <div style="padding-bottom:10px;">
-          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Generating brand images</div>
-          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Custom hero imagery via Imagen</div>
-        </div>
-      </div>
-
-      <div class="gen-step" id="gen-step-row-3" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
-        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
-          <div class="step-icon pending" id="step-3-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
-          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
-        </div>
-        <div style="padding-bottom:10px;">
-          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Writing your website</div>
-          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Building pages from your blueprint</div>
-        </div>
-      </div>
-
-      <div class="gen-step" id="gen-step-row-4" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
-        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
-          <div class="step-icon pending" id="step-4-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
-          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>
-        </div>
-        <div style="padding-bottom:10px;">
-          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">SEO optimization</div>
-          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Meta tags, Open Graph, schema markup</div>
-        </div>
-      </div>
-
-      <div class="gen-step" id="gen-step-row-5" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">
-        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">
-          <div class="step-icon pending" id="step-5-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>
-        </div>
-        <div>
-          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Deploy to live URL</div>
-          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Publishing your optimized site</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Photo upload (optional, while site generates) -->
-    <div id="site-photo-upload" style="margin-top:36px;padding-top:28px;border-top:1px solid #f0ece6;">
-      <div style="font-family:\'Outfit\',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#b0a89e;margin-bottom:10px;">Add your photo (optional)</div>
-      <p style="font-size:12px;color:#b0a89e;line-height:1.6;margin-bottom:14px;font-family:\'Outfit\',sans-serif;">Upload a headshot and it will appear in your about section. We remove the background automatically.</p>
-      <div id="site-photo-preview" style="display:none;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
-        <img id="site-photo-img" src="" alt="Your photo" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #c4703f;"/>
-        <div style="font-size:11px;color:#c4703f;font-family:\'Outfit\',sans-serif;" id="site-photo-status">Processing...</div>
-      </div>
-      <label for="site-photo-input" id="site-photo-label" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;border:1px solid #e0dbd4;border-radius:8px;cursor:pointer;font-family:\'Outfit\',sans-serif;font-size:12px;font-weight:500;color:#1d1d1f;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4703f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Upload photo
-      </label>
-      <input type="file" id="site-photo-input" accept="image/*" style="display:none;" onchange="handleSiteScreenPhoto(this)"/>
-    </div>
-  </div>
-
-  <!-- Right: Atelier dark editorial panel -->
-  <div id="site-gen-right" style="flex:1;background:#faf8f5;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
-    <!-- Abstract brand strokes -->
-    <svg id="atelier-strokes" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" preserveAspectRatio="xMidYMid slice" viewBox="0 0 600 600">
-      <ellipse cx="480" cy="90" rx="220" ry="55" fill="rgba(196,112,63,0.04)" transform="rotate(-22 480 90)"/>
-      <ellipse cx="80" cy="510" rx="200" ry="42" fill="rgba(196,112,63,0.03)" transform="rotate(14 80 510)"/>
-      <ellipse cx="310" cy="300" rx="280" ry="28" fill="rgba(196,112,63,0.02)" transform="rotate(-6 310 300)"/>
-    </svg>
-    <!-- Centered typographic card -->
-    <div id="gen-overlay" style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;">
-      <div style="display:flex;align-items:flex-start;line-height:1;">
-        <div id="gen-pct" style="font-family:'Outfit',sans-serif;font-size:88px;font-weight:300;color:#1d1d1f;letter-spacing:-0.04em;line-height:1;">0</div>
-        <div id="gen-pct-sub" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:300;color:#c8c0b8;margin-top:14px;margin-left:3px;">%</div>
-      </div>
-      <div style="width:120px;height:1px;background:rgba(196,112,63,0.18);border-radius:1px;margin:20px auto 0;position:relative;overflow:hidden;">
-        <div id="atelier-progress-bar" style="position:absolute;left:0;top:0;height:100%;width:0%;background:#c4703f;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);border-radius:1px;"></div>
-      </div>
-      <div id="gen-narrative" style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:rgba(196,112,63,0.75);text-align:center;max-width:280px;line-height:1.65;min-height:46px;margin-top:22px;opacity:1;transition:opacity 0.4s ease;">Preparing your brand story...</div>
-    </div>
-  </div>
-
-</div>
-
-
-<!-- \u2550\u2550\u2550 SECTION PICKER \u2014 FOCUS FRAME LIGHT \u2550\u2550\u2550 -->
-<div id="section-picker" class="screen">
-
-  <!-- Left Panel -->
-  <div class="fpick-left">
-    <div class="fpick-header">
-      <div class="fpick-step-label" id="picker-step-label">Section 1 of 6</div>
-      <div class="fpick-section-name" id="picker-section-name-header">Hero</div>
-      <div class="fpick-progress-wrap"><div class="fpick-progress-fill" id="picker-progress-fill" style="width:0%;"></div></div>
-    </div>
-
-    <div class="fpick-body">
-      <!-- Loading state -->
-      <div class="fpick-loading-state" id="picker-loading-state">
-        <div class="picker-dots">
-          <div class="picker-dot"></div>
-          <div class="picker-dot"></div>
-          <div class="picker-dot"></div>
-        </div>
-        <div class="fpick-loading-text" id="picker-loading-text">Generating 3 options...</div>
-      </div>
-
-      <!-- Options content (shown after load) -->
-      <div id="picker-options-area" style="display:none;" class="fpick-options-content">
-
-        <!-- Option selector dots + regen count -->
-        <div class="fpick-option-nav">
-          <button class="fpick-option-dot active" id="fpick-dot-0" onclick="pickerShowOption(0)">1</button>
-          <button class="fpick-option-dot" id="fpick-dot-1" onclick="pickerShowOption(1)">2</button>
-          <button class="fpick-option-dot" id="fpick-dot-2" onclick="pickerShowOption(2)">3</button>
-          <span style="flex:1;"></span>
-          <span style="font-family:'Outfit',sans-serif;font-size:11px;color:#c8c0b8;" id="picker-regen-count-label">3 regens</span>
-        </div>
-
-        <!-- Current option info -->
-        <div class="fpick-info-card">
-          <div class="fpick-option-eyebrow" id="picker-eyebrow-text">Hero Section</div>
-          <div class="fpick-option-title" id="fpick-option-title">Option 1</div>
-          <div class="fpick-option-rationale" id="fpick-option-rationale"></div>
-          <div id="fpick-confidence" class="fpick-confidence-pill high">85%</div>
-        </div>
-
-        <!-- Prev / counter / next -->
-        <div class="fpick-nav">
-          <button class="fpick-nav-btn" id="fpick-prev-btn" onclick="pickerPrevOption()" disabled>&#8592; Prev</button>
-          <span class="fpick-counter" id="fpick-counter">1 / 3</span>
-          <button class="fpick-nav-btn" id="fpick-next-btn" onclick="pickerNextOption()">Next &#8594;</button>
-        </div>
-
-        <!-- Choose CTA -->
-        <button class="fpick-choose-btn" onclick="pickerChooseViewing()">Choose this layout &#8594;</button>
-
-        <!-- Regen -->
-        <div class="fpick-regen" id="picker-regen-area">
-          <span class="fpick-regen-label">None feel right? Describe what you want</span>
-          <textarea class="fpick-regen-input" id="picker-regen-text" rows="2" placeholder='e.g. "Bold headline, dark moody background, remove the bullet list"'></textarea>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-            <button id="picker-regen-btn" class="fpick-regen-action-btn" onclick="pickerRegenerate()">&#8635; Generate new options</button>
-            <span id="picker-regen-status" style="font-size:11px;color:#c8c0b8;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-            <span id="picker-regen-attempts-label" style="font-size:11px;color:#c8c0b8;white-space:nowrap;flex-shrink:0;"></span>
-          </div>
-        </div>
-
-      </div><!-- /picker-options-area -->
-    </div><!-- /fpick-body -->
-
-    <!-- Photo status \u2014 shown only when a photo has been uploaded via the gate -->
-    <div id="fpick-photo-status" style="display:none;padding:12px 20px;border-top:1px solid #ebebeb;background:#fff;align-items:center;gap:10px;flex-shrink:0;">
-      <div class="fpick-avatar-circle" id="fpick-avatar-circle" onclick="openPickerGrader()" title="View photo options">
-        <span class="fpick-avatar-icon" id="fpick-avatar-icon">\u{1F464}</span>
-        <img id="fpick-avatar-img" src="" alt="Your photo" style="display:none;width:100%;height:100%;object-fit:cover;">
-      </div>
-      <div>
-        <div style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:#1d1d1f;line-height:1.3;">Photo ready \u2726</div>
-        <div style="font-family:'Outfit',sans-serif;font-size:11px;color:#86868b;">Used in Hero &amp; About</div>
-      </div>
-      <input type="file" id="fpick-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handlePickerPhotoUpload(this)">
-    </div>
-
-    <!-- Device toggle pinned at bottom -->
-    <div class="fpick-device-wrap">
-      <div class="fpick-device-toggle">
-        <button class="fpick-device-btn active" id="picker-desktop-btn" onclick="setPickerDevice('desktop')">Desktop</button>
-        <button class="fpick-device-btn" id="picker-mobile-btn" onclick="setPickerDevice('mobile')">Mobile</button>
-      </div>
-    </div>
-  </div><!-- /fpick-left -->
-
-  <!-- Photo Grader Panel (slide-up overlay, populated by JS) -->
-  <div class="fpick-grader-overlay" id="fpick-grader-overlay" onclick="if(event.target===this)closePickerGrader()">
-    <div class="fpick-grader-panel">
-      <div class="fpick-grader-head">
-        <div>
-          <div class="fpick-grader-title">Choose Your Photos</div>
-          <div class="fpick-grader-subtitle">Pick the best version for each section of your site</div>
-        </div>
-        <button class="fpick-grader-close" onclick="closePickerGrader()">\u2715</button>
-      </div>
-      <div class="fpick-grader-body" id="fpick-grader-body">
-        <div style="text-align:center;padding:40px 20px">
-          <div class="fpick-grader-spinner"></div>
-          <div style="font-family:'Outfit',sans-serif;font-size:13px;color:#86868b;">Grading your photos\u2026</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <input type="file" id="fpick-grader-extra-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="addGraderPhotos(this)">
-
-  <!-- Right Panel: full-bleed preview -->
-  <div class="fpick-right" id="fpick-right-panel">
-    <!-- Loading overlay (shown while generating) -->
-    <div class="fpick-right-loading" id="fpick-right-loading">
-      <div class="fpick-loading-brand">
-        <div class="fpick-loading-eyebrow">Designing your</div>
-        <div class="fpick-right-loading-label" id="fpick-right-loading-label">Section</div>
-      </div>
-      <div class="fpick-skeleton-wrap">
-        <div class="fpick-skel fpick-skel-h fpick-skel-w80"></div>
-        <div class="fpick-skel fpick-skel-h fpick-skel-w100"></div>
-        <div class="fpick-skel fpick-skel-h fpick-skel-w60" style="margin-bottom:6px;"></div>
-        <div class="fpick-skel fpick-skel-p fpick-skel-w100"></div>
-        <div class="fpick-skel fpick-skel-p fpick-skel-w80"></div>
-        <div class="fpick-skel fpick-skel-btn fpick-skel-w40"></div>
-      </div>
-      <div class="fpick-loading-dots">
-        <div class="fpick-dot-pulse"></div>
-        <div class="fpick-dot-pulse"></div>
-        <div class="fpick-dot-pulse"></div>
-      </div>
-    </div>
-    <div class="fpick-preview-container" id="fpick-preview-container">
-      <iframe id="fpick-main-iframe" class="fpick-main-iframe" srcdoc="" style="width:1200px;height:900px;"></iframe>
-    </div>
-    <!-- Mobile phone stage -->
-    <div class="fpick-phone-stage" id="fpick-phone-stage">
-      <div class="fpick-phone-outer" id="fpick-phone-outer">
-        <div class="fpick-phone-notch-bar"></div>
-        <div class="fpick-phone-home-bar"></div>
-        <div class="fpick-phone-side-l1"></div>
-        <div class="fpick-phone-side-l2"></div>
-        <div class="fpick-phone-side-l3"></div>
-        <div class="fpick-phone-side-r"></div>
-        <div class="fpick-phone-screen-win">
-          <iframe id="fpick-phone-iframe" class="fpick-phone-iframe" srcdoc=""></iframe>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-
-<!-- \u2550\u2550 DEPLOY SCREEN \u2550\u2550 -->
-<div id="deploy-screen" class="screen" style="display:none;">
-  <!-- Legacy deploy screen kept hidden; Mission Control replaces it -->
-</div>
-
-<!-- \u2550\u2550\u2550 SITE REVEAL \u2014 THE GALLERIST \u2550\u2550\u2550 -->
-<div id="site-reveal" class="screen" style="padding:0;">
- <div style="display:flex;height:100vh;overflow:hidden;background:#e8e4e0;">
-
-  <!-- LEFT PANEL: Gallerist -->
-  <div id="gallerist-panel" style="width:288px;min-width:288px;background:#fafaf8;border-right:1px solid #ebe8e4;display:flex;flex-direction:column;height:100vh;overflow:hidden;">
-
-   <!-- Brand header -->
-   <div style="padding:20px 18px 12px;">
-    <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:3px;font-family:'Outfit',sans-serif;">Your Site</div>
-    <div id="brand-name-reveal" style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:10px;"></div>
-    <!-- Progress line -->
-    <div style="height:2px;background:#ebe8e4;border-radius:2px;overflow:hidden;margin-bottom:4px;">
-     <div id="review-progress-bar" style="height:100%;width:0%;background:#c4703f;border-radius:2px;transition:width 0.7s ease;"></div>
-    </div>
-    <div style="font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;" id="review-progress-label">Loading...</div>
-   </div>
-
-   <!-- Section list -->
-   <div style="height:1px;background:#ebe8e4;margin:0 0;flex-shrink:0;"></div>
-   <div id="gallerist-section-list" style="flex:1;overflow-y:auto;padding:8px 0;">
-    <!-- Populated by galleristRenderSectionList() -->
-   </div>
-
-   <!-- Bottom actions -->
-   <div style="border-top:1px solid #ebe8e4;padding:14px 18px 18px;flex-shrink:0;">
-
-    <!-- Section detail (shown when a section is clicked) -->
-    <div id="review-section-detail" style="display:none;margin-bottom:12px;animation:galleristFadeIn 0.22s ease both;">
-     <div id="review-badge" style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:2px;font-family:'Outfit',sans-serif;"></div>
-     <div id="review-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:3px;line-height:1.3;"></div>
-     <div id="review-desc" style="font-size:11px;color:#86868b;line-height:1.45;margin-bottom:10px;"></div>
-     <!-- Refine button (appears when section selected) -->
-     <div id="review-btns">
-      <button class="reaction-btn" onclick="sectionReaction('refine')" style="width:100%;padding:9px;background:transparent;color:#6b6b6b;border:1px solid #ddd;border-radius:50px;font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;transition:all 0.15s;"><span class="reaction-label">Request a change \u2192</span></button>
-     </div>
-     <!-- Refine input -->
-     <div id="section-refine-input" style="display:none;margin-top:8px;">
-      <textarea id="section-refine-text" rows="3" placeholder="What would you like changed in this section?" style="width:100%;padding:10px 12px;font-size:12px;border:1px solid #ddd;border-radius:10px;resize:vertical;font-family:inherit;line-height:1.5;box-sizing:border-box;margin-bottom:8px;outline:none;background:#fff;color:#1d1d1f;"></textarea>
-      <button class="btn btn-gold" onclick="submitSectionRefine()" id="section-refine-btn" style="width:100%;padding:11px;font-size:12px;margin-bottom:5px;">Apply Change</button>
-      <div id="section-refine-status" style="display:none;text-align:center;margin-top:6px;font-size:11px;color:#86868b;line-height:1.4;"></div>
-     </div>
-    </div>
-
-    <!-- Go Live \u2014 always visible -->
-    <button class="gallerist-golive-btn" onclick="launchAndGoLive()" style="width:100%;padding:13px;background:#1d1d1f;color:#fff;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.01em;">Go Live \u2192</button>
-    <!-- Hint text -->
-    <div id="review-hint" style="text-align:center;margin-top:8px;font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;">Click any section to refine it</div>
-   </div>
-  </div>
-
-  <!-- RIGHT PANEL: Site preview -->
-  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
-
-   <!-- Browser chrome bar -->
-   <div style="background:#f0ede9;padding:9px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #ddd;flex-shrink:0;">
-    <span style="width:10px;height:10px;border-radius:50%;background:#e05252;display:inline-block;flex-shrink:0;"></span>
-    <span style="width:10px;height:10px;border-radius:50%;background:#e8a838;display:inline-block;flex-shrink:0;"></span>
-    <span style="width:10px;height:10px;border-radius:50%;background:#3cc43c;display:inline-block;flex-shrink:0;"></span>
-    <div style="flex:1;text-align:center;">
-     <span id="reveal-domain" style="font-family:monospace;font-size:11px;color:#888;background:#fff;padding:3px 16px;border-radius:20px;border:1px solid #ddd;display:inline-block;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-    </div>
-    <!-- Device toggles -->
-    <div style="display:flex;gap:4px;flex-shrink:0;">
-     <button onclick="revealToggleDevice('desktop')" id="device-btn-desktop" title="Desktop view" style="padding:5px 10px;border-radius:6px;border:1px solid #c4703f;background:#c4703f;color:#fff;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;">Desktop</button>
-     <button onclick="revealToggleDevice('mobile')" id="device-btn-mobile" title="Mobile view" style="padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:transparent;color:#888;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;">Mobile</button>
-    </div>
-   </div>
-
-   <!-- Iframe wrapper -->
-   <div id="reveal-iframe-container" style="flex:1;overflow:hidden;position:relative;background:#e8e4e0;display:flex;align-items:center;justify-content:center;transition:background 0.4s;">
-    <!-- Mobile phone bezel overlay (pointer-events:none so iframe is still usable) -->
-    <div id="mobile-phone-bezel" style="display:none;">
-     <div class="bezel-notch"></div>
-     <div class="bezel-home"></div>
-     <div class="bezel-btn-l1"></div><div class="bezel-btn-l2"></div><div class="bezel-btn-l3"></div>
-     <div class="bezel-btn-r"></div>
-    </div>
-    <iframe id="reveal-preview" src="" style="width:100%;height:100%;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
-    <div id="reveal-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#e8e4e0;gap:16px;z-index:6;">
-     <div style="width:36px;height:36px;border:2px solid #c4703f;border-top-color:transparent;border-radius:50%;animation:spin 0.9s linear infinite;"></div>
-     <div style="font-size:13px;color:#888;font-family:'Outfit',sans-serif;">Loading your site...</div>
-    </div>
-   </div>
-  </div>
-
- </div>
-</div>
-
-
-<div id="mission-control" class="screen">
-  <div style="max-width:720px;margin:0 auto;padding:40px 20px;">
-
-    <!-- Back to Blueprint -->
-    <div style="margin-bottom:24px;">
-      <button onclick="showScreen('blueprint')" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:6px;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-        \u2190 View Blueprint
-      </button>
-    </div>
-
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:36px;">
-      <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:6px;">
-        <span id="mc-brand-name">Your Brand</span> is Live
-      </h2>
-      <p style="color:var(--text2);font-size:15px;margin:0;">Your website is published and ready to share with the world.</p>
-    </div>
-
-    <!-- Live URL bar -->
-    <div id="mc-live-url" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-      <a id="mc-url-link" href="#" target="_blank" style="color:var(--gold);font-size:15px;font-weight:500;text-decoration:none;flex:1;word-break:break-all;"></a>
-      <button id="mc-copy-btn" onclick="copyMcUrl()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">Copy Link</button>
-      <a id="mc-visit-btn" href="#" target="_blank" class="btn btn-gold" style="padding:8px 18px;font-size:13px;text-decoration:none;white-space:nowrap;">Visit Site</a>
-    </div>
-
-    <!-- Fallback if no URL -->
-    <div id="mc-no-url" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:24px;text-align:center;">
-      <div style="font-size:14px;color:var(--text2);">Your site was generated but deployment is still processing. Refresh in a moment to see your live URL.</div>
-    </div>
-
-    <!-- Site Preview -->
-    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px;background:var(--bg1);">
-      <div style="background:var(--bg3);padding:8px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">
-        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e05252;"></span>
-        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8a838;"></span>
-        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3cc43c;"></span>
-        <span style="flex:1;text-align:center;font-family:monospace;font-size:11px;color:var(--text2);" id="mc-preview-domain"></span>
-      </div>
-      <iframe id="mc-preview" src="" style="width:100%;height:420px;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
-      <div id="mc-preview-placeholder" style="height:420px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;">Loading preview...</div>
-    </div>
-
-    <!-- Share & Actions -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
-      <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">
-        \u2709\uFE0F &nbsp;Email My Site Link
-      </button>
-      <button onclick="copyMcUrl()" class="btn btn-outline" style="padding:14px;font-size:14px;">
-        Copy Link to Share
-      </button>
-    </div>
-
-    <!-- Strategy Call CTA (moved up: highest conversion moment is right after seeing the live site) -->
-    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.03));border:1.5px solid rgba(212,175,55,0.35);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Next Step</div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>
-      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a strategy call. We will connect your domain, refine your content together, and build your traffic plan.</p>
-      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>
-    </div>
-
-    <!-- 30-Day Preview Notice -->
-    <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;">
-      <div style="font-size:22px;margin-top:2px;">\u{1F4C5}</div>
-      <div>
-        <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Your Site is Live for 30 Days</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.6;">Your preview is hosted here for 30 days at no extra cost. Download your site file or self-deploy to Cloudflare Pages (free) to keep it live permanently.</div>
-      </div>
-    </div>
-
-    <!-- Download Site -->
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;">
-      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">\u{1F4E5} Download Your Site File</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">A single HTML file with everything built in \u2014 your copy, styles, and layout. Works anywhere. No dependencies.</div>
-      <button id="download-site-btn" class="btn btn-gold" onclick="downloadSite()" style="width:auto;padding:12px 28px;font-size:14px;">Download Site</button>
-    </div>
-
-    <!-- Self-Deploy Guide -->
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;">
-      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">\u{1F310} Self-Deploy to Cloudflare Pages \u2014 Free Forever</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">Cloudflare Pages hosts your site permanently on their free tier. Takes about 5 minutes.</div>
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">1</div>
-          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Download your site file above, then go to <a href="https://dash.cloudflare.com/sign-up/pages" target="_blank" style="color:var(--gold);font-weight:500;">dash.cloudflare.com</a> and create a free account.</div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">2</div>
-          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Click <strong>Workers &amp; Pages</strong> in the left menu, then <strong>Create</strong> and choose <strong>Pages</strong>.</div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">3</div>
-          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Select <strong>Direct Upload</strong>, name your project (your brand name works great), then upload your HTML file.</div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">4</div>
-          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Click <strong>Deploy</strong>. Your site goes live at <code style="background:var(--bg2);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px;">your-project.pages.dev</code> within seconds.</div>
-        </div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;">
-          <div style="min-width:24px;height:24px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">5</div>
-          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Optional: Go to <strong>Custom Domains</strong> in the dashboard to connect your own domain (like yourbrand.com).</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Secondary CTA at bottom for scrollers -->
-    <div style="text-align:center;padding:20px 0 8px;">
-      <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Questions? Something feel off about your site?</p>
-      <a href="mailto:james@jamesguldan.com?subject=Deep Work Site Question" style="color:var(--gold);font-size:14px;font-weight:500;text-decoration:none;">Email James directly &rarr;</a>
-    </div>
-
-  </div>
-</div>
-
-<!-- order bump removed -->
-
-<!-- \u2550\u2550 SESSION LOADING OVERLAY \u2550\u2550 -->
-<div class="session-loading" id="session-loading">
-  <div id="loading-content">
-    <div class="loading-wordmark">
-      <div class="loading-wordmark-eyebrow">James Guldan</div>
-      <div class="loading-wordmark-title">Deep Work</div>
-    </div>
-    <div class="loading-spinner"></div>
-    <div class="loading-message" id="loading-message"></div>
-    <div class="loading-stage" id="loading-stage">Warming up</div>
-    <div class="loading-progress"><div class="loading-progress-bar" id="loading-bar"></div></div>
-  </div>
-  <div class="loading-error" id="loading-error">
-    <h3>Something went sideways</h3>
-    <p id="loading-error-text">We hit a snag starting your session. This is almost certainly temporary.</p>
-    <div class="error-detail" id="loading-error-detail"></div>
-    <button class="btn btn-gold" onclick="dismissLoadingError()" style="width:auto;padding:14px 28px;">Try Again</button>
-    <button class="btn btn-outline" onclick="window.location.reload()" style="width:auto;padding:14px 28px;margin-top:8px;">Refresh Page</button>
-  </div>
-</div>
-
-<!-- \u2550\u2550 BLUEPRINT GENERATION OVERLAY \u2550\u2550 -->
-<div class="blueprint-generating" id="blueprint-generating">
-  <div class="blueprint-gen-icon">
-    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-  </div>
-  <div class="blueprint-gen-title" id="blueprint-gen-title">Building Your Blueprint</div>
-  <div class="blueprint-gen-msg" id="blueprint-gen-msg">Synthesizing everything you shared into something you have never seen before...</div>
-  <div class="blueprint-gen-progress"><div class="blueprint-gen-progress-bar" id="blueprint-gen-bar"></div></div>
-  <div id="blueprint-gen-timer" style="font-size:12px;color:rgba(0,0,0,0.35);margin-top:16px;font-weight:500;letter-spacing:0.04em;">This typically takes 4 to 6 minutes. Grab a coffee.</div>
-  <div id="blueprint-gen-retry" style="display:none;margin-top:24px;">
-    <p style="color:rgba(0,0,0,0.5);font-size:14px;margin-bottom:12px;">This is taking longer than expected. Your conversation is saved.</p>
-    <button onclick="retryBlueprint()" style="background:var(--gold,#C4703F);color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>
-    <button onclick="dismissBlueprintOverlay()" style="background:transparent;border:1.5px solid rgba(0,0,0,0.15);padding:14px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-left:8px;color:rgba(0,0,0,0.6);">Go Back to Chat</button>
-  </div>
-</div>
-
-<!-- \u2550\u2550 TOAST \u2550\u2550 -->
-<div id="toast"></div>
-
-<script>
-// Worker-side name helpers are no-ops in the browser
-var __name = function(f, n) { try { Object.defineProperty(f, 'name', { value: n, configurable: true }); } catch(_) {} return f; };
-var __name2 = __name;
-var __name22 = __name;
-// Magic link IIFE \u2014 runs immediately on script parse, no DOMContentLoaded needed
-// \u2500\u2500 PREFLIGHT: runs immediately before DOMContentLoaded \u2500\u2500
-var _dwPreflight = null; // Promise for fast-resume result
-(async function checkMagicLinkOnLoad() {
-  // Sync server-set cookie to localStorage immediately (runs before DOMContentLoaded)
-  try {
-    // Check for JWT passed directly in URL from server-side magic link redirect
-    var _sp = new URLSearchParams(window.location.search);
-    var _sJwt = _sp.get('_s');
-    if (_sJwt) {
-      // Always update localStorage with the fresh JWT from the magic link (even if one exists \u2014 new link = new session)
-      localStorage.setItem('dw_session', _sJwt);
-      document.cookie = 'dw_session=' + _sJwt + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
-      // Always clean the _s param from the URL
-      var _cleanSearch = window.location.search.replace(/[?&]_s=[^&]*/g, '').replace(/^&/, '?');
-      window.history.replaceState(null, '', window.location.pathname + (_cleanSearch || ''));
-      // Mark this as a fresh magic-link login so DOMContentLoaded skips auto-resume
-      try { sessionStorage.setItem('_dw_fresh_login', '1'); } catch(_) {}
-    }
-    // Also sync cookie to localStorage if set by server (only when no _s JWT was found)
-    if (!_sJwt && !localStorage.getItem('dw_session')) {
-      var _cm = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/);
-      if (_cm && _cm[1]) { localStorage.setItem('dw_session', decodeURIComponent(_cm[1])); }
-    }
-  } catch(_e) {}
-  // Handle magic param in URL (client-side fallback for old links)
-  var _p = new URLSearchParams(window.location.search);
-  var _magic = _p.get('magic');
-  if (_magic) {
-    try {
-      var _res = await fetch('/api/auth/magic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: _magic })
-      });
-      var _data = await _res.json();
-      if (_data.token) {
-        localStorage.setItem('dw_session', _data.token);
-        document.cookie = 'dw_session=' + _data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
-        window.location.replace('/app');
-        return;
-      }
-    } catch(e) {}
-  }
-  // \u2500\u2500 PREFLIGHT: start fast-resume fetch NOW (before DOMContentLoaded) \u2500\u2500
-  var _pfToken = localStorage.getItem('dw_session');
-  if (!_pfToken) {
-    try { var _cm2 = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); if (_cm2 && _cm2[1]) _pfToken = decodeURIComponent(_cm2[1]); } catch(_) {}
-  }
-  if (_pfToken) {
-    _dwPreflight = fetch('/api/auth/fast-resume', {
-      headers: { 'Authorization': 'Bearer ' + _pfToken }
-    }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
-  }
-})();
-// \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-const STATE = {
-  sessionId: null,
-  tier: null,
-  phase: 1,
-  isStreaming: false,
-  blueprint: null,
-  generatedSiteHtml: null,
-  uploadedFiles: [],
-  uploadedKeys: [],
-  blueprintOverlayShown: false,
-  sessionJwt: null,
-  uploadedDocs: [],
-  isAdmin: false,
-  blueprintGenerating: false
-};
-
-const PHASE_NAMES = [
-  '', 'Your Story', 'Your Expertise', 'Your Beliefs', 'Your People',
-  'Your Voice & Identity', 'Your Market', 'Your Offers', 'Synthesis'
-];
-
-// Stripe price IDs
-const PRICES = {
-  blueprint: '${config.STRIPE_PRICE_BLUEPRINT}',
-  site: '${config.STRIPE_PRICE_SITE}',
-  call: '${config.STRIPE_PRICE_CALL}'
-};
-
-// \u2500\u2500 SCREEN MANAGEMENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-  // === 1B Phase Bar Bridge ===
-  // Watches the hidden legacy phase elements and updates the 1B top bar
-  (function() {
-    function syncPhaseBar() {
-      var activeDot = document.querySelector('.phase-dot.active');
-      if (!activeDot) return;
-      var idMatch = activeDot.id && activeDot.id.match(/pd(\\d+)/);
-      var num = idMatch ? parseInt(idMatch[1]) : parseInt(activeDot.textContent);
-      if (isNaN(num)) return;
-
-      var stepLabel = document.getElementById('phase-step-label');
-      var titleLabel = document.getElementById('phase-title-label');
-      var progressFill = document.getElementById('phase-progress-fill');
-
-      if (stepLabel) stepLabel.textContent = 'Phase ' + num + ' of 8';
-      if (titleLabel && typeof PHASE_NAMES !== 'undefined' && PHASE_NAMES[num]) {
-        titleLabel.textContent = PHASE_NAMES[num];
-      }
-      if (progressFill) progressFill.style.width = ((num / 8) * 100) + '%';
-    }
-
-    // Run on load and after PHASE_NAMES is defined
-    setTimeout(syncPhaseBar, 100);
-
-    // Watch for class changes on phase dots
-    var observer = new MutationObserver(function() { syncPhaseBar(); });
-    var phasesEl = document.querySelector('.phases');
-    if (phasesEl) {
-      observer.observe(phasesEl, { attributes: true, subtree: true, attributeFilter: ['class'] });
-    }
-
-    // Backup sync every 2s
-    setInterval(syncPhaseBar, 2000);
-  })();
-
-function showScreen(id) {
-  // Hide auth loader \u2014 remove injected preauth CSS then hide
-  var _preauth = document.getElementById('dw-preauth-css');
-  if (_preauth) _preauth.remove();
-  var authLoader = document.getElementById('dw-auth-loader');
-  if (authLoader) authLoader.style.display = 'none';
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0, 0);
-
-  // Setup intake enhancements when showing intake screen
-  if (id === 'intake' && window.setupIntakeEnhancements) {
-    setTimeout(window.setupIntakeEnhancements, 100);
-  }
-
-  // Show or hide intake floating CTA bar
-  var floatingCta = document.getElementById('intake-floating-cta');
-  if (floatingCta) {
-    if (id !== 'intake') {
-      floatingCta.style.display = 'none';
-      floatingCta.classList.remove('active');
-    }
-  }
-
-  // Show or hide blueprint sticky bar
-  var stickyBar = document.getElementById('blueprint-sticky-bar');
-  if (stickyBar) {
-    if (id === 'blueprint-screen') {
-      stickyBar.style.display = 'block';
-    } else {
-      stickyBar.style.display = 'none';
-      stickyBar.style.transform = 'translateY(100%)';
-    }
-  }
-  // Seed welcome message for brand-new chat sessions
-  if (id === 'app') {
-    setTimeout(function() {
-      var msgs = document.getElementById('messages') || document.getElementById('chat-messages');
-      if (msgs && msgs.children.length === 0 && (!STATE.phase || STATE.phase <= 1) && !STATE.sessionId) {
-        var wm = document.createElement('div');
-        wm.id = 'welcome-placeholder';
-        wm.style.cssText = 'text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;line-height:1.7;';
-        wm.innerHTML = '<p style="max-width:320px;margin:0 auto;">Your AI strategist is ready. Complete the intake form and hit <strong>Begin My Session</strong> to start.</p>';
-        msgs.appendChild(wm);
-      }
-    }, 150);
-  }
-}
-
-function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(el._toastTimer);
-  var isError = msg && (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('wrong') || msg.toLowerCase().includes('fail') || msg.toLowerCase().includes('could not'));
-  el._toastTimer = setTimeout(() => el.classList.remove('show'), isError ? 5500 : 3000);
-}
-
-function copyToClipboard(text) {
-  if (!text) return;
-  navigator.clipboard.writeText(text).then(function() {
-    showToast('Copied to clipboard');
-  }).catch(function(err) {
-    var textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    try { document.execCommand('copy'); showToast('Copied to clipboard'); } catch(_) { showToast('Copy failed'); }
-    document.body.removeChild(textarea);
-  });
-}
-
-// \u2500\u2500 TIER SELECTION & CHECKOUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-function selectTier(tier) {
-  STATE.tier = tier;
-  // Check for existing paid session in URL
-  const params = new URLSearchParams(window.location.search);
-  const sessionId = params.get('session');
-  if (sessionId) {
-    STATE.sessionId = sessionId;
-    showScreen('intake');
-    return;
-  }
-  initiateCheckout(tier);
-}
-
-async function initiateCheckout(tier) {
-  try {
-    showToast('Redirecting to checkout...');
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier })
-    });
-    const data = await res.json();
-    if (data.url) {
-      window.location.href = data.url;
-    } else {
-      showToast('Something went wrong. Please try again.');
-    }
-  } catch (e) {
-    showToast('Connection error. Please try again.');
-  }
-}
-
-// Check URL for session token on load
-window.addEventListener('beforeunload', function(e) {
-  if ((STATE.uploadedFiles && STATE.uploadedFiles.length > 0) || (STATE.uploadedDocs && STATE.uploadedDocs.length > 0)) {
-    if (!STATE.sessionId) { e.preventDefault(); e.returnValue = ''; }
-  }
-});
-window.addEventListener('DOMContentLoaded', async () => {
-  const params = new URLSearchParams(window.location.search);
-
-  // Handle magic link token \u2014 auto-login from email link
-  const magic = params.get('magic');
-  if (magic) {
-    try {
-      const res = await fetch('/api/auth/magic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: magic })
-      });
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem('dw_session', data.token);
-        document.cookie = 'dw_session=' + data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';
-        window.location.replace('/app');
-        return;
-      }
-    } catch(_) {}
-  }
-
-  const sessionId = params.get('session');
-  const tier = params.get('tier');
-  const accessToken = params.get('access');
-
-  // Stripe redirect: ?session=X&tier=Y&access=TOKEN from checkout
-  const upgraded = params.get('upgraded');
-  if (sessionId && tier) {
-    STATE.sessionId = sessionId;
-    STATE.tier = tier;
-    localStorage.setItem('dw_active_session', sessionId);
-    window.history.replaceState({}, '', '/app');
-
-    // Exchange one-time access token for a session JWT
-    if (accessToken) {
-      try {
-        const claimRes = await fetch('/api/session/claim', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken, sessionId })
-        });
-        const claimData = await claimRes.json();
-        if (claimData.token) {
-          localStorage.setItem('dw_session_jwt', claimData.token);
-          STATE.sessionJwt = claimData.token;
-        }
-      } catch (_) {}
-    } else {
-      // No access token \u2014 restore JWT if we have one stored for this session
-      const stored = localStorage.getItem('dw_session_jwt');
-      if (stored) STATE.sessionJwt = stored;
-    }
-
-    if (upgraded === 'true') {
-      // Returning from site upgrade purchase \u2014 go straight to site builder
-      showScreen('site-screen');
-      runSiteGeneration();
-      return;
-    }
-    showScreen('intake');
-  } else {
-    // Restore session JWT if present (for users who reload without URL params)
-    const storedJwt = localStorage.getItem('dw_session_jwt');
-    if (storedJwt) STATE.sessionJwt = storedJwt;
-  // New auth flow: use preflight fast-resume (started before DOMContentLoaded)
-    // Bulletproof token recovery: check _s param directly in case IIFE localStorage write failed
-    var _domSParam = null;
-    try { _domSParam = new URLSearchParams(window.location.search).get('_s'); } catch(_) {}
-    if (_domSParam) {
-      try { localStorage.setItem('dw_session', _domSParam); } catch(_) {}
-      // Clean _s from URL so it doesn't persist
+      <div class="intake-skip" onclick="intakeSkipAll()">Skip all \u2014 I'll add these later</div>\n    </div>\n  </div>\n</div>\n\n<div id="photo-gate-screen" class="screen">\n  <div class="photo-gate-card">\n    <button class="photo-gate-skip-x" onclick="photoGateSkip()">Skip</button>\n\n    <div class="photo-gate-eyebrow">One quick thing</div>\n    <div class="photo-gate-headline">Do you have a professional headshot?</div>\n    <div class="photo-gate-sub">A great photo makes your site feel personal and trustworthy. It appears in your hero and about sections \u2014 the first things visitors see.</div>\n\n    <!-- Visual: where photo appears -->\n    <div class="photo-gate-visual">\n      <div class="photo-gate-vis-hero">\n        <div class="photo-gate-vis-lines">\n          <div class="photo-gate-vis-line long"></div>\n          <div class="photo-gate-vis-line medium"></div>\n          <div class="photo-gate-vis-line short"></div>\n        </div>\n        <div class="photo-gate-vis-avatar">\u{1F464}</div>\n      </div>\n      <div class="photo-gate-vis-label">Your photo appears here</div>\n    </div>\n\n    <!-- State 1: Choose yes/no -->\n    <div id="photo-gate-choose">\n      <button class="photo-gate-btn-primary" onclick="photoGateYes()">Yes, upload a photo \u2726</button>\n      <button class="photo-gate-btn-secondary" onclick="photoGateSkip()">Continue without photos</button>\n    </div>\n\n    <!-- State 2: Upload zone -->\n    <div id="photo-gate-upload" style="display:none;">\n      <div id="photo-gate-upload-zone" class="photo-gate-upload-zone" onclick="document.getElementById('photo-gate-file').click()">\n        <div class="photo-gate-upload-icon">\u2B06</div>\n        <div class="photo-gate-upload-text">Tap to choose your photo</div>\n        <div class="photo-gate-upload-hint">JPG, PNG or WebP &middot; Best: chin up, good lighting, plain background</div>\n      </div>\n      <input type="file" id="photo-gate-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="photoGateUpload(this)">\n\n      <!-- Processing state -->\n      <div id="photo-gate-processing" style="display:none;">\n        <div class="photo-gate-proc-text">\u2726 Processing with Photoroom\u2026</div>\n      </div>\n\n      <!-- Done state -->\n      <div id="photo-gate-done" style="display:none;">\n        <img id="photo-gate-preview" src="" alt="Your photo" class="photo-gate-done-preview">\n        <div class="photo-gate-done-label">Looking great! \u2726</div>\n        <button class="photo-gate-btn-primary" onclick="photoGateProceed()">Continue to site builder \u2192</button>\n      </div>\n\n      <button class="photo-gate-skip-link" onclick="photoGateSkip()">Skip for now</button>\n    </div>\n  </div>\n</div>\n\n\n<!-- \u2550\u2550 SITE GENERATION SCREEN \u2550\u2550 -->\n<!-- \u2550\u2550\u2550 SITE GENERATION SCREEN \u2014 The Atelier \u2550\u2550\u2550 -->\n<div id="site-screen" class="screen" style="flex-direction:row;min-height:100vh;">\n\n  <!-- Left: dark editorial timeline -->\n  <div id="site-gen-left" style="width:40%;min-width:300px;background:#ffffff;padding:64px 48px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #f0ece6;position:relative;overflow:hidden;">\n    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:11px;font-weight:400;letter-spacing:0.1em;text-transform:uppercase;color:rgba(196,112,63,0.7);margin-bottom:20px;">Building your site</div>\n    <h2 style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#1d1d1f;letter-spacing:-0.01em;margin-bottom:8px;" id="site-gen-name">Your Website</h2>\n    <p style="font-size:13px;color:#b0a89e;line-height:1.7;margin-bottom:44px;font-family:'Outfit',sans-serif;" id="site-gen-sub">Each section designed to your blueprint. About 2 to 4 minutes.</p>\n\n    <!-- Steps as vertical timeline -->\n    <div id="gen-steps" style="display:flex;flex-direction:column;">\n\n      <div class="gen-step" id="gen-step-row-1" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">\n        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">\n          <div class="step-icon active" id="step-1-icon" style="width:8px;height:8px;border-radius:50%;background:#c4703f;flex-shrink:0;"></div>\n          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>\n        </div>\n        <div style="padding-bottom:10px;">\n          <div style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;">Brand context prepared</div>\n          <div style="font-size:11px;color:#b0a89e;margin-top:2px;">Strategy, messaging, and identity structured</div>\n        </div>\n      </div>\n\n      <div class="gen-step" id="gen-step-row-2" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">\n        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">\n          <div class="step-icon pending" id="step-2-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>\n          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>\n        </div>\n        <div style="padding-bottom:10px;">\n          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Generating brand images</div>\n          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Custom hero imagery via Imagen</div>\n        </div>\n      </div>\n\n      <div class="gen-step" id="gen-step-row-3" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">\n        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">\n          <div class="step-icon pending" id="step-3-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>\n          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>\n        </div>\n        <div style="padding-bottom:10px;">\n          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Writing your website</div>\n          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Building pages from your blueprint</div>\n        </div>\n      </div>\n\n      <div class="gen-step" id="gen-step-row-4" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">\n        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">\n          <div class="step-icon pending" id="step-4-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>\n          <div style="width:1px;flex:1;background:#ede9e3;margin-top:7px;min-height:28px;"></div>\n        </div>\n        <div style="padding-bottom:10px;">\n          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">SEO optimization</div>\n          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Meta tags, Open Graph, schema markup</div>\n        </div>\n      </div>\n\n      <div class="gen-step" id="gen-step-row-5" style="display:flex;gap:18px;padding:10px 0;align-items:flex-start;">\n        <div style="display:flex;flex-direction:column;align-items:center;padding-top:4px;">\n          <div class="step-icon pending" id="step-5-icon" style="width:8px;height:8px;border-radius:50%;background:#e8e4df;flex-shrink:0;"></div>\n        </div>\n        <div>\n          <div class="gen-step-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#c8c0b8;">Deploy to live URL</div>\n          <div class="gen-step-desc" style="font-size:11px;color:#ddd8d2;margin-top:2px;">Publishing your optimized site</div>\n        </div>\n      </div>\n\n    </div>\n\n    <!-- Photo upload (optional, while site generates) -->\n    <div id="site-photo-upload" style="margin-top:36px;padding-top:28px;border-top:1px solid #f0ece6;">\n      <div style="font-family:\'Outfit\',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#b0a89e;margin-bottom:10px;">Add your photo (optional)</div>\n      <p style="font-size:12px;color:#b0a89e;line-height:1.6;margin-bottom:14px;font-family:\'Outfit\',sans-serif;">Upload a headshot and it will appear in your about section. We remove the background automatically.</p>\n      <div id="site-photo-preview" style="display:none;margin-bottom:12px;display:flex;align-items:center;gap:12px;">\n        <img id="site-photo-img" src="" alt="Your photo" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #c4703f;"/>\n        <div style="font-size:11px;color:#c4703f;font-family:\'Outfit\',sans-serif;" id="site-photo-status">Processing...</div>\n      </div>\n      <label for="site-photo-input" id="site-photo-label" style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:#fff;border:1px solid #e0dbd4;border-radius:8px;cursor:pointer;font-family:\'Outfit\',sans-serif;font-size:12px;font-weight:500;color:#1d1d1f;">\n        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4703f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>\n        Upload photo\n      </label>\n      <input type="file" id="site-photo-input" accept="image/*" style="display:none;" onchange="handleSiteScreenPhoto(this)"/>\n    </div>\n  </div>\n\n  <!-- Right: Atelier dark editorial panel -->\n  <div id="site-gen-right" style="flex:1;background:#faf8f5;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">\n    <!-- Abstract brand strokes -->\n    <svg id="atelier-strokes" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" preserveAspectRatio="xMidYMid slice" viewBox="0 0 600 600">\n      <ellipse cx="480" cy="90" rx="220" ry="55" fill="rgba(196,112,63,0.04)" transform="rotate(-22 480 90)"/>\n      <ellipse cx="80" cy="510" rx="200" ry="42" fill="rgba(196,112,63,0.03)" transform="rotate(14 80 510)"/>\n      <ellipse cx="310" cy="300" rx="280" ry="28" fill="rgba(196,112,63,0.02)" transform="rotate(-6 310 300)"/>\n    </svg>\n    <!-- Centered typographic card -->\n    <div id="gen-overlay" style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;">\n      <div style="display:flex;align-items:flex-start;line-height:1;">\n        <div id="gen-pct" style="font-family:'Outfit',sans-serif;font-size:88px;font-weight:300;color:#1d1d1f;letter-spacing:-0.04em;line-height:1;">0</div>\n        <div id="gen-pct-sub" style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:300;color:#c8c0b8;margin-top:14px;margin-left:3px;">%</div>\n      </div>\n      <div style="width:120px;height:1px;background:rgba(196,112,63,0.18);border-radius:1px;margin:20px auto 0;position:relative;overflow:hidden;">\n        <div id="atelier-progress-bar" style="position:absolute;left:0;top:0;height:100%;width:0%;background:#c4703f;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);border-radius:1px;"></div>\n      </div>\n      <div id="gen-narrative" style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:rgba(196,112,63,0.75);text-align:center;max-width:280px;line-height:1.65;min-height:46px;margin-top:22px;opacity:1;transition:opacity 0.4s ease;">Preparing your brand story...</div>\n    </div>\n  </div>\n\n</div>\n\n\n<!-- \u2550\u2550\u2550 SECTION PICKER \u2014 FOCUS FRAME LIGHT \u2550\u2550\u2550 -->\n<div id="section-picker" class="screen">\n\n  <!-- Left Panel -->\n  <div class="fpick-left">\n    <div class="fpick-header">\n      <div class="fpick-step-label" id="picker-step-label">Section 1 of 6</div>\n      <div class="fpick-section-name" id="picker-section-name-header">Hero</div>\n      <div class="fpick-progress-wrap"><div class="fpick-progress-fill" id="picker-progress-fill" style="width:0%;"></div></div>\n    </div>\n\n    <div class="fpick-body">\n      <!-- Loading state -->\n      <div class="fpick-loading-state" id="picker-loading-state">\n        <div class="picker-dots">\n          <div class="picker-dot"></div>\n          <div class="picker-dot"></div>\n          <div class="picker-dot"></div>\n        </div>\n        <div class="fpick-loading-text" id="picker-loading-text">Generating 3 options...</div>\n      </div>\n\n      <!-- Options content (shown after load) -->\n      <div id="picker-options-area" style="display:none;" class="fpick-options-content">\n\n        <!-- Option selector dots + regen count -->\n        <div class="fpick-option-nav">\n          <button class="fpick-option-dot active" id="fpick-dot-0" onclick="pickerShowOption(0)">1</button>\n          <button class="fpick-option-dot" id="fpick-dot-1" onclick="pickerShowOption(1)">2</button>\n          <button class="fpick-option-dot" id="fpick-dot-2" onclick="pickerShowOption(2)">3</button>\n          <span style="flex:1;"></span>\n          <span style="font-family:'Outfit',sans-serif;font-size:11px;color:#c8c0b8;" id="picker-regen-count-label">3 regens</span>\n        </div>\n\n        <!-- Current option info -->\n        <div class="fpick-info-card">\n          <div class="fpick-option-eyebrow" id="picker-eyebrow-text">Hero Section</div>\n          <div class="fpick-option-title" id="fpick-option-title">Option 1</div>\n          <div class="fpick-option-rationale" id="fpick-option-rationale"></div>\n          <div id="fpick-confidence" class="fpick-confidence-pill high">85%</div>\n        </div>\n\n        <!-- Prev / counter / next -->\n        <div class="fpick-nav">\n          <button class="fpick-nav-btn" id="fpick-prev-btn" onclick="pickerPrevOption()" disabled>&#8592; Prev</button>\n          <span class="fpick-counter" id="fpick-counter">1 / 3</span>\n          <button class="fpick-nav-btn" id="fpick-next-btn" onclick="pickerNextOption()">Next &#8594;</button>\n        </div>\n\n        <!-- Choose CTA -->\n        <button class="fpick-choose-btn" onclick="pickerChooseViewing()">Choose this layout &#8594;</button>\n\n        <!-- Regen -->\n        <div class="fpick-regen" id="picker-regen-area">\n          <span class="fpick-regen-label">None feel right? Describe what you want</span>\n          <textarea class="fpick-regen-input" id="picker-regen-text" rows="2" placeholder='e.g. "Bold headline, dark moody background, remove the bullet list"'></textarea>\n          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">\n            <button id="picker-regen-btn" class="fpick-regen-action-btn" onclick="pickerRegenerate()">&#8635; Generate new options</button>\n            <span id="picker-regen-status" style="font-size:11px;color:#c8c0b8;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>\n            <span id="picker-regen-attempts-label" style="font-size:11px;color:#c8c0b8;white-space:nowrap;flex-shrink:0;"></span>\n          </div>\n        </div>\n\n      </div><!-- /picker-options-area -->\n    </div><!-- /fpick-body -->\n\n    <!-- Photo status \u2014 shown only when a photo has been uploaded via the gate -->\n    <div id="fpick-photo-status" style="display:none;padding:12px 20px;border-top:1px solid #ebebeb;background:#fff;align-items:center;gap:10px;flex-shrink:0;">\n      <div class="fpick-avatar-circle" id="fpick-avatar-circle" onclick="openPickerGrader()" title="View photo options">\n        <span class="fpick-avatar-icon" id="fpick-avatar-icon">\u{1F464}</span>\n        <img id="fpick-avatar-img" src="" alt="Your photo" style="display:none;width:100%;height:100%;object-fit:cover;">\n      </div>\n      <div>\n        <div style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:#1d1d1f;line-height:1.3;">Photo ready \u2726</div>\n        <div style="font-family:'Outfit',sans-serif;font-size:11px;color:#86868b;">Used in Hero &amp; About</div>\n      </div>\n      <input type="file" id="fpick-photo-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handlePickerPhotoUpload(this)">\n    </div>\n\n    <!-- Device toggle pinned at bottom -->\n    <div class="fpick-device-wrap">\n      <div class="fpick-device-toggle">\n        <button class="fpick-device-btn active" id="picker-desktop-btn" onclick="setPickerDevice('desktop')">Desktop</button>\n        <button class="fpick-device-btn" id="picker-mobile-btn" onclick="setPickerDevice('mobile')">Mobile</button>\n      </div>\n    </div>\n  </div><!-- /fpick-left -->\n\n  <!-- Photo Grader Panel (slide-up overlay, populated by JS) -->\n  <div class="fpick-grader-overlay" id="fpick-grader-overlay" onclick="if(event.target===this)closePickerGrader()">\n    <div class="fpick-grader-panel">\n      <div class="fpick-grader-head">\n        <div>\n          <div class="fpick-grader-title">Choose Your Photos</div>\n          <div class="fpick-grader-subtitle">Pick the best version for each section of your site</div>\n        </div>\n        <button class="fpick-grader-close" onclick="closePickerGrader()">\u2715</button>\n      </div>\n      <div class="fpick-grader-body" id="fpick-grader-body">\n        <div style="text-align:center;padding:40px 20px">\n          <div class="fpick-grader-spinner"></div>\n          <div style="font-family:'Outfit',sans-serif;font-size:13px;color:#86868b;">Grading your photos\u2026</div>\n        </div>\n      </div>\n    </div>\n  </div>\n  <input type="file" id="fpick-grader-extra-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="addGraderPhotos(this)">\n\n  <!-- Right Panel: full-bleed preview -->\n  <div class="fpick-right" id="fpick-right-panel">\n    <!-- Loading overlay (shown while generating) -->\n    <div class="fpick-right-loading" id="fpick-right-loading">\n      <div class="fpick-loading-brand">\n        <div class="fpick-loading-eyebrow">Designing your</div>\n        <div class="fpick-right-loading-label" id="fpick-right-loading-label">Section</div>\n      </div>\n      <div class="fpick-skeleton-wrap">\n        <div class="fpick-skel fpick-skel-h fpick-skel-w80"></div>\n        <div class="fpick-skel fpick-skel-h fpick-skel-w100"></div>\n        <div class="fpick-skel fpick-skel-h fpick-skel-w60" style="margin-bottom:6px;"></div>\n        <div class="fpick-skel fpick-skel-p fpick-skel-w100"></div>\n        <div class="fpick-skel fpick-skel-p fpick-skel-w80"></div>\n        <div class="fpick-skel fpick-skel-btn fpick-skel-w40"></div>\n      </div>\n      <div class="fpick-loading-dots">\n        <div class="fpick-dot-pulse"></div>\n        <div class="fpick-dot-pulse"></div>\n        <div class="fpick-dot-pulse"></div>\n      </div>\n    </div>\n    <div class="fpick-preview-container" id="fpick-preview-container">\n      <iframe id="fpick-main-iframe" class="fpick-main-iframe" srcdoc="" style="width:1200px;height:900px;"></iframe>\n    </div>\n    <!-- Mobile phone stage -->\n    <div class="fpick-phone-stage" id="fpick-phone-stage">\n      <div class="fpick-phone-outer" id="fpick-phone-outer">\n        <div class="fpick-phone-notch-bar"></div>\n        <div class="fpick-phone-home-bar"></div>\n        <div class="fpick-phone-side-l1"></div>\n        <div class="fpick-phone-side-l2"></div>\n        <div class="fpick-phone-side-l3"></div>\n        <div class="fpick-phone-side-r"></div>\n        <div class="fpick-phone-screen-win">\n          <iframe id="fpick-phone-iframe" class="fpick-phone-iframe" srcdoc=""></iframe>\n        </div>\n      </div>\n    </div>\n  </div>\n\n</div>\n\n\n<!-- \u2550\u2550 DEPLOY SCREEN \u2550\u2550 -->\n<div id="deploy-screen" class="screen" style="display:none;">\n  <!-- Legacy deploy screen kept hidden; Mission Control replaces it -->\n</div>\n\n<!-- \u2550\u2550\u2550 SITE REVEAL \u2014 THE GALLERIST \u2550\u2550\u2550 -->\n<div id="site-reveal" class="screen" style="padding:0;">\n <div style="display:flex;height:100vh;overflow:hidden;background:#e8e4e0;">\n\n  <!-- LEFT PANEL: Gallerist -->\n  <div id="gallerist-panel" style="width:288px;min-width:288px;background:#fafaf8;border-right:1px solid #ebe8e4;display:flex;flex-direction:column;height:100vh;overflow:hidden;">\n\n   <!-- Brand header -->\n   <div style="padding:20px 18px 12px;">\n    <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:3px;font-family:'Outfit',sans-serif;">Your Site</div>\n    <div id="brand-name-reveal" style="font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#1d1d1f;margin-bottom:10px;"></div>\n    <!-- Progress line -->\n    <div style="height:2px;background:#ebe8e4;border-radius:2px;overflow:hidden;margin-bottom:4px;">\n     <div id="review-progress-bar" style="height:100%;width:0%;background:#c4703f;border-radius:2px;transition:width 0.7s ease;"></div>\n    </div>\n    <div style="font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;" id="review-progress-label">Loading...</div>\n   </div>\n\n   <!-- Section list -->\n   <div style="height:1px;background:#ebe8e4;margin:0 0;flex-shrink:0;"></div>\n   <div id="gallerist-section-list" style="flex:1;overflow-y:auto;padding:8px 0;">\n    <!-- Populated by galleristRenderSectionList() -->\n   </div>\n\n   <!-- Bottom actions -->\n   <div style="border-top:1px solid #ebe8e4;padding:14px 18px 18px;flex-shrink:0;">\n\n    <!-- Section detail (shown when a section is clicked) -->\n    <div id="review-section-detail" style="display:none;margin-bottom:12px;animation:galleristFadeIn 0.22s ease both;">\n     <div id="review-badge" style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;margin-bottom:2px;font-family:'Outfit',sans-serif;"></div>\n     <div id="review-title" style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:3px;line-height:1.3;"></div>\n     <div id="review-desc" style="font-size:11px;color:#86868b;line-height:1.45;margin-bottom:10px;"></div>\n     <!-- Refine button (appears when section selected) -->\n     <div id="review-btns">\n      <button class="reaction-btn" onclick="sectionReaction('refine')" style="width:100%;padding:9px;background:transparent;color:#6b6b6b;border:1px solid #ddd;border-radius:50px;font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;transition:all 0.15s;"><span class="reaction-label">Request a change \u2192</span></button>\n     </div>\n     <!-- Refine input -->\n     <div id="section-refine-input" style="display:none;margin-top:8px;">\n      <textarea id="section-refine-text" rows="3" placeholder="What would you like changed in this section?" style="width:100%;padding:10px 12px;font-size:12px;border:1px solid #ddd;border-radius:10px;resize:vertical;font-family:inherit;line-height:1.5;box-sizing:border-box;margin-bottom:8px;outline:none;background:#fff;color:#1d1d1f;"></textarea>\n      <button class="btn btn-gold" onclick="submitSectionRefine()" id="section-refine-btn" style="width:100%;padding:11px;font-size:12px;margin-bottom:5px;">Apply Change</button>\n      <div id="section-refine-status" style="display:none;text-align:center;margin-top:6px;font-size:11px;color:#86868b;line-height:1.4;"></div>\n     </div>\n    </div>\n\n    <!-- Go Live \u2014 always visible -->\n    <button class="gallerist-golive-btn" onclick="launchAndGoLive()" style="width:100%;padding:13px;background:#1d1d1f;color:#fff;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.01em;">Go Live \u2192</button>\n    <!-- Hint text -->\n    <div id="review-hint" style="text-align:center;margin-top:8px;font-size:11px;color:#aaa9a5;font-family:'Outfit',sans-serif;">Click any section to refine it</div>\n   </div>\n  </div>\n\n  <!-- RIGHT PANEL: Site preview -->\n  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">\n\n   <!-- Browser chrome bar -->\n   <div style="background:#f0ede9;padding:9px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #ddd;flex-shrink:0;">\n    <span style="width:10px;height:10px;border-radius:50%;background:#e05252;display:inline-block;flex-shrink:0;"></span>\n    <span style="width:10px;height:10px;border-radius:50%;background:#e8a838;display:inline-block;flex-shrink:0;"></span>\n    <span style="width:10px;height:10px;border-radius:50%;background:#3cc43c;display:inline-block;flex-shrink:0;"></span>\n    <div style="flex:1;text-align:center;">\n     <span id="reveal-domain" style="font-family:monospace;font-size:11px;color:#888;background:#fff;padding:3px 16px;border-radius:20px;border:1px solid #ddd;display:inline-block;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>\n    </div>\n    <!-- Device toggles -->\n    <div style="display:flex;gap:4px;flex-shrink:0;">\n     <button onclick="revealToggleDevice('desktop')" id="device-btn-desktop" title="Desktop view" style="padding:5px 10px;border-radius:6px;border:1px solid #c4703f;background:#c4703f;color:#fff;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;">Desktop</button>\n     <button onclick="revealToggleDevice('mobile')" id="device-btn-mobile" title="Mobile view" style="padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:transparent;color:#888;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;">Mobile</button>\n    </div>\n   </div>\n\n   <!-- Iframe wrapper -->\n   <div id="reveal-iframe-container" style="flex:1;overflow:hidden;position:relative;background:#e8e4e0;display:flex;align-items:center;justify-content:center;transition:background 0.4s;">\n    <!-- Mobile phone bezel overlay (pointer-events:none so iframe is still usable) -->\n    <div id="mobile-phone-bezel" style="display:none;">\n     <div class="bezel-notch"></div>\n     <div class="bezel-home"></div>\n     <div class="bezel-btn-l1"></div><div class="bezel-btn-l2"></div><div class="bezel-btn-l3"></div>\n     <div class="bezel-btn-r"></div>\n    </div>\n    <iframe id="reveal-preview" src="" style="width:100%;height:100%;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>\n    <div id="reveal-loading" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#e8e4e0;gap:16px;z-index:6;">\n     <div style="width:36px;height:36px;border:2px solid #c4703f;border-top-color:transparent;border-radius:50%;animation:spin 0.9s linear infinite;"></div>\n     <div style="font-size:13px;color:#888;font-family:'Outfit',sans-serif;">Loading your site...</div>\n    </div>\n   </div>\n  </div>\n\n </div>\n</div>\n\n\n<div id="mission-control" class="screen">\n  <div style="max-width:720px;margin:0 auto;padding:40px 20px;">\n\n    <!-- Back to Blueprint -->\n    <div style="margin-bottom:24px;">\n      <button onclick="showScreen('blueprint')" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:6px;opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">\n        \u2190 View Blueprint\n      </button>\n    </div>\n\n    <!-- Header -->\n    <div style="text-align:center;margin-bottom:36px;">\n      <h2 style="font-family:'Playfair Display',serif;font-size:32px;margin-bottom:6px;">\n        <span id="mc-brand-name">Your Brand</span> is Live\n      </h2>\n      <p style="color:var(--text2);font-size:15px;margin:0;">Your website is published and ready to share with the world.</p>\n    </div>\n\n    <!-- Live URL bar -->\n    <div id="mc-live-url" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">\n      <a id="mc-url-link" href="#" target="_blank" style="color:var(--gold);font-size:15px;font-weight:500;text-decoration:none;flex:1;word-break:break-all;"></a>\n      <button id="mc-copy-btn" onclick="copyMcUrl()" style="background:var(--bg2);border:1px solid var(--border);color:var(--text1);padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">Copy Link</button>\n      <a id="mc-visit-btn" href="#" target="_blank" class="btn btn-gold" style="padding:8px 18px;font-size:13px;text-decoration:none;white-space:nowrap;">Visit Site</a>\n    </div>\n\n    <!-- Fallback if no URL -->\n    <div id="mc-no-url" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:24px;text-align:center;">\n      <div style="font-size:14px;color:var(--text2);">Your site was generated but deployment is still processing. Refresh in a moment to see your live URL.</div>\n    </div>\n\n    <!-- Site Preview -->\n    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px;background:var(--bg1);">\n      <div style="background:var(--bg3);padding:8px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);">\n        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e05252;"></span>\n        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e8a838;"></span>\n        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3cc43c;"></span>\n        <span style="flex:1;text-align:center;font-family:monospace;font-size:11px;color:var(--text2);" id="mc-preview-domain"></span>\n      </div>\n      <iframe id="mc-preview" src="" style="width:100%;height:420px;border:none;display:none;" sandbox="allow-scripts allow-same-origin"></iframe>\n      <div id="mc-preview-placeholder" style="height:420px;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;">Loading preview...</div>\n    </div>\n\n    <!-- Share & Actions -->\n    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">\n      <button onclick="emailMySite()" class="btn btn-outline" style="padding:14px;font-size:14px;">\n        \u2709\uFE0F &nbsp;Email My Site Link\n      </button>\n      <button onclick="copyMcUrl()" class="btn btn-outline" style="padding:14px;font-size:14px;">\n        Copy Link to Share\n      </button>\n    </div>\n\n    <!-- Strategy Call CTA (moved up: highest conversion moment is right after seeing the live site) -->\n    <div style="text-align:center;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.03));border:1.5px solid rgba(212,175,55,0.35);border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;">\n      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Next Step</div>\n      <h3 style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:8px;">Want It Done For You?</h3>\n      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;max-width:480px;margin-left:auto;margin-right:auto;">Book a strategy call. We will connect your domain, refine your content together, and build your traffic plan.</p>\n      <button class="btn btn-gold" onclick="handleBookCall()" style="padding:16px 36px;font-size:15px;">Book Your Strategy Call</button>\n    </div>\n\n    <!-- 30-Day Preview Notice -->\n    <div style="background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start;">\n      <div style="font-size:22px;margin-top:2px;">\u{1F4C5}</div>\n      <div>\n        <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Your Site is Live for 30 Days</div>\n        <div style="font-size:13px;color:var(--text2);line-height:1.6;">Your preview is hosted here for 30 days at no extra cost. Download your site file or self-deploy to Cloudflare Pages (free) to keep it live permanently.</div>\n      </div>\n    </div>\n\n    <!-- Download Site -->\n    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:16px;">\n      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">\u{1F4E5} Download Your Site File</div>\n      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">A single HTML file with everything built in \u2014 your copy, styles, and layout. Works anywhere. No dependencies.</div>\n      <button id="download-site-btn" class="btn btn-gold" onclick="downloadSite()" style="width:auto;padding:12px 28px;font-size:14px;">Download Site</button>\n    </div>\n\n    <!-- Self-Deploy Guide -->\n    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;">\n      <div style="font-weight:600;font-size:15px;margin-bottom:6px;">\u{1F310} Self-Deploy to Cloudflare Pages \u2014 Free Forever</div>\n      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;">Cloudflare Pages hosts your site permanently on their free tier. Takes about 5 minutes.</div>\n      <div style="display:flex;flex-direction:column;gap:0;">\n        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">\n          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">1</div>\n          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Download your site file above, then go to <a href="https://dash.cloudflare.com/sign-up/pages" target="_blank" style="color:var(--gold);font-weight:500;">dash.cloudflare.com</a> and create a free account.</div>\n        </div>\n        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">\n          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">2</div>\n          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Click <strong>Workers &amp; Pages</strong> in the left menu, then <strong>Create</strong> and choose <strong>Pages</strong>.</div>\n        </div>\n        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">\n          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">3</div>\n          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Select <strong>Direct Upload</strong>, name your project (your brand name works great), then upload your HTML file.</div>\n        </div>\n        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">\n          <div style="min-width:24px;height:24px;background:var(--gold);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">4</div>\n          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Click <strong>Deploy</strong>. Your site goes live at <code style="background:var(--bg2);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px;">your-project.pages.dev</code> within seconds.</div>\n        </div>\n        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;">\n          <div style="min-width:24px;height:24px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">5</div>\n          <div style="font-size:13px;color:var(--text2);line-height:1.6;">Optional: Go to <strong>Custom Domains</strong> in the dashboard to connect your own domain (like yourbrand.com).</div>\n        </div>\n      </div>\n    </div>\n\n    <!-- Secondary CTA at bottom for scrollers -->\n    <div style="text-align:center;padding:20px 0 8px;">\n      <p style="color:var(--text2);font-size:13px;margin-bottom:12px;">Questions? Something feel off about your site?</p>\n      <a href="mailto:james@jamesguldan.com?subject=Deep Work Site Question" style="color:var(--gold);font-size:14px;font-weight:500;text-decoration:none;">Email James directly &rarr;</a>\n    </div>\n\n  </div>\n</div>\n\n<!-- order bump removed -->\n\n<!-- \u2550\u2550 SESSION LOADING OVERLAY \u2550\u2550 -->\n<div class="session-loading" id="session-loading">\n  <div id="loading-content">\n    <div class="loading-wordmark">\n      <div class="loading-wordmark-eyebrow">James Guldan</div>\n      <div class="loading-wordmark-title">Deep Work</div>\n    </div>\n    <div class="loading-spinner"></div>\n    <div class="loading-message" id="loading-message"></div>\n    <div class="loading-stage" id="loading-stage">Warming up</div>\n    <div class="loading-progress"><div class="loading-progress-bar" id="loading-bar"></div></div>\n  </div>\n  <div class="loading-error" id="loading-error">\n    <h3>Something went sideways</h3>\n    <p id="loading-error-text">We hit a snag starting your session. This is almost certainly temporary.</p>\n    <div class="error-detail" id="loading-error-detail"></div>\n    <button class="btn btn-gold" onclick="dismissLoadingError()" style="width:auto;padding:14px 28px;">Try Again</button>\n    <button class="btn btn-outline" onclick="window.location.reload()" style="width:auto;padding:14px 28px;margin-top:8px;">Refresh Page</button>\n  </div>\n</div>\n\n<!-- \u2550\u2550 BLUEPRINT GENERATION OVERLAY \u2550\u2550 -->\n<div class="blueprint-generating" id="blueprint-generating">\n  <div class="blueprint-gen-icon">\n    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>\n  </div>\n  <div class="blueprint-gen-title" id="blueprint-gen-title">Building Your Blueprint</div>\n  <div class="blueprint-gen-msg" id="blueprint-gen-msg">Synthesizing everything you shared into something you have never seen before...</div>\n  <div class="blueprint-gen-progress"><div class="blueprint-gen-progress-bar" id="blueprint-gen-bar"></div></div>\n  <div id="blueprint-gen-timer" style="font-size:12px;color:rgba(0,0,0,0.35);margin-top:16px;font-weight:500;letter-spacing:0.04em;">This typically takes 4 to 6 minutes. Grab a coffee.</div>\n  <div id="blueprint-gen-retry" style="display:none;margin-top:24px;">\n    <p style="color:rgba(0,0,0,0.5);font-size:14px;margin-bottom:12px;">This is taking longer than expected. Your conversation is saved.</p>\n    <button onclick="retryBlueprint()" style="background:var(--gold,#C4703F);color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>\n    <button onclick="dismissBlueprintOverlay()" style="background:transparent;border:1.5px solid rgba(0,0,0,0.15);padding:14px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-left:8px;color:rgba(0,0,0,0.6);">Go Back to Chat</button>\n  </div>\n</div>\n\n<!-- \u2550\u2550 TOAST \u2550\u2550 -->\n<div id="toast"></div>\n\n<script>\n// Worker-side name helpers are no-ops in the browser\nvar __name = function(f, n) { try { Object.defineProperty(f, 'name', { value: n, configurable: true }); } catch(_) {} return f; };\nvar __name2 = __name;\nvar __name22 = __name;\n// Magic link IIFE \u2014 runs immediately on script parse, no DOMContentLoaded needed\n// \u2500\u2500 PREFLIGHT: runs immediately before DOMContentLoaded \u2500\u2500\nvar _dwPreflight = null; // Promise for fast-resume result\n(async function checkMagicLinkOnLoad() {\n  // Sync server-set cookie to localStorage immediately (runs before DOMContentLoaded)\n  try {\n    // Check for JWT passed directly in URL from server-side magic link redirect\n    var _sp = new URLSearchParams(window.location.search);\n    var _sJwt = _sp.get('_s');\n    if (_sJwt) {\n      // Always update localStorage with the fresh JWT from the magic link (even if one exists \u2014 new link = new session)\n      localStorage.setItem('dw_session', _sJwt);\n      document.cookie = 'dw_session=' + _sJwt + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';\n      // Always clean the _s param from the URL\n      var _cleanSearch = window.location.search.replace(/[?&]_s=[^&]*/g, '').replace(/^&/, '?');\n      window.history.replaceState(null, '', window.location.pathname + (_cleanSearch || ''));\n      // Mark this as a fresh magic-link login so DOMContentLoaded skips auto-resume\n      try { sessionStorage.setItem('_dw_fresh_login', '1'); } catch(_) {}\n    }\n    // Also sync cookie to localStorage if set by server (only when no _s JWT was found)\n    if (!_sJwt && !localStorage.getItem('dw_session')) {\n      var _cm = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/);\n      if (_cm && _cm[1]) { localStorage.setItem('dw_session', decodeURIComponent(_cm[1])); }\n    }\n  } catch(_e) {}\n  // Handle magic param in URL (client-side fallback for old links)\n  var _p = new URLSearchParams(window.location.search);\n  var _magic = _p.get('magic');\n  if (_magic) {\n    try {\n      var _res = await fetch('/api/auth/magic', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ token: _magic })\n      });\n      var _data = await _res.json();\n      if (_data.token) {\n        localStorage.setItem('dw_session', _data.token);\n        document.cookie = 'dw_session=' + _data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';\n        window.location.replace('/app');\n        return;\n      }\n    } catch(e) {}\n  }\n  // \u2500\u2500 PREFLIGHT: start fast-resume fetch NOW (before DOMContentLoaded) \u2500\u2500\n  var _pfToken = localStorage.getItem('dw_session');\n  if (!_pfToken) {\n    try { var _cm2 = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); if (_cm2 && _cm2[1]) _pfToken = decodeURIComponent(_cm2[1]); } catch(_) {}\n  }\n  if (_pfToken) {\n    _dwPreflight = fetch('/api/auth/fast-resume', {\n      headers: { 'Authorization': 'Bearer ' + _pfToken }\n    }).then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });\n  }\n})();\n// \u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst STATE = {\n  sessionId: null,\n  tier: null,\n  phase: 1,\n  isStreaming: false,\n  blueprint: null,\n  generatedSiteHtml: null,\n  uploadedFiles: [],\n  uploadedKeys: [],\n  blueprintOverlayShown: false,\n  sessionJwt: null,\n  uploadedDocs: [],\n  isAdmin: false,\n  blueprintGenerating: false\n};\n\nconst PHASE_NAMES = [\n  '', 'Your Story', 'Your Expertise', 'Your Beliefs', 'Your People',\n  'Your Voice & Identity', 'Your Market', 'Your Offers', 'Synthesis'\n];\n\n// Stripe price IDs\nconst PRICES = {\n  blueprint: '${config.STRIPE_PRICE_BLUEPRINT}',\n  site: '${config.STRIPE_PRICE_SITE}',\n  call: '${config.STRIPE_PRICE_CALL}'\n};\n\n// \u2500\u2500 SCREEN MANAGEMENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n  // === 1B Phase Bar Bridge ===\n  // Watches the hidden legacy phase elements and updates the 1B top bar\n  (function() {\n    function syncPhaseBar() {\n      var activeDot = document.querySelector('.phase-dot.active');\n      if (!activeDot) return;\n      var idMatch = activeDot.id && activeDot.id.match(/pd(\\d+)/);\n      var num = idMatch ? parseInt(idMatch[1]) : parseInt(activeDot.textContent);\n      if (isNaN(num)) return;\n\n      var stepLabel = document.getElementById('phase-step-label');\n      var titleLabel = document.getElementById('phase-title-label');\n      var progressFill = document.getElementById('phase-progress-fill');\n\n      if (stepLabel) stepLabel.textContent = 'Phase ' + num + ' of 8';\n      if (titleLabel && typeof PHASE_NAMES !== 'undefined' && PHASE_NAMES[num]) {\n        titleLabel.textContent = PHASE_NAMES[num];\n      }\n      if (progressFill) progressFill.style.width = ((num / 8) * 100) + '%';\n    }\n\n    // Run on load and after PHASE_NAMES is defined\n    setTimeout(syncPhaseBar, 100);\n\n    // Watch for class changes on phase dots\n    var observer = new MutationObserver(function() { syncPhaseBar(); });\n    var phasesEl = document.querySelector('.phases');\n    if (phasesEl) {\n      observer.observe(phasesEl, { attributes: true, subtree: true, attributeFilter: ['class'] });\n    }\n\n    // Backup sync every 2s\n    setInterval(syncPhaseBar, 2000);\n  })();\n\nfunction showScreen(id) {\n  // Hide auth loader \u2014 remove injected preauth CSS then hide\n  var _preauth = document.getElementById('dw-preauth-css');\n  if (_preauth) _preauth.remove();\n  var authLoader = document.getElementById('dw-auth-loader');\n  if (authLoader) authLoader.style.display = 'none';\n  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));\n  document.getElementById(id).classList.add('active');\n  window.scrollTo(0, 0);\n\n  // Setup intake enhancements when showing intake screen\n  if (id === 'intake' && window.setupIntakeEnhancements) {\n    setTimeout(window.setupIntakeEnhancements, 100);\n  }\n\n  // Show or hide intake floating CTA bar\n  var floatingCta = document.getElementById('intake-floating-cta');\n  if (floatingCta) {\n    if (id !== 'intake') {\n      floatingCta.style.display = 'none';\n      floatingCta.classList.remove('active');\n    }\n  }\n\n  // Show or hide blueprint sticky bar\n  var stickyBar = document.getElementById('blueprint-sticky-bar');\n  if (stickyBar) {\n    if (id === 'blueprint-screen') {\n      stickyBar.style.display = 'block';\n    } else {\n      stickyBar.style.display = 'none';\n      stickyBar.style.transform = 'translateY(100%)';\n    }\n  }\n  // Seed welcome message for brand-new chat sessions\n  if (id === 'app') {\n    setTimeout(function() {\n      var msgs = document.getElementById('messages') || document.getElementById('chat-messages');\n      if (msgs && msgs.children.length === 0 && (!STATE.phase || STATE.phase <= 1) && !STATE.sessionId) {\n        var wm = document.createElement('div');\n        wm.id = 'welcome-placeholder';\n        wm.style.cssText = 'text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;line-height:1.7;';\n        wm.innerHTML = '<p style="max-width:320px;margin:0 auto;">Your AI strategist is ready. Complete the intake form and hit <strong>Begin My Session</strong> to start.</p>';\n        msgs.appendChild(wm);\n      }\n    }, 150);\n  }\n}\n\nfunction delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }\n\nfunction showToast(msg) {\n  const el = document.getElementById('toast');\n  if (!el) return;\n  el.textContent = msg;\n  el.classList.add('show');\n  clearTimeout(el._toastTimer);\n  var isError = msg && (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('wrong') || msg.toLowerCase().includes('fail') || msg.toLowerCase().includes('could not'));\n  el._toastTimer = setTimeout(() => el.classList.remove('show'), isError ? 5500 : 3000);\n}\n\nfunction copyToClipboard(text) {\n  if (!text) return;\n  navigator.clipboard.writeText(text).then(function() {\n    showToast('Copied to clipboard');\n  }).catch(function(err) {\n    var textarea = document.createElement('textarea');\n    textarea.value = text;\n    document.body.appendChild(textarea);\n    textarea.select();\n    try { document.execCommand('copy'); showToast('Copied to clipboard'); } catch(_) { showToast('Copy failed'); }\n    document.body.removeChild(textarea);\n  });\n}\n\n// \u2500\u2500 TIER SELECTION & CHECKOUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction selectTier(tier) {\n  STATE.tier = tier;\n  // Check for existing paid session in URL\n  const params = new URLSearchParams(window.location.search);\n  const sessionId = params.get('session');\n  if (sessionId) {\n    STATE.sessionId = sessionId;\n    showScreen('intake');\n    return;\n  }\n  initiateCheckout(tier);\n}\n\nasync function initiateCheckout(tier) {\n  try {\n    showToast('Redirecting to checkout...');\n    const res = await fetch('/api/checkout', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ tier })\n    });\n    const data = await res.json();\n    if (data.url) {\n      window.location.href = data.url;\n    } else {\n      showToast('Something went wrong. Please try again.');\n    }\n  } catch (e) {\n    showToast('Connection error. Please try again.');\n  }\n}\n\n// Check URL for session token on load\nwindow.addEventListener('beforeunload', function(e) {\n  if ((STATE.uploadedFiles && STATE.uploadedFiles.length > 0) || (STATE.uploadedDocs && STATE.uploadedDocs.length > 0)) {\n    if (!STATE.sessionId) { e.preventDefault(); e.returnValue = ''; }\n  }\n});\nwindow.addEventListener('DOMContentLoaded', async () => {\n  const params = new URLSearchParams(window.location.search);\n\n  // Handle magic link token \u2014 auto-login from email link\n  const magic = params.get('magic');\n  if (magic) {\n    try {\n      const res = await fetch('/api/auth/magic', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ token: magic })\n      });\n      const data = await res.json();\n      if (data.token) {\n        localStorage.setItem('dw_session', data.token);\n        document.cookie = 'dw_session=' + data.token + '; path=/; max-age=' + (30*24*3600) + '; secure; samesite=lax';\n        window.location.replace('/app');\n        return;\n      }\n    } catch(_) {}\n  }\n\n  const sessionId = params.get('session');\n  const tier = params.get('tier');\n  const accessToken = params.get('access');\n\n  // Stripe redirect: ?session=X&tier=Y&access=TOKEN from checkout\n  const upgraded = params.get('upgraded');\n  if (sessionId && tier) {\n    STATE.sessionId = sessionId;\n    STATE.tier = tier;\n    localStorage.setItem('dw_active_session', sessionId);\n    window.history.replaceState({}, '', '/app');\n\n    // Exchange one-time access token for a session JWT\n    if (accessToken) {\n      try {\n        const claimRes = await fetch('/api/session/claim', {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify({ accessToken, sessionId })\n        });\n        const claimData = await claimRes.json();\n        if (claimData.token) {\n          localStorage.setItem('dw_session_jwt', claimData.token);\n          STATE.sessionJwt = claimData.token;\n        }\n      } catch (_) {}\n    } else {\n      // No access token \u2014 restore JWT if we have one stored for this session\n      const stored = localStorage.getItem('dw_session_jwt');\n      if (stored) STATE.sessionJwt = stored;\n    }\n\n    if (upgraded === 'true') {\n      // Returning from site upgrade purchase \u2014 go straight to site builder\n      showScreen('site-screen');\n      runSiteGeneration();\n      return;\n    }\n    showScreen('intake');\n  } else {\n    // Restore session JWT if present (for users who reload without URL params)\n    const storedJwt = localStorage.getItem('dw_session_jwt');\n    if (storedJwt) STATE.sessionJwt = storedJwt;\n  // New auth flow: use preflight fast-resume (started before DOMContentLoaded)\n    // Bulletproof token recovery: check _s param directly in case IIFE localStorage write failed\n    var _domSParam = null;\n    try { _domSParam = new URLSearchParams(window.location.search).get('_s'); } catch(_) {}\n    if (_domSParam) {\n      try { localStorage.setItem('dw_session', _domSParam); } catch(_) {}\n      // Clean _s from URL so it doesn't persist
       try {
         var _cs2 = window.location.search.replace(/[?&]_s=[^&]*/g,'').replace(/^&/,'?');
         window.history.replaceState(null, '', window.location.pathname + (_cs2 || ''));
@@ -6827,7 +5945,45 @@ function downloadBlueprintPDF() {
     '<div class="pdf-cover">' +
     '<div class="pdf-cover-eyebrow">Deep Work Blueprint</div>' +
     '<div class="pdf-cover-name">' + brandName + '</div>' +
-    (tagline ? '<div class="pdf-cover-tagline">\"' + tagline.replace(/^\"|^\"/, '').replace(/\"$|\u201d$/, '') + '\"</div>' : '') +\\n    '<div class="pdf-cover-meta">Generated by Deep Work Interview &nbsp;&middot;&nbsp; deepwork.jamesguldan.com</div>' +\\n    '</div>' +\\n\\n    '<div class="pdf-h2">Brand Story</div>' +\\n    (p1.coreBrandPromise ? '<div class="pdf-quote">' + p1.coreBrandPromise + '</div>' : '') +\\n    section('Brand Foundation', 'Your Brand Identity',\\n      card('Brand Voice', list(p1.brandVoice)) +\\n      card('Visual Aesthetic', safe(p1.visualDirection && p1.visualDirection.aesthetic)) +\\n      card('Recommended Fonts', p1.visualDirection && Array.isArray(p1.visualDirection.fonts) ? p1.visualDirection.fonts.join(', ') : safe(p1.visualDirection && p1.visualDirection.fonts))\\n    ) +\\n    section('Your Ideal Client', safe(p2.name) + (p2.ageRange ? ', ' + p2.ageRange : ''),\\n      safe(p2.lifeSituation) +\\n      '<br><br>' +\\n      card('What They Want', list(p2.goals)) +\\n      card('What Keeps Them Up', list(p2.painPoints)) +\\n      card('What They Have Tried', list(p2.alreadyTried)) +\\n      card('Why It Did Not Work', list(p2.whyItDidNotWork))\\n    ) +\\n\\n    '<div class="pdf-h2">Positioning</div>' +\\n    (p3.nicheStatement ? '<div class="pdf-quote">' + p3.nicheStatement + '</div>' : '') +\\n    section('Market Position', 'Niche and Mechanism',\\n      card('Who You Serve', list(p3.whoTheyServe)) +\\n      card('Who You Do Not Serve', list(p3.whoTheyDoNotServe)) +\\n      card('Your Unique Mechanism', typeof p3.uniqueMechanism === 'object' ? safe(p3.uniqueMechanism && (p3.uniqueMechanism.name || p3.uniqueMechanism.title)) + ': ' + safe(p3.uniqueMechanism && p3.uniqueMechanism.description) : safe(p3.uniqueMechanism)) +\\n      card('Competitor Gap', list(p3.competitorGap))\\n    ) +\\n    section('Headlines and Copy', 'Words That Convert',\\n      (p7.heroHeadlineOptions || []).map((h, i) => card('Headline ' + (i+1), typeof h === 'string' ? h : safe(h.text || h.headline))).join('')\\n    ) +\\n\\n    '<div class="pdf-h2">Offers</div>' +\\n    (p4.ascensionLogic ? '<p style="font-size:13px;color:#444;line-height:1.75;margin-bottom:20px;">' + p4.ascensionLogic + '</p>' : '') +\\n    offerBlock(p4.entryOffer, 'Entry Offer') +\\n    offerBlock(p4.coreOffer, 'Core Offer') +\\n    offerBlock(p4.premiumOffer, 'Premium Offer') +\\n\\n    '<div class="pdf-h2">Next Steps</div>' +
+    (tagline ? '<div class="pdf-cover-tagline">\"' + tagline.replace(/^\"|^\"/, '').replace(/\"$|\u201d$/, '') + '\"</div>' : '') +
+    '<div class="pdf-cover-meta">Generated by Deep Work Interview &nbsp;&middot;&nbsp; deepwork.jamesguldan.com</div>' +
+    '</div>' +
+
+    '<div class="pdf-h2">Brand Story</div>' +
+    (p1.coreBrandPromise ? '<div class="pdf-quote">' + p1.coreBrandPromise + '</div>' : '') +
+    section('Brand Foundation', 'Your Brand Identity',
+      card('Brand Voice', list(p1.brandVoice)) +
+      card('Visual Aesthetic', safe(p1.visualDirection && p1.visualDirection.aesthetic)) +
+      card('Recommended Fonts', p1.visualDirection && Array.isArray(p1.visualDirection.fonts) ? p1.visualDirection.fonts.join(', ') : safe(p1.visualDirection && p1.visualDirection.fonts))
+    ) +
+    section('Your Ideal Client', safe(p2.name) + (p2.ageRange ? ', ' + p2.ageRange : ''),
+      safe(p2.lifeSituation) +
+      '<br><br>' +
+      card('What They Want', list(p2.goals)) +
+      card('What Keeps Them Up', list(p2.painPoints)) +
+      card('What They Have Tried', list(p2.alreadyTried)) +
+      card('Why It Did Not Work', list(p2.whyItDidNotWork))
+    ) +
+
+    '<div class="pdf-h2">Positioning</div>' +
+    (p3.nicheStatement ? '<div class="pdf-quote">' + p3.nicheStatement + '</div>' : '') +
+    section('Market Position', 'Niche and Mechanism',
+      card('Who You Serve', list(p3.whoTheyServe)) +
+      card('Who You Do Not Serve', list(p3.whoTheyDoNotServe)) +
+      card('Your Unique Mechanism', typeof p3.uniqueMechanism === 'object' ? safe(p3.uniqueMechanism && (p3.uniqueMechanism.name || p3.uniqueMechanism.title)) + ': ' + safe(p3.uniqueMechanism && p3.uniqueMechanism.description) : safe(p3.uniqueMechanism)) +
+      card('Competitor Gap', list(p3.competitorGap))
+    ) +
+    section('Headlines and Copy', 'Words That Convert',
+      (p7.heroHeadlineOptions || []).map((h, i) => card('Headline ' + (i+1), typeof h === 'string' ? h : safe(h.text || h.headline))).join('')
+    ) +
+
+    '<div class="pdf-h2">Offers</div>' +
+    (p4.ascensionLogic ? '<p style="font-size:13px;color:#444;line-height:1.75;margin-bottom:20px;">' + p4.ascensionLogic + '</p>' : '') +
+    offerBlock(p4.entryOffer, 'Entry Offer') +
+    offerBlock(p4.coreOffer, 'Core Offer') +
+    offerBlock(p4.premiumOffer, 'Premium Offer') +
+
+    '<div class="pdf-h2">Next Steps</div>' +
     section('', safe(p8.headline, 'Make This Real'),
       safe(p8.personalizedMessage) +
       '<br><br>' +
@@ -6858,7 +6014,10 @@ function renderBlueprintV2(blueprint, userName) {
   const siteSections = (part5?.sections||[]).map(s=>\`<div class="bp-site-section-item"><div class="bp-site-section-name">\${safe(s.name||s.title||s.section)}</div><div class="bp-site-section-desc">\${safe(s.content||s.description||s.copy)}</div></div>\`).join('');
   const exactWords = (part2?.exactWords||[]).map(w=>typeof w==='string'?w:w.text||w.quote||'').filter(Boolean);
   const brandNames = part1?.brandNames||[];
-  const primaryBrandName = brandNames[0]||safe(part1?.brandName, userName+"'s Brand");\\n  const debriefName = debrief?.recipientName||userName||'';\\n  const hasDebrief = debrief&&(debrief.paragraph1_validation||debrief.paragraph2_mirror);\\n  let html = '<style>' + " .bp-results * { box-sizing: border-box; margin: 0; padding: 0; } .bp-debrief { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 80px 24px; text-align: center; } .bp-debrief-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 40px; opacity: 0; transform: translateY(12px); animation: bpFadeUp 0.8s ease 0.3s forwards; } .bp-debrief-letter { max-width: 560px; text-align: left; } .bp-debrief-letter p { font-family: 'Inter', sans-serif; font-size: 16px; color: #444444; line-height: 1.85; margin-bottom: 24px; opacity: 0; transform: translateY(16px); } .bp-debrief-letter p:nth-child(1) { animation: bpFadeUp 0.8s ease 0.6s forwards; } .bp-debrief-letter p:nth-child(2) { animation: bpFadeUp 0.8s ease 1.0s forwards; } .bp-debrief-letter p:nth-child(3) { animation: bpFadeUp 0.8s ease 1.4s forwards; } .bp-debrief-letter p:nth-child(4) { animation: bpFadeUp 0.8s ease 1.8s forwards; } .bp-debrief-letter p:nth-child(5) { animation: bpFadeUp 0.8s ease 2.2s forwards; } .bp-debrief-letter .bp-mirror-line { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.7; } .bp-debrief-letter .bp-turn { color: var(--text, #1D1D1F); font-weight: 500; } .bp-debrief-sig { margin-top: 16px; opacity: 0; transform: translateY(12px); animation: bpFadeUp 0.8s ease 2.6s forwards; } .bp-debrief-sig-line { width: 32px; height: 2px; background: var(--gold, #C4703F); margin-bottom: 16px; } .bp-debrief-sig-name { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--text, #1D1D1F); } .bp-debrief-sig-role { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text2, #86868B); margin-top: 2px; } .bp-scroll-invite { margin-top: 60px; text-align: center; opacity: 0; animation: bpFadeUp 0.8s ease 3.2s forwards; } .bp-scroll-text { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3, #C0C0C0); margin-bottom: 12px; } .bp-scroll-arrow { width: 1px; height: 40px; margin: 0 auto; background: linear-gradient(to bottom, var(--text3, #C0C0C0), transparent); animation: bpPulse 2s ease-in-out 3.5s infinite; } .bp-transition { height: 120px; position: relative; } .bp-transition-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 1px; background: var(--border2, #E8E8E8); } @keyframes bpFadeUp { to { opacity: 1; transform: translateY(0); } } @keyframes bpPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } } .bp-reveal { text-align: center; padding: 0 24px 32px; max-width: 640px; margin: 0 auto; opacity: 0; transition: opacity 0.6s ease; } .bp-reveal.bp-visible { opacity: 1; } .bp-header { text-align: center; padding: 60px 24px 32px; max-width: 640px; margin: 0 auto; } .bp-header-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 16px; } .bp-header-title { font-family: 'Outfit', sans-serif; font-size: 36px; font-weight: 700; color: var(--text, #1D1D1F); letter-spacing: -0.02em; margin-bottom: 12px; } .bp-header-subtitle { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text2, #86868B); line-height: 1.7; } .bp-tab-bar { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border, #F0F0F0); padding: 16px 24px; display: flex; justify-content: center; gap: 10px; } .bp-tab-btn { padding: 10px 24px; border-radius: 50px; border: 1px solid var(--border2, #E8E8E8); background: transparent; color: var(--text, #1D1D1F); font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.25s ease; text-transform: uppercase; letter-spacing: 0.05em; } .bp-tab-btn:hover { border-color: var(--gold, #C4703F); color: var(--gold, #C4703F); } .bp-tab-btn.active { background: var(--text, #1D1D1F); color: white; border-color: var(--text, #1D1D1F); } .bp-tab-content { display: none; opacity: 0; transition: opacity 0.35s ease; } .bp-tab-content.active { display: block; opacity: 1; } .bp-tab-inner { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; } .bp-section { margin-bottom: 56px; } .bp-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 12px; } .bp-section-title { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: var(--text, #1D1D1F); letter-spacing: -0.02em; margin-bottom: 20px; } .bp-body { font-family: 'Inter', sans-serif; font-size: 15px; color: #555555; line-height: 1.85; } .bp-body p { margin-bottom: 16px; } .bp-divider { height: 1px; background: var(--border, #F0F0F0); margin: 24px 0; } .bp-card { border: 1px solid var(--border, #F0F0F0); border-radius: 16px; background: var(--bg2, #FAFAFA); padding: 28px; margin-bottom: 16px; } .bp-card-label { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 8px; } .bp-card-body { font-family: 'Inter', sans-serif; font-size: 14px; color: #555555; line-height: 1.7; } .bp-pullquote { font-family: 'Playfair Display', serif; font-size: 22px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.65; margin: 40px 0; padding: 32px; border-left: 3px solid var(--gold, #C4703F); background: var(--bg2, #FAFAFA); border-radius: 0 16px 16px 0; } .bp-color-palette { display: flex; gap: 16px; margin: 24px 0; flex-wrap: wrap; } .bp-color-swatch { text-align: center; } .bp-color-circle { width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 8px; border: 1px solid rgba(0,0,0,0.06); } .bp-color-name { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; color: var(--text, #1D1D1F); } .bp-color-hex { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--text2, #86868B); } .bp-voice-tags { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; } .bp-voice-tag { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; padding: 8px 18px; border: 1px solid var(--border2, #E8E8E8); border-radius: 50px; color: var(--text, #1D1D1F); } .bp-avatar-name { font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic; color: var(--text, #1D1D1F); margin-bottom: 6px; } .bp-avatar-detail { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text2, #86868B); margin-bottom: 24px; line-height: 1.7; } .bp-avatar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; } @media (max-width: 600px) { .bp-avatar-grid { grid-template-columns: 1fr; } } .bp-niche-statement { font-family: 'Playfair Display', serif; font-size: 24px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.65; text-align: center; padding: 48px 24px; margin: 32px 0; border-top: 1px solid var(--border, #F0F0F0); border-bottom: 1px solid var(--border, #F0F0F0); } .bp-headline-item { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 28px; } .bp-headline-number { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--gold, #C4703F); min-width: 24px; padding-top: 4px; } .bp-headline-text { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.55; } .bp-gap-item { padding: 20px 0; border-bottom: 1px solid var(--border, #F0F0F0); } .bp-gap-item:last-child { border-bottom: none; } .bp-gap-label { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2, #86868B); margin-bottom: 6px; } .bp-gap-text { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text, #1D1D1F); line-height: 1.7; } .bp-offer-cards { display: grid; grid-template-columns: 1fr; gap: 20px; margin: 32px 0; } .bp-offer-card { border: 1px solid var(--border, #F0F0F0); border-radius: 16px; background: var(--bg, #FFFFFF); padding: 32px; } .bp-offer-card.core { border: 2px solid var(--gold, #C4703F); } .bp-offer-tier { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 10px; } .bp-offer-name { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: var(--text, #1D1D1F); margin-bottom: 8px; } .bp-offer-price { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: var(--text, #1D1D1F); margin-bottom: 16px; } .bp-offer-desc { font-family: 'Inter', sans-serif; font-size: 14px; color: #555555; line-height: 1.75; margin-bottom: 16px; } .bp-offer-includes { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text2, #86868B); line-height: 1.7; } .bp-ascension-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 32px 0; padding: 20px; background: var(--bg2, #FAFAFA); border-radius: 16px; flex-wrap: wrap; } .bp-ascension-step { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; color: var(--text, #1D1D1F); } .bp-ascension-arrow { color: var(--text3, #C0C0C0); font-size: 16px; } .bp-hero-preview { background: var(--bg2, #FAFAFA); border: 1px solid var(--border, #F0F0F0); border-radius: 16px; padding: 48px 32px; text-align: center; margin: 32px 0; } .bp-preview-headline { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: var(--text, #1D1D1F); letter-spacing: -0.02em; margin-bottom: 12px; } .bp-preview-sub { font-family: 'Inter', sans-serif; font-size: 15px; color: #555555; line-height: 1.7; max-width: 480px; margin: 0 auto 20px; } .bp-preview-cta { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; background: var(--text, #1D1D1F); color: white; padding: 14px 32px; border-radius: 50px; } .bp-site-section-item { padding: 20px 0; border-bottom: 1px solid var(--border, #F0F0F0); } .bp-site-section-item:last-child { border-bottom: none; } .bp-site-section-name { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text, #1D1D1F); margin-bottom: 6px; } .bp-site-section-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #555555; line-height: 1.7; } .bp-fork-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; } @media (max-width: 600px) { .bp-fork-grid { grid-template-columns: 1fr; } } .bp-fork-card { border: 1px solid var(--border, #F0F0F0); border-radius: 16px; padding: 32px; text-align: center; } .bp-fork-card.primary { border: 2px solid var(--text, #1D1D1F); background: var(--bg2, #FAFAFA); } .bp-fork-title { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; color: var(--text, #1D1D1F); margin-bottom: 12px; } .bp-fork-body { font-family: 'Inter', sans-serif; font-size: 13px; color: #555555; line-height: 1.7; margin-bottom: 20px; } .bp-btn-primary { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; background: var(--text, #1D1D1F); color: white; padding: 12px 28px; border-radius: 50px; border: none; cursor: pointer; text-decoration: none; } .bp-btn-secondary { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; background: transparent; color: var(--text, #1D1D1F); padding: 12px 28px; border-radius: 50px; border: 1px solid var(--border2, #E8E8E8); cursor: pointer; text-decoration: none; } .bp-next-steps { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border, #F0F0F0); } " + '</style>\n<div class="bp-results">\n';
+  const primaryBrandName = brandNames[0]||safe(part1?.brandName, userName+"'s Brand");
+  const debriefName = debrief?.recipientName||userName||'';
+  const hasDebrief = debrief&&(debrief.paragraph1_validation||debrief.paragraph2_mirror);
+  let html = '<style>' + " .bp-results * { box-sizing: border-box; margin: 0; padding: 0; } .bp-debrief { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 80px 24px; text-align: center; } .bp-debrief-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 40px; opacity: 0; transform: translateY(12px); animation: bpFadeUp 0.8s ease 0.3s forwards; } .bp-debrief-letter { max-width: 560px; text-align: left; } .bp-debrief-letter p { font-family: 'Inter', sans-serif; font-size: 16px; color: #444444; line-height: 1.85; margin-bottom: 24px; opacity: 0; transform: translateY(16px); } .bp-debrief-letter p:nth-child(1) { animation: bpFadeUp 0.8s ease 0.6s forwards; } .bp-debrief-letter p:nth-child(2) { animation: bpFadeUp 0.8s ease 1.0s forwards; } .bp-debrief-letter p:nth-child(3) { animation: bpFadeUp 0.8s ease 1.4s forwards; } .bp-debrief-letter p:nth-child(4) { animation: bpFadeUp 0.8s ease 1.8s forwards; } .bp-debrief-letter p:nth-child(5) { animation: bpFadeUp 0.8s ease 2.2s forwards; } .bp-debrief-letter .bp-mirror-line { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.7; } .bp-debrief-letter .bp-turn { color: var(--text, #1D1D1F); font-weight: 500; } .bp-debrief-sig { margin-top: 16px; opacity: 0; transform: translateY(12px); animation: bpFadeUp 0.8s ease 2.6s forwards; } .bp-debrief-sig-line { width: 32px; height: 2px; background: var(--gold, #C4703F); margin-bottom: 16px; } .bp-debrief-sig-name { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; color: var(--text, #1D1D1F); } .bp-debrief-sig-role { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text2, #86868B); margin-top: 2px; } .bp-scroll-invite { margin-top: 60px; text-align: center; opacity: 0; animation: bpFadeUp 0.8s ease 3.2s forwards; } .bp-scroll-text { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3, #C0C0C0); margin-bottom: 12px; } .bp-scroll-arrow { width: 1px; height: 40px; margin: 0 auto; background: linear-gradient(to bottom, var(--text3, #C0C0C0), transparent); animation: bpPulse 2s ease-in-out 3.5s infinite; } .bp-transition { height: 120px; position: relative; } .bp-transition-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 1px; background: var(--border2, #E8E8E8); } @keyframes bpFadeUp { to { opacity: 1; transform: translateY(0); } } @keyframes bpPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } } .bp-reveal { text-align: center; padding: 0 24px 32px; max-width: 640px; margin: 0 auto; opacity: 0; transition: opacity 0.6s ease; } .bp-reveal.bp-visible { opacity: 1; } .bp-header { text-align: center; padding: 60px 24px 32px; max-width: 640px; margin: 0 auto; } .bp-header-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 16px; } .bp-header-title { font-family: 'Outfit', sans-serif; font-size: 36px; font-weight: 700; color: var(--text, #1D1D1F); letter-spacing: -0.02em; margin-bottom: 12px; } .bp-header-subtitle { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text2, #86868B); line-height: 1.7; } .bp-tab-bar { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border, #F0F0F0); padding: 16px 24px; display: flex; justify-content: center; gap: 10px; } .bp-tab-btn { padding: 10px 24px; border-radius: 50px; border: 1px solid var(--border2, #E8E8E8); background: transparent; color: var(--text, #1D1D1F); font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 13px; cursor: pointer; transition: all 0.25s ease; text-transform: uppercase; letter-spacing: 0.05em; } .bp-tab-btn:hover { border-color: var(--gold, #C4703F); color: var(--gold, #C4703F); } .bp-tab-btn.active { background: var(--text, #1D1D1F); color: white; border-color: var(--text, #1D1D1F); } .bp-tab-content { display: none; opacity: 0; transition: opacity 0.35s ease; } .bp-tab-content.active { display: block; opacity: 1; } .bp-tab-inner { max-width: 720px; margin: 0 auto; padding: 48px 24px 80px; } .bp-section { margin-bottom: 56px; } .bp-eyebrow { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 12px; } .bp-section-title { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; color: var(--text, #1D1D1F); letter-spacing: -0.02em; margin-bottom: 20px; } .bp-body { font-family: 'Inter', sans-serif; font-size: 15px; color: #555555; line-height: 1.85; } .bp-body p { margin-bottom: 16px; } .bp-divider { height: 1px; background: var(--border, #F0F0F0); margin: 24px 0; } .bp-card { border: 1px solid var(--border, #F0F0F0); border-radius: 16px; background: var(--bg2, #FAFAFA); padding: 28px; margin-bottom: 16px; } .bp-card-label { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 8px; } .bp-card-body { font-family: 'Inter', sans-serif; font-size: 14px; color: #555555; line-height: 1.7; } .bp-pullquote { font-family: 'Playfair Display', serif; font-size: 22px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.65; margin: 40px 0; padding: 32px; border-left: 3px solid var(--gold, #C4703F); background: var(--bg2, #FAFAFA); border-radius: 0 16px 16px 0; } .bp-color-palette { display: flex; gap: 16px; margin: 24px 0; flex-wrap: wrap; } .bp-color-swatch { text-align: center; } .bp-color-circle { width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 8px; border: 1px solid rgba(0,0,0,0.06); } .bp-color-name { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500; color: var(--text, #1D1D1F); } .bp-color-hex { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--text2, #86868B); } .bp-voice-tags { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; } .bp-voice-tag { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; padding: 8px 18px; border: 1px solid var(--border2, #E8E8E8); border-radius: 50px; color: var(--text, #1D1D1F); } .bp-avatar-name { font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic; color: var(--text, #1D1D1F); margin-bottom: 6px; } .bp-avatar-detail { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text2, #86868B); margin-bottom: 24px; line-height: 1.7; } .bp-avatar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; } @media (max-width: 600px) { .bp-avatar-grid { grid-template-columns: 1fr; } } .bp-niche-statement { font-family: 'Playfair Display', serif; font-size: 24px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.65; text-align: center; padding: 48px 24px; margin: 32px 0; border-top: 1px solid var(--border, #F0F0F0); border-bottom: 1px solid var(--border, #F0F0F0); } .bp-headline-item { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 28px; } .bp-headline-number { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: var(--gold, #C4703F); min-width: 24px; padding-top: 4px; } .bp-headline-text { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--text, #1D1D1F); line-height: 1.55; } .bp-gap-item { padding: 20px 0; border-bottom: 1px solid var(--border, #F0F0F0); } .bp-gap-item:last-child { border-bottom: none; } .bp-gap-label { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2, #86868B); margin-bottom: 6px; } .bp-gap-text { font-family: 'Inter', sans-serif; font-size: 15px; color: var(--text, #1D1D1F); line-height: 1.7; } .bp-offer-cards { display: grid; grid-template-columns: 1fr; gap: 20px; margin: 32px 0; } .bp-offer-card { border: 1px solid var(--border, #F0F0F0); border-radius: 16px; background: var(--bg, #FFFFFF); padding: 32px; } .bp-offer-card.core { border: 2px solid var(--gold, #C4703F); } .bp-offer-tier { font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold, #C4703F); margin-bottom: 10px; } .bp-offer-name { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: var(--text, #1D1D1F); margin-bottom: 8px; } .bp-offer-price { font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: var(--text, #1D1D1F); margin-bottom: 16px; } .bp-offer-desc { font-family: 'Inter', sans-serif; font-size: 14px; color: #555555; line-height: 1.75; margin-bottom: 16px; } .bp-offer-includes { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text2, #86868B); line-height: 1.7; } .bp-ascension-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 32px 0; padding: 20px; background: var(--bg2, #FAFAFA); border-radius: 16px; flex-wrap: wrap; } .bp-ascension-step { font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600; color: var(--text, #1D1D1F); } .bp-ascension-arrow { color: var(--text3, #C0C0C0); font-size: 16px; } .bp-hero-preview { background: var(--bg2, #FAFAFA); border: 1px solid var(--border, #F0F0F0); border-radius: 16px; padding: 48px 32px; text-align: center; margin: 32px 0; } .bp-preview-headline { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; color: var(--text, #1D1D1F); letter-spacing: -0.02em; margin-bottom: 12px; } .bp-preview-sub { font-family: 'Inter', sans-serif; font-size: 15px; color: #555555; line-height: 1.7; max-width: 480px; margin: 0 auto 20px; } .bp-preview-cta { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; background: var(--text, #1D1D1F); color: white; padding: 14px 32px; border-radius: 50px; } .bp-site-section-item { padding: 20px 0; border-bottom: 1px solid var(--border, #F0F0F0); } .bp-site-section-item:last-child { border-bottom: none; } .bp-site-section-name { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; color: var(--text, #1D1D1F); margin-bottom: 6px; } .bp-site-section-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #555555; line-height: 1.7; } .bp-fork-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; } @media (max-width: 600px) { .bp-fork-grid { grid-template-columns: 1fr; } } .bp-fork-card { border: 1px solid var(--border, #F0F0F0); border-radius: 16px; padding: 32px; text-align: center; } .bp-fork-card.primary { border: 2px solid var(--text, #1D1D1F); background: var(--bg2, #FAFAFA); } .bp-fork-title { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; color: var(--text, #1D1D1F); margin-bottom: 12px; } .bp-fork-body { font-family: 'Inter', sans-serif; font-size: 13px; color: #555555; line-height: 1.7; margin-bottom: 20px; } .bp-btn-primary { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; background: var(--text, #1D1D1F); color: white; padding: 12px 28px; border-radius: 50px; border: none; cursor: pointer; text-decoration: none; } .bp-btn-secondary { display: inline-block; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; background: transparent; color: var(--text, #1D1D1F); padding: 12px 28px; border-radius: 50px; border: 1px solid var(--border2, #E8E8E8); cursor: pointer; text-decoration: none; } .bp-next-steps { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border, #F0F0F0); } " + '</style>\n<div class="bp-results">\n';
   if (hasDebrief) { html += \`<div class="bp-debrief"><div class="bp-debrief-eyebrow">A note for \${debriefName}</div><div class="bp-debrief-letter"><p>\${safe(debrief.paragraph1_validation)}</p><p>\${safe(debrief.paragraph2_mirror)}</p><p class="bp-mirror-line">"\${safe(debrief.paragraph3_quote).replace(/^"|"$/g,'')}"</p><p class="bp-turn">\${safe(debrief.paragraph4_turn)}</p><p>\${safe(debrief.paragraph5_invitation)}</p></div><div class="bp-debrief-sig"><div class="bp-debrief-sig-line"></div><div class="bp-debrief-sig-name">James Guldan</div><div class="bp-debrief-sig-role">Deep Work Studio</div></div><div class="bp-scroll-invite"><div class="bp-scroll-text">Your blueprint is ready</div><div class="bp-scroll-arrow"></div></div></div><div class="bp-transition"><div class="bp-transition-line"></div></div>\n\`; }
   html += \`<div class="\${hasDebrief?'bp-reveal':'bp-header'}" id="bpReveal"><div class="bp-header-eyebrow">Deep Work Blueprint</div><div class="bp-header-title">\${primaryBrandName}</div><div class="bp-header-subtitle">\${safe(part1?.coreBrandPromise,'Your brand clarity, positioning, and offer strategy. Built from your words, shaped by deep work.')}</div></div>\n\`;
   html += \`<div class="bp-tab-bar" id="bpTabBar" \${hasDebrief?'style="opacity:0; transition: opacity 0.6s ease;"':''}><button class="bp-tab-btn active" onclick="switchBlueprintTab('story')">Your Brand Story</button><button class="bp-tab-btn" onclick="switchBlueprintTab('positioning')">Your Positioning</button><button class="bp-tab-btn" onclick="switchBlueprintTab('offers')">Your Offers</button></div>\n\`;
@@ -6907,7 +6066,202 @@ function renderBlueprintV2(blueprint, userName) {
       obs.observe(reveal);
     }
   
-    var forkEl = document.getElementById("blueprint-fork");\\n    if (forkEl) { setTimeout(function() { forkEl.style.opacity = "1"; forkEl.style.transform = "translateY(0)"; }, 500); }\\n  }, 100);\\n  \\n\\n  // ââ Two-Path Fork (The Invitation) ââ\\n  \\n\\n  // ── Two-Path Fork (The Mirror) ──\\n  var bp2 = blueprint && blueprint.blueprint ? blueprint.blueprint : blueprint;\\n  var nicheStmt = (bp2 && bp2.part3 && bp2.part3.nicheStatement) || "";\\n  html += '<div id="blueprint-fork" style="margin:80px auto 0;padding:0 0 64px;max-width:860px;opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease;">';\\n  if (nicheStmt) {\\n    html += '<div style="text-align:center;margin-bottom:40px;padding:0 24px;">' +\\n      '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">YOUR NICHE STATEMENT</p>' +\\n      '<p style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:20px;color:#1D1D1F;max-width:560px;margin:0 auto;line-height:1.6;">' + nicheStmt + '</p>' +\\n      '</div>';\\n  }\\n  html += '<div style="text-align:center;margin-bottom:32px;padding:0 24px;">' +\\n    '<p style="font-family:Outfit,sans-serif;font-weight:700;font-size:22px;color:#1D1D1F;margin:0;letter-spacing:-0.01em;">What do you want to do with this?</p>' +\\n    '</div>';\\n  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 24px;">';\\n  html += '<div style="background:#FAFAFA;border:1px solid #F0F0F0;border-radius:16px;padding:32px;display:flex;flex-direction:column;">' +\\n    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">BUILD IT YOURSELF</p>' +\\n    '<h3 style="font-family:Outfit,sans-serif;font-weight:700;font-size:20px;color:#1D1D1F;margin:0 0 12px;letter-spacing:-0.01em;">Take Your Blueprint and Run</h3>' +\\n    '<p style="font-family:Inter,sans-serif;font-size:14px;color:#555;line-height:1.7;margin:0 0 20px;flex:1;">Export your blueprint as a Lovable prompt, Framer prompt, or detailed PDF. Everything you need to build your brand using AI tools, on your own timeline.</p>' +\\n    '<ul style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;line-height:2;margin:0 0 24px;padding:0;list-style:none;">' +\\n    '<li>&#10003;&nbsp; Lovable.dev export prompt</li>' +\\n    '<li>&#10003;&nbsp; Framer export prompt</li>' +\\n    '<li>&#10003;&nbsp; Full blueprint PDF</li>' +\\n    '<li>&#10003;&nbsp; Brand asset guidelines</li>' +\\n    '</ul>' +\\n    '<button onclick="showExportKit()" style="display:inline-block;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:14px;padding:14px 28px;border-radius:50px;border:none;cursor:pointer;text-align:center;">Get My Export Kit</button>' +\\n    '</div>';\\n  html += '<div style="background:#FAFAFA;border:1px solid #F0F0F0;border-radius:16px;padding:32px;display:flex;flex-direction:column;">' +\\n    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">BUILD IT WITH JAMES</p>' +\\n    '<h3 style="font-family:Outfit,sans-serif;font-weight:700;font-size:20px;color:#1D1D1F;margin:0 0 12px;letter-spacing:-0.01em;">Let's Make This Real Together</h3>' +\\n    '<p style="font-family:Inter,sans-serif;font-size:14px;color:#555;line-height:1.7;margin:0 0 20px;flex:1;">Book a 1:1 deep work session where we take your blueprint and turn it into a living brand. Strategy, visuals, messaging, and a clear launch plan.</p>' +\\n    '<ul style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;line-height:2;margin:0 0 24px;padding:0;list-style:none;">' +\\n    '<li>&#10003;&nbsp; 60 minute strategy session</li>' +\\n    '<li>&#10003;&nbsp; Custom brand direction</li>' +\\n    '<li>&#10003;&nbsp; Messaging refinement</li>' +\\n    '<li>&#10003;&nbsp; Implementation roadmap</li>' +\\n    '</ul>' +\\n    '<a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" target="_blank" style="display:inline-block;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:14px;padding:14px 28px;border-radius:50px;text-decoration:none;text-align:center;">Book a Session</a>' +\\n    '</div>';\\n  html += '</div>';\\n  html += '<p style="text-align:center;font-family:Inter,sans-serif;font-size:12px;color:#C0C0C0;margin:20px 0 0;padding:0 24px;">You can change your mind anytime. Both paths include your complete blueprint.</p>';\\n  html += '</div>';\\n\\n\\n  return html;\\n}\\n\\nfunction switchBlueprintTab(tabName) {\\n  document.querySelectorAll('.bp-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });\\n  document.querySelectorAll('.bp-tab-content').forEach(function(c) { c.classList.remove('active'); c.style.opacity = '0'; });\\n  var tabMap = { story: 0, positioning: 1, offers: 2 };\\n  document.querySelectorAll('.bp-tab-btn')[tabMap[tabName]].classList.add('active');\\n  var target = document.getElementById('bp-tab-' + tabName);\\n  target.classList.add('active');\\n  requestAnimationFrame(function() { target.style.opacity = '1'; });\\n  window.scrollTo({ top: document.querySelector('.bp-tab-bar').offsetTop, behavior: 'smooth' });\\n}\\n\\n\\n// ââ Export Kit Functions ââ\\nfunction showExportKit() {\\n  if (document.getElementById("export-kit-overlay")) {\\n    document.getElementById("export-kit-overlay").style.display = "flex";\\n    return;\\n  }\\n  var bp = window.STATE?.blueprint?.blueprint || window.STATE?.blueprint || {};\\n  var brandName = (bp.part1?.brandNames?.[0]) || bp.part1?.brandName || "Your Brand";\\n  var niche = bp.part3?.nicheStatement || "";\\n  var lovablePrompt = generateLovablePrompt(bp, brandName, niche);\\n  var framerPrompt = generateFramerPrompt(bp, brandName, niche);\\n  var overlay = document.createElement("div");\\n  overlay.id = "export-kit-overlay";\\n  overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(4px);";\\n  var modal = document.createElement("div");\\n  modal.style.cssText = "background:#fff;border-radius:16px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;padding:40px;";\\n  modal.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">' +\\n    '<div><p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 4px;">YOUR EXPORT KIT</p>' +\\n    '<h2 style="font-family:Outfit,sans-serif;font-weight:700;font-size:24px;color:#1D1D1F;margin:0;letter-spacing:-0.02em;">Take Your Blueprint and Build</h2></div>' +\\n    '<button onclick="document.getElementById(\\'export-kit-overlay\\').style.display=\\'none\\'" style="background:none;border:none;font-size:24px;color:#86868B;cursor:pointer;padding:8px;">&times;</button>' +\\n    '</div>' +\\n    '<div style="margin-bottom:24px;">' +\\n    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Lovable.dev Prompt</p>' +\\n    '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Lovable to generate your site.</p>' +\\n    '<textarea id="lovable-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +\\n    '<button onclick="copyExportPrompt(\\'lovable-prompt\\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Lovable Prompt</button>' +\\n    '</div>' +\\n    '<div style="margin-bottom:24px;">' +\\n    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Framer Prompt</p>' +\\n    '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Framer AI to generate your site.</p>' +\\n    '<textarea id="framer-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +\\n    '<button onclick="copyExportPrompt(\\'framer-prompt\\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Framer Prompt</button>' +\\n    '</div>' +\\n    '<div style="border-top:1px solid #F0F0F0;padding-top:20px;">' +\\n    '<button onclick="downloadBlueprintPDF()" style="background:transparent;color:#1D1D1F;font-family:Outfit,sans-serif;font-weight:600;font-size:13px;padding:12px 24px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;">Download Full PDF</button>' +\\n    '</div>';\\n  overlay.appendChild(modal);\\n  document.body.appendChild(overlay);\\n  document.getElementById("lovable-prompt").value = lovablePrompt;\\n  document.getElementById("framer-prompt").value = framerPrompt;\\n  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.style.display = "none"; });\\n}\\n\\nfunction generateLovablePrompt(bp, brandName, niche) {\\n  var p1 = bp.part1 || {};\\n  var p2 = bp.part2 || {};\\n  var p3 = bp.part3 || {};\\n  var p4 = bp.part4 || {};\\n  var p5 = bp.part5 || {};\\n  var p7 = bp.part7 || {};\\n  var offers = (p4.offers || p4.offerSuite || []).map(function(o) {\\n    return o.name + " (" + (o.price || o.priceRange || "TBD") + "): " + (o.description || o.oneLiner || "");\\n  }).join("\n");\\n  var headlines = (p7.headlines || []).slice(0, 3).join("\n");\\n  return "Build a modern, conversion-focused website for " + brandName + ".\n\n" +\\n    "BRAND IDENTITY:\n" +\\n    "Brand Name: " + brandName + "\n" +\\n    "Niche: " + (niche || "See positioning below") + "\n" +\\n    "Target Audience: " + (p3.targetAudience || p3.idealClient || "See below") + "\n" +\\n    "Brand Voice: " + (p1.brandVoice || p1.tone || "Professional, warm, direct") + "\n\n" +\\n    "ORIGIN STORY:\n" +\\n    (p2.originNarrative || p2.brandStory || "The founder's personal story of transformation.") + "\n\n" +\\n    "POSITIONING STATEMENT:\n" +\\n    (niche || p3.positioningStatement || "") + "\n\n" +\\n    "OFFERS:\n" + (offers || "Offer details in the blueprint.") + "\n\n" +\\n    "HEADLINES/COPY DIRECTION:\n" + (headlines || (p7.headline || "")) + "\n\n" +\\n    "DESIGN DIRECTION:\n" +\\n    "Clean, modern, Apple-inspired aesthetic. White background (#FFFFFF). Primary text #1D1D1F. Accent color: warm copper #C4703F used sparingly for eyebrow labels only. Font pairing: Outfit for headlines, Inter for body text. Cards with subtle #F0F0F0 borders, 16px radius. Pill-shaped CTA buttons with dark fill (#1D1D1F).\n\n" +\\n    "PAGE STRUCTURE:\n" +\\n    "1. Hero: Brand name + niche statement + primary CTA\n" +\\n    "2. Story section: Origin narrative with emotional pull\n" +\\n    "3. Services/Offers: Card layout with name, description, price, CTA\n" +\\n    "4. Testimonials: Pull quotes in Playfair Display italic\n" +\\n    "5. About: Personal story + credibility markers\n" +\\n    "6. Contact/CTA: Final conversion section\n\n" +\\n    "Make it feel premium, personal, and trustworthy. Not flashy or salesy. The kind of site that makes someone think: this person is the real deal.";\\n}\\n\\nfunction generateFramerPrompt(bp, brandName, niche) {\\n  var p1 = bp.part1 || {};\\n  var p2 = bp.part2 || {};\\n  var p3 = bp.part3 || {};\\n  var p4 = bp.part4 || {};\\n  var p7 = bp.part7 || {};\\n  var offers = (p4.offers || p4.offerSuite || []).map(function(o) {\\n    return "- " + o.name + ": " + (o.description || o.oneLiner || "");\\n  }).join("\n");\\n  return "Create a Framer website for " + brandName + ".\n\n" +\\n    "BRAND:\n" +\\n    "Name: " + brandName + "\n" +\\n    "Positioning: " + (niche || p3.positioningStatement || "") + "\n" +\\n    "Audience: " + (p3.targetAudience || p3.idealClient || "") + "\n" +\\n    "Voice: " + (p1.brandVoice || p1.tone || "Warm, direct, professional") + "\n\n" +\\n    "STORY:\n" +\\n    (p2.originNarrative || p2.brandStory || "") + "\n\n" +\\n    "OFFERS:\n" + (offers || "") + "\n\n" +\\n    "COPY:\n" +\\n    "Hero headline: " + ((p7.headlines || [])[0] || p7.headline || brandName) + "\n" +\\n    "Subheadline: " + (niche || "") + "\n\n" +\\n    "DESIGN SYSTEM:\n" +\\n    "Background: #FFFFFF\n" +\\n    "Text: #1D1D1F (headlines), #555555 (body)\n" +\\n    "Accent: #C4703F (copper, use sparingly)\n" +\\n    "Fonts: Outfit (headings, 700 weight), Inter (body, 400 weight)\n" +\\n    "Cards: #FAFAFA fill, 1px #F0F0F0 border, 16px radius\n" +\\n    "Buttons: #1D1D1F fill, white text, 50px radius pill\n" +\\n    "Style: Minimal, Apple-inspired. No gradients. No shadows. Generous whitespace.\n\n" +\\n    "SECTIONS: Hero, Story, Services (card grid), Testimonials, About, Contact\n\n" +\\n    "Create responsive components for each section. Use Framer CMS for testimonials and offers so the client can update them later.";\\n}\\n\\nfunction copyExportPrompt(id) {\\n  var el = document.getElementById(id);\\n  if (!el) return;\\n  el.select();\\n  document.execCommand('copy');\\n  var btn = el.nextElementSibling;\\n  if (btn) {\\n    var orig = btn.textContent;\\n    btn.textContent = "Copied!";\\n    btn.style.background = "#2D7A4F";\\n    setTimeout(function() { btn.textContent = orig; btn.style.background = "#1D1D1F"; }, 2000);\\n  }\\n}\\n\\n\\n\\nfunction renderBlueprint(bp, strategistDebrief, isReturning) {\\n  const b = bp.blueprint;\\n  document.getElementById('bp-name').textContent = b.name + "'s Brand Blueprint";
+    var forkEl = document.getElementById("blueprint-fork");
+    if (forkEl) { setTimeout(function() { forkEl.style.opacity = "1"; forkEl.style.transform = "translateY(0)"; }, 500); }
+  }, 100);
+  
+
+  // ââ Two-Path Fork (The Invitation) ââ
+  
+
+  // ── Two-Path Fork (The Mirror) ──
+  var bp2 = blueprint && blueprint.blueprint ? blueprint.blueprint : blueprint;
+  var nicheStmt = (bp2 && bp2.part3 && bp2.part3.nicheStatement) || "";
+  html += '<div id="blueprint-fork" style="margin:80px auto 0;padding:0 0 64px;max-width:860px;opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease;">';
+  if (nicheStmt) {
+    html += '<div style="text-align:center;margin-bottom:40px;padding:0 24px;">' +
+      '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">YOUR NICHE STATEMENT</p>' +
+      '<p style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:20px;color:#1D1D1F;max-width:560px;margin:0 auto;line-height:1.6;">' + nicheStmt + '</p>' +
+      '</div>';
+  }
+  html += '<div style="text-align:center;margin-bottom:32px;padding:0 24px;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:700;font-size:22px;color:#1D1D1F;margin:0;letter-spacing:-0.01em;">What do you want to do with this?</p>' +
+    '</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 24px;">';
+  html += '<div style="background:#FAFAFA;border:1px solid #F0F0F0;border-radius:16px;padding:32px;display:flex;flex-direction:column;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">BUILD IT YOURSELF</p>' +
+    '<h3 style="font-family:Outfit,sans-serif;font-weight:700;font-size:20px;color:#1D1D1F;margin:0 0 12px;letter-spacing:-0.01em;">Take Your Blueprint and Run</h3>' +
+    '<p style="font-family:Inter,sans-serif;font-size:14px;color:#555;line-height:1.7;margin:0 0 20px;flex:1;">Export your blueprint as a Lovable prompt, Framer prompt, or detailed PDF. Everything you need to build your brand using AI tools, on your own timeline.</p>' +
+    '<ul style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;line-height:2;margin:0 0 24px;padding:0;list-style:none;">' +
+    '<li>&#10003;&nbsp; Lovable.dev export prompt</li>' +
+    '<li>&#10003;&nbsp; Framer export prompt</li>' +
+    '<li>&#10003;&nbsp; Full blueprint PDF</li>' +
+    '<li>&#10003;&nbsp; Brand asset guidelines</li>' +
+    '</ul>' +
+    '<button onclick="showExportKit()" style="display:inline-block;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:14px;padding:14px 28px;border-radius:50px;border:none;cursor:pointer;text-align:center;">Get My Export Kit</button>' +
+    '</div>';
+  html += '<div style="background:#FAFAFA;border:1px solid #F0F0F0;border-radius:16px;padding:32px;display:flex;flex-direction:column;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">BUILD IT WITH JAMES</p>' +
+    '<h3 style="font-family:Outfit,sans-serif;font-weight:700;font-size:20px;color:#1D1D1F;margin:0 0 12px;letter-spacing:-0.01em;">Let's Make This Real Together</h3>' +
+    '<p style="font-family:Inter,sans-serif;font-size:14px;color:#555;line-height:1.7;margin:0 0 20px;flex:1;">Book a 1:1 deep work session where we take your blueprint and turn it into a living brand. Strategy, visuals, messaging, and a clear launch plan.</p>' +
+    '<ul style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;line-height:2;margin:0 0 24px;padding:0;list-style:none;">' +
+    '<li>&#10003;&nbsp; 60 minute strategy session</li>' +
+    '<li>&#10003;&nbsp; Custom brand direction</li>' +
+    '<li>&#10003;&nbsp; Messaging refinement</li>' +
+    '<li>&#10003;&nbsp; Implementation roadmap</li>' +
+    '</ul>' +
+    '<a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" target="_blank" style="display:inline-block;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:14px;padding:14px 28px;border-radius:50px;text-decoration:none;text-align:center;">Book a Session</a>' +
+    '</div>';
+  html += '</div>';
+  html += '<p style="text-align:center;font-family:Inter,sans-serif;font-size:12px;color:#C0C0C0;margin:20px 0 0;padding:0 24px;">You can change your mind anytime. Both paths include your complete blueprint.</p>';
+  html += '</div>';
+
+
+  return html;
+}
+
+function switchBlueprintTab(tabName) {
+  document.querySelectorAll('.bp-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.bp-tab-content').forEach(function(c) { c.classList.remove('active'); c.style.opacity = '0'; });
+  var tabMap = { story: 0, positioning: 1, offers: 2 };
+  document.querySelectorAll('.bp-tab-btn')[tabMap[tabName]].classList.add('active');
+  var target = document.getElementById('bp-tab-' + tabName);
+  target.classList.add('active');
+  requestAnimationFrame(function() { target.style.opacity = '1'; });
+  window.scrollTo({ top: document.querySelector('.bp-tab-bar').offsetTop, behavior: 'smooth' });
+}
+
+
+// ââ Export Kit Functions ââ
+function showExportKit() {
+  if (document.getElementById("export-kit-overlay")) {
+    document.getElementById("export-kit-overlay").style.display = "flex";
+    return;
+  }
+  var bp = window.STATE?.blueprint?.blueprint || window.STATE?.blueprint || {};
+  var brandName = (bp.part1?.brandNames?.[0]) || bp.part1?.brandName || "Your Brand";
+  var niche = bp.part3?.nicheStatement || "";
+  var lovablePrompt = generateLovablePrompt(bp, brandName, niche);
+  var framerPrompt = generateFramerPrompt(bp, brandName, niche);
+  var overlay = document.createElement("div");
+  overlay.id = "export-kit-overlay";
+  overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(4px);";
+  var modal = document.createElement("div");
+  modal.style.cssText = "background:#fff;border-radius:16px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;padding:40px;";
+  modal.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">' +
+    '<div><p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 4px;">YOUR EXPORT KIT</p>' +
+    '<h2 style="font-family:Outfit,sans-serif;font-weight:700;font-size:24px;color:#1D1D1F;margin:0;letter-spacing:-0.02em;">Take Your Blueprint and Build</h2></div>' +
+    '<button onclick="document.getElementById(\\'export-kit-overlay\\').style.display=\\'none\\'" style="background:none;border:none;font-size:24px;color:#86868B;cursor:pointer;padding:8px;">&times;</button>' +
+    '</div>' +
+    '<div style="margin-bottom:24px;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Lovable.dev Prompt</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Lovable to generate your site.</p>' +
+    '<textarea id="lovable-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +
+    '<button onclick="copyExportPrompt(\\'lovable-prompt\\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Lovable Prompt</button>' +
+    '</div>' +
+    '<div style="margin-bottom:24px;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Framer Prompt</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Framer AI to generate your site.</p>' +
+    '<textarea id="framer-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +
+    '<button onclick="copyExportPrompt(\\'framer-prompt\\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Framer Prompt</button>' +
+    '</div>' +
+    '<div style="border-top:1px solid #F0F0F0;padding-top:20px;">' +
+    '<button onclick="downloadBlueprintPDF()" style="background:transparent;color:#1D1D1F;font-family:Outfit,sans-serif;font-weight:600;font-size:13px;padding:12px 24px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;">Download Full PDF</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  document.getElementById("lovable-prompt").value = lovablePrompt;
+  document.getElementById("framer-prompt").value = framerPrompt;
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.style.display = "none"; });
+}
+
+function generateLovablePrompt(bp, brandName, niche) {
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p5 = bp.part5 || {};
+  var p7 = bp.part7 || {};
+  var offers = (p4.offers || p4.offerSuite || []).map(function(o) {
+    return o.name + " (" + (o.price || o.priceRange || "TBD") + "): " + (o.description || o.oneLiner || "");
+  }).join("\n");
+  var headlines = (p7.headlines || []).slice(0, 3).join("\n");
+  return "Build a modern, conversion-focused website for " + brandName + ".\n\n" +
+    "BRAND IDENTITY:\n" +
+    "Brand Name: " + brandName + "\n" +
+    "Niche: " + (niche || "See positioning below") + "\n" +
+    "Target Audience: " + (p3.targetAudience || p3.idealClient || "See below") + "\n" +
+    "Brand Voice: " + (p1.brandVoice || p1.tone || "Professional, warm, direct") + "\n\n" +
+    "ORIGIN STORY:\n" +
+    (p2.originNarrative || p2.brandStory || "The founder's personal story of transformation.") + "\n\n" +
+    "POSITIONING STATEMENT:\n" +
+    (niche || p3.positioningStatement || "") + "\n\n" +
+    "OFFERS:\n" + (offers || "Offer details in the blueprint.") + "\n\n" +
+    "HEADLINES/COPY DIRECTION:\n" + (headlines || (p7.headline || "")) + "\n\n" +
+    "DESIGN DIRECTION:\n" +
+    "Clean, modern, Apple-inspired aesthetic. White background (#FFFFFF). Primary text #1D1D1F. Accent color: warm copper #C4703F used sparingly for eyebrow labels only. Font pairing: Outfit for headlines, Inter for body text. Cards with subtle #F0F0F0 borders, 16px radius. Pill-shaped CTA buttons with dark fill (#1D1D1F).\n\n" +
+    "PAGE STRUCTURE:\n" +
+    "1. Hero: Brand name + niche statement + primary CTA\n" +
+    "2. Story section: Origin narrative with emotional pull\n" +
+    "3. Services/Offers: Card layout with name, description, price, CTA\n" +
+    "4. Testimonials: Pull quotes in Playfair Display italic\n" +
+    "5. About: Personal story + credibility markers\n" +
+    "6. Contact/CTA: Final conversion section\n\n" +
+    "Make it feel premium, personal, and trustworthy. Not flashy or salesy. The kind of site that makes someone think: this person is the real deal.";
+}
+
+function generateFramerPrompt(bp, brandName, niche) {
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p7 = bp.part7 || {};
+  var offers = (p4.offers || p4.offerSuite || []).map(function(o) {
+    return "- " + o.name + ": " + (o.description || o.oneLiner || "");
+  }).join("\n");
+  return "Create a Framer website for " + brandName + ".\n\n" +
+    "BRAND:\n" +
+    "Name: " + brandName + "\n" +
+    "Positioning: " + (niche || p3.positioningStatement || "") + "\n" +
+    "Audience: " + (p3.targetAudience || p3.idealClient || "") + "\n" +
+    "Voice: " + (p1.brandVoice || p1.tone || "Warm, direct, professional") + "\n\n" +
+    "STORY:\n" +
+    (p2.originNarrative || p2.brandStory || "") + "\n\n" +
+    "OFFERS:\n" + (offers || "") + "\n\n" +
+    "COPY:\n" +
+    "Hero headline: " + ((p7.headlines || [])[0] || p7.headline || brandName) + "\n" +
+    "Subheadline: " + (niche || "") + "\n\n" +
+    "DESIGN SYSTEM:\n" +
+    "Background: #FFFFFF\n" +
+    "Text: #1D1D1F (headlines), #555555 (body)\n" +
+    "Accent: #C4703F (copper, use sparingly)\n" +
+    "Fonts: Outfit (headings, 700 weight), Inter (body, 400 weight)\n" +
+    "Cards: #FAFAFA fill, 1px #F0F0F0 border, 16px radius\n" +
+    "Buttons: #1D1D1F fill, white text, 50px radius pill\n" +
+    "Style: Minimal, Apple-inspired. No gradients. No shadows. Generous whitespace.\n\n" +
+    "SECTIONS: Hero, Story, Services (card grid), Testimonials, About, Contact\n\n" +
+    "Create responsive components for each section. Use Framer CMS for testimonials and offers so the client can update them later.";
+}
+
+function copyExportPrompt(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.select();
+  document.execCommand('copy');
+  var btn = el.nextElementSibling;
+  if (btn) {
+    var orig = btn.textContent;
+    btn.textContent = "Copied!";
+    btn.style.background = "#2D7A4F";
+    setTimeout(function() { btn.textContent = orig; btn.style.background = "#1D1D1F"; }, 2000);
+  }
+}
+
+
+
+function renderBlueprint(bp, strategistDebrief, isReturning) {
+  const b = bp.blueprint;
+  document.getElementById('bp-name').textContent = b.name + "'s Brand Blueprint";
 
   // \u2500\u2500 Emotional Opening (Strategist Debrief or Blueprint-Derived) \u2500\u2500
   const debriefEl = document.getElementById('strategist-debrief');
@@ -6919,7 +6273,17 @@ function renderBlueprintV2(blueprint, userName) {
 
     // Build the table of contents (shared by both paths)
     var tocHTML = \`
-    <div style="padding:48px 24px 56px;background:linear-gradient(180deg, transparent 0%, rgba(196,112,63,0.03) 50%, transparent 100%);margin:16px 0;">\\n      <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:28px;text-align:center;">Your blueprint contains</div>\\n      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:0 auto;">\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">01</span> Ideal Client</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">02</span> Brand Foundation</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">03</span> Niche Positioning</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">04</span> Offer Suite</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">05</span> Website Blueprint</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">06</span> Growth Strategy</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">07</span> Headlines</div>\\n        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">08</span> Your Next Step</div>
+    <div style="padding:48px 24px 56px;background:linear-gradient(180deg, transparent 0%, rgba(196,112,63,0.03) 50%, transparent 100%);margin:16px 0;">
+      <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:28px;text-align:center;">Your blueprint contains</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px;margin:0 auto;">
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">01</span> Ideal Client</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">02</span> Brand Foundation</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">03</span> Niche Positioning</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">04</span> Offer Suite</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">05</span> Website Blueprint</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">06</span> Growth Strategy</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">07</span> Headlines</div>
+        <div style="font-family:'Inter',sans-serif;font-size:13px;color:var(--text2);padding:12px 14px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid var(--border);"><span style="color:var(--gold);font-family:'Outfit',sans-serif;font-weight:700;margin-right:8px;">08</span> Your Next Step</div>
       </div>
     </div>\`;
 
@@ -6931,19 +6295,41 @@ function renderBlueprintV2(blueprint, userName) {
 
 debriefEl.innerHTML = \`
   <!-- Stage 1: The Quiet Moment -->
-  <div style="text-align:center;padding:80px 24px 56px;animation:fadeUpDebrief 0.8s ease-out;">\\n    \${returningNote}\\n    <div style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,52px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:20px;">\${b.name}.</div>\\n    <div style="width:48px;height:2.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 24px;border-radius:2px;"></div>\\n    <div style="font-family:'Inter',sans-serif;font-size:15px;color:var(--text2);line-height:1.7;max-width:400px;margin:0 auto;">I just spent real time getting to know you. Before you see everything we built together, I want to share what stood out to me.</div>\\n  </div>\\n\\n  <!-- Stage 2: What I Noticed -->\\n  <div style="max-width:600px;margin:0 auto;padding:48px 24px 32px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.2s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">What I noticed about you</div>\\n    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;border-left:2px solid rgba(196,112,63,0.2);padding-left:20px;">\${d.reflection}</div>
+  <div style="text-align:center;padding:80px 24px 56px;animation:fadeUpDebrief 0.8s ease-out;">
+    \${returningNote}
+    <div style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,52px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:20px;">\${b.name}.</div>
+    <div style="width:48px;height:2.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 24px;border-radius:2px;"></div>
+    <div style="font-family:'Inter',sans-serif;font-size:15px;color:var(--text2);line-height:1.7;max-width:400px;margin:0 auto;">I just spent real time getting to know you. Before you see everything we built together, I want to share what stood out to me.</div>
+  </div>
+
+  <!-- Stage 2: What I Noticed -->
+  <div style="max-width:600px;margin:0 auto;padding:48px 24px 32px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.2s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">What I noticed about you</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;border-left:2px solid rgba(196,112,63,0.2);padding-left:20px;">\${d.reflection}</div>
   </div>
 
   \${d.quotedMoment ? \`
   <!-- Stage 3: The Thing You Said -->
-  <div style="text-align:center;padding:56px 24px;margin:24px 0;background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, rgba(212,149,90,0.02) 100%);border-radius:16px;animation:fadeUpDebrief 0.8s ease-out 0.4s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;font-weight:600;">Something you said that stayed with me</div>\\n    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3.5vw,32px);color:var(--text);line-height:1.55;max-width:560px;margin:0 auto;padding:28px 0;">&ldquo;\${d.quotedMoment}&rdquo;</div>\\n    <div style="width:24px;height:2px;background:var(--gold);margin:0 auto;border-radius:2px;opacity:0.5;"></div>
+  <div style="text-align:center;padding:56px 24px;margin:24px 0;background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, rgba(212,149,90,0.02) 100%);border-radius:16px;animation:fadeUpDebrief 0.8s ease-out 0.4s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:28px;font-weight:600;">Something you said that stayed with me</div>
+    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3.5vw,32px);color:var(--text);line-height:1.55;max-width:560px;margin:0 auto;padding:28px 0;">&ldquo;\${d.quotedMoment}&rdquo;</div>
+    <div style="width:24px;height:2px;background:var(--gold);margin:0 auto;border-radius:2px;opacity:0.5;"></div>
   </div>
   \` : ''}
 
   <!-- Stage 4: The One Insight -->
-  <div style="max-width:600px;margin:0 auto;padding:40px 24px 40px;animation:fadeUpDebrief 0.8s ease-out 0.6s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">The insight that matters most right now</div>\\n    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;">\${d.insight}</div>\\n  </div>\\n\\n  <!-- Stage 5: The Mentor Moment -->\\n  <div style="max-width:600px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.8s both;">\\n    <div style="font-family:'Inter',sans-serif;font-size:15px;line-height:1.9;color:#555;margin-bottom:24px;">\${d.motivation}</div>
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px 40px;animation:fadeUpDebrief 0.8s ease-out 0.6s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">The insight that matters most right now</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;">\${d.insight}</div>
+  </div>
+
+  <!-- Stage 5: The Mentor Moment -->
+  <div style="max-width:600px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.8s both;">
+    <div style="font-family:'Inter',sans-serif;font-size:15px;line-height:1.9;color:#555;margin-bottom:24px;">\${d.motivation}</div>
     \${d.bridge ? \`
-    <div style="background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 14px 14px 0;">\\n      <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.12em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:12px;">Looking ahead</div>\\n      <div style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.8;color:#555;">\${d.bridge}</div>
+    <div style="background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 14px 14px 0;">
+      <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.12em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:12px;">Looking ahead</div>
+      <div style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.8;color:#555;">\${d.bridge}</div>
     </div>
     \` : ''}
   </div>
@@ -6971,18 +6357,27 @@ debriefEl.innerHTML = \`
 
 debriefEl.innerHTML = \`
   <!-- Emotional Opening: The Arrival -->
-  <div style="text-align:center;padding:100px 24px 64px;animation:fadeUpDebrief 0.8s ease-out;">\\n    \${returningNoteFallback}\\n    <div style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,52px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:20px;">\${b.name}.</div>\\n    <div style="width:48px;height:2.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 24px;border-radius:2px;"></div>\\n    <div style="font-family:'Inter',sans-serif;font-size:15px;color:var(--text2);line-height:1.7;max-width:420px;margin:0 auto;">This is not a template. Everything below was built specifically for you, your strengths, your market, and the people you are meant to serve.</div>
+  <div style="text-align:center;padding:100px 24px 64px;animation:fadeUpDebrief 0.8s ease-out;">
+    \${returningNoteFallback}
+    <div style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,52px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:20px;">\${b.name}.</div>
+    <div style="width:48px;height:2.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 24px;border-radius:2px;"></div>
+    <div style="font-family:'Inter',sans-serif;font-size:15px;color:var(--text2);line-height:1.7;max-width:420px;margin:0 auto;">This is not a template. Everything below was built specifically for you, your strengths, your market, and the people you are meant to serve.</div>
   </div>
 
   \${nicheStatement ? \`
   <!-- The Identity Statement -->
-  <div style="text-align:center;padding:56px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, rgba(212,149,90,0.02) 100%);border-radius:16px;margin:24px 0;animation:fadeUpDebrief 0.8s ease-out 0.2s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:24px;font-weight:600;">At your core, this is what you do</div>\\n    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(20px,3vw,28px);color:var(--text);line-height:1.6;max-width:560px;margin:0 auto;padding:28px 0;">\${nicheStatement}</div>\\n    <div style="width:24px;height:2px;background:var(--gold);margin:0 auto;border-radius:2px;opacity:0.5;"></div>
+  <div style="text-align:center;padding:56px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, rgba(212,149,90,0.02) 100%);border-radius:16px;margin:24px 0;animation:fadeUpDebrief 0.8s ease-out 0.2s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:24px;font-weight:600;">At your core, this is what you do</div>
+    <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(20px,3vw,28px);color:var(--text);line-height:1.6;max-width:560px;margin:0 auto;padding:28px 0;">\${nicheStatement}</div>
+    <div style="width:24px;height:2px;background:var(--gold);margin:0 auto;border-radius:2px;opacity:0.5;"></div>
   </div>
   \` : ''}
 
   \${personaName ? \`
   <!-- Who This Is For -->
-  <div style="max-width:600px;margin:0 auto;padding:40px 24px 32px;animation:fadeUpDebrief 0.8s ease-out 0.4s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">The person you are here to help</div>\\n    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;border-left:2px solid rgba(196,112,63,0.2);padding-left:20px;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 24px 32px;animation:fadeUpDebrief 0.8s ease-out 0.4s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">The person you are here to help</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;border-left:2px solid rgba(196,112,63,0.2);padding-left:20px;">
       Your ideal client is \${personaName}. \${b.part2.lifeSituation || ''} \${b.part2.whatIsStoppingThem ? 'What holds them back: ' + b.part2.whatIsStoppingThem.charAt(0).toLowerCase() + b.part2.whatIsStoppingThem.slice(1) : ''}
     </div>
   </div>
@@ -6990,14 +6385,21 @@ debriefEl.innerHTML = \`
 
   \${exactWords.length > 0 ? \`
   <!-- Their Inner Voice -->
-  <div style="text-align:center;padding:48px 24px;animation:fadeUpDebrief 0.8s ease-out 0.6s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:32px;font-weight:600;">The words they are thinking right now</div>\\n    \${exactWords.slice(0,3).map(function(w, i, arr) {\\n      return '<div style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:clamp(18px,2.5vw,24px);color:var(--text);line-height:1.5;margin-bottom:' + (i < arr.length - 1 ? '32px' : '0') + ';">&ldquo;' + w + '&rdquo;</div>' + (i < arr.length - 1 ? '<div style="width:16px;height:1px;background:var(--gold);margin:0 auto 32px;"></div>' : '');
+  <div style="text-align:center;padding:48px 24px;animation:fadeUpDebrief 0.8s ease-out 0.6s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:9px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:32px;font-weight:600;">The words they are thinking right now</div>
+    \${exactWords.slice(0,3).map(function(w, i, arr) {
+      return '<div style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:clamp(18px,2.5vw,24px);color:var(--text);line-height:1.5;margin-bottom:' + (i < arr.length - 1 ? '32px' : '0') + ';">&ldquo;' + w + '&rdquo;</div>' + (i < arr.length - 1 ? '<div style="width:16px;height:1px;background:var(--gold);margin:0 auto 32px;"></div>' : '');
     }).join('')}
   </div>
   \` : ''}
 
   \${brandPromise ? \`
   <!-- The Promise -->
-  <div style="max-width:600px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.8s both;">\\n    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">Your brand promise</div>\\n    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;">\${brandPromise}</div>\\n    <div style="background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-left:3px solid var(--gold);padding:20px 24px;border-radius:0 14px 14px 0;margin-top:20px;">\\n      <div style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.8;color:#555;">Below is the complete blueprint that brings this to life. Seven parts. Everything you need to go from clarity to action.</div>
+  <div style="max-width:600px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--border);animation:fadeUpDebrief 0.8s ease-out 0.8s both;">
+    <div style="font-family:'Outfit',sans-serif;font-size:10px;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:20px;">Your brand promise</div>
+    <div style="font-family:'Inter',sans-serif;font-size:16px;line-height:1.9;color:#444;">\${brandPromise}</div>
+    <div style="background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-left:3px solid var(--gold);padding:20px 24px;border-radius:0 14px 14px 0;margin-top:20px;">
+      <div style="font-family:'Inter',sans-serif;font-size:14px;line-height:1.8;color:#555;">Below is the complete blueprint that brings this to life. Seven parts. Everything you need to go from clarity to action.</div>
     </div>
   </div>
   \` : ''}
@@ -7017,45 +6419,182 @@ debriefEl.innerHTML = \`
   body.innerHTML = \`
 
     <!-- Part 1 (was Part 2): The People You're Here to Help -->
-    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part One</div>\\n        <div class="mag-title">The People You Are Here to Help</div>\\n        <div style="font-size:13px;color:#888;margin-top:6px;">Meet \${b.part2.name}. This is what they are thinking right now.</div>\\n      </div>\\n      <div class="mag-grid">\\n        <div class="mag-col">\\n          <div class="mag-label">Meet \${b.part2.name}</div>\\n          <div class="mag-value">\${b.part2.ageRange}. \${b.part2.lifeSituation}</div>\\n        </div>\\n        <div class="mag-col">\\n          <div class="mag-label">What Stops Them</div>\\n          <div class="mag-value">\${b.part2.whatIsStoppingThem}</div>
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part One</div>
+        <div class="mag-title">The People You Are Here to Help</div>
+        <div style="font-size:13px;color:#888;margin-top:6px;">Meet \${b.part2.name}. This is what they are thinking right now.</div>
+      </div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Meet \${b.part2.name}</div>
+          <div class="mag-value">\${b.part2.ageRange}. \${b.part2.lifeSituation}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">What Stops Them</div>
+          <div class="mag-value">\${b.part2.whatIsStoppingThem}</div>
         </div>
       </div>
       \${b.part2.exactWords && b.part2.exactWords.length ? \`
-      <div style="padding:48px 0;text-align:center;">\\n        \${b.part2.exactWords.slice(0,3).map(function(w,i,arr) {\\n          return '<div style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:clamp(20px,3vw,28px);color:#111;line-height:1.5;margin-bottom:' + (i < arr.length - 1 ? '48px' : '0') + ';">&ldquo;' + w + '&rdquo;</div>' + (i < arr.length - 1 ? '<div style="width:16px;height:1px;background:#c4703f;margin:0 auto 48px;"></div>' : '');\\n        }).join('')}\\n      </div>\\n      <div style="padding:24px 28px;background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-radius:14px;font-size:13px;color:#555;line-height:1.7;text-align:center;border:1px solid rgba(196,112,63,0.08);">
+      <div style="padding:48px 0;text-align:center;">
+        \${b.part2.exactWords.slice(0,3).map(function(w,i,arr) {
+          return '<div style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:clamp(20px,3vw,28px);color:#111;line-height:1.5;margin-bottom:' + (i < arr.length - 1 ? '48px' : '0') + ';">&ldquo;' + w + '&rdquo;</div>' + (i < arr.length - 1 ? '<div style="width:16px;height:1px;background:#c4703f;margin:0 auto 48px;"></div>' : '');
+        }).join('')}
+      </div>
+      <div style="padding:24px 28px;background:linear-gradient(135deg, rgba(196,112,63,0.05) 0%, rgba(196,112,63,0.02) 100%);border-radius:14px;font-size:13px;color:#555;line-height:1.7;text-align:center;border:1px solid rgba(196,112,63,0.08);">
         These are the words your ideal clients are thinking right now. Your brand gives them a place to land.
       </div>
       \` : ''}
-      <div class="mag-grid" style="margin-top:24px;">\\n        <div class="mag-col">\\n          <div class="mag-label">Why Past Solutions Failed</div>\\n          <div class="mag-value">\${b.part2.whyItDidNotWork || ''}</div>\\n        </div>\\n        <div class="mag-col">\\n          <div class="mag-label">What They Are Trying to Achieve</div>\\n          <div class="mag-value">\${b.part2.tryingToAchieve || ''}</div>\\n        </div>\\n      </div>\\n    </div>\\n\\n    <!-- Highlight Band: Niche Statement \u2014 breathing moment -->\\n    <div class="mag-highlight-band" style="padding:96px 40px 96px;">\\n      <div style="position:relative;max-width:640px;margin:0 auto;">\\n        <div class="mag-highlight-text" id="niche-statement-text" style="font-size:clamp(22px, 3vw, 30px);line-height:1.65;">\${b.part3.nicheStatement}</div>\\n        <button class="copy-btn" onclick="copyToClipboard(document.getElementById('niche-statement-text').textContent)" style="margin-top:20px;">Copy</button>\\n      </div>\\n    </div>\\n\\n    <!-- Part 2: Brand Foundation -->\\n    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part Two</div>\\n        <div class="mag-title">Brand Foundation</div>\\n      </div>\\n      <div class="mag-grid">\\n        <div class="mag-col">\\n          <div class="mag-label">Brand Promise</div>\\n          <div class="mag-value">\${b.part1.coreBrandPromise}</div>\\n          <div class="mag-label" style="margin-top:20px;">Brand Names</div>\\n          <div class="mag-value" id="brand-names-text">\${b.part1.brandNames.map((n,i) => '<strong>' + n + '</strong>').join(' / ')}</div>\\n          <button class="copy-btn" onclick="copyToClipboard(document.getElementById('brand-names-text').textContent)" style="margin-top:10px;">Copy</button>\\n        </div>\\n        <div class="mag-col">\\n          <div class="mag-label">Taglines</div>\\n          <div class="mag-value" id="taglines-text">\${b.part1.taglines.map(t => '"' + t + '"').join('<br><br>')}</div>\\n          <button class="copy-btn" onclick="copyToClipboard(document.getElementById('taglines-text').textContent)" style="margin-top:10px;">Copy</button>\\n        </div>\\n      </div>\\n      <div class="mag-label" style="margin-top:48px;margin-bottom:16px;">Color Palette</div>
+      <div class="mag-grid" style="margin-top:24px;">
+        <div class="mag-col">
+          <div class="mag-label">Why Past Solutions Failed</div>
+          <div class="mag-value">\${b.part2.whyItDidNotWork || ''}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">What They Are Trying to Achieve</div>
+          <div class="mag-value">\${b.part2.tryingToAchieve || ''}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highlight Band: Niche Statement \u2014 breathing moment -->
+    <div class="mag-highlight-band" style="padding:96px 40px 96px;">
+      <div style="position:relative;max-width:640px;margin:0 auto;">
+        <div class="mag-highlight-text" id="niche-statement-text" style="font-size:clamp(22px, 3vw, 30px);line-height:1.65;">\${b.part3.nicheStatement}</div>
+        <button class="copy-btn" onclick="copyToClipboard(document.getElementById('niche-statement-text').textContent)" style="margin-top:20px;">Copy</button>
+      </div>
+    </div>
+
+    <!-- Part 2: Brand Foundation -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Two</div>
+        <div class="mag-title">Brand Foundation</div>
+      </div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Brand Promise</div>
+          <div class="mag-value">\${b.part1.coreBrandPromise}</div>
+          <div class="mag-label" style="margin-top:20px;">Brand Names</div>
+          <div class="mag-value" id="brand-names-text">\${b.part1.brandNames.map((n,i) => '<strong>' + n + '</strong>').join(' / ')}</div>
+          <button class="copy-btn" onclick="copyToClipboard(document.getElementById('brand-names-text').textContent)" style="margin-top:10px;">Copy</button>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">Taglines</div>
+          <div class="mag-value" id="taglines-text">\${b.part1.taglines.map(t => '"' + t + '"').join('<br><br>')}</div>
+          <button class="copy-btn" onclick="copyToClipboard(document.getElementById('taglines-text').textContent)" style="margin-top:10px;">Copy</button>
+        </div>
+      </div>
+      <div class="mag-label" style="margin-top:48px;margin-bottom:16px;">Color Palette</div>
       <div>\${b.part1.visualDirection.colors.map(c => \`
-        <div class="mag-color-strip">\\n          <div class="mag-color-rect" style="background:\${c.hex};"></div>\\n          <div class="mag-color-info">\\n            <div class="mag-label">\${c.name}</div>\\n            <div class="mag-color-hex">\${c.hex}</div>
+        <div class="mag-color-strip">
+          <div class="mag-color-rect" style="background:\${c.hex};"></div>
+          <div class="mag-color-info">
+            <div class="mag-label">\${c.name}</div>
+            <div class="mag-color-hex">\${c.hex}</div>
           </div>
         </div>\`).join('')}
       </div>
     </div>
 
 
-    <div class="mag-divider"></div>\\n\\n    <!-- Part 3: Market Position -->\\n    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part Three</div>\\n        <div class="mag-title">\${b.part3.title || 'Niche Positioning'}</div>\\n      </div>\\n      <div class="mag-grid">\\n        <div class="mag-col">\\n          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;">\\n            <div class="mag-label" style="margin-bottom:16px;">Unique Mechanism</div>\\n            <div class="mag-value">\${b.part3.uniqueMechanism}</div>\\n          </div>\\n        </div>\\n        <div class="mag-col">\\n          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;">\\n            <div class="mag-label" style="margin-bottom:16px;">Competitive Edge</div>\\n            <div class="mag-value">\${b.part3.competitorGap}</div>\\n          </div>\\n        </div>\\n      </div>\\n    </div>\\n\\n    <div class="mag-divider"></div>\\n\\n    <!-- Part 4: Offer Suite -->\\n    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part Four</div>\\n        <div class="mag-title">\${b.part4.title || 'Your Offer Suite'}</div>\\n      </div>\\n      <div class="mag-timeline">\\n        <div class="mag-timeline-col" style="text-align:center;">\\n          <div class="mag-eyebrow">Entry</div>\\n          <div class="mag-timeline-price">\${b.part4.entryOffer.price}</div>\\n          <div class="mag-timeline-name">\${b.part4.entryOffer.name}</div>\\n          <div class="mag-timeline-desc">\${b.part4.entryOffer.description}</div>\\n        </div>\\n        <div class="mag-timeline-col core-offer" style="text-align:center;background:linear-gradient(180deg, rgba(196,112,63,0.04) 0%, var(--bg2) 100%);border:2px solid var(--gold);border-radius:16px;padding:32px 24px;box-shadow:0 4px 24px rgba(196,112,63,0.08);">\\n          <div class="mag-eyebrow" style="color:var(--gold);font-weight:700;">Core</div>\\n          <div class="mag-timeline-price" style="color:var(--gold);font-size:28px;">\${b.part4.coreOffer.price}</div>\\n          <div class="mag-timeline-name">\${b.part4.coreOffer.name}</div>\\n          <div class="mag-timeline-desc">\${b.part4.coreOffer.description}</div>\\n        </div>\\n        <div class="mag-timeline-col" style="text-align:center;">\\n          <div class="mag-eyebrow">Premium</div>\\n          <div class="mag-timeline-price">\${b.part4.premiumOffer.price}</div>\\n          <div class="mag-timeline-name">\${b.part4.premiumOffer.name}</div>\\n          <div class="mag-timeline-desc">\${b.part4.premiumOffer.description}</div>\\n        </div>\\n      </div>\\n      <div class="mag-grid" style="margin-top:24px;">\\n        <div class="mag-col">\\n          <div class="mag-label">Ascension Logic</div>\\n          <div class="mag-value">\${b.part4.ascensionLogic}</div>
+    <div class="mag-divider"></div>
+
+    <!-- Part 3: Market Position -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Three</div>
+        <div class="mag-title">\${b.part3.title || 'Niche Positioning'}</div>
+      </div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+            <div class="mag-label" style="margin-bottom:16px;">Unique Mechanism</div>
+            <div class="mag-value">\${b.part3.uniqueMechanism}</div>
+          </div>
+        </div>
+        <div class="mag-col">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;">
+            <div class="mag-label" style="margin-bottom:16px;">Competitive Edge</div>
+            <div class="mag-value">\${b.part3.competitorGap}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mag-divider"></div>
+
+    <!-- Part 4: Offer Suite -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Four</div>
+        <div class="mag-title">\${b.part4.title || 'Your Offer Suite'}</div>
+      </div>
+      <div class="mag-timeline">
+        <div class="mag-timeline-col" style="text-align:center;">
+          <div class="mag-eyebrow">Entry</div>
+          <div class="mag-timeline-price">\${b.part4.entryOffer.price}</div>
+          <div class="mag-timeline-name">\${b.part4.entryOffer.name}</div>
+          <div class="mag-timeline-desc">\${b.part4.entryOffer.description}</div>
+        </div>
+        <div class="mag-timeline-col core-offer" style="text-align:center;background:linear-gradient(180deg, rgba(196,112,63,0.04) 0%, var(--bg2) 100%);border:2px solid var(--gold);border-radius:16px;padding:32px 24px;box-shadow:0 4px 24px rgba(196,112,63,0.08);">
+          <div class="mag-eyebrow" style="color:var(--gold);font-weight:700;">Core</div>
+          <div class="mag-timeline-price" style="color:var(--gold);font-size:28px;">\${b.part4.coreOffer.price}</div>
+          <div class="mag-timeline-name">\${b.part4.coreOffer.name}</div>
+          <div class="mag-timeline-desc">\${b.part4.coreOffer.description}</div>
+        </div>
+        <div class="mag-timeline-col" style="text-align:center;">
+          <div class="mag-eyebrow">Premium</div>
+          <div class="mag-timeline-price">\${b.part4.premiumOffer.price}</div>
+          <div class="mag-timeline-name">\${b.part4.premiumOffer.name}</div>
+          <div class="mag-timeline-desc">\${b.part4.premiumOffer.description}</div>
+        </div>
+      </div>
+      <div class="mag-grid" style="margin-top:24px;">
+        <div class="mag-col">
+          <div class="mag-label">Ascension Logic</div>
+          <div class="mag-value">\${b.part4.ascensionLogic}</div>
         </div>
       </div>
     </div>
 
     \${b.part5 ? \`
-    <div class="mag-divider"></div>\\n    <!-- Part 5: Website Blueprint -->\\n    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part Five</div>\\n        <div class="mag-title">\${b.part5.title || 'Website Blueprint'}</div>
+    <div class="mag-divider"></div>
+    <!-- Part 5: Website Blueprint -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Five</div>
+        <div class="mag-title">\${b.part5.title || 'Website Blueprint'}</div>
       </div>
       \${b.part5.pageNarrative ? \`
-        <div style="padding:20px 24px;border-left:3px solid var(--gold);background:rgba(201,169,110,0.06);border-radius:0 12px 12px 0;margin-bottom:32px;">\\n          <div class="mag-label" style="margin-bottom:8px;">Page Story Arc</div>\\n          <div class="mag-value" style="font-size:14px;line-height:1.7;font-style:italic;">\${b.part5.pageNarrative}</div>
+        <div style="padding:20px 24px;border-left:3px solid var(--gold);background:rgba(201,169,110,0.06);border-radius:0 12px 12px 0;margin-bottom:32px;">
+          <div class="mag-label" style="margin-bottom:8px;">Page Story Arc</div>
+          <div class="mag-value" style="font-size:14px;line-height:1.7;font-style:italic;">\${b.part5.pageNarrative}</div>
         </div>
       \` : ''}
-      <div class="mag-grid">\\n        <div class="mag-col">\\n          <div class="mag-label">Hero Headlines</div>\\n          <div class="mag-value">\${b.part5.heroHeadlines.map((h,i) => (i+1) + '. ' + h).join('<br><br>')}</div>\\n        </div>\\n        <div class="mag-col">\\n          <div class="mag-label">Subheadline</div>\\n          <div class="mag-value">\${b.part5.heroSubheadline}</div>\\n          <div class="mag-label" style="margin-top:20px;">Primary CTA</div>\\n          <div class="mag-value" style="color:var(--gold);font-weight:600;">\${b.part5.heroCTA}</div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Hero Headlines</div>
+          <div class="mag-value">\${b.part5.heroHeadlines.map((h,i) => (i+1) + '. ' + h).join('<br><br>')}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">Subheadline</div>
+          <div class="mag-value">\${b.part5.heroSubheadline}</div>
+          <div class="mag-label" style="margin-top:20px;">Primary CTA</div>
+          <div class="mag-value" style="color:var(--gold);font-weight:600;">\${b.part5.heroCTA}</div>
           \${b.part5.heroImageTheme ? \`
-            <div class="mag-label" style="margin-top:20px;">Hero Image Direction</div>\\n            <div class="mag-value" style="font-size:12px;font-style:italic;color:var(--text2);">\${b.part5.heroImageTheme}</div>
+            <div class="mag-label" style="margin-top:20px;">Hero Image Direction</div>
+            <div class="mag-value" style="font-size:12px;font-style:italic;color:var(--text2);">\${b.part5.heroImageTheme}</div>
           \` : ''}
         </div>
       </div>
       \${b.part5.sections && b.part5.sections.length ? \`
         <div class="mag-label" style="margin-top:48px;margin-bottom:24px;">Page Sections</div>
         \${b.part5.sections.map((s,i) => \`
-          <div style="padding:20px 24px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;background:var(--bg);">\\n            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--gold);min-width:24px;">\${pn(i+1)}</div>\\n              <div style="font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;color:var(--text);flex:1;">\${s.name}</div>
+          <div style="padding:20px 24px;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;background:var(--bg);">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;color:var(--gold);min-width:24px;">\${pn(i+1)}</div>
+              <div style="font-family:'Outfit',sans-serif;font-weight:600;font-size:15px;color:var(--text);flex:1;">\${s.name}</div>
               \${s.confidence ? \`<div style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:\${s.confidence >= 90 ? '#22c55e' : s.confidence >= 80 ? 'var(--gold)' : '#f59e0b'};background:\${s.confidence >= 90 ? 'rgba(34,197,94,0.1)' : s.confidence >= 80 ? 'rgba(201,169,110,0.1)' : 'rgba(245,158,11,0.1)'};padding:3px 10px;border-radius:20px;">\${s.confidence}%</div>\` : ''}
               \${s.visualMood ? \`<div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);padding:3px 8px;border:1px solid var(--border);border-radius:6px;">\${s.visualMood}</div>\` : ''}
             </div>
@@ -7077,12 +6616,17 @@ debriefEl.innerHTML = \`
         const hasAny = pNums.length || bStory || mCreds.length || bTest || Object.values(sTwit).filter(Boolean).length || cBelief;
         if (!hasAny) return '';
         return \`
-      <div style="margin-top:48px;">\\n        <div class="mag-label" style="margin-bottom:24px;border-top:1px solid var(--border);padding-top:32px;">Proof Intelligence</div>
+      <div style="margin-top:48px;">
+        <div class="mag-label" style="margin-bottom:24px;border-top:1px solid var(--border);padding-top:32px;">Proof Intelligence</div>
 
         \${pNums.length ? \`
-        <div style="margin-bottom:28px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Proof Numbers</div>\\n          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Proof Numbers</div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
             \${pNums.map(n => \`
-            <div style="flex:1;min-width:140px;background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.15);border-radius:12px;padding:18px 20px;text-align:center;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;color:var(--gold);line-height:1;">\${n.stat}</div>\\n              <div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text);margin-top:6px;">\${n.label}</div>
+            <div style="flex:1;min-width:140px;background:rgba(201,169,110,0.06);border:1px solid rgba(201,169,110,0.15);border-radius:12px;padding:18px 20px;text-align:center;">
+              <div style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:800;color:var(--gold);line-height:1;">\${n.stat}</div>
+              <div style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text);margin-top:6px;">\${n.label}</div>
               \${n.context ? \`<div style="font-size:11px;color:var(--text2);margin-top:4px;font-style:italic;">\${n.context}</div>\` : ''}
             </div>
             \`).join('')}
@@ -7091,30 +6635,42 @@ debriefEl.innerHTML = \`
         \` : ''}
 
         \${mCreds.length ? \`
-        <div style="margin-bottom:28px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Media Credentials</div>\\n          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Media Credentials</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
             \${mCreds.map(c => \`<span style="font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--text2);padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:var(--bg);">\${c}</span>\`).join('')}
           </div>
         </div>
         \` : ''}
 
         \${bTest ? \`
-        <div style="margin-bottom:28px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Strongest Testimonial</div>\\n          <div style="padding:20px 24px;border-left:3px solid var(--gold);background:rgba(201,169,110,0.04);border-radius:0 12px 12px 0;">\\n            <div style="font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--text);line-height:1.7;">&ldquo;\${bTest.quote}&rdquo;</div>\\n            <div style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--text2);margin-top:10px;letter-spacing:0.05em;">&mdash; \${bTest.attribution}</div>
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Strongest Testimonial</div>
+          <div style="padding:20px 24px;border-left:3px solid var(--gold);background:rgba(201,169,110,0.04);border-radius:0 12px 12px 0;">
+            <div style="font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--text);line-height:1.7;">&ldquo;\${bTest.quote}&rdquo;</div>
+            <div style="font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--text2);margin-top:10px;letter-spacing:0.05em;">&mdash; \${bTest.attribution}</div>
           </div>
         </div>
         \` : ''}
 
         \${bStory ? \`
-        <div style="margin-bottom:28px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Best Client Story</div>\\n          <div style="font-family:'Inter',sans-serif;font-size:14px;color:var(--text2);line-height:1.8;">\${bStory}</div>
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Best Client Story</div>
+          <div style="font-family:'Inter',sans-serif;font-size:14px;color:var(--text2);line-height:1.8;">\${bStory}</div>
         </div>
         \` : ''}
 
         \${cBelief ? \`
-        <div style="margin-bottom:28px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Contrary Belief</div>\\n          <div style="font-family:'Inter',sans-serif;font-size:14px;color:var(--text);line-height:1.8;border-left:2px solid rgba(201,169,110,0.3);padding-left:16px;font-style:italic;">\${cBelief}</div>
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Contrary Belief</div>
+          <div style="font-family:'Inter',sans-serif;font-size:14px;color:var(--text);line-height:1.8;border-left:2px solid rgba(201,169,110,0.3);padding-left:16px;font-style:italic;">\${cBelief}</div>
         </div>
         \` : ''}
 
         \${Object.values(sTwit).filter(Boolean).length ? \`
-        <div style="margin-bottom:28px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Social Handles</div>\\n          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="margin-bottom:28px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:14px;">Social Handles</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
             \${Object.entries(sTwit).filter(([,v])=>v).map(([k,v])=>\`<span style="font-family:'Outfit',sans-serif;font-size:12px;color:var(--text2);padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);"><strong style="color:var(--gold);text-transform:capitalize;">\${k}:</strong> \${v}</span>\`).join('')}
           </div>
         </div>
@@ -7128,27 +6684,62 @@ debriefEl.innerHTML = \`
     \` : ''}
 
     \${b.part6 ? \`
-    <div class="mag-divider"></div>\\n    <!-- Part 6: Growth Strategy -->\\n    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part Six</div>\\n        <div class="mag-title">\${b.part6.title || 'Growth Strategy'}</div>\\n      </div>\\n      <div class="mag-grid">\\n        <div class="mag-col">\\n          <div class="mag-label">Your Biggest Growth Opportunities</div>\\n          <div class="mag-value">\${b.part6.credibilityGaps.map((g,i) => '<strong>' + (i+1) + '.</strong> ' + g).join('<br><br>')}</div>\\n        </div>\\n        <div class="mag-col">\\n          <div class="mag-label">Where to Start Building Authority</div>\\n          <div class="mag-value">\${b.part6.marketingOpportunities.map((m,i) => '<strong>' + (i+1) + '.</strong> ' + m).join('<br><br>')}</div>
+    <div class="mag-divider"></div>
+    <!-- Part 6: Growth Strategy -->
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Six</div>
+        <div class="mag-title">\${b.part6.title || 'Growth Strategy'}</div>
+      </div>
+      <div class="mag-grid">
+        <div class="mag-col">
+          <div class="mag-label">Your Biggest Growth Opportunities</div>
+          <div class="mag-value">\${b.part6.credibilityGaps.map((g,i) => '<strong>' + (i+1) + '.</strong> ' + g).join('<br><br>')}</div>
+        </div>
+        <div class="mag-col">
+          <div class="mag-label">Where to Start Building Authority</div>
+          <div class="mag-value">\${b.part6.marketingOpportunities.map((m,i) => '<strong>' + (i+1) + '.</strong> ' + m).join('<br><br>')}</div>
         </div>
       </div>
       \${b.part6.firstMove ? \`
-        <div class="mag-highlight-band" style="margin:48px -40px 0;border-radius:0;">\\n          <div class="mag-eyebrow" style="margin-bottom:12px;">Your First Move</div>\\n          <div class="mag-highlight-text">\${b.part6.firstMove}</div>
+        <div class="mag-highlight-band" style="margin:48px -40px 0;border-radius:0;">
+          <div class="mag-eyebrow" style="margin-bottom:12px;">Your First Move</div>
+          <div class="mag-highlight-text">\${b.part6.firstMove}</div>
         </div>
       \` : ''}
     </div>
     \` : ''}
 
     <!-- Part 7: Headlines & Positioning -->
-    <div class="mag-section">\\n      <div class="mag-section-header">\\n        <div class="mag-eyebrow">Part Seven</div>\\n        <div class="mag-title">\${b.part7.title || 'Headlines & Positioning'}</div>\\n      </div>\\n      <div class="mag-headlines-grid">
+    <div class="mag-section">
+      <div class="mag-section-header">
+        <div class="mag-eyebrow">Part Seven</div>
+        <div class="mag-title">\${b.part7.title || 'Headlines & Positioning'}</div>
+      </div>
+      <div class="mag-headlines-grid">
         \${b.part7.heroHeadlineOptions.map((h,i) => \`
-          <div class="mag-headline-item">\\n            <div style="display:flex;justify-content:space-between;align-items:flex-start;">\\n              <div class="mag-headline-num">\${pn(i+1)}</div>\\n              <button class="copy-btn" onclick="copyToClipboard(this.closest('.mag-headline-item').querySelector('.mag-headline-text').textContent)">Copy</button>\\n            </div>\\n            <div class="mag-headline-text">\${h}</div>
+          <div class="mag-headline-item">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div class="mag-headline-num">\${pn(i+1)}</div>
+              <button class="copy-btn" onclick="copyToClipboard(this.closest('.mag-headline-item').querySelector('.mag-headline-text').textContent)">Copy</button>
+            </div>
+            <div class="mag-headline-text">\${h}</div>
           </div>
         \`).join('')}
       </div>
       \${b.part7.positioningStatements ? \`
-        <div style="background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, var(--bg2) 100%);border-radius:16px;padding:32px;margin-top:24px;border:1px solid rgba(196,112,63,0.08);">\\n          <div class="mag-grid">\\n            <div class="mag-col">\\n              <div class="mag-label">Website</div>\\n              <div class="mag-value">\${b.part7.positioningStatements.website || ''}</div>\\n            </div>\\n            <div class="mag-col">\\n              <div class="mag-label">Social / Bio</div>\\n              <div class="mag-value">\${b.part7.positioningStatements.social || ''}</div>
+        <div style="background:linear-gradient(135deg, rgba(196,112,63,0.04) 0%, var(--bg2) 100%);border-radius:16px;padding:32px;margin-top:24px;border:1px solid rgba(196,112,63,0.08);">
+          <div class="mag-grid">
+            <div class="mag-col">
+              <div class="mag-label">Website</div>
+              <div class="mag-value">\${b.part7.positioningStatements.website || ''}</div>
+            </div>
+            <div class="mag-col">
+              <div class="mag-label">Social / Bio</div>
+              <div class="mag-value">\${b.part7.positioningStatements.social || ''}</div>
               \${b.part7.positioningStatements.inPerson ? \`
-                <div class="mag-label" style="margin-top:16px;">In Person</div>\\n                <div class="mag-value">\${b.part7.positioningStatements.inPerson}</div>
+                <div class="mag-label" style="margin-top:16px;">In Person</div>
+                <div class="mag-value">\${b.part7.positioningStatements.inPerson}</div>
               \` : ''}
             </div>
           </div>
@@ -7158,7 +6749,72 @@ debriefEl.innerHTML = \`
 
     \${b.part8 && b.part8.personalizedMessage ? \`
     <!-- Part 8: The Bridge \u2014 Next Steps -->
-    <div style="background:#FFFFFF;padding:0;margin:0 -40px;overflow:hidden;">\\n\\n      <!-- Copper top accent -->\\n      <div style="height:3px;background:#C4703F;"></div>\\n\\n      <!-- Main content -->\\n      <div style="max-width:560px;margin:0 auto;padding:64px 32px 72px;text-align:center;">\\n\\n        <!-- Eyebrow -->\\n        <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:0.12em;color:#C4703F;text-transform:uppercase;font-weight:600;margin-bottom:24px;">Your Next Step</div>\\n\\n        <!-- Emotional question -->\\n        <div style="font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,28px);font-weight:400;font-style:italic;color:#86868B;line-height:1.4;margin-bottom:20px;">What if your website actually matched your strategy?</div>\\n\\n        <!-- Headline -->\\n        <div style="font-family:'Outfit',sans-serif;font-size:clamp(24px,4vw,34px);font-weight:700;color:#1D1D1F;line-height:1.25;letter-spacing:-0.02em;margin-bottom:24px;">Everything you just read, built into a real website.</div>\\n\\n        <!-- Personalized message -->\\n        <div style="font-family:'Inter',sans-serif;font-size:15px;color:#555;line-height:1.8;margin-bottom:48px;">\${b.part8.personalizedMessage}</div>\\n\\n        <!-- What's included \u2014 vertical numbered list -->\\n        <div style="text-align:left;margin-bottom:48px;">\\n          <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:0.12em;color:#C4703F;text-transform:uppercase;font-weight:600;margin-bottom:24px;">What's Included</div>\\n\\n          <div style="display:flex;flex-direction:column;gap:18px;">\\n            <div style="display:flex;align-items:flex-start;gap:16px;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">01</div>\\n              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Your positioning, headlines, and copy written from your blueprint</div>\\n            </div>\\n            <div style="display:flex;align-items:flex-start;gap:16px;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">02</div>\\n              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Your offer suite and pricing structured for conversion</div>\\n            </div>\\n            <div style="display:flex;align-items:flex-start;gap:16px;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">03</div>\\n              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Brand colors, voice, and AI generated imagery that feels like you</div>\\n            </div>\\n            <div style="display:flex;align-items:flex-start;gap:16px;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">04</div>\\n              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Mobile responsive design that works on every device</div>\\n            </div>\\n            <div style="display:flex;align-items:flex-start;gap:16px;">\\n              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">05</div>\\n              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Ready to go live immediately. No coding, no templates.</div>\\n            </div>\\n          </div>\\n        </div>\\n\\n        <!-- Divider -->\\n        <div style="width:48px;height:1px;background:#F0F0F0;margin:0 auto 40px;"></div>\\n\\n        <!-- How it works \u2014 3 step vertical flow -->\\n        <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:48px;">\\n          <div style="display:flex;align-items:center;gap:14px;width:300px;">\\n            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">1</div>\\n            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">Click the button below</div>\\n          </div>\\n          <div style="width:1px;height:20px;background:#F0F0F0;margin-left:18px;"></div>\\n          <div style="display:flex;align-items:center;gap:14px;width:300px;">\\n            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">2</div>\\n            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">AI builds your site in about 4 minutes</div>\\n          </div>\\n          <div style="width:1px;height:20px;background:#F0F0F0;margin-left:18px;"></div>\\n          <div style="display:flex;align-items:center;gap:14px;width:300px;">\\n            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">3</div>\\n            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">Review it, tweak it, go live</div>
+    <div style="background:#FFFFFF;padding:0;margin:0 -40px;overflow:hidden;">
+
+      <!-- Copper top accent -->
+      <div style="height:3px;background:#C4703F;"></div>
+
+      <!-- Main content -->
+      <div style="max-width:560px;margin:0 auto;padding:64px 32px 72px;text-align:center;">
+
+        <!-- Eyebrow -->
+        <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:0.12em;color:#C4703F;text-transform:uppercase;font-weight:600;margin-bottom:24px;">Your Next Step</div>
+
+        <!-- Emotional question -->
+        <div style="font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,28px);font-weight:400;font-style:italic;color:#86868B;line-height:1.4;margin-bottom:20px;">What if your website actually matched your strategy?</div>
+
+        <!-- Headline -->
+        <div style="font-family:'Outfit',sans-serif;font-size:clamp(24px,4vw,34px);font-weight:700;color:#1D1D1F;line-height:1.25;letter-spacing:-0.02em;margin-bottom:24px;">Everything you just read, built into a real website.</div>
+
+        <!-- Personalized message -->
+        <div style="font-family:'Inter',sans-serif;font-size:15px;color:#555;line-height:1.8;margin-bottom:48px;">\${b.part8.personalizedMessage}</div>
+
+        <!-- What's included \u2014 vertical numbered list -->
+        <div style="text-align:left;margin-bottom:48px;">
+          <div style="font-family:'Outfit',sans-serif;font-size:11px;letter-spacing:0.12em;color:#C4703F;text-transform:uppercase;font-weight:600;margin-bottom:24px;">What's Included</div>
+
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">01</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Your positioning, headlines, and copy written from your blueprint</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">02</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Your offer suite and pricing structured for conversion</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">03</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Brand colors, voice, and AI generated imagery that feels like you</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">04</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Mobile responsive design that works on every device</div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px;">
+              <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:#C4703F;line-height:1.4;flex-shrink:0;width:28px;">05</div>
+              <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;line-height:1.6;">Ready to go live immediately. No coding, no templates.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div style="width:48px;height:1px;background:#F0F0F0;margin:0 auto 40px;"></div>
+
+        <!-- How it works \u2014 3 step vertical flow -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:48px;">
+          <div style="display:flex;align-items:center;gap:14px;width:300px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">1</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">Click the button below</div>
+          </div>
+          <div style="width:1px;height:20px;background:#F0F0F0;margin-left:18px;"></div>
+          <div style="display:flex;align-items:center;gap:14px;width:300px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">2</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">AI builds your site in about 4 minutes</div>
+          </div>
+          <div style="width:1px;height:20px;background:#F0F0F0;margin-left:18px;"></div>
+          <div style="display:flex;align-items:center;gap:14px;width:300px;">
+            <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid #F0F0F0;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#1D1D1F;">3</div>
+            <div style="font-family:'Inter',sans-serif;font-size:14px;color:#555;">Review it, tweak it, go live</div>
           </div>
         </div>
 
@@ -7170,13 +6826,16 @@ debriefEl.innerHTML = \`
         \` : ''}
 
         <!-- Save for later -->
-        <div style="margin-top:28px;">\\n          <div onclick="downloadPDF()" style="display:inline-block;font-family:'Inter',sans-serif;font-size:13px;color:#86868B;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#1D1D1F'" onmouseout="this.style.color='#86868B'">Not ready yet? Save your blueprint as a PDF.</div>
+        <div style="margin-top:28px;">
+          <div onclick="downloadPDF()" style="display:inline-block;font-family:'Inter',sans-serif;font-size:13px;color:#86868B;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#1D1D1F'" onmouseout="this.style.color='#86868B'">Not ready yet? Save your blueprint as a PDF.</div>
         </div>
       </div>
     </div>
     \` : ''}
 
-    <div style="text-align:center;padding:48px 40px 40px;">\\n      <div style="width:32px;height:1.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 16px;border-radius:2px;opacity:0.4;"></div>\\n      <div style="color:var(--text3);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;">Deep Work Interview \xB7 Built by <a href="https://jamesguldan.com" target="_blank" style="color:var(--gold);text-decoration:none;">James Guldan</a></div>
+    <div style="text-align:center;padding:48px 40px 40px;">
+      <div style="width:32px;height:1.5px;background:linear-gradient(90deg, var(--gold), #d4955a);margin:0 auto 16px;border-radius:2px;opacity:0.4;"></div>
+      <div style="color:var(--text3);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;">Deep Work Interview \xB7 Built by <a href="https://jamesguldan.com" target="_blank" style="color:var(--gold);text-decoration:none;">James Guldan</a></div>
     </div>
   \`;
 
@@ -7266,7 +6925,1036 @@ async function handleSitePhotoUpload(inputEl) {
   if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
   const listEl = document.getElementById('site-photo-list');
   const toUpload = Array.from(inputEl.files).slice(0, 10);
-  if (listEl) listEl.innerHTML = '<span style="font-size:12px;color:var(--text3);">Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...</span>';\\n  let succeeded = 0;\\n  for (const file of toUpload) {\\n    if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) continue;\\n    try {\\n      const fd = new FormData();\\n      fd.append('file', file);\\n      fd.append('sessionId', STATE.sessionId);\\n      const r = await fetch('/api/upload', { method: 'POST', body: fd });\\n      const d = await r.json();\\n      if (d.ok) { succeeded++; STATE.uploadedKeys.push(d.key); }\\n    } catch (_) {}\\n  }\\n  if (listEl) {\\n    if (succeeded > 0) {\\n      listEl.innerHTML = '<span style="font-size:12px;color:var(--green);">\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' uploaded. These will be used on your site.</span>';\\n    } else {\\n      listEl.innerHTML = '<span style="font-size:12px;color:var(--red);">Upload failed. You can continue without photos.</span>';\\n    }\\n  }\\n  inputEl.value = '';\\n}\\n__name(handleSitePhotoUpload, "handleSitePhotoUpload");\\n__name2(handleSitePhotoUpload, "handleSitePhotoUpload");\\n\\n// \u2500\u2500 SECTION PICKER PHOTO UPLOAD \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n// Stores the picker photo state globally so it survives section transitions\\nwindow.PICKER_PHOTO = {\\n  dataUrl: null,    // raw data URL for avatar display\\n  cutoutUrl: null,  // Photoroom-processed transparent PNG URL\\n  file: null,       // original File object\\n  processed: false\\n};\\n\\nasync function handlePickerPhotoUpload(inputEl) {\\n  if (!inputEl.files || !inputEl.files.length) return;\\n  const file = inputEl.files[0];\\n  if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {\\n    showToast('Please use a JPG, PNG, or WEBP image under 10MB.');\\n    return;\\n  }\\n  inputEl.value = '';\\n\\n  // Show avatar immediately with original photo\\n  const reader = new FileReader();\\n  reader.onload = async (e) => {\\n    const dataUrl = e.target.result;\\n    window.PICKER_PHOTO.dataUrl = dataUrl;\\n    window.PICKER_PHOTO.file = file;\\n    window.PICKER_PHOTO.processed = false;\\n    // Uploading a photo implicitly means YES \u2014 persist so question doesn't re-appear\\n    fpickPhotoAnswer(true);\\n\\n    // Update avatar UI\\n    const avatarImg = document.getElementById('fpick-avatar-img');\\n    const avatarIcon = document.getElementById('fpick-avatar-icon');\\n    const labelMain = document.getElementById('fpick-avatar-label-main');\\n    const labelSub = document.getElementById('fpick-avatar-label-sub');\\n    const processing = document.getElementById('fpick-avatar-processing');\\n    const circle = document.getElementById('fpick-avatar-circle');\\n\\n    if (avatarImg) { avatarImg.src = dataUrl; avatarImg.style.display = 'block'; }\\n    if (avatarIcon) avatarIcon.style.display = 'none';\\n    if (labelMain) { labelMain.textContent = 'Photo uploaded'; }\\n    if (labelSub) labelSub.style.display = 'none';\\n    if (processing) processing.classList.add('active');\\n    if (circle) circle.style.borderColor = '#c4703f';\\n\\n    // Inject original into preview immediately so they see something right away\\n    pickerInjectPhotoIntoPreview(dataUrl);\\n\\n    // Seed the grader state and open the grader panel\\n    window._graderPhotos = [{ id: 'photo_0', dataUrl, cutoutUrl: null, file }];\\n    window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };\\n    window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };\\n\\n    // Open grader immediately (cutout will fill in as background processing finishes)\\n    setTimeout(() => openPickerGrader(), 300);\\n\\n    // Process through server-side endpoint in parallel (Photoroom key stays secret)\\n    try {\\n      const sessionId = window.STATE && window.STATE.sessionId;\\n      const authToken = localStorage.getItem('dw_session') || (() => {\\n        try { const m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); return m ? m[1] : null; } catch(_) { return null; }\\n      })();\\n      if (!sessionId || !authToken) throw new Error('No session');\\n\\n      const fd = new FormData();\\n      fd.append('photo', file);\\n      fd.append('sessionId', sessionId);\\n      const res = await fetch('/api/photo/process', {\\n        method: 'POST',\\n        headers: { 'Authorization': 'Bearer ' + authToken },\\n        body: fd\\n      });\\n      if (res.ok) {\\n        const data = await res.json();\\n        const cutoutSrc = data.cutoutUrl || data.originalUrl;\\n        if (cutoutSrc) {\\n          const imgRes = await fetch(cutoutSrc);\\n          const blobUrl = imgRes.ok ? URL.createObjectURL(await imgRes.blob()) : cutoutSrc;\\n          window.PICKER_PHOTO.cutoutUrl = blobUrl;\\n          window.PICKER_PHOTO.processedUrl = cutoutSrc;\\n          window.PICKER_PHOTO.processed = true;\\n          // Update grader photo with cutout so Enhanced option becomes live\\n          if (window._graderPhotos[0]) window._graderPhotos[0].cutoutUrl = blobUrl;\\n          if (avatarImg) avatarImg.src = blobUrl;\\n          if (processing) processing.classList.remove('active');\\n          if (labelMain) labelMain.textContent = data.cutoutUrl ? 'Tap circle to adjust \u2726' : 'Photo ready \u2713';\\n          if (labelSub) { labelSub.textContent = 'Click to adjust photos'; labelSub.style.display = 'block'; }\\n          // Refresh grader if still open so Enhanced cards show the real cutout\\n          const overlay = document.getElementById('fpick-grader-overlay');\\n          if (overlay && overlay.classList.contains('open')) renderGraderBody();\\n        }\\n      }\\n    } catch (_) {\\n      if (processing) processing.classList.remove('active');\\n      if (labelSub) { labelSub.textContent = 'Click to adjust'; labelSub.style.display = 'block'; }\\n      if (labelMain) labelMain.textContent = 'Photo ready \u2713';\\n    }\\n  };\\n  reader.readAsDataURL(file);\\n}\\n__name(handlePickerPhotoUpload, "handlePickerPhotoUpload");\\n\\n// Handle photo upload from site-generation screen\\nfunction handleSiteScreenPhoto(inputEl) {\\n  if (!inputEl.files || !inputEl.files.length) return;\\n  const file = inputEl.files[0];\\n  if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {\\n    showToast('Please use a JPG, PNG, or WEBP image under 10MB.');\\n    return;\\n  }\\n  inputEl.value = '';\\n  const reader = new FileReader();\\n  reader.onload = async (e) => {\\n    const dataUrl = e.target.result;\\n    // Show preview immediately\\n    const preview = document.getElementById('site-photo-preview');\\n    const previewImg = document.getElementById('site-photo-img');\\n    const status = document.getElementById('site-photo-status');\\n    const label = document.getElementById('site-photo-label');\\n    if (preview) preview.style.display = 'flex';\\n    if (previewImg) previewImg.src = dataUrl;\\n    if (status) status.textContent = 'Processing...';\\n    if (label) label.textContent = 'Uploading...';\\n    // Store in PICKER_PHOTO immediately so generation can use it\\n    window.PICKER_PHOTO = window.PICKER_PHOTO || {};\\n    window.PICKER_PHOTO.dataUrl = dataUrl;\\n    window.PICKER_PHOTO.file = file;\\n    window.PICKER_PHOTO.processed = false;\\n    try {\\n      const sid = STATE && STATE.sessionId;\\n      if (sid) {\\n        const fd = new FormData();\\n        fd.append('file', file);\\n        fd.append('sessionId', sid);\\n        const resp = await fetch('/api/photo/process', { method: 'POST', body: fd });\\n        const data = await resp.json();\\n        if (data.cutoutUrl) {\\n          window.PICKER_PHOTO.cutoutUrl = data.cutoutUrl;\\n          window.PICKER_PHOTO.processedUrl = data.cutoutUrl;\\n          window.PICKER_PHOTO.processed = true;\\n          if (previewImg) previewImg.src = data.cutoutUrl;\\n          if (status) { status.textContent = 'Photo ready'; status.style.color = '#c4703f'; }\\n        } else {\\n          if (status) status.textContent = 'Photo saved';\\n        }\\n      }\\n    } catch (_) {\\n      if (status) status.textContent = 'Photo saved (will use as-is)';\\n    }\\n    if (label) label.textContent = 'Change photo';\\n  };\\n  reader.readAsDataURL(file);\\n}\\n__name(handleSiteScreenPhoto, "handleSiteScreenPhoto");\\n\\n// Inject the client photo into the currently-previewed section iframe\\nfunction pickerInjectPhotoIntoPreview(imgSrc) {\\n  if (!imgSrc) return;\\n  const iframe = document.getElementById('fpick-main-iframe');\\n  if (!iframe || !iframe.contentDocument) return;\\n  try {\\n    const doc = iframe.contentDocument;\\n    // Find hero/about photo containers \u2014 look for img tags that are likely hero photos\\n    const imgs = doc.querySelectorAll('img:not([src^="data:image/svg"])');\\n    // Replace the largest image found (most likely the hero photo)\\n    let best = null, bestArea = 0;\\n    imgs.forEach(img => {\\n      const area = img.offsetWidth * img.offsetHeight;\\n      if (area > bestArea && img.offsetWidth > 100) { bestArea = area; best = img; }\\n    });\\n    if (best) {\\n      best.src = imgSrc;\\n      best.style.objectFit = 'cover';\\n    }\\n    // Store for future sections\\n    window.PICKER_PHOTO.injected = imgSrc;\\n  } catch (_) {}\\n}\\n__name(pickerInjectPhotoIntoPreview, "pickerInjectPhotoIntoPreview");\\n\\n// \u2500\u2500 PHOTO PREFERENCE CHECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n// Ask if the user has professional photos before showing the upload UI.\\n// State is persisted in localStorage so the question is only shown once.\\nfunction fpickPhotoAnswer(hasPhotos) {\\n  var check   = document.getElementById('fpick-photo-check');\\n  var upload  = document.getElementById('fpick-upload-ui');\\n  var skipped = document.getElementById('fpick-photo-skipped');\\n  try { localStorage.setItem('dw_photo_pref', hasPhotos ? 'yes' : 'no'); } catch(_) {}\\n  if (hasPhotos) {\\n    if (check)   { check.style.display   = 'none'; }\\n    if (skipped) { skipped.style.display = 'none'; }\\n    if (upload)  { upload.style.display  = 'flex'; }\\n  } else {\\n    if (check)   { check.style.display   = 'none'; }\\n    if (upload)  { upload.style.display  = 'none'; }\\n    if (skipped) { skipped.style.display = 'flex'; }\\n  }\\n}\\n\\nfunction fpickPhotoInit() {\\n  var status = document.getElementById('fpick-photo-status');\\n  if (window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl) {\\n    // Show compact status bar with their uploaded photo\\n    if (status) status.style.display = 'flex';\\n    var src = window.PICKER_PHOTO.processedUrl || window.PICKER_PHOTO.dataUrl;\\n    var img = document.getElementById('fpick-avatar-img');\\n    var icon = document.getElementById('fpick-avatar-icon');\\n    if (img && src) { img.src = src; img.style.display = 'block'; if (icon) icon.style.display = 'none'; }\\n  } else {\\n    // No photo \u2014 keep status bar hidden, photo gate already handled the decision\\n    if (status) status.style.display = 'none';\\n  }\\n}\\n\\n// \u2500\u2500 PHOTO GRADER \u2014 INTEGRATED INTO PICKER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n// Per-section photo assignments. Set by the grader, read by pickerInjectPhotoIntoPreview.\\nwindow.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };\\n// Internal grader state\\nwindow._graderPhotos = [];   // [{ id, dataUrl, cutoutUrl, file }]\\nwindow._graderOptions = { hero: 'original', about: 'original', profile: 'original' };\\n\\n// Score a photo for a given section slot using aspect-ratio + resolution heuristics\\nasync function gradePhotoForSlot(dataUrl, slot) {\\n  return new Promise(resolve => {\\n    const img = new Image();\\n    img.onload = () => {\\n      const w = img.naturalWidth, h = img.naturalHeight;\\n      const ratio = w / h;\\n      let score = 50;\\n      const minDim = Math.min(w, h);\\n      if (minDim >= 1200) score += 20;\\n      else if (minDim >= 800) score += 10;\\n      else if (minDim < 400) score -= 20;\\n      if (slot === 'hero') {\\n        if (ratio >= 1.2 && ratio <= 2.0) score += 20;\\n        else if (ratio >= 0.8 && ratio < 1.2) score += 10;\\n        else if (ratio < 0.6) score -= 10;\\n        score += Math.floor(Math.random() * 10);\\n      } else if (slot === 'about') {\\n        if (ratio >= 0.6 && ratio <= 1.4) score += 20;\\n        else if (ratio > 1.4 && ratio <= 1.8) score += 5;\\n        score += Math.floor(Math.random() * 10);\\n      } else if (slot === 'profile') {\\n        if (ratio >= 0.7 && ratio <= 1.1) score += 25;\\n        else if (ratio > 1.1 && ratio <= 1.4) score += 10;\\n        else if (ratio > 1.6) score -= 15;\\n        score += Math.floor(Math.random() * 8);\\n      }\\n      resolve(Math.max(0, Math.min(100, score)));\\n    };\\n    img.onerror = () => resolve(55);\\n    img.src = dataUrl;\\n  });\\n}\\n\\nfunction getGradeInfo(score) {\\n  if (score >= 75) return { stars: '\u2605\u2605\u2605', label: 'Excellent', cls: 'excellent' };\\n  if (score >= 55) return { stars: '\u2605\u2605', label: 'Good', cls: 'good' };\\n  return { stars: '\u2605', label: 'Fair', cls: 'fair' };\\n}\\n\\n// Open the grader panel (called after photo upload or by clicking the avatar)\\nasync function openPickerGrader() {\\n  const overlay = document.getElementById('fpick-grader-overlay');\\n  const body = document.getElementById('fpick-grader-body');\\n  if (!overlay || !body) return;\\n  // Seed graderPhotos from current PICKER_PHOTO if empty\\n  if (window._graderPhotos.length === 0 && window.PICKER_PHOTO.dataUrl) {\\n    window._graderPhotos = [{\\n      id: 'photo_0',\\n      dataUrl: window.PICKER_PHOTO.dataUrl,\\n      cutoutUrl: window.PICKER_PHOTO.cutoutUrl || null,\\n      file: window.PICKER_PHOTO.file || null\\n    }];\\n  }\\n  // Show spinner while grading\\n  body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div class="fpick-grader-spinner"></div><div style="font-family:Outfit,sans-serif;font-size:13px;color:#86868b;">Grading your photo\u2026</div></div>';\\n  overlay.classList.add('open');\\n  await renderGraderBody();\\n}\\n__name(openPickerGrader, "openPickerGrader");\\n\\nasync function renderGraderBody() {\\n  const body = document.getElementById('fpick-grader-body');\\n  if (!body || window._graderPhotos.length === 0) return;\\n  const photo = window._graderPhotos[0];\\n  const slots = [\\n    { key: 'hero',    label: 'Hero Section',    icon: '\u{1F5BC}', isProfile: false },\\n    { key: 'about',   label: 'About / Story',   icon: '\u{1F464}', isProfile: false },\\n    { key: 'profile', label: 'Profile Circle',  icon: '\u2B55', isProfile: true  }\\n  ];\\n  // Grade all slots in parallel\\n  const scores = {};\\n  await Promise.all(slots.map(async s => { scores[s.key] = await gradePhotoForSlot(photo.dataUrl, s.key); }));\\n\\n  // No template literals here \u2014 this JS lives inside a server-side template string,\\n  // so backticks must be avoided. Use string concatenation instead.\\n  var html = '<button class="fpick-grader-add" onclick="document.getElementById(\\'fpick-grader-extra-input\\').click()">+ Replace with a different photo</button>';\\n\\n  for (var _si = 0; _si < slots.length; _si++) {\\n    var _slot = slots[_si];\\n    var key = _slot.key, label = _slot.label, icon = _slot.icon, isProfile = _slot.isProfile;\\n    var grade = getGradeInfo(scores[key]);\\n    var imgCls = isProfile ? 'fpick-grader-option-img sq' : 'fpick-grader-option-img';\\n    var cutoutSrc = photo.cutoutUrl || photo.dataUrl;\\n    var hasCutout = !!photo.cutoutUrl;\\n    var selOrig = !window._graderOptions[key] || window._graderOptions[key] === 'original';\\n    var selEnh  = window._graderOptions[key] === 'enhanced';\\n    html += '<div class="fpick-grader-slot">'\\n          + '<div class="fpick-grader-slot-head">'\\n          + '<span style="font-size:15px">' + icon + '</span>'\\n          + '<span class="fpick-grader-slot-name">' + label + '</span>'\\n          + '<span class="fpick-grader-badge ' + grade.cls + '">' + grade.stars + ' ' + grade.label + '</span>'\\n          + '</div>'\\n          + '<div class="fpick-grader-options">'\\n          + '<div class="fpick-grader-option' + (selOrig ? ' selected' : '') + '" id="fpick-go-' + key + '-original" onclick="selectGraderOption(\\''+key+'\\',\\'original\\')">'\\n          + '<img class="' + imgCls + '" src="' + photo.dataUrl + '" alt="Original">'\\n          + '<div class="fpick-grader-option-foot"><div class="fpick-grader-option-label">A \xB7 Original</div><div class="fpick-grader-option-sub">Your photo as-is</div></div>'\\n          + '</div>'\\n          + '<div class="fpick-grader-option' + (selEnh ? ' selected' : '') + '" id="fpick-go-' + key + '-enhanced" onclick="selectGraderOption(\\''+key+'\\',\\'enhanced\\')">'\\n          + '<img class="' + imgCls + '" src="' + cutoutSrc + '" alt="Enhanced"' + (!hasCutout ? ' style="opacity:0.4;filter:grayscale(0.5)"' : '') + '>'\\n          + '<div class="fpick-grader-option-foot"><div class="fpick-grader-option-label">B \xB7 Enhanced</div><div class="fpick-grader-option-sub">' + (hasCutout ? 'Background removed' : 'Processing\u2026') + '</div></div>'\\n          + '</div>'\\n          + '</div>'\\n          + '</div>';\\n  }\\n  html += '<button class="fpick-grader-confirm" onclick="confirmGraderSelections()">Apply to Preview \u2726</button>';\\n  body.innerHTML = html;\\n}\\n__name(renderGraderBody, "renderGraderBody");\\n\\nfunction selectGraderOption(slot, type) {\\n  window._graderOptions[slot] = type;\\n  const photo = window._graderPhotos[0];\\n  if (!photo) return;\\n  const url = type === 'enhanced' ? (photo.cutoutUrl || photo.dataUrl) : photo.dataUrl;\\n  window.PICKER_PHOTO_ASSIGNMENTS[slot] = url;\\n  ['original', 'enhanced'].forEach(t => {\\n    const el = document.getElementById('fpick-go-' + slot + '-' + t);\\n    if (el) el.classList.toggle('selected', t === type);\\n  });\\n}\\n__name(selectGraderOption, "selectGraderOption");\\n\\nfunction confirmGraderSelections() {\\n  const photo = window._graderPhotos[0];\\n  if (!photo) { closePickerGrader(); return; }\\n  // Fill any unset slots with original\\n  ['hero', 'about', 'profile'].forEach(slot => {\\n    if (!window.PICKER_PHOTO_ASSIGNMENTS[slot]) {\\n      window.PICKER_PHOTO_ASSIGNMENTS[slot] = photo.dataUrl;\\n    }\\n  });\\n  // Inject hero photo into current preview\\n  const heroUrl = window.PICKER_PHOTO_ASSIGNMENTS.hero || photo.dataUrl;\\n  pickerInjectPhotoIntoPreview(heroUrl);\\n  // Update the avatar circle to show the profile choice\\n  const profileUrl = window.PICKER_PHOTO_ASSIGNMENTS.profile || photo.dataUrl;\\n  const avatarImg = document.getElementById('fpick-avatar-img');\\n  const labelMain = document.getElementById('fpick-avatar-label-main');\\n  const labelSub  = document.getElementById('fpick-avatar-label-sub');\\n  if (avatarImg) { avatarImg.src = profileUrl; avatarImg.style.display = 'block'; }\\n  if (labelMain) labelMain.textContent = 'Photos assigned \u2726';\\n  if (labelSub)  { labelSub.textContent = 'Click to adjust'; labelSub.style.display = 'block'; }\\n  closePickerGrader();\\n}\\n__name(confirmGraderSelections, "confirmGraderSelections");\\n\\nfunction closePickerGrader() {\\n  const overlay = document.getElementById('fpick-grader-overlay');\\n  if (overlay) overlay.classList.remove('open');\\n}\\n__name(closePickerGrader, "closePickerGrader");\\n\\n// Replace photo in grader with a new upload\\nasync function addGraderPhotos(inputEl) {\\n  if (!inputEl.files || !inputEl.files.length) return;\\n  inputEl.value = '';\\n  const file = inputEl.files[0];\\n  const reader = new FileReader();\\n  reader.onload = async e => {\\n    window._graderPhotos = [{ id: 'photo_0', dataUrl: e.target.result, cutoutUrl: null, file }];\\n    window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };\\n    window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };\\n    // Kick off background processing for this new photo\\n    window.PICKER_PHOTO.dataUrl = e.target.result;\\n    window.PICKER_PHOTO.file = file;\\n    window.PICKER_PHOTO.processed = false;\\n    window.PICKER_PHOTO.cutoutUrl = null;\\n    const body = document.getElementById('fpick-grader-body');\\n    if (body) body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div class="fpick-grader-spinner"></div><div style="font-family:Outfit,sans-serif;font-size:13px;color:#86868b;">Grading\u2026</div></div>';\\n    await renderGraderBody();\\n    // Trigger server-side processing in background (updates cutout when ready)\\n    processGraderPhotoInBackground(file);\\n  };\\n  reader.readAsDataURL(file);\\n}\\n__name(addGraderPhotos, "addGraderPhotos");\\n\\n// Kick off server-side Photoroom processing; update the grader when it comes back\\nasync function processGraderPhotoInBackground(file) {\\n  try {\\n    const sessionId = window.STATE && window.STATE.sessionId;\\n    const authToken = localStorage.getItem('dw_session') || (() => {\\n      try { const m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); return m ? m[1] : null; } catch(_) { return null; }\\n    })();\\n    if (!sessionId || !authToken) return;\\n    const fd = new FormData();\\n    fd.append('photo', file);\\n    fd.append('sessionId', sessionId);\\n    const res = await fetch('/api/photo/process', {\\n      method: 'POST',\\n      headers: { 'Authorization': 'Bearer ' + authToken },\\n      body: fd\\n    });\\n    if (!res.ok) return;\\n    const data = await res.json();\\n    const cutoutSrc = data.cutoutUrl || data.originalUrl;\\n    if (!cutoutSrc) return;\\n    // Fetch as blob for CORS-safe display\\n    const imgRes = await fetch(cutoutSrc);\\n    if (!imgRes.ok) return;\\n    const blobUrl = URL.createObjectURL(await imgRes.blob());\\n    // Update state and re-render grader body with enhanced option live\\n    if (window._graderPhotos[0]) {\\n      window._graderPhotos[0].cutoutUrl = blobUrl;\\n      window.PICKER_PHOTO.cutoutUrl = blobUrl;\\n      window.PICKER_PHOTO.processed = true;\\n    }\\n    // If grader is still open, refresh it\\n    const overlay = document.getElementById('fpick-grader-overlay');\\n    if (overlay && overlay.classList.contains('open')) await renderGraderBody();\\n  } catch (_) { /* non-fatal */ }\\n}\\n__name(processGraderPhotoInBackground, "processGraderPhotoInBackground");\\n\\n// \u2500\u2500 BLUEPRINT EXPORT FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nasync function downloadPDF() {\\n  if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }\\n  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);\\n  showToast(isMobile ? 'Opening your brand guide...' : 'Opening your blueprint for printing...');\\n  try {\\n    const res = await fetch('/api/blueprint/pdf', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json' },\\n      body: JSON.stringify({ sessionId: STATE.sessionId })\\n    });\\n    if (!res.ok) { showToast('Could not load blueprint. Please try again.'); return; }\\n    const html = await res.text();\\n    const win = window.open('', '_blank');\\n    if (!win) { showToast('Please allow popups for this site to download your PDF.'); return; }\\n    win.document.write(html);\\n    win.document.close();\\n    if (isMobile) {\\n      // On mobile, add a helper bar at the top for saving\\n      setTimeout(() => {\\n        try {\\n          const bar = win.document.createElement('div');\\n          bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c4703f;color:#fff;text-align:center;padding:14px 20px;font-family:Outfit,sans-serif;font-size:14px;letter-spacing:0.02em;box-shadow:0 2px 12px rgba(0,0,0,0.15);';\\n          bar.innerHTML = 'Use your browser\\'s <strong>Share</strong> button to save as PDF or send to yourself';\\n          win.document.body.prepend(bar);\\n          // Add padding so content isn't hidden behind the bar\\n          win.document.body.style.paddingTop = '52px';\\n        } catch(_) {}\\n      }, 800);\\n    } else {\\n      setTimeout(() => { try { win.print(); } catch(_) {} }, 1500);\\n    }\\n  } catch(e) {\\n    showToast('Error generating PDF. Please try again.');\\n  }\\n}\\n\\nasync function exportPackage() {\\n  if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }\\n  showToast('Preparing your blueprint file...');\\n  try {\\n    const res = await fetch('/api/export', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json' },\\n      body: JSON.stringify({ sessionId: STATE.sessionId })\\n    });\\n    if (!res.ok) { showToast('Could not export blueprint. Please try again.'); return; }\\n    const html = await res.text();\\n    const blob = new Blob([html], { type: 'text/html' });\\n    const blobUrl = URL.createObjectURL(blob);\\n    const a = document.createElement('a');\\n    a.href = blobUrl;\\n    const rawName = STATE.blueprint?.blueprint?.name || 'brand';\\n    a.download = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-blueprint.html';\\n    document.body.appendChild(a);\\n    a.click();\\n    document.body.removeChild(a);\\n    URL.revokeObjectURL(blobUrl);\\n    setTimeout(() => showToast('Blueprint downloaded! Open it in any browser, anytime.'), 400);\\n  } catch(e) {\\n    showToast('Error downloading blueprint. Please try again.');\\n  }\\n}\\n\\nfunction openBuildPopup() {\\n  document.getElementById('build-site-popup').style.display = 'block';\\n  // Populate personalized blueprint preview\\n  try {\\n    var bp = STATE.blueprint && (STATE.blueprint.blueprint || STATE.blueprint);\\n    if (bp) {\\n      var previewEl = document.getElementById('popup-blueprint-preview');\\n      var nameEl = document.getElementById('popup-brand-name');\\n      var colorRow = document.getElementById('popup-color-row');\\n      if (previewEl) previewEl.style.display = 'block';\\n      if (nameEl && bp.part1 && bp.part1.brandNames && bp.part1.brandNames.length) {\\n        nameEl.textContent = bp.part1.brandNames[0];\\n      } else if (nameEl && bp.name) {\\n        nameEl.textContent = bp.name;\\n      }\\n      if (colorRow && bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.colors) {\\n        colorRow.innerHTML = bp.part1.visualDirection.colors.map(function(c) {\\n          return '<div style="width:24px;height:24px;border-radius:6px;background:' + c.hex + ';border:1px solid rgba(0,0,0,0.06);"></div>';\\n        }).join('') + '<span style="font-size:11px;color:#86868b;margin-left:6px;">Your color palette</span>';\\n      }\\n    }\\n  } catch(_) {}\\n}\\n\\nfunction closeBuildPopup() {\\n  document.getElementById('build-site-popup').style.display = 'none';\\n}\\n\\nfunction sendMagicLink() {\\n  var email = document.getElementById('magic-link-email');\\n  var form = document.getElementById('magic-link-form');\\n  var confirm = document.getElementById('magic-link-confirm');\\n  var confirmText = document.getElementById('magic-link-confirm-text');\\n  if (!email || !email.value.trim()) {\\n    email.style.borderColor = '#c4703f';\\n    setTimeout(function() { email.style.borderColor = '#e8e8e8'; }, 2000);\\n    return;\\n  }\\n  var addr = email.value.trim();\\n  // Call the magic link endpoint\\n  fetch('/api/auth/request-magic', {\\n    method: 'POST',\\n    headers: { 'Content-Type': 'application/json' },\\n    body: JSON.stringify({ email: addr })\\n  }).then(function(r) { return r.json(); }).then(function(d) {\\n    if (d && d.error) {\\n      if (form) form.style.display = 'flex';\\n      if (confirm) confirm.style.display = 'none';\\n      if (email) email.style.borderColor = '#c4703f';\\n      alert(d.error);\\n    }\\n  }).catch(function() {});\\n  // Always show confirmation (even if endpoint not yet wired)\\n  if (form) form.style.display = 'none';\\n  if (confirm) confirm.style.display = 'block';\\n  if (confirmText) confirmText.textContent = 'We sent a login link to ' + addr + '. It should arrive within 30 seconds. Check spam if you do not see it.';\\n}\\nfunction resetMagicLink() {\\n  var form = document.getElementById('magic-link-form');\\n  var confirm = document.getElementById('magic-link-confirm');\\n  var email = document.getElementById('magic-link-email');\\n  if (form) form.style.display = 'flex';\\n  if (confirm) confirm.style.display = 'none';\\n  if (email) email.value = '';\\n}\\nasync function saveForLater() {\\n  closeBuildPopup();\\n  const email = STATE.email || '';\\n  if (email) {\\n    try {\\n      await fetch('/api/auth/request-magic', {\\n        method: 'POST',\\n        headers: { 'Content-Type': 'application/json' },\\n        body: JSON.stringify({ email })\\n      });\\n      showToast('We sent you a link \u2014 come back anytime to build your site.');\\n    } catch(_) {\\n      showToast('Your blueprint is saved. Log back in anytime to build your site.');\\n    }\\n  } else {\\n    showToast('Your blueprint is saved. Log back in anytime to build your site.');\\n  }\\n}\\n\\nfunction selectTestimonialPref(label, value) {\\n  var labels = document.querySelectorAll('#testimonial-pref-group label');\\n  labels.forEach(function(l) { l.style.borderColor = '#e8e8e8'; l.style.background = ''; });\\n  label.style.borderColor = '#c4703f';\\n  var customArea = document.getElementById('custom-testimonials-area');\\n  var aiArea = document.getElementById('testimonial-ai-area');\\n  if (customArea) customArea.style.display = value === 'custom' ? 'block' : 'none';\\n  if (aiArea) {\\n    aiArea.style.display = value === 'aicoach' ? 'block' : 'none';\\n    if (value === 'aicoach' && !window.TESTIMONIAL_DIALOG_STARTED) {\\n      window.TESTIMONIAL_DIALOG_STARTED = true;\\n      window.TESTIMONIAL_DIALOG_MESSAGES = [];\\n      testimonialDialogAITurn();\\n    }\\n  }\\n  STATE.testimonialPref = value;\\n}\\n\\nfunction getTestimonialPref() {\\n  var pref = STATE.testimonialPref || 'generate';\\n  var customText = '';\\n  if (pref === 'custom' || pref === 'aicoach') {\\n    var textarea = document.getElementById('custom-testimonials-input');\\n    customText = textarea ? textarea.value.trim() : '';\\n  }\\n  // If AI coaching produced text, treat it as custom\\n  return { pref: customText ? 'custom' : (pref === 'aicoach' ? 'generate' : pref), customText: customText };\\n}\\n\\nfunction handleBuildSite() {\\n  if (!STATE.blueprintScrolled) {\\n    showToast('Scroll through your blueprint first \u2014 then come back to make it real.');\\n    var body = document.getElementById('blueprint-body');\\n    if (body) { body.scrollIntoView({ behavior: 'smooth', block: 'start' }); }\\n    return;\\n  }\\n  openBuildPopup();\\n}\\n\\n// \u2500\u2500 PRE-GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nvar PREGEN = { total: 0, done: 0, ready: false };\\n\\nasync function startPregenFlow() {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : STATE.blueprint;\\n  var sections = bp && bp.part5 && bp.part5.sections;\\n  if (!sections || sections.length === 0) {\\n    showScreen('site-screen');\\n    await runSiteGeneration();\\n    return;\\n  }\\n  PICKER.sections = sections;\\n  PICKER.currentIndex = 0;\\n  PICKER.regenCount = 0;\\n  PICKER.chosen = [];\\n  PICKER.variants = [];\\n  PICKER.preloaded = {};\\n  PICKER.sectionImages = {};  // Imagen-generated images per section index\\n  // Save nav state so refresh returns here, not blueprint\\n  dwSaveNav({ screen: 'section-picker', pickerCurrentIndex: 0, pickerChosen: [] });\\n  PICKER.viewingOption = 0;\\n  PICKER.renderedVariants = [];\\n  PREGEN.total = sections.length;\\n  PREGEN.done = 0;\\n  PREGEN.ready = false;\\n  showScreen('pregen-screen');\\n  pregenRenderBrand(bp);\\n  pregenRenderSections(sections);\\n  sections.forEach(function(_, idx) { pregenFetchSection(idx); });\\n}\\n\\nfunction pregenRenderBrand(bp) {\\n  var nameEl = document.getElementById('pregen-brand-name');\\n  var paletteEl = document.getElementById('pregen-palette');\\n  var brandName = (bp.part1 && bp.part1.brandNames && bp.part1.brandNames[0]) || bp.name || 'Your Brand';\\n  if (nameEl) nameEl.textContent = brandName;\\n  if (paletteEl) {\\n    var colors = (bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.colors) || [];\\n    paletteEl.innerHTML = colors.map(function(c) {\\n      return '<div class="pregen-swatch" style="background:' + (c.hex || '#ccc') + ';" title="' + (c.name || '') + '"></div>';\\n    }).join('');\\n  }\\n}\\n\\nfunction pregenRenderSections(sections) {\\n  var listEl = document.getElementById('pregen-section-list');\\n  var countEl = document.getElementById('pregen-progress-count');\\n  if (countEl) countEl.textContent = '0 of ' + sections.length;\\n  if (!listEl) return;\\n  listEl.innerHTML = sections.map(function(s, idx) {\\n    return '<div class="pregen-section-row" id="pregen-row-' + idx + '">' +\\n      '<div class="pregen-section-indicator loading" id="pregen-dot-' + idx + '">\xB7</div>' +\\n      '<div class="pregen-section-name">' + (s.name || 'Section ' + (idx + 1)) + '</div>' +\\n      '<div class="pregen-section-tag" id="pregen-tag-' + idx + '">Generating\u2026</div>' +\\n      '</div>';\\n  }).join('');\\n}\\n\\nasync function pregenFetchSection(idx) {\\n  var jwt = '';\\n  try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}\\n\\n  // Get section imageTheme from blueprint for Imagen prompt\\n  var bp2 = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});\\n  var bpSection = bp2.part5 && bp2.part5.sections && bp2.part5.sections[idx];\\n  var imageTheme = (bpSection && bpSection.imageTheme && bpSection.imageTheme !== 'none') ? bpSection.imageTheme : '';\\n\\n  // Fire section variants + Imagen image generation in parallel\\n  var variantsPromise = fetch('/api/generate/section-variants', {\\n    method: 'POST',\\n    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },\\n    body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, feedback: null })\\n  });\\n\\n  var imagePromise = fetch('/api/generate/section-image', {\\n    method: 'POST',\\n    headers: { 'Content-Type': 'application/json' },\\n    body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, imageTheme: imageTheme })\\n  });\\n\\n  try {\\n    var res = await variantsPromise;\\n    if (!res.ok) throw new Error('status ' + res.status);\\n    var data = await res.json();\\n    if (!data.variants || data.variants.length === 0) throw new Error('empty');\\n    PICKER.preloaded[idx] = data.variants;\\n\\n    // Attach image URL to preloaded data (non-blocking \u2014 image may arrive later)\\n    imagePromise.then(function(imgRes) {\\n      return imgRes.ok ? imgRes.json() : null;\\n    }).then(function(imgData) {\\n      if (imgData && imgData.ok && imgData.imageUrl) {\\n        PICKER.sectionImages[idx] = imgData.imageUrl;\\n        // If currently viewing this section, re-render with the image\\n        if (PICKER.currentIndex === idx && PICKER.renderedVariants && PICKER.renderedVariants.length > 0) {\\n          PICKER.renderedVariants = PICKER.renderedVariants.map(function(_, vi) {\\n            return PICKER.variants[vi] ? pickerWrapHtml(pickerRenderTemplate(PICKER.variants[vi], idx)) : _;\\n          });\\n          var iframe = document.getElementById('fpick-main-iframe');\\n          if (iframe && PICKER.renderedVariants[PICKER.viewingOption]) {\\n            iframe.srcdoc = PICKER.renderedVariants[PICKER.viewingOption];\\n          }\\n        }\\n      }\\n    }).catch(function() {});\\n\\n    pregenMarkSection(idx, 'done');\\n  } catch(e) {\\n    pregenMarkSection(idx, 'failed');\\n  }\\n}\\n\\nfunction pregenMarkSection(idx, state) {\\n  PREGEN.done++;\\n  var dot = document.getElementById('pregen-dot-' + idx);\\n  var tag = document.getElementById('pregen-tag-' + idx);\\n  if (dot) { dot.classList.remove('loading'); dot.classList.add(state); dot.textContent = state === 'done' ? '\u2713' : '!'; }\\n  if (tag) tag.textContent = state === 'done' ? 'Ready' : 'Will generate live';\\n  var fill = document.getElementById('pregen-progress-fill');\\n  var countEl = document.getElementById('pregen-progress-count');\\n  var labelEl = document.getElementById('pregen-progress-label');\\n  if (fill) fill.style.width = Math.round((PREGEN.done / PREGEN.total) * 100) + '%';\\n  if (countEl) countEl.textContent = PREGEN.done + ' of ' + PREGEN.total;\\n  if (PREGEN.done >= PREGEN.total && !PREGEN.ready) {\\n    PREGEN.ready = true;\\n    if (labelEl) labelEl.textContent = 'All sections ready \u2014 let\u2019s go';\\n    var btn = document.getElementById('pregen-proceed-btn');\\n    if (btn) { btn.classList.add('ready'); btn.textContent = 'Enter your workspace \u2192'; }\\n    setTimeout(pregenEnterPicker, 700);\\n  }\\n}\\n\\nfunction pregenEnterPicker() {\\n  if (!PREGEN.ready) return;\\n  showScreen('section-picker');\\n  fpickPhotoInit();\\n  pickerLoadSection(0);\\n}\\n\\n// \u2500\u2500 PHOTO GATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nfunction showPhotoGate() {\\n  showScreen('photo-gate-screen');\\n}\\n\\nfunction photoGateYes() {\\n  var choose = document.getElementById('photo-gate-choose');\\n  var upload = document.getElementById('photo-gate-upload');\\n  if (choose) choose.style.display = 'none';\\n  if (upload) upload.style.display = 'block';\\n}\\n\\nfunction photoGateSkip() {\\n  var sid = STATE.sessionId || 'anon';\\n  try { sessionStorage.setItem('dw_photo_gate_' + sid, '1'); } catch(_) {}\\n  photoGateProceedInner();\\n}\\n\\nfunction photoGateProceed() {\\n  var sid = STATE.sessionId || 'anon';\\n  try { sessionStorage.setItem('dw_photo_gate_' + sid, '1'); } catch(_) {}\\n  photoGateProceedInner();\\n}\\n\\nasync function photoGateProceedInner() {\\n  // If we were restoring from a saved nav state, resume the picker directly\\n  if (STATE._pendingPickerRestore) {\\n    var pendingNav = STATE._pendingPickerRestore;\\n    var pendingBp = STATE._pendingPickerBlueprint;\\n    STATE._pendingPickerRestore = null;\\n    STATE._pendingPickerBlueprint = null;\\n    var bp2 = pendingBp && pendingBp.blueprint ? pendingBp.blueprint : pendingBp;\\n    var secs2 = bp2 && bp2.part5 && bp2.part5.sections;\\n    if (secs2 && secs2.length > 0) {\\n      dwDoRestorePicker(pendingNav, secs2);\\n      return;\\n    }\\n  }\\n  await startPregenFlow();\\n}\\n\\nasync function photoGateUpload(input) {\\n  var file = input && input.files && input.files[0];\\n  if (!file) return;\\n  var zone = document.getElementById('photo-gate-upload-zone');\\n  var proc = document.getElementById('photo-gate-processing');\\n  var done = document.getElementById('photo-gate-done');\\n  var skipLink = document.querySelector('.photo-gate-skip-link');\\n  if (zone) zone.style.display = 'none';\\n  if (proc) proc.style.display = 'block';\\n  if (skipLink) skipLink.style.display = 'none';\\n  var fileInput = document.getElementById('photo-gate-file');\\n  if (fileInput) fileInput.disabled = true;\\n  var reader = new FileReader();\\n  reader.onload = async function(evt) {\\n    var dataUrl = evt.target.result;\\n    window.PICKER_PHOTO = window.PICKER_PHOTO || {};\\n    window.PICKER_PHOTO.dataUrl = dataUrl;\\n    window.PICKER_PHOTO.file = file;\\n    window.PICKER_PHOTO.processed = false;\\n    try { localStorage.setItem('dw_photo_pref', 'yes'); } catch(_) {}\\n    var jwt = '';\\n    try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}\\n    var sessId = STATE && STATE.sessionId ? STATE.sessionId : null;\\n    var displayUrl = dataUrl;\\n    try {\\n      var res = await fetch('/api/photo/process', {\\n        method: 'POST',\\n        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },\\n        body: JSON.stringify({ imageDataUrl: dataUrl, sessionId: sessId })\\n      });\\n      var json = await res.json();\\n      if (json && json.processedUrl) {\\n        window.PICKER_PHOTO.processedUrl = json.processedUrl;\\n        window.PICKER_PHOTO.processed = true;\\n        displayUrl = json.processedUrl;\\n      }\\n    } catch(e) {}\\n    var preview = document.getElementById('photo-gate-preview');\\n    if (preview) preview.src = displayUrl;\\n    if (proc) proc.style.display = 'none';\\n    if (done) done.style.display = 'block';\\n  };\\n  reader.readAsDataURL(file);\\n}\\n\\n// \u2500\u2500 SITE GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nasync function proceedToSite() {\\n  var sid = STATE.sessionId || 'anon';\\n  // Step 1: show segment intake if not yet seen this session\\n  var intakeSeen = false;\\n  try { intakeSeen = !!sessionStorage.getItem('dw_intake_' + sid); } catch(_) {}\\n  if (!intakeSeen) {\\n    showSegmentIntake();\\n    return;\\n  }\\n  // Step 2: show photo gate if not yet seen this session\\n  var gateSeen = false;\\n  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}\\n  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);\\n  if (!gateSeen && !hasPhoto) {\\n    showPhotoGate();\\n    return;\\n  }\\n  await startPregenFlow();\\n}\\n\\n// \u2500\u2500 SEGMENT INTAKE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nvar SEGMENT_QUESTIONS = {\\n  expert: [\\n    { key: 'bookingUrl', label: 'Booking link', question: 'Where do people book a call with you?', placeholder: 'https://calendly.com/yourname/discovery', hint: '\u2192 Powers every "Book a Call" button on your site', icon: '\u{1F517}' },\\n    { key: 'methodologyName', label: 'Methodology name', question: 'Do you have a name for your signature process?', placeholder: 'e.g. The Clarity Sprint, The Growth Framework...', hint: '\u2192 Used in your Process section headline', icon: '\u270F\uFE0F', dialog: true, dialogCta: "Help me name it \u2192" },\\n    { key: 'startingPrice', label: 'Starting investment', question: "What's your starting price?", placeholder: 'e.g. $2,500 \xB7 Starting at $3K/month...', hint: '\u2192 Anchors your Offers section with a real number', icon: '\u{1F4B0}', dialog: true, dialogCta: "What should I charge? \u2192" },\\n    { key: 'topCredential', label: 'Strongest credential', question: "What's your biggest credibility signal?", placeholder: 'e.g. ICF-certified \xB7 15 years at Fortune 500...', hint: '\u2192 Appears in your Hero and About sections', icon: '\u2B50' }\\n  ],\\n  creator: [\\n    { key: 'platformUrl', label: 'Course or community link', question: 'Where do people buy or join your program?', placeholder: 'https://yourschool.teachable.com \xB7 Kajabi \xB7 Skool...', hint: '\u2192 Powers every "Enroll" and "Join Now" button', icon: '\u{1F517}' },\\n    { key: 'leadMagnet', label: 'Free resource', question: 'Do you offer a free resource or lead magnet?', placeholder: 'e.g. Free PDF guide \xB7 Starter course \xB7 Quiz...', hint: '\u2192 Makes your Hero CTA a low-friction offer first', icon: '\u{1F381}' },\\n    { key: 'studentCount', label: 'Student or member count', question: 'How many students or members do you have?', placeholder: 'e.g. 2,400+ \xB7 Over 500 \xB7 Growing community of 800...', hint: '\u2192 Appears in your Proof Strip as a real number, not a placeholder', icon: '\u{1F465}' },\\n    { key: 'bestResult', label: 'Best student result', question: "What's the biggest win a student has had?", placeholder: 'e.g. Went from $0 to $8K/month in 90 days...', hint: '\u2192 Becomes your testimonial Pull Quote with a real story', icon: '\u{1F3C6}', dialog: true, dialogCta: "Help me write this \u2192" }\\n  ],\\n  service: [\\n    { key: 'portfolioUrl', label: 'Portfolio or case studies', question: 'Do you have a portfolio or case studies to link to?', placeholder: 'https://yoursite.com/work \xB7 Behance \xB7 Dribbble...', hint: '\u2192 "See My Work" CTA in your Hero links directly here', icon: '\u{1F517}' },\\n    { key: 'inquiryUrl', label: 'Project inquiry link', question: 'How do people start a project with you?', placeholder: 'Typeform \xB7 Calendly \xB7 Email form URL...', hint: '\u2192 Every "Start a Project" and "Get a Quote" button links here', icon: '\u{1F4CB}' },\\n    { key: 'coreServices', label: 'Your 3 core services', question: 'What are your 3 main services? (comma separated)', placeholder: 'Brand identity, Website design, Marketing strategy', hint: '\u2192 Your Services card section uses exact names \u2014 no guessing', icon: '\u26A1', dialog: true, dialogCta: "Help me figure this out \u2192" },\\n    { key: 'projectTimeline', label: 'Typical timeline', question: "What's a typical project timeline?", placeholder: 'e.g. 4 to 6 weeks \xB7 2-week sprints...', hint: '\u2192 Appears in your Process section Step 3', icon: '\u{1F4C5}' }\\n  ],\\n  speaker: [\\n    { key: 'speakerReelUrl', label: 'Speaker reel video', question: 'Do you have a speaker reel or talk on video?', placeholder: 'https://youtube.com/watch?v=... \xB7 Vimeo...', hint: '\u2192 Embedded below your Hero \u2014 converts better than any copy', icon: '\u{1F3AC}' },\\n    { key: 'bookUrl', label: 'Book link', question: 'Do you have a published book?', placeholder: 'Amazon link \xB7 Pre-order page...', hint: '\u2192 "Buy the Book" button in your Offers section', icon: '\u{1F4DA}' },\\n    { key: 'keynoteTopics', label: 'Keynote topics', question: 'What are your top 2 to 3 keynote topics? (comma separated)', placeholder: 'Leadership in uncertainty, Building resilient teams...', hint: '\u2192 Your Topics card grid uses these exact names', icon: '\u{1F3A4}', dialog: true, dialogCta: "Help me name my topics \u2192" },\\n    { key: 'bookingContact', label: 'How to book you', question: 'How do event organizers book you?', placeholder: 'Calendly link \xB7 Manager email \xB7 Inquiry form...', hint: '\u2192 "Book for Your Event" CTA links directly here', icon: '\u{1F4C6}' }\\n  ],\\n  local: [\\n    { key: 'address', label: 'Office address or area', question: "What's your office address or service area?", placeholder: '123 Main St, Scottsdale AZ \xB7 Serving Phoenix metro...', hint: '\u2192 Appears in your footer with a real map embed', icon: '\u{1F4CD}' },\\n    { key: 'bookingUrl', label: 'Booking system link', question: 'How do clients book with you?', placeholder: 'Jane App \xB7 SimplePractice \xB7 Mindbody URL \xB7 Phone...', hint: '\u2192 Every "Book an Appointment" button links here', icon: '\u{1F517}' },\\n    { key: 'hours', label: 'Availability hours', question: "What are your availability hours?", placeholder: 'Mon\u2013Fri 9am\u20136pm \xB7 Evenings available \xB7 By appointment...', hint: '\u2192 Appears in your Contact section \u2014 answers before they ask', icon: '\u{1F550}' },\\n    { key: 'insurancePayment', label: 'Insurance or payment', question: 'Do you accept insurance or have payment notes?', placeholder: 'Accepts BCBS, Aetna \xB7 Sliding scale \xB7 HSA accepted...', hint: '\u2192 One of the top 3 questions clients have before booking', icon: '\u{1F4B3}' }\\n  ]\\n};\\n\\nvar SEGMENT_LABELS = {\\n  expert:  { name: 'Coach / Consultant', headline: 'A few things that\\'ll make your site feel real' },\\n  creator: { name: 'Course Creator',      headline: 'Let\\'s get your numbers and links in' },\\n  service: { name: 'Service Provider',    headline: 'A few things clients will look for' },\\n  speaker: { name: 'Speaker / Author',    headline: 'Let\\'s get your stage presence on the page' },\\n  local:   { name: 'Local Professional',  headline: 'A few things that help clients find you' }\\n};\\n\\nfunction detectSegment() {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});\\n  var p3 = bp.part3 || {};\\n  var p4 = bp.part4 || {};\\n  var p1 = bp.part1 || {};\\n  var combined = [\\n    p3.nicheStatement || '',\\n    (p4.offers || []).map(function(o) { return (o.name || '') + ' ' + (o.description || ''); }).join(' '),\\n    (p1.toneKeywords || []).join(' ')\\n  ].join(' ').toLowerCase();\\n\\n  if (/keynote|speaker|speaking|author|book.*publish|thought.*leader/.test(combined)) return 'speaker';\\n  if (/course|cohort|membership|students enrolled|digital.*product|online.*program|mastermind/.test(combined)) return 'creator';\\n  if (/local|near me|serving.*area|clinic|office.*location|therapy|therapist|in.person|appointment/.test(combined)) return 'local';\\n  if (/agency|freelance|done.for.you|studio|design.*service|marketing.*service|client.*project/.test(combined)) return 'service';\\n  return 'expert';\\n}\\n\\nfunction showSegmentIntake() {\\n  var segment = detectSegment();\\n  STATE.currentSegment = segment;\\n  var qs = SEGMENT_QUESTIONS[segment] || SEGMENT_QUESTIONS.expert;\\n  var labels = SEGMENT_LABELS[segment] || SEGMENT_LABELS.expert;\\n\\n  // Set headline\\n  var headEl = document.getElementById('intake-headline');\\n  if (headEl) headEl.textContent = labels.headline;\\n\\n  // Reset testimonial dialog so it starts fresh\\n  window.TESTIMONIAL_DIALOG_STARTED = false;\\n  window.TESTIMONIAL_DIALOG_MESSAGES = [];\\n  var dmEl = document.getElementById('testimonial-dialog-messages');\\n  if (dmEl) dmEl.innerHTML = '';\\n  var suggEl = document.getElementById('testimonial-dialog-suggestion');\\n  if (suggEl) suggEl.innerHTML = '';\\n  // Reset radio to default\\n  STATE.testimonialPref = STATE.testimonialPref || 'generate';\\n  var customArea = document.getElementById('custom-testimonials-area');\\n  var aiArea = document.getElementById('testimonial-ai-area');\\n  if (customArea) customArea.style.display = 'none';\\n  if (aiArea) aiArea.style.display = 'none';\\n\\n  // Render fields\\n  intakeRenderFields(qs);\\n  showScreen('segment-intake-screen');\\n  // Auto-fill high-confidence fields from blueprint\\n  setTimeout(function() { intakeAutoFillFromBlueprint(segment, qs); }, 50);\\n}\\n\\nfunction intakeAutoFillFromBlueprint(segment, questions) {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});\\n  var p1 = bp.part1 || {};\\n  var p2 = bp.part2 || {};\\n  var p3 = bp.part3 || {};\\n  var p4 = bp.part4 || {};\\n  var p5 = bp.part5 || {};\\n\\n  // Build a lookup of field key -> prefill value from blueprint\\n  var prefills = {};\\n\\n  // Starting price: look in offers for a price mention\\n  var offers = p4.offers || [];\\n  if (offers.length > 0) {\\n    var firstOffer = offers[0];\\n    var priceHint = firstOffer.price || firstOffer.investment || firstOffer.cost || '';\\n    if (!priceHint) {\\n      var desc = (firstOffer.description || firstOffer.name || '').match(/\\$[\\d,]+[Kk]?(?:\\s*[\\/\\-]?\\s*(?:month|mo|week|wk|year|yr|session))?/);\\n      if (desc) priceHint = desc[0];\\n    }\\n    if (priceHint && priceHint.length < 60) prefills.startingPrice = priceHint;\\n  }\\n\\n  // Top credential: look for years experience or certifications\\n  var bio = (p2.background || p2.story || p2.experience || '').trim();\\n  if (!bio) bio = (p3.expertiseProof || p3.credibility || '').trim();\\n  if (bio) {\\n    var credMatch = bio.match(/(\\d+[+]?\\s*years?\\s+(?:of\\s+)?(?:experience|in\\s+\\w+)[^,\\.]{0,40})/i);\\n    if (!credMatch) credMatch = bio.match(/((?:Certified|Licensed|ICF|PCC|MCC|PhD|MBA|MS|MA|RN|MD)\\s*[^\\.,]{0,50})/i);\\n    if (credMatch) prefills.topCredential = credMatch[1].trim();\\n  }\\n\\n  // Student count: look in p4 or p5 for social proof numbers\\n  var proof = (p5.socialProof || p4.studentResults || p3.results || '').trim();\\n  if (proof) {\\n    var countMatch = proof.match(/(\\d[\\d,]*[+]?\\s*(?:students?|clients?|members?|people|professionals?))/i);\\n    if (countMatch) prefills.studentCount = countMatch[1].trim();\\n  }\\n\\n  // Methodology name: look in p4 for a named framework/process\\n  var processName = p4.methodologyName || p4.frameworkName || p4.processName || p3.methodology || '';\\n  if (processName && processName.length < 80) prefills.methodologyName = processName;\\n\\n  // Platform URL: look in p5 or p4 for a link\\n  var platformLink = p5.platformUrl || p4.platformUrl || p5.courseUrl || '';\\n  if (!platformLink) {\\n    var linkSearch = JSON.stringify(p4).match(/https?:\\/\\/[^\\s"'<>,]{8,60}/);
+  if (listEl) listEl.innerHTML = '<span style="font-size:12px;color:var(--text3);">Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...</span>';
+  let succeeded = 0;
+  for (const file of toUpload) {
+    if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) continue;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('sessionId', STATE.sessionId);
+      const r = await fetch('/api/upload', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.ok) { succeeded++; STATE.uploadedKeys.push(d.key); }
+    } catch (_) {}
+  }
+  if (listEl) {
+    if (succeeded > 0) {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--green);">\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' uploaded. These will be used on your site.</span>';
+    } else {
+      listEl.innerHTML = '<span style="font-size:12px;color:var(--red);">Upload failed. You can continue without photos.</span>';
+    }
+  }
+  inputEl.value = '';
+}
+__name(handleSitePhotoUpload, "handleSitePhotoUpload");
+__name2(handleSitePhotoUpload, "handleSitePhotoUpload");
+
+// \u2500\u2500 SECTION PICKER PHOTO UPLOAD \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Stores the picker photo state globally so it survives section transitions
+window.PICKER_PHOTO = {
+  dataUrl: null,    // raw data URL for avatar display
+  cutoutUrl: null,  // Photoroom-processed transparent PNG URL
+  file: null,       // original File object
+  processed: false
+};
+
+async function handlePickerPhotoUpload(inputEl) {
+  if (!inputEl.files || !inputEl.files.length) return;
+  const file = inputEl.files[0];
+  if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+    showToast('Please use a JPG, PNG, or WEBP image under 10MB.');
+    return;
+  }
+  inputEl.value = '';
+
+  // Show avatar immediately with original photo
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    window.PICKER_PHOTO.dataUrl = dataUrl;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    // Uploading a photo implicitly means YES \u2014 persist so question doesn't re-appear
+    fpickPhotoAnswer(true);
+
+    // Update avatar UI
+    const avatarImg = document.getElementById('fpick-avatar-img');
+    const avatarIcon = document.getElementById('fpick-avatar-icon');
+    const labelMain = document.getElementById('fpick-avatar-label-main');
+    const labelSub = document.getElementById('fpick-avatar-label-sub');
+    const processing = document.getElementById('fpick-avatar-processing');
+    const circle = document.getElementById('fpick-avatar-circle');
+
+    if (avatarImg) { avatarImg.src = dataUrl; avatarImg.style.display = 'block'; }
+    if (avatarIcon) avatarIcon.style.display = 'none';
+    if (labelMain) { labelMain.textContent = 'Photo uploaded'; }
+    if (labelSub) labelSub.style.display = 'none';
+    if (processing) processing.classList.add('active');
+    if (circle) circle.style.borderColor = '#c4703f';
+
+    // Inject original into preview immediately so they see something right away
+    pickerInjectPhotoIntoPreview(dataUrl);
+
+    // Seed the grader state and open the grader panel
+    window._graderPhotos = [{ id: 'photo_0', dataUrl, cutoutUrl: null, file }];
+    window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };
+    window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };
+
+    // Open grader immediately (cutout will fill in as background processing finishes)
+    setTimeout(() => openPickerGrader(), 300);
+
+    // Process through server-side endpoint in parallel (Photoroom key stays secret)
+    try {
+      const sessionId = window.STATE && window.STATE.sessionId;
+      const authToken = localStorage.getItem('dw_session') || (() => {
+        try { const m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); return m ? m[1] : null; } catch(_) { return null; }
+      })();
+      if (!sessionId || !authToken) throw new Error('No session');
+
+      const fd = new FormData();
+      fd.append('photo', file);
+      fd.append('sessionId', sessionId);
+      const res = await fetch('/api/photo/process', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + authToken },
+        body: fd
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const cutoutSrc = data.cutoutUrl || data.originalUrl;
+        if (cutoutSrc) {
+          const imgRes = await fetch(cutoutSrc);
+          const blobUrl = imgRes.ok ? URL.createObjectURL(await imgRes.blob()) : cutoutSrc;
+          window.PICKER_PHOTO.cutoutUrl = blobUrl;
+          window.PICKER_PHOTO.processedUrl = cutoutSrc;
+          window.PICKER_PHOTO.processed = true;
+          // Update grader photo with cutout so Enhanced option becomes live
+          if (window._graderPhotos[0]) window._graderPhotos[0].cutoutUrl = blobUrl;
+          if (avatarImg) avatarImg.src = blobUrl;
+          if (processing) processing.classList.remove('active');
+          if (labelMain) labelMain.textContent = data.cutoutUrl ? 'Tap circle to adjust \u2726' : 'Photo ready \u2713';
+          if (labelSub) { labelSub.textContent = 'Click to adjust photos'; labelSub.style.display = 'block'; }
+          // Refresh grader if still open so Enhanced cards show the real cutout
+          const overlay = document.getElementById('fpick-grader-overlay');
+          if (overlay && overlay.classList.contains('open')) renderGraderBody();
+        }
+      }
+    } catch (_) {
+      if (processing) processing.classList.remove('active');
+      if (labelSub) { labelSub.textContent = 'Click to adjust'; labelSub.style.display = 'block'; }
+      if (labelMain) labelMain.textContent = 'Photo ready \u2713';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+__name(handlePickerPhotoUpload, "handlePickerPhotoUpload");
+
+// Handle photo upload from site-generation screen
+function handleSiteScreenPhoto(inputEl) {
+  if (!inputEl.files || !inputEl.files.length) return;
+  const file = inputEl.files[0];
+  if (!file.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+    showToast('Please use a JPG, PNG, or WEBP image under 10MB.');
+    return;
+  }
+  inputEl.value = '';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = e.target.result;
+    // Show preview immediately
+    const preview = document.getElementById('site-photo-preview');
+    const previewImg = document.getElementById('site-photo-img');
+    const status = document.getElementById('site-photo-status');
+    const label = document.getElementById('site-photo-label');
+    if (preview) preview.style.display = 'flex';
+    if (previewImg) previewImg.src = dataUrl;
+    if (status) status.textContent = 'Processing...';
+    if (label) label.textContent = 'Uploading...';
+    // Store in PICKER_PHOTO immediately so generation can use it
+    window.PICKER_PHOTO = window.PICKER_PHOTO || {};
+    window.PICKER_PHOTO.dataUrl = dataUrl;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    try {
+      const sid = STATE && STATE.sessionId;
+      if (sid) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('sessionId', sid);
+        const resp = await fetch('/api/photo/process', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (data.cutoutUrl) {
+          window.PICKER_PHOTO.cutoutUrl = data.cutoutUrl;
+          window.PICKER_PHOTO.processedUrl = data.cutoutUrl;
+          window.PICKER_PHOTO.processed = true;
+          if (previewImg) previewImg.src = data.cutoutUrl;
+          if (status) { status.textContent = 'Photo ready'; status.style.color = '#c4703f'; }
+        } else {
+          if (status) status.textContent = 'Photo saved';
+        }
+      }
+    } catch (_) {
+      if (status) status.textContent = 'Photo saved (will use as-is)';
+    }
+    if (label) label.textContent = 'Change photo';
+  };
+  reader.readAsDataURL(file);
+}
+__name(handleSiteScreenPhoto, "handleSiteScreenPhoto");
+
+// Inject the client photo into the currently-previewed section iframe
+function pickerInjectPhotoIntoPreview(imgSrc) {
+  if (!imgSrc) return;
+  const iframe = document.getElementById('fpick-main-iframe');
+  if (!iframe || !iframe.contentDocument) return;
+  try {
+    const doc = iframe.contentDocument;
+    // Find hero/about photo containers \u2014 look for img tags that are likely hero photos
+    const imgs = doc.querySelectorAll('img:not([src^="data:image/svg"])');
+    // Replace the largest image found (most likely the hero photo)
+    let best = null, bestArea = 0;
+    imgs.forEach(img => {
+      const area = img.offsetWidth * img.offsetHeight;
+      if (area > bestArea && img.offsetWidth > 100) { bestArea = area; best = img; }
+    });
+    if (best) {
+      best.src = imgSrc;
+      best.style.objectFit = 'cover';
+    }
+    // Store for future sections
+    window.PICKER_PHOTO.injected = imgSrc;
+  } catch (_) {}
+}
+__name(pickerInjectPhotoIntoPreview, "pickerInjectPhotoIntoPreview");
+
+// \u2500\u2500 PHOTO PREFERENCE CHECK \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Ask if the user has professional photos before showing the upload UI.
+// State is persisted in localStorage so the question is only shown once.
+function fpickPhotoAnswer(hasPhotos) {
+  var check   = document.getElementById('fpick-photo-check');
+  var upload  = document.getElementById('fpick-upload-ui');
+  var skipped = document.getElementById('fpick-photo-skipped');
+  try { localStorage.setItem('dw_photo_pref', hasPhotos ? 'yes' : 'no'); } catch(_) {}
+  if (hasPhotos) {
+    if (check)   { check.style.display   = 'none'; }
+    if (skipped) { skipped.style.display = 'none'; }
+    if (upload)  { upload.style.display  = 'flex'; }
+  } else {
+    if (check)   { check.style.display   = 'none'; }
+    if (upload)  { upload.style.display  = 'none'; }
+    if (skipped) { skipped.style.display = 'flex'; }
+  }
+}
+
+function fpickPhotoInit() {
+  var status = document.getElementById('fpick-photo-status');
+  if (window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl) {
+    // Show compact status bar with their uploaded photo
+    if (status) status.style.display = 'flex';
+    var src = window.PICKER_PHOTO.processedUrl || window.PICKER_PHOTO.dataUrl;
+    var img = document.getElementById('fpick-avatar-img');
+    var icon = document.getElementById('fpick-avatar-icon');
+    if (img && src) { img.src = src; img.style.display = 'block'; if (icon) icon.style.display = 'none'; }
+  } else {
+    // No photo \u2014 keep status bar hidden, photo gate already handled the decision
+    if (status) status.style.display = 'none';
+  }
+}
+
+// \u2500\u2500 PHOTO GRADER \u2014 INTEGRATED INTO PICKER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Per-section photo assignments. Set by the grader, read by pickerInjectPhotoIntoPreview.
+window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };
+// Internal grader state
+window._graderPhotos = [];   // [{ id, dataUrl, cutoutUrl, file }]
+window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };
+
+// Score a photo for a given section slot using aspect-ratio + resolution heuristics
+async function gradePhotoForSlot(dataUrl, slot) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const ratio = w / h;
+      let score = 50;
+      const minDim = Math.min(w, h);
+      if (minDim >= 1200) score += 20;
+      else if (minDim >= 800) score += 10;
+      else if (minDim < 400) score -= 20;
+      if (slot === 'hero') {
+        if (ratio >= 1.2 && ratio <= 2.0) score += 20;
+        else if (ratio >= 0.8 && ratio < 1.2) score += 10;
+        else if (ratio < 0.6) score -= 10;
+        score += Math.floor(Math.random() * 10);
+      } else if (slot === 'about') {
+        if (ratio >= 0.6 && ratio <= 1.4) score += 20;
+        else if (ratio > 1.4 && ratio <= 1.8) score += 5;
+        score += Math.floor(Math.random() * 10);
+      } else if (slot === 'profile') {
+        if (ratio >= 0.7 && ratio <= 1.1) score += 25;
+        else if (ratio > 1.1 && ratio <= 1.4) score += 10;
+        else if (ratio > 1.6) score -= 15;
+        score += Math.floor(Math.random() * 8);
+      }
+      resolve(Math.max(0, Math.min(100, score)));
+    };
+    img.onerror = () => resolve(55);
+    img.src = dataUrl;
+  });
+}
+
+function getGradeInfo(score) {
+  if (score >= 75) return { stars: '\u2605\u2605\u2605', label: 'Excellent', cls: 'excellent' };
+  if (score >= 55) return { stars: '\u2605\u2605', label: 'Good', cls: 'good' };
+  return { stars: '\u2605', label: 'Fair', cls: 'fair' };
+}
+
+// Open the grader panel (called after photo upload or by clicking the avatar)
+async function openPickerGrader() {
+  const overlay = document.getElementById('fpick-grader-overlay');
+  const body = document.getElementById('fpick-grader-body');
+  if (!overlay || !body) return;
+  // Seed graderPhotos from current PICKER_PHOTO if empty
+  if (window._graderPhotos.length === 0 && window.PICKER_PHOTO.dataUrl) {
+    window._graderPhotos = [{
+      id: 'photo_0',
+      dataUrl: window.PICKER_PHOTO.dataUrl,
+      cutoutUrl: window.PICKER_PHOTO.cutoutUrl || null,
+      file: window.PICKER_PHOTO.file || null
+    }];
+  }
+  // Show spinner while grading
+  body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div class="fpick-grader-spinner"></div><div style="font-family:Outfit,sans-serif;font-size:13px;color:#86868b;">Grading your photo\u2026</div></div>';
+  overlay.classList.add('open');
+  await renderGraderBody();
+}
+__name(openPickerGrader, "openPickerGrader");
+
+async function renderGraderBody() {
+  const body = document.getElementById('fpick-grader-body');
+  if (!body || window._graderPhotos.length === 0) return;
+  const photo = window._graderPhotos[0];
+  const slots = [
+    { key: 'hero',    label: 'Hero Section',    icon: '\u{1F5BC}', isProfile: false },
+    { key: 'about',   label: 'About / Story',   icon: '\u{1F464}', isProfile: false },
+    { key: 'profile', label: 'Profile Circle',  icon: '\u2B55', isProfile: true  }
+  ];
+  // Grade all slots in parallel
+  const scores = {};
+  await Promise.all(slots.map(async s => { scores[s.key] = await gradePhotoForSlot(photo.dataUrl, s.key); }));
+
+  // No template literals here \u2014 this JS lives inside a server-side template string,
+  // so backticks must be avoided. Use string concatenation instead.
+  var html = '<button class="fpick-grader-add" onclick="document.getElementById(\\'fpick-grader-extra-input\\').click()">+ Replace with a different photo</button>';
+
+  for (var _si = 0; _si < slots.length; _si++) {
+    var _slot = slots[_si];
+    var key = _slot.key, label = _slot.label, icon = _slot.icon, isProfile = _slot.isProfile;
+    var grade = getGradeInfo(scores[key]);
+    var imgCls = isProfile ? 'fpick-grader-option-img sq' : 'fpick-grader-option-img';
+    var cutoutSrc = photo.cutoutUrl || photo.dataUrl;
+    var hasCutout = !!photo.cutoutUrl;
+    var selOrig = !window._graderOptions[key] || window._graderOptions[key] === 'original';
+    var selEnh  = window._graderOptions[key] === 'enhanced';
+    html += '<div class="fpick-grader-slot">'
+          + '<div class="fpick-grader-slot-head">'
+          + '<span style="font-size:15px">' + icon + '</span>'
+          + '<span class="fpick-grader-slot-name">' + label + '</span>'
+          + '<span class="fpick-grader-badge ' + grade.cls + '">' + grade.stars + ' ' + grade.label + '</span>'
+          + '</div>'
+          + '<div class="fpick-grader-options">'
+          + '<div class="fpick-grader-option' + (selOrig ? ' selected' : '') + '" id="fpick-go-' + key + '-original" onclick="selectGraderOption(\\''+key+'\\',\\'original\\')">'
+          + '<img class="' + imgCls + '" src="' + photo.dataUrl + '" alt="Original">'
+          + '<div class="fpick-grader-option-foot"><div class="fpick-grader-option-label">A \xB7 Original</div><div class="fpick-grader-option-sub">Your photo as-is</div></div>'
+          + '</div>'
+          + '<div class="fpick-grader-option' + (selEnh ? ' selected' : '') + '" id="fpick-go-' + key + '-enhanced" onclick="selectGraderOption(\\''+key+'\\',\\'enhanced\\')">'
+          + '<img class="' + imgCls + '" src="' + cutoutSrc + '" alt="Enhanced"' + (!hasCutout ? ' style="opacity:0.4;filter:grayscale(0.5)"' : '') + '>'
+          + '<div class="fpick-grader-option-foot"><div class="fpick-grader-option-label">B \xB7 Enhanced</div><div class="fpick-grader-option-sub">' + (hasCutout ? 'Background removed' : 'Processing\u2026') + '</div></div>'
+          + '</div>'
+          + '</div>'
+          + '</div>';
+  }
+  html += '<button class="fpick-grader-confirm" onclick="confirmGraderSelections()">Apply to Preview \u2726</button>';
+  body.innerHTML = html;
+}
+__name(renderGraderBody, "renderGraderBody");
+
+function selectGraderOption(slot, type) {
+  window._graderOptions[slot] = type;
+  const photo = window._graderPhotos[0];
+  if (!photo) return;
+  const url = type === 'enhanced' ? (photo.cutoutUrl || photo.dataUrl) : photo.dataUrl;
+  window.PICKER_PHOTO_ASSIGNMENTS[slot] = url;
+  ['original', 'enhanced'].forEach(t => {
+    const el = document.getElementById('fpick-go-' + slot + '-' + t);
+    if (el) el.classList.toggle('selected', t === type);
+  });
+}
+__name(selectGraderOption, "selectGraderOption");
+
+function confirmGraderSelections() {
+  const photo = window._graderPhotos[0];
+  if (!photo) { closePickerGrader(); return; }
+  // Fill any unset slots with original
+  ['hero', 'about', 'profile'].forEach(slot => {
+    if (!window.PICKER_PHOTO_ASSIGNMENTS[slot]) {
+      window.PICKER_PHOTO_ASSIGNMENTS[slot] = photo.dataUrl;
+    }
+  });
+  // Inject hero photo into current preview
+  const heroUrl = window.PICKER_PHOTO_ASSIGNMENTS.hero || photo.dataUrl;
+  pickerInjectPhotoIntoPreview(heroUrl);
+  // Update the avatar circle to show the profile choice
+  const profileUrl = window.PICKER_PHOTO_ASSIGNMENTS.profile || photo.dataUrl;
+  const avatarImg = document.getElementById('fpick-avatar-img');
+  const labelMain = document.getElementById('fpick-avatar-label-main');
+  const labelSub  = document.getElementById('fpick-avatar-label-sub');
+  if (avatarImg) { avatarImg.src = profileUrl; avatarImg.style.display = 'block'; }
+  if (labelMain) labelMain.textContent = 'Photos assigned \u2726';
+  if (labelSub)  { labelSub.textContent = 'Click to adjust'; labelSub.style.display = 'block'; }
+  closePickerGrader();
+}
+__name(confirmGraderSelections, "confirmGraderSelections");
+
+function closePickerGrader() {
+  const overlay = document.getElementById('fpick-grader-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+__name(closePickerGrader, "closePickerGrader");
+
+// Replace photo in grader with a new upload
+async function addGraderPhotos(inputEl) {
+  if (!inputEl.files || !inputEl.files.length) return;
+  inputEl.value = '';
+  const file = inputEl.files[0];
+  const reader = new FileReader();
+  reader.onload = async e => {
+    window._graderPhotos = [{ id: 'photo_0', dataUrl: e.target.result, cutoutUrl: null, file }];
+    window._graderOptions = { hero: 'original', about: 'original', profile: 'original' };
+    window.PICKER_PHOTO_ASSIGNMENTS = { hero: null, about: null, profile: null };
+    // Kick off background processing for this new photo
+    window.PICKER_PHOTO.dataUrl = e.target.result;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    window.PICKER_PHOTO.cutoutUrl = null;
+    const body = document.getElementById('fpick-grader-body');
+    if (body) body.innerHTML = '<div style="text-align:center;padding:40px 20px"><div class="fpick-grader-spinner"></div><div style="font-family:Outfit,sans-serif;font-size:13px;color:#86868b;">Grading\u2026</div></div>';
+    await renderGraderBody();
+    // Trigger server-side processing in background (updates cutout when ready)
+    processGraderPhotoInBackground(file);
+  };
+  reader.readAsDataURL(file);
+}
+__name(addGraderPhotos, "addGraderPhotos");
+
+// Kick off server-side Photoroom processing; update the grader when it comes back
+async function processGraderPhotoInBackground(file) {
+  try {
+    const sessionId = window.STATE && window.STATE.sessionId;
+    const authToken = localStorage.getItem('dw_session') || (() => {
+      try { const m = document.cookie.match(/(?:^|;\\s*)dw_session=([^;]+)/); return m ? m[1] : null; } catch(_) { return null; }
+    })();
+    if (!sessionId || !authToken) return;
+    const fd = new FormData();
+    fd.append('photo', file);
+    fd.append('sessionId', sessionId);
+    const res = await fetch('/api/photo/process', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + authToken },
+      body: fd
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const cutoutSrc = data.cutoutUrl || data.originalUrl;
+    if (!cutoutSrc) return;
+    // Fetch as blob for CORS-safe display
+    const imgRes = await fetch(cutoutSrc);
+    if (!imgRes.ok) return;
+    const blobUrl = URL.createObjectURL(await imgRes.blob());
+    // Update state and re-render grader body with enhanced option live
+    if (window._graderPhotos[0]) {
+      window._graderPhotos[0].cutoutUrl = blobUrl;
+      window.PICKER_PHOTO.cutoutUrl = blobUrl;
+      window.PICKER_PHOTO.processed = true;
+    }
+    // If grader is still open, refresh it
+    const overlay = document.getElementById('fpick-grader-overlay');
+    if (overlay && overlay.classList.contains('open')) await renderGraderBody();
+  } catch (_) { /* non-fatal */ }
+}
+__name(processGraderPhotoInBackground, "processGraderPhotoInBackground");
+
+// \u2500\u2500 BLUEPRINT EXPORT FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+async function downloadPDF() {
+  if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  showToast(isMobile ? 'Opening your brand guide...' : 'Opening your blueprint for printing...');
+  try {
+    const res = await fetch('/api/blueprint/pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    if (!res.ok) { showToast('Could not load blueprint. Please try again.'); return; }
+    const html = await res.text();
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Please allow popups for this site to download your PDF.'); return; }
+    win.document.write(html);
+    win.document.close();
+    if (isMobile) {
+      // On mobile, add a helper bar at the top for saving
+      setTimeout(() => {
+        try {
+          const bar = win.document.createElement('div');
+          bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#c4703f;color:#fff;text-align:center;padding:14px 20px;font-family:Outfit,sans-serif;font-size:14px;letter-spacing:0.02em;box-shadow:0 2px 12px rgba(0,0,0,0.15);';
+          bar.innerHTML = 'Use your browser\\'s <strong>Share</strong> button to save as PDF or send to yourself';
+          win.document.body.prepend(bar);
+          // Add padding so content isn't hidden behind the bar
+          win.document.body.style.paddingTop = '52px';
+        } catch(_) {}
+      }, 800);
+    } else {
+      setTimeout(() => { try { win.print(); } catch(_) {} }, 1500);
+    }
+  } catch(e) {
+    showToast('Error generating PDF. Please try again.');
+  }
+}
+
+async function exportPackage() {
+  if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }
+  showToast('Preparing your blueprint file...');
+  try {
+    const res = await fetch('/api/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    if (!res.ok) { showToast('Could not export blueprint. Please try again.'); return; }
+    const html = await res.text();
+    const blob = new Blob([html], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    const rawName = STATE.blueprint?.blueprint?.name || 'brand';
+    a.download = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-blueprint.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    setTimeout(() => showToast('Blueprint downloaded! Open it in any browser, anytime.'), 400);
+  } catch(e) {
+    showToast('Error downloading blueprint. Please try again.');
+  }
+}
+
+function openBuildPopup() {
+  document.getElementById('build-site-popup').style.display = 'block';
+  // Populate personalized blueprint preview
+  try {
+    var bp = STATE.blueprint && (STATE.blueprint.blueprint || STATE.blueprint);
+    if (bp) {
+      var previewEl = document.getElementById('popup-blueprint-preview');
+      var nameEl = document.getElementById('popup-brand-name');
+      var colorRow = document.getElementById('popup-color-row');
+      if (previewEl) previewEl.style.display = 'block';
+      if (nameEl && bp.part1 && bp.part1.brandNames && bp.part1.brandNames.length) {
+        nameEl.textContent = bp.part1.brandNames[0];
+      } else if (nameEl && bp.name) {
+        nameEl.textContent = bp.name;
+      }
+      if (colorRow && bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.colors) {
+        colorRow.innerHTML = bp.part1.visualDirection.colors.map(function(c) {
+          return '<div style="width:24px;height:24px;border-radius:6px;background:' + c.hex + ';border:1px solid rgba(0,0,0,0.06);"></div>';
+        }).join('') + '<span style="font-size:11px;color:#86868b;margin-left:6px;">Your color palette</span>';
+      }
+    }
+  } catch(_) {}
+}
+
+function closeBuildPopup() {
+  document.getElementById('build-site-popup').style.display = 'none';
+}
+
+function sendMagicLink() {
+  var email = document.getElementById('magic-link-email');
+  var form = document.getElementById('magic-link-form');
+  var confirm = document.getElementById('magic-link-confirm');
+  var confirmText = document.getElementById('magic-link-confirm-text');
+  if (!email || !email.value.trim()) {
+    email.style.borderColor = '#c4703f';
+    setTimeout(function() { email.style.borderColor = '#e8e8e8'; }, 2000);
+    return;
+  }
+  var addr = email.value.trim();
+  // Call the magic link endpoint
+  fetch('/api/auth/request-magic', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: addr })
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d && d.error) {
+      if (form) form.style.display = 'flex';
+      if (confirm) confirm.style.display = 'none';
+      if (email) email.style.borderColor = '#c4703f';
+      alert(d.error);
+    }
+  }).catch(function() {});
+  // Always show confirmation (even if endpoint not yet wired)
+  if (form) form.style.display = 'none';
+  if (confirm) confirm.style.display = 'block';
+  if (confirmText) confirmText.textContent = 'We sent a login link to ' + addr + '. It should arrive within 30 seconds. Check spam if you do not see it.';
+}
+function resetMagicLink() {
+  var form = document.getElementById('magic-link-form');
+  var confirm = document.getElementById('magic-link-confirm');
+  var email = document.getElementById('magic-link-email');
+  if (form) form.style.display = 'flex';
+  if (confirm) confirm.style.display = 'none';
+  if (email) email.value = '';
+}
+async function saveForLater() {
+  closeBuildPopup();
+  const email = STATE.email || '';
+  if (email) {
+    try {
+      await fetch('/api/auth/request-magic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      showToast('We sent you a link \u2014 come back anytime to build your site.');
+    } catch(_) {
+      showToast('Your blueprint is saved. Log back in anytime to build your site.');
+    }
+  } else {
+    showToast('Your blueprint is saved. Log back in anytime to build your site.');
+  }
+}
+
+function selectTestimonialPref(label, value) {
+  var labels = document.querySelectorAll('#testimonial-pref-group label');
+  labels.forEach(function(l) { l.style.borderColor = '#e8e8e8'; l.style.background = ''; });
+  label.style.borderColor = '#c4703f';
+  var customArea = document.getElementById('custom-testimonials-area');
+  var aiArea = document.getElementById('testimonial-ai-area');
+  if (customArea) customArea.style.display = value === 'custom' ? 'block' : 'none';
+  if (aiArea) {
+    aiArea.style.display = value === 'aicoach' ? 'block' : 'none';
+    if (value === 'aicoach' && !window.TESTIMONIAL_DIALOG_STARTED) {
+      window.TESTIMONIAL_DIALOG_STARTED = true;
+      window.TESTIMONIAL_DIALOG_MESSAGES = [];
+      testimonialDialogAITurn();
+    }
+  }
+  STATE.testimonialPref = value;
+}
+
+function getTestimonialPref() {
+  var pref = STATE.testimonialPref || 'generate';
+  var customText = '';
+  if (pref === 'custom' || pref === 'aicoach') {
+    var textarea = document.getElementById('custom-testimonials-input');
+    customText = textarea ? textarea.value.trim() : '';
+  }
+  // If AI coaching produced text, treat it as custom
+  return { pref: customText ? 'custom' : (pref === 'aicoach' ? 'generate' : pref), customText: customText };
+}
+
+function handleBuildSite() {
+  if (!STATE.blueprintScrolled) {
+    showToast('Scroll through your blueprint first \u2014 then come back to make it real.');
+    var body = document.getElementById('blueprint-body');
+    if (body) { body.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    return;
+  }
+  openBuildPopup();
+}
+
+// \u2500\u2500 PRE-GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var PREGEN = { total: 0, done: 0, ready: false };
+
+async function startPregenFlow() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : STATE.blueprint;
+  var sections = bp && bp.part5 && bp.part5.sections;
+  if (!sections || sections.length === 0) {
+    showScreen('site-screen');
+    await runSiteGeneration();
+    return;
+  }
+  PICKER.sections = sections;
+  PICKER.currentIndex = 0;
+  PICKER.regenCount = 0;
+  PICKER.chosen = [];
+  PICKER.variants = [];
+  PICKER.preloaded = {};
+  PICKER.sectionImages = {};  // Imagen-generated images per section index
+  // Save nav state so refresh returns here, not blueprint
+  dwSaveNav({ screen: 'section-picker', pickerCurrentIndex: 0, pickerChosen: [] });
+  PICKER.viewingOption = 0;
+  PICKER.renderedVariants = [];
+  PREGEN.total = sections.length;
+  PREGEN.done = 0;
+  PREGEN.ready = false;
+  showScreen('pregen-screen');
+  pregenRenderBrand(bp);
+  pregenRenderSections(sections);
+  sections.forEach(function(_, idx) { pregenFetchSection(idx); });
+}
+
+function pregenRenderBrand(bp) {
+  var nameEl = document.getElementById('pregen-brand-name');
+  var paletteEl = document.getElementById('pregen-palette');
+  var brandName = (bp.part1 && bp.part1.brandNames && bp.part1.brandNames[0]) || bp.name || 'Your Brand';
+  if (nameEl) nameEl.textContent = brandName;
+  if (paletteEl) {
+    var colors = (bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.colors) || [];
+    paletteEl.innerHTML = colors.map(function(c) {
+      return '<div class="pregen-swatch" style="background:' + (c.hex || '#ccc') + ';" title="' + (c.name || '') + '"></div>';
+    }).join('');
+  }
+}
+
+function pregenRenderSections(sections) {
+  var listEl = document.getElementById('pregen-section-list');
+  var countEl = document.getElementById('pregen-progress-count');
+  if (countEl) countEl.textContent = '0 of ' + sections.length;
+  if (!listEl) return;
+  listEl.innerHTML = sections.map(function(s, idx) {
+    return '<div class="pregen-section-row" id="pregen-row-' + idx + '">' +
+      '<div class="pregen-section-indicator loading" id="pregen-dot-' + idx + '">\xB7</div>' +
+      '<div class="pregen-section-name">' + (s.name || 'Section ' + (idx + 1)) + '</div>' +
+      '<div class="pregen-section-tag" id="pregen-tag-' + idx + '">Generating\u2026</div>' +
+      '</div>';
+  }).join('');
+}
+
+async function pregenFetchSection(idx) {
+  var jwt = '';
+  try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}
+
+  // Get section imageTheme from blueprint for Imagen prompt
+  var bp2 = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var bpSection = bp2.part5 && bp2.part5.sections && bp2.part5.sections[idx];
+  var imageTheme = (bpSection && bpSection.imageTheme && bpSection.imageTheme !== 'none') ? bpSection.imageTheme : '';
+
+  // Fire section variants + Imagen image generation in parallel
+  var variantsPromise = fetch('/api/generate/section-variants', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+    body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, feedback: null })
+  });
+
+  var imagePromise = fetch('/api/generate/section-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, imageTheme: imageTheme })
+  });
+
+  try {
+    var res = await variantsPromise;
+    if (!res.ok) throw new Error('status ' + res.status);
+    var data = await res.json();
+    if (!data.variants || data.variants.length === 0) throw new Error('empty');
+    PICKER.preloaded[idx] = data.variants;
+
+    // Attach image URL to preloaded data (non-blocking \u2014 image may arrive later)
+    imagePromise.then(function(imgRes) {
+      return imgRes.ok ? imgRes.json() : null;
+    }).then(function(imgData) {
+      if (imgData && imgData.ok && imgData.imageUrl) {
+        PICKER.sectionImages[idx] = imgData.imageUrl;
+        // If currently viewing this section, re-render with the image
+        if (PICKER.currentIndex === idx && PICKER.renderedVariants && PICKER.renderedVariants.length > 0) {
+          PICKER.renderedVariants = PICKER.renderedVariants.map(function(_, vi) {
+            return PICKER.variants[vi] ? pickerWrapHtml(pickerRenderTemplate(PICKER.variants[vi], idx)) : _;
+          });
+          var iframe = document.getElementById('fpick-main-iframe');
+          if (iframe && PICKER.renderedVariants[PICKER.viewingOption]) {
+            iframe.srcdoc = PICKER.renderedVariants[PICKER.viewingOption];
+          }
+        }
+      }
+    }).catch(function() {});
+
+    pregenMarkSection(idx, 'done');
+  } catch(e) {
+    pregenMarkSection(idx, 'failed');
+  }
+}
+
+function pregenMarkSection(idx, state) {
+  PREGEN.done++;
+  var dot = document.getElementById('pregen-dot-' + idx);
+  var tag = document.getElementById('pregen-tag-' + idx);
+  if (dot) { dot.classList.remove('loading'); dot.classList.add(state); dot.textContent = state === 'done' ? '\u2713' : '!'; }
+  if (tag) tag.textContent = state === 'done' ? 'Ready' : 'Will generate live';
+  var fill = document.getElementById('pregen-progress-fill');
+  var countEl = document.getElementById('pregen-progress-count');
+  var labelEl = document.getElementById('pregen-progress-label');
+  if (fill) fill.style.width = Math.round((PREGEN.done / PREGEN.total) * 100) + '%';
+  if (countEl) countEl.textContent = PREGEN.done + ' of ' + PREGEN.total;
+  if (PREGEN.done >= PREGEN.total && !PREGEN.ready) {
+    PREGEN.ready = true;
+    if (labelEl) labelEl.textContent = 'All sections ready \u2014 let\u2019s go';
+    var btn = document.getElementById('pregen-proceed-btn');
+    if (btn) { btn.classList.add('ready'); btn.textContent = 'Enter your workspace \u2192'; }
+    setTimeout(pregenEnterPicker, 700);
+  }
+}
+
+function pregenEnterPicker() {
+  if (!PREGEN.ready) return;
+  showScreen('section-picker');
+  fpickPhotoInit();
+  pickerLoadSection(0);
+}
+
+// \u2500\u2500 PHOTO GATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function showPhotoGate() {
+  showScreen('photo-gate-screen');
+}
+
+function photoGateYes() {
+  var choose = document.getElementById('photo-gate-choose');
+  var upload = document.getElementById('photo-gate-upload');
+  if (choose) choose.style.display = 'none';
+  if (upload) upload.style.display = 'block';
+}
+
+function photoGateSkip() {
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_photo_gate_' + sid, '1'); } catch(_) {}
+  photoGateProceedInner();
+}
+
+function photoGateProceed() {
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_photo_gate_' + sid, '1'); } catch(_) {}
+  photoGateProceedInner();
+}
+
+async function photoGateProceedInner() {
+  // If we were restoring from a saved nav state, resume the picker directly
+  if (STATE._pendingPickerRestore) {
+    var pendingNav = STATE._pendingPickerRestore;
+    var pendingBp = STATE._pendingPickerBlueprint;
+    STATE._pendingPickerRestore = null;
+    STATE._pendingPickerBlueprint = null;
+    var bp2 = pendingBp && pendingBp.blueprint ? pendingBp.blueprint : pendingBp;
+    var secs2 = bp2 && bp2.part5 && bp2.part5.sections;
+    if (secs2 && secs2.length > 0) {
+      dwDoRestorePicker(pendingNav, secs2);
+      return;
+    }
+  }
+  await startPregenFlow();
+}
+
+async function photoGateUpload(input) {
+  var file = input && input.files && input.files[0];
+  if (!file) return;
+  var zone = document.getElementById('photo-gate-upload-zone');
+  var proc = document.getElementById('photo-gate-processing');
+  var done = document.getElementById('photo-gate-done');
+  var skipLink = document.querySelector('.photo-gate-skip-link');
+  if (zone) zone.style.display = 'none';
+  if (proc) proc.style.display = 'block';
+  if (skipLink) skipLink.style.display = 'none';
+  var fileInput = document.getElementById('photo-gate-file');
+  if (fileInput) fileInput.disabled = true;
+  var reader = new FileReader();
+  reader.onload = async function(evt) {
+    var dataUrl = evt.target.result;
+    window.PICKER_PHOTO = window.PICKER_PHOTO || {};
+    window.PICKER_PHOTO.dataUrl = dataUrl;
+    window.PICKER_PHOTO.file = file;
+    window.PICKER_PHOTO.processed = false;
+    try { localStorage.setItem('dw_photo_pref', 'yes'); } catch(_) {}
+    var jwt = '';
+    try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}
+    var sessId = STATE && STATE.sessionId ? STATE.sessionId : null;
+    var displayUrl = dataUrl;
+    try {
+      var res = await fetch('/api/photo/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+        body: JSON.stringify({ imageDataUrl: dataUrl, sessionId: sessId })
+      });
+      var json = await res.json();
+      if (json && json.processedUrl) {
+        window.PICKER_PHOTO.processedUrl = json.processedUrl;
+        window.PICKER_PHOTO.processed = true;
+        displayUrl = json.processedUrl;
+      }
+    } catch(e) {}
+    var preview = document.getElementById('photo-gate-preview');
+    if (preview) preview.src = displayUrl;
+    if (proc) proc.style.display = 'none';
+    if (done) done.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// \u2500\u2500 SITE GENERATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+async function proceedToSite() {
+  var sid = STATE.sessionId || 'anon';
+  // Step 1: show segment intake if not yet seen this session
+  var intakeSeen = false;
+  try { intakeSeen = !!sessionStorage.getItem('dw_intake_' + sid); } catch(_) {}
+  if (!intakeSeen) {
+    showSegmentIntake();
+    return;
+  }
+  // Step 2: show photo gate if not yet seen this session
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  if (!gateSeen && !hasPhoto) {
+    showPhotoGate();
+    return;
+  }
+  await startPregenFlow();
+}
+
+// \u2500\u2500 SEGMENT INTAKE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var SEGMENT_QUESTIONS = {
+  expert: [
+    { key: 'bookingUrl', label: 'Booking link', question: 'Where do people book a call with you?', placeholder: 'https://calendly.com/yourname/discovery', hint: '\u2192 Powers every "Book a Call" button on your site', icon: '\u{1F517}' },
+    { key: 'methodologyName', label: 'Methodology name', question: 'Do you have a name for your signature process?', placeholder: 'e.g. The Clarity Sprint, The Growth Framework...', hint: '\u2192 Used in your Process section headline', icon: '\u270F\uFE0F', dialog: true, dialogCta: "Help me name it \u2192" },
+    { key: 'startingPrice', label: 'Starting investment', question: "What's your starting price?", placeholder: 'e.g. $2,500 \xB7 Starting at $3K/month...', hint: '\u2192 Anchors your Offers section with a real number', icon: '\u{1F4B0}', dialog: true, dialogCta: "What should I charge? \u2192" },
+    { key: 'topCredential', label: 'Strongest credential', question: "What's your biggest credibility signal?", placeholder: 'e.g. ICF-certified \xB7 15 years at Fortune 500...', hint: '\u2192 Appears in your Hero and About sections', icon: '\u2B50' }
+  ],
+  creator: [
+    { key: 'platformUrl', label: 'Course or community link', question: 'Where do people buy or join your program?', placeholder: 'https://yourschool.teachable.com \xB7 Kajabi \xB7 Skool...', hint: '\u2192 Powers every "Enroll" and "Join Now" button', icon: '\u{1F517}' },
+    { key: 'leadMagnet', label: 'Free resource', question: 'Do you offer a free resource or lead magnet?', placeholder: 'e.g. Free PDF guide \xB7 Starter course \xB7 Quiz...', hint: '\u2192 Makes your Hero CTA a low-friction offer first', icon: '\u{1F381}' },
+    { key: 'studentCount', label: 'Student or member count', question: 'How many students or members do you have?', placeholder: 'e.g. 2,400+ \xB7 Over 500 \xB7 Growing community of 800...', hint: '\u2192 Appears in your Proof Strip as a real number, not a placeholder', icon: '\u{1F465}' },
+    { key: 'bestResult', label: 'Best student result', question: "What's the biggest win a student has had?", placeholder: 'e.g. Went from $0 to $8K/month in 90 days...', hint: '\u2192 Becomes your testimonial Pull Quote with a real story', icon: '\u{1F3C6}', dialog: true, dialogCta: "Help me write this \u2192" }
+  ],
+  service: [
+    { key: 'portfolioUrl', label: 'Portfolio or case studies', question: 'Do you have a portfolio or case studies to link to?', placeholder: 'https://yoursite.com/work \xB7 Behance \xB7 Dribbble...', hint: '\u2192 "See My Work" CTA in your Hero links directly here', icon: '\u{1F517}' },
+    { key: 'inquiryUrl', label: 'Project inquiry link', question: 'How do people start a project with you?', placeholder: 'Typeform \xB7 Calendly \xB7 Email form URL...', hint: '\u2192 Every "Start a Project" and "Get a Quote" button links here', icon: '\u{1F4CB}' },
+    { key: 'coreServices', label: 'Your 3 core services', question: 'What are your 3 main services? (comma separated)', placeholder: 'Brand identity, Website design, Marketing strategy', hint: '\u2192 Your Services card section uses exact names \u2014 no guessing', icon: '\u26A1', dialog: true, dialogCta: "Help me figure this out \u2192" },
+    { key: 'projectTimeline', label: 'Typical timeline', question: "What's a typical project timeline?", placeholder: 'e.g. 4 to 6 weeks \xB7 2-week sprints...', hint: '\u2192 Appears in your Process section Step 3', icon: '\u{1F4C5}' }
+  ],
+  speaker: [
+    { key: 'speakerReelUrl', label: 'Speaker reel video', question: 'Do you have a speaker reel or talk on video?', placeholder: 'https://youtube.com/watch?v=... \xB7 Vimeo...', hint: '\u2192 Embedded below your Hero \u2014 converts better than any copy', icon: '\u{1F3AC}' },
+    { key: 'bookUrl', label: 'Book link', question: 'Do you have a published book?', placeholder: 'Amazon link \xB7 Pre-order page...', hint: '\u2192 "Buy the Book" button in your Offers section', icon: '\u{1F4DA}' },
+    { key: 'keynoteTopics', label: 'Keynote topics', question: 'What are your top 2 to 3 keynote topics? (comma separated)', placeholder: 'Leadership in uncertainty, Building resilient teams...', hint: '\u2192 Your Topics card grid uses these exact names', icon: '\u{1F3A4}', dialog: true, dialogCta: "Help me name my topics \u2192" },
+    { key: 'bookingContact', label: 'How to book you', question: 'How do event organizers book you?', placeholder: 'Calendly link \xB7 Manager email \xB7 Inquiry form...', hint: '\u2192 "Book for Your Event" CTA links directly here', icon: '\u{1F4C6}' }
+  ],
+  local: [
+    { key: 'address', label: 'Office address or area', question: "What's your office address or service area?", placeholder: '123 Main St, Scottsdale AZ \xB7 Serving Phoenix metro...', hint: '\u2192 Appears in your footer with a real map embed', icon: '\u{1F4CD}' },
+    { key: 'bookingUrl', label: 'Booking system link', question: 'How do clients book with you?', placeholder: 'Jane App \xB7 SimplePractice \xB7 Mindbody URL \xB7 Phone...', hint: '\u2192 Every "Book an Appointment" button links here', icon: '\u{1F517}' },
+    { key: 'hours', label: 'Availability hours', question: "What are your availability hours?", placeholder: 'Mon\u2013Fri 9am\u20136pm \xB7 Evenings available \xB7 By appointment...', hint: '\u2192 Appears in your Contact section \u2014 answers before they ask', icon: '\u{1F550}' },
+    { key: 'insurancePayment', label: 'Insurance or payment', question: 'Do you accept insurance or have payment notes?', placeholder: 'Accepts BCBS, Aetna \xB7 Sliding scale \xB7 HSA accepted...', hint: '\u2192 One of the top 3 questions clients have before booking', icon: '\u{1F4B3}' }
+  ]
+};
+
+var SEGMENT_LABELS = {
+  expert:  { name: 'Coach / Consultant', headline: 'A few things that\\'ll make your site feel real' },
+  creator: { name: 'Course Creator',      headline: 'Let\\'s get your numbers and links in' },
+  service: { name: 'Service Provider',    headline: 'A few things clients will look for' },
+  speaker: { name: 'Speaker / Author',    headline: 'Let\\'s get your stage presence on the page' },
+  local:   { name: 'Local Professional',  headline: 'A few things that help clients find you' }
+};
+
+function detectSegment() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p1 = bp.part1 || {};
+  var combined = [
+    p3.nicheStatement || '',
+    (p4.offers || []).map(function(o) { return (o.name || '') + ' ' + (o.description || ''); }).join(' '),
+    (p1.toneKeywords || []).join(' ')
+  ].join(' ').toLowerCase();
+
+  if (/keynote|speaker|speaking|author|book.*publish|thought.*leader/.test(combined)) return 'speaker';
+  if (/course|cohort|membership|students enrolled|digital.*product|online.*program|mastermind/.test(combined)) return 'creator';
+  if (/local|near me|serving.*area|clinic|office.*location|therapy|therapist|in.person|appointment/.test(combined)) return 'local';
+  if (/agency|freelance|done.for.you|studio|design.*service|marketing.*service|client.*project/.test(combined)) return 'service';
+  return 'expert';
+}
+
+function showSegmentIntake() {
+  var segment = detectSegment();
+  STATE.currentSegment = segment;
+  var qs = SEGMENT_QUESTIONS[segment] || SEGMENT_QUESTIONS.expert;
+  var labels = SEGMENT_LABELS[segment] || SEGMENT_LABELS.expert;
+
+  // Set headline
+  var headEl = document.getElementById('intake-headline');
+  if (headEl) headEl.textContent = labels.headline;
+
+  // Reset testimonial dialog so it starts fresh
+  window.TESTIMONIAL_DIALOG_STARTED = false;
+  window.TESTIMONIAL_DIALOG_MESSAGES = [];
+  var dmEl = document.getElementById('testimonial-dialog-messages');
+  if (dmEl) dmEl.innerHTML = '';
+  var suggEl = document.getElementById('testimonial-dialog-suggestion');
+  if (suggEl) suggEl.innerHTML = '';
+  // Reset radio to default
+  STATE.testimonialPref = STATE.testimonialPref || 'generate';
+  var customArea = document.getElementById('custom-testimonials-area');
+  var aiArea = document.getElementById('testimonial-ai-area');
+  if (customArea) customArea.style.display = 'none';
+  if (aiArea) aiArea.style.display = 'none';
+
+  // Render fields
+  intakeRenderFields(qs);
+  showScreen('segment-intake-screen');
+  // Auto-fill high-confidence fields from blueprint
+  setTimeout(function() { intakeAutoFillFromBlueprint(segment, qs); }, 50);
+}
+
+function intakeAutoFillFromBlueprint(segment, questions) {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p5 = bp.part5 || {};
+
+  // Build a lookup of field key -> prefill value from blueprint
+  var prefills = {};
+
+  // Starting price: look in offers for a price mention
+  var offers = p4.offers || [];
+  if (offers.length > 0) {
+    var firstOffer = offers[0];
+    var priceHint = firstOffer.price || firstOffer.investment || firstOffer.cost || '';
+    if (!priceHint) {
+      var desc = (firstOffer.description || firstOffer.name || '').match(/\\$[\\d,]+[Kk]?(?:\\s*[\\/\\-]?\\s*(?:month|mo|week|wk|year|yr|session))?/);
+      if (desc) priceHint = desc[0];
+    }
+    if (priceHint && priceHint.length < 60) prefills.startingPrice = priceHint;
+  }
+
+  // Top credential: look for years experience or certifications
+  var bio = (p2.background || p2.story || p2.experience || '').trim();
+  if (!bio) bio = (p3.expertiseProof || p3.credibility || '').trim();
+  if (bio) {
+    var credMatch = bio.match(/(\\d+[+]?\\s*years?\\s+(?:of\\s+)?(?:experience|in\\s+\\w+)[^,\\.]{0,40})/i);
+    if (!credMatch) credMatch = bio.match(/((?:Certified|Licensed|ICF|PCC|MCC|PhD|MBA|MS|MA|RN|MD)\\s*[^\\.,]{0,50})/i);
+    if (credMatch) prefills.topCredential = credMatch[1].trim();
+  }
+
+  // Student count: look in p4 or p5 for social proof numbers
+  var proof = (p5.socialProof || p4.studentResults || p3.results || '').trim();
+  if (proof) {
+    var countMatch = proof.match(/(\\d[\\d,]*[+]?\\s*(?:students?|clients?|members?|people|professionals?))/i);
+    if (countMatch) prefills.studentCount = countMatch[1].trim();
+  }
+
+  // Methodology name: look in p4 for a named framework/process
+  var processName = p4.methodologyName || p4.frameworkName || p4.processName || p3.methodology || '';
+  if (processName && processName.length < 80) prefills.methodologyName = processName;
+
+  // Platform URL: look in p5 or p4 for a link
+  var platformLink = p5.platformUrl || p4.platformUrl || p5.courseUrl || '';
+  if (!platformLink) {
+    var linkSearch = JSON.stringify(p4).match(/https?:\\/\\/[^\\s"'<>,]{8,60}/);
     if (linkSearch) platformLink = linkSearch[0];
   }
   if (platformLink) prefills.platformUrl = platformLink;
@@ -7306,7 +7994,1231 @@ function intakeRenderFields(questions) {
   var container = document.getElementById('intake-fields-container');
   if (!container) return;
   container.innerHTML = questions.map(function(q, i) {
-    var inputEl = '<input type="text" class="intake-field-input" id="intake-f-' + i + '" placeholder="' + q.placeholder.replace(/"/g, '&quot;') + '" autocomplete="off">';\\n    var dialogHtml = '';\\n    if (q.dialog) {\\n      var cta = q.dialogCta || 'Help me decide \u2192';\\n      dialogHtml =\\n        '<span class="intake-dialog-btn" onclick="intakeOpenDialog(' + i + ', \\'' + q.key + '\\')">' + cta + '</span>' +\\n        '<div class="intake-dialog-panel" id="intake-dp-' + i + '">' +\\n          '<div class="intake-dialog-header">' +\\n            '<span class="intake-dialog-label">AI Coach</span>' +\\n            '<button class="intake-dialog-close" onclick="intakeCloseDialog(' + i + ')">\xD7</button>' +\\n          '</div>' +\\n          '<div class="intake-dialog-messages" id="intake-dm-' + i + '"></div>' +\\n          '<div id="intake-ds-' + i + '"></div>' +\\n          '<div class="intake-dialog-input-row">' +\\n            '<input class="intake-dialog-input" id="intake-di-' + i + '" placeholder="Type your answer..." autocomplete="off" onkeydown="if(event.key===\\'Enter\\')intakeDialogSend(' + i + ', \\'' + q.key + '\\')">' +\\n            '<button class="intake-dialog-send" id="intake-db-' + i + '" onclick="intakeDialogSend(' + i + ', \\'' + q.key + '\\')">Send</button>' +\\n          '</div>' +\\n        '</div>';\\n    }\\n    return '<div class="intake-field">' +\\n      '<div class="intake-field-label">' + q.label + '</div>' +\\n      '<div class="intake-field-wrap">' +\\n        '<span class="intake-field-icon">' + q.icon + '</span>' +\\n        inputEl +\\n      '</div>' +\\n      '<div class="intake-field-hint">' + q.hint + '</div>' +\\n      dialogHtml +\\n    '</div>';\\n  }).join('');\\n}\\n\\nfunction intakeCollectData() {\\n  var segment = STATE.currentSegment || 'expert';\\n  var qs = SEGMENT_QUESTIONS[segment] || SEGMENT_QUESTIONS.expert;\\n  var data = { segment: segment };\\n  qs.forEach(function(q, i) {\\n    var el = document.getElementById('intake-f-' + i);\\n    if (el && el.value.trim()) data[q.key] = el.value.trim();\\n  });\\n  return data;\\n}\\n\\nfunction intakeSubmit() {\\n  STATE.segmentIntake = intakeCollectData();\\n  var sid = STATE.sessionId || 'anon';\\n  try { sessionStorage.setItem('dw_intake_' + sid, '1'); } catch(_) {}\\n  // Proceed to photo gate\\n  var gateSeen = false;\\n  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}\\n  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);\\n  if (!gateSeen && !hasPhoto) {\\n    showPhotoGate();\\n  } else {\\n    startPregenFlow();\\n  }\\n}\\n\\nfunction intakeSkipAll() {\\n  STATE.segmentIntake = { segment: STATE.currentSegment || 'expert', skipped: true };\\n  var sid = STATE.sessionId || 'anon';\\n  try { sessionStorage.setItem('dw_intake_' + sid, '1'); } catch(_) {}\\n  var gateSeen = false;\\n  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}\\n  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);\\n  if (!gateSeen && !hasPhoto) {\\n    showPhotoGate();\\n  } else {\\n    startPregenFlow();\\n  }\\n}\\n// \u2500\u2500 INTAKE DIALOG FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nwindow.INTAKE_DIALOGS = {};\\n\\nfunction intakeOpenDialog(i, fieldKey) {\\n  var panel = document.getElementById('intake-dp-' + i);\\n  if (!panel) return;\\n  panel.classList.add('open');\\n  // Init history if fresh\\n  if (!window.INTAKE_DIALOGS[i]) {\\n    window.INTAKE_DIALOGS[i] = { fieldKey: fieldKey, messages: [] };\\n    // Fire opening message from AI\\n    intakeDialogAITurn(i, fieldKey);\\n  }\\n  // Focus input\\n  var inp = document.getElementById('intake-di-' + i);\\n  if (inp) setTimeout(function() { inp.focus(); }, 80);\\n}\\n\\nfunction intakeCloseDialog(i) {\\n  var panel = document.getElementById('intake-dp-' + i);\\n  if (panel) panel.classList.remove('open');\\n}\\n\\nfunction intakeDialogAddMsg(i, role, text) {\\n  var msgs = document.getElementById('intake-dm-' + i);\\n  if (!msgs) return;\\n  var div = document.createElement('div');\\n  div.className = 'intake-dialog-msg ' + role;\\n  div.textContent = text;\\n  msgs.appendChild(div);\\n  msgs.scrollTop = msgs.scrollHeight;\\n}\\n\\nfunction intakeDialogSetThinking(i, on) {\\n  var msgs = document.getElementById('intake-dm-' + i);\\n  if (!msgs) return;\\n  var existing = msgs.querySelector('.thinking');\\n  if (on && !existing) {\\n    var div = document.createElement('div');\\n    div.className = 'intake-dialog-msg thinking';\\n    div.textContent = 'Thinking...';\\n    msgs.appendChild(div);\\n    msgs.scrollTop = msgs.scrollHeight;\\n  } else if (!on && existing) {\\n    existing.remove();\\n  }\\n}\\n\\nfunction intakeDialogShowSuggestion(i, fieldKey, suggestion) {\\n  var container = document.getElementById('intake-ds-' + i);\\n  if (!container) return;\\n  container.innerHTML =\\n    '<button class="intake-dialog-suggestion" onclick="intakeDialogUseSuggestion(' + i + ', \\'' + fieldKey + '\\')">' +\\n      '<div style="flex:1">' +\\n        '<span class="intake-dialog-suggestion-label">Use this answer</span>' +\\n        '<span class="intake-dialog-suggestion-value" id="intake-dsv-' + i + '">' + suggestion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +\\n      '</div>' +\\n      '<span style="font-size:18px;opacity:0.7">&#10003;</span>' +\\n    '</button>';\\n  // Store for retrieval\\n  if (window.INTAKE_DIALOGS[i]) window.INTAKE_DIALOGS[i].lastSuggestion = suggestion;\\n}\\n\\nfunction intakeDialogUseSuggestion(i, fieldKey) {\\n  var s = window.INTAKE_DIALOGS[i] && window.INTAKE_DIALOGS[i].lastSuggestion;\\n  if (!s) return;\\n  // Fill the main input\\n  var inp = document.getElementById('intake-f-' + i);\\n  if (inp) {\\n    inp.value = s;\\n    inp.style.borderColor = '#c4703f';\\n    inp.style.background = '#fffdf9';\\n  }\\n  intakeCloseDialog(i);\\n}\\n\\nasync function intakeDialogAITurn(i, fieldKey) {\\n  var state = window.INTAKE_DIALOGS[i];\\n  if (!state) return;\\n  var btn = document.getElementById('intake-db-' + i);\\n  if (btn) btn.disabled = true;\\n  intakeDialogSetThinking(i, true);\\n  try {\\n    var res = await fetch('/api/intake/chat', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json' },\\n      body: JSON.stringify({\\n        sessionId: STATE.sessionId,\\n        fieldKey: fieldKey,\\n        messages: state.messages\\n      })\\n    });\\n    var data = await res.json();\\n    intakeDialogSetThinking(i, false);\\n    if (data.reply) {\\n      // Strip SUGGESTION line from display text\\n      var displayText = data.reply.replace(/SUGGESTION:.*/i, '').trim();\\n      intakeDialogAddMsg(i, 'ai', displayText);\\n      state.messages.push({ role: 'assistant', content: data.reply });\\n      if (data.suggestion) {\\n        intakeDialogShowSuggestion(i, fieldKey, data.suggestion);\\n      }\\n    } else {\\n      intakeDialogAddMsg(i, 'ai', 'Something went wrong. Try typing your answer directly.');\\n    }\\n  } catch (err) {\\n    intakeDialogSetThinking(i, false);\\n    intakeDialogAddMsg(i, 'ai', 'Could not reach the AI coach. Try typing your answer directly.');\\n  } finally {\\n    if (btn) btn.disabled = false;\\n  }\\n}\\n\\nasync function intakeDialogSend(i, fieldKey) {\\n  var inp = document.getElementById('intake-di-' + i);\\n  if (!inp || !inp.value.trim()) return;\\n  var text = inp.value.trim();\\n  inp.value = '';\\n  // Clear previous suggestion\\n  var ds = document.getElementById('intake-ds-' + i);\\n  if (ds) ds.innerHTML = '';\\n  var state = window.INTAKE_DIALOGS[i];\\n  if (!state) { window.INTAKE_DIALOGS[i] = { fieldKey: fieldKey, messages: [] }; state = window.INTAKE_DIALOGS[i]; }\\n  intakeDialogAddMsg(i, 'user', text);\\n  state.messages.push({ role: 'user', content: text });\\n  await intakeDialogAITurn(i, fieldKey);\\n}\\n// \u2500\u2500 END INTAKE DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n\\n// \u2500\u2500 TESTIMONIAL AI DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nfunction testimonialDialogAddMsg(role, text) {\\n  var msgs = document.getElementById('testimonial-dialog-messages');\\n  if (!msgs) return;\\n  var div = document.createElement('div');\\n  div.className = 'intake-dialog-msg ' + role;\\n  div.textContent = text;\\n  msgs.appendChild(div);\\n  msgs.scrollTop = msgs.scrollHeight;\\n}\\n\\nfunction testimonialDialogSetThinking(on) {\\n  var msgs = document.getElementById('testimonial-dialog-messages');\\n  if (!msgs) return;\\n  var existing = msgs.querySelector('.thinking');\\n  if (on && !existing) {\\n    var div = document.createElement('div');\\n    div.className = 'intake-dialog-msg thinking';\\n    div.textContent = 'Thinking...';\\n    msgs.appendChild(div);\\n    msgs.scrollTop = msgs.scrollHeight;\\n  } else if (!on && existing) {\\n    existing.remove();\\n  }\\n}\\n\\nfunction testimonialDialogShowSuggestion(suggestion) {\\n  var container = document.getElementById('testimonial-dialog-suggestion');\\n  if (!container) return;\\n  window._testimonialLastSuggestion = suggestion;\\n  container.innerHTML =\\n    '<button class="intake-dialog-suggestion" onclick="testimonialDialogUseSuggestion()">' +\\n      '<div style="flex:1">' +\\n        '<span class="intake-dialog-suggestion-label">Use these testimonials</span>' +\\n        '<span class="intake-dialog-suggestion-value" style="white-space:pre-wrap;">' + suggestion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +\\n      '</div>' +\\n      '<span style="font-size:18px;opacity:0.7">&#10003;</span>' +\\n    '</button>';\\n}\\n\\nfunction testimonialDialogUseSuggestion() {\\n  var s = window._testimonialLastSuggestion;\\n  if (!s) return;\\n  var textarea = document.getElementById('custom-testimonials-input');\\n  if (textarea) {\\n    textarea.value = s;\\n    textarea.style.borderColor = '#c4703f';\\n    textarea.style.background = '#fffdf9';\\n  }\\n  // Clear the suggestion button and show a confirmation message\\n  var container = document.getElementById('testimonial-dialog-suggestion');\\n  if (container) {\\n    container.innerHTML = '<div style="font-size:12px;color:#c4703f;font-weight:600;padding:8px 4px;">Testimonials saved above. You can still edit them before building your site.</div>';\\n  }\\n}\\n\\nasync function testimonialDialogAITurn() {\\n  var messages = window.TESTIMONIAL_DIALOG_MESSAGES || [];\\n  var sendBtn = document.getElementById('testimonial-dialog-send-btn');\\n  if (sendBtn) sendBtn.disabled = true;\\n  testimonialDialogSetThinking(true);\\n  try {\\n    var res = await fetch('/api/intake/chat', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json' },\\n      body: JSON.stringify({\\n        sessionId: STATE.sessionId,\\n        fieldKey: 'testimonials',\\n        messages: messages\\n      })\\n    });\\n    var data = await res.json();\\n    testimonialDialogSetThinking(false);\\n    if (data.reply) {\\n      var displayText = data.reply.replace(/SUGGESTION:.*/i, '').trim();\\n      testimonialDialogAddMsg('ai', displayText);\\n      window.TESTIMONIAL_DIALOG_MESSAGES.push({ role: 'assistant', content: data.reply });\\n      if (data.suggestion) {\\n        testimonialDialogShowSuggestion(data.suggestion);\\n      }\\n    } else {\\n      testimonialDialogAddMsg('ai', 'Something went wrong. Try typing a client win to get started.');\\n    }\\n  } catch (err) {\\n    testimonialDialogSetThinking(false);\\n    testimonialDialogAddMsg('ai', 'Could not reach the AI coach. Try typing a client win directly.');\\n  } finally {\\n    if (sendBtn) sendBtn.disabled = false;\\n  }\\n}\\n\\nasync function testimonialDialogSend() {\\n  var inp = document.getElementById('testimonial-dialog-input');\\n  if (!inp || !inp.value.trim()) return;\\n  var text = inp.value.trim();\\n  inp.value = '';\\n  // Clear previous suggestion\\n  var ds = document.getElementById('testimonial-dialog-suggestion');\\n  if (ds) ds.innerHTML = '';\\n  if (!window.TESTIMONIAL_DIALOG_MESSAGES) window.TESTIMONIAL_DIALOG_MESSAGES = [];\\n  testimonialDialogAddMsg('user', text);\\n  window.TESTIMONIAL_DIALOG_MESSAGES.push({ role: 'user', content: text });\\n  await testimonialDialogAITurn();\\n}\\n// \u2500\u2500 END TESTIMONIAL AI DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n\\n// \u2500\u2500 END SEGMENT INTAKE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n\\nasync function runSiteGeneration() {\\n  try {\\n    // Start overlay animation\\n    startGenAnimation();\\n    // Step 1: Preparing context\\n    await delay(800);\\n    setStep(1, 'done');\\n    setStep(2, 'active');\\n\\n    // Generate images (non-blocking, site can work without images)\\n    let imgOk = false;\\n    try {\\n      const imgRes = await fetch('/api/generate/images', {\\n        method: 'POST',\\n        headers: { 'Content-Type': 'application/json' },\\n        body: JSON.stringify({ sessionId: STATE.sessionId })\\n      });\\n      const imgData = await imgRes.json();\\n      imgOk = imgData.ok;\\n    } catch (_) {\\n      // Images failed, continue without them\\n    }\\n\\n    setStep(2, imgOk ? 'done' : 'done');\\n    setStep(3, 'active');\\n\\n    // Generate site HTML with automatic retry on 502/503/timeout\\n    async function fetchWithRetry(url, options, maxRetries) {\\n      maxRetries = maxRetries || 2;\\n      for (var attempt = 1; attempt <= maxRetries; attempt++) {\\n        try {\\n          var res = await fetch(url, options);\\n          if (res.status === 502 || res.status === 503 || res.status === 504) {\\n            if (attempt < maxRetries) {\\n              console.warn('Site generation attempt ' + attempt + ' returned ' + res.status + ', retrying...');\\n              await delay(2000);\\n              continue;\\n            }\\n          }\\n          return res;\\n        } catch (networkErr) {\\n          if (attempt < maxRetries) {\\n            console.warn('Site generation attempt ' + attempt + ' network error, retrying...');\\n            await delay(2000);\\n            continue;\\n          }\\n          throw networkErr;\\n        }\\n      }\\n    }\\n\\n    // Get testimonial preference\\n    var testimPref = typeof getTestimonialPref === 'function' ? getTestimonialPref() : { pref: 'generate', customText: '' };\\n\\n    const siteRes = await fetchWithRetry('/api/generate/site', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json' },\\n      body: JSON.stringify({ sessionId: STATE.sessionId, testimonialPref: testimPref.pref, customTestimonials: testimPref.customText, segmentIntake: STATE.segmentIntake || null, segment: STATE.currentSegment || null, userPhotoUrl: (window.PICKER_PHOTO && (window.PICKER_PHOTO.processedUrl || window.PICKER_PHOTO.dataUrl)) || null })\\n    }, 2);\\n\\n    if (!siteRes.ok) {\\n      const errData = await siteRes.json().catch(function() { return {}; });\\n      throw new Error(errData.error || 'Site generation failed (status ' + siteRes.status + ')');\\n    }\\n\\n    const siteData = await siteRes.json();\\n\\n    if (siteData.html) {\\n      STATE.generatedSiteHtml = siteData.html;\\n    }\\n\\n    setStep(3, 'done');\\n\\n    // Per-section finalization: show each section name in the narrative\\n    // This gives the "designed beforehand" experience the user expects\\n    try {\\n      var bpGen = STATE.blueprint?.blueprint || STATE.blueprint || {};\\n      var bpGenSections = bpGen.part5?.sections || [];\\n      if (bpGenSections.length > 0) {\\n        var sectionNarratives = ['Perfecting your hero section...'];\\n        bpGenSections.forEach(function(s) {\\n          sectionNarratives.push('Perfecting ' + (s.name || 'section') + '...');\\n        });\\n        sectionNarratives.push('Polishing the footer...');\\n        setGenProgress(72);\\n        for (var sni = 0; sni < sectionNarratives.length; sni++) {\\n          var narEl2 = document.getElementById('gen-narrative');\\n          if (narEl2) {\\n            narEl2.style.opacity = '0';\\n            await delay(140);\\n            narEl2.textContent = sectionNarratives[sni];\\n            narEl2.style.opacity = '1';\\n          }\\n          setGenProgress(72 + Math.round((sni + 1) / sectionNarratives.length * 16));\\n          await delay(Math.round(1800 / Math.max(sectionNarratives.length, 1)));\\n        }\\n      }\\n    } catch(_) {}\\n\\n    // Step 4: SEO + Launch Optimization (happens during deploy)\\n    setStep(4, 'active');\\n    await delay(600);\\n\\n    // Step 5: Deploy (SEO injection happens server side in handleDeploy)\\n    setStep(4, 'done');\\n    setStep(5, 'active');\\n\\n    let deployUrl = null;\\n    let deployProject = null;\\n    try {\\n      const deployRes = await fetch('/api/deploy', {\\n        method: 'POST',\\n        headers: { 'Content-Type': 'application/json' },\\n        body: JSON.stringify({ sessionId: STATE.sessionId })\\n      });\\n      const deployData = await deployRes.json();\\n      if (deployData.url) {\\n        deployUrl = deployData.url;\\n        deployProject = deployData.slug || deployData.projectName;\\n      } else if (deployData.error) {\\n        console.error('Deploy error:', deployData.error);\\n      }\\n    } catch (deployErr) {\\n      console.error('Deploy network error:', deployErr);\\n    }\\n\\n    setStep(5, 'done');\\n    stopGenAnimation();\\n\\n    if (deployUrl) {\\n      STATE.liveUrl = deployUrl;\\n      STATE.projectName = deployProject;\\n      await delay(1200);\\n    }\\n\\n    showSiteReveal(deployUrl);\\n\\n  } catch (e) {\\n    console.error('Site generation error:', e);\\n    stopGenAnimation();\\n    // Show error in the generation screen instead of just a toast\\n    const stepsEl = document.getElementById('gen-steps');\\n    if (stepsEl) {\\n      stepsEl.innerHTML += '<div style="margin-top:24px;padding:16px 20px;background:#fdf2f2;border:1.5px solid #e74c3c;border-radius:10px;color:#c0392b;font-size:14px;line-height:1.6;"><strong>Something went wrong</strong><br>' + (e.message || 'An unexpected error occurred.') + '<br><br><button class="btn btn-gold" onclick="runSiteGeneration()" style="padding:10px 20px;font-size:14px;">Try Again</button> <button class="btn" onclick="location.reload()" style="padding:10px 20px;font-size:14px;margin-left:8px;">Refresh Page</button></div>';\\n    }\\n  }\\n}\\n\\nfunction showMissionControl(liveUrl, projectName) {\\n  showScreen('mission-control');\\n  const bp = STATE.blueprint?.blueprint || STATE.blueprint || {};\\n  const brandName = bp.part1?.brandNames?.[0] || 'Your Brand';\\n  const mcBrand = document.getElementById('mc-brand-name');\\n  if (mcBrand) mcBrand.textContent = brandName;\\n\\n  const urlSection = document.getElementById('mc-live-url');\\n  const urlLink = document.getElementById('mc-url-link');\\n  const visitBtn = document.getElementById('mc-visit-btn');\\n  const previewFrame = document.getElementById('mc-preview');\\n  const previewPlaceholder = document.getElementById('mc-preview-placeholder');\\n  const previewDomain = document.getElementById('mc-preview-domain');\\n  const noUrl = document.getElementById('mc-no-url');\\n\\n  if (liveUrl) {\\n    if (urlSection) urlSection.style.display = '';\\n    if (noUrl) noUrl.style.display = 'none';\\n    if (urlLink) { urlLink.href = liveUrl; urlLink.textContent = liveUrl.replace('https://',''); }\\n    if (visitBtn) visitBtn.href = liveUrl;\\n    if (previewDomain) previewDomain.textContent = liveUrl.replace('https://','');\\n    if (previewFrame) {\\n      previewFrame.src = liveUrl;\\n      previewFrame.style.display = '';\\n      previewFrame.onload = function() {\\n        if (previewPlaceholder) previewPlaceholder.style.display = 'none';\\n      };\\n    }\\n  } else {\\n    if (urlSection) urlSection.style.display = 'none';\\n    if (noUrl) noUrl.style.display = '';\\n    if (previewFrame) previewFrame.style.display = 'none';\\n    if (previewPlaceholder) previewPlaceholder.textContent = 'Deploy is processing...';\\n  }\\n}\\n\\nasync function downloadSite() {\\n  const btn = document.getElementById('download-site-btn');\\n  const originalText = btn ? btn.textContent : 'Download Site';\\n  try {\\n    if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }\\n    const exportHeaders = {};\\n    if (STATE.sessionJwt) exportHeaders['Authorization'] = 'Bearer ' + STATE.sessionJwt;\\n    const res = await fetch('/api/export-site?sessionId=' + STATE.sessionId, { headers: exportHeaders });\\n    if (!res.ok) throw new Error('status ' + res.status);\\n    const blob = await res.blob();\\n    const url = URL.createObjectURL(blob);\\n    const a = document.createElement('a');\\n    a.href = url;\\n    const bp = STATE.blueprint?.blueprint || {};\\n    const brandName = bp.part1?.brandNames?.[0] || 'my-site';\\n    const safeName = brandName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'my-site';\\n    a.download = safeName + '.html';\\n    document.body.appendChild(a);\\n    a.click();\\n    a.remove();\\n    URL.revokeObjectURL(url);\\n    showToast('Download started!');\\n    if (btn) { btn.textContent = originalText; btn.disabled = false; }\\n  } catch (e) {\\n    showToast('Download failed \u2014 please try again.');\\n    if (btn) { btn.textContent = originalText; btn.disabled = false; }\\n  }\\n}\\n\\nfunction copyMcUrl() {\\n  const url = document.getElementById('mc-url-link')?.href;\\n  if (url) {\\n    navigator.clipboard.writeText(url).then(() => {\\n      const btn = document.getElementById('mc-copy-btn');\\n      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy Link', 2000); }\\n    });\\n  }\\n}\\n\\nfunction emailMySite() {\\n  const url = document.getElementById('mc-url-link')?.href || '';\\n  const brand = document.getElementById('mc-brand-name')?.textContent || 'My Website';\\n  window.open('mailto:?subject=' + encodeURIComponent(brand + ' is Live') + '&body=' + encodeURIComponent('Check out my new website: ' + url), '_blank');\\n}\\n\\nfunction handleBookCall() {\\n  // Redirect to strategy call checkout\\n  handleCheckoutRedirect('call');\\n}\\n\\nasync function handleCheckoutRedirect(tier) {\\n  try {\\n    const res = await fetch('/api/checkout', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json' },\\n      body: JSON.stringify({ sessionId: STATE.sessionId, tier })\\n    });\\n    const data = await res.json();\\n    if (data.url) window.location.href = data.url;\\n    else showToast('Could not start checkout. Please try again.');\\n  } catch (e) {\\n    showToast('Something went wrong. Please try again.');\\n  }\\n}\\n\\nfunction setStep(num, state) {\\n  updateSiteGenState(num, state);\\n}\\nfunction updateSiteGenState(num, state) {\\n  // Update step visual\\n  var el = document.getElementById('step-' + num + '-icon');\\n  if (!el) return;\\n  el.className = 'step-icon ' + state;\\n  el.textContent = '';\\n  // Update step text color (dark Atelier theme)\\n  var row = document.getElementById('gen-step-row-' + num);\\n  if (row) {\\n    var title = row.querySelector('.gen-step-title');\\n    var desc = row.querySelector('.gen-step-desc');\\n    if (title) title.style.color = (state === 'pending') ? '#c8c0b8' : '#1d1d1f';\\n    if (desc) desc.style.color = (state === 'pending') ? '#ddd8d2' : (state === 'active' ? '#c4703f' : '#b0a89e');\\n  }\\n  // Populate name from STATE if available\\n  var nameEl = document.getElementById('gen-preview-name');\\n  if (nameEl && STATE && STATE.blueprint && STATE.blueprint.blueprint && STATE.blueprint.blueprint.name) {\\n    nameEl.textContent = STATE.blueprint.blueprint.name;\\n  }\\n  // Unblur preview at step 3+\\n  var wrap = document.getElementById('site-gen-preview-wrap');\\n  if (wrap && num >= 3 && state !== 'pending') {\\n    wrap.style.filter = 'blur(1px)';\\n  }\\n  if (wrap && state === 'done' && num === 5) {\\n    wrap.style.filter = 'blur(0px)';\\n  }\\n  // Update status label\\n  var labels = ['', 'Preparing your brand...', 'Generating brand imagery...', 'Writing your website...', 'Optimizing for search...', 'Deploying to the web...'];\\n  var labelEl = document.getElementById('gen-status-label');\\n  if (labelEl && labels[num]) labelEl.textContent = labels[num];\\n  // Update overlay progress\\n  var pctMap = { '1_active': 5, '1_done': 12, '2_active': 18, '2_done': 38, '3_active': 42, '3_done': 78, '4_active': 82, '4_done': 88, '5_active': 92, '5_done': 100 };\\n  var pKey = num + '_' + state;\\n  if (pctMap[pKey]) setGenProgress(pctMap[pKey]);\\n}\\n\\n\\n// \u2500\u2500 SITE GEN OVERLAY ANIMATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\nvar GEN_ANIM = { pct: 0, target: 0, interval: null, codeInterval: null, narrativeInterval: null, codeLines: 0 };\\n\\nvar GEN_CODE_SNIPPETS = [\\n  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"hero"</span><span style="color:#c4703f">&gt;</span>',\\n  '  <span style="color:#86868b">background:</span> <span style="color:#2d6a4f">linear-gradient(135deg, #1B2A4A, #D4A853)</span>;',\\n  '  <span style="color:#c4703f">&lt;h1&gt;</span><span style="color:#1d1d1f">Your Brand Headline</span><span style="color:#c4703f">&lt;/h1&gt;</span>',\\n  '  <span style="color:#86868b">font-family:</span> <span style="color:#2d6a4f">Outfit, sans-serif</span>;',\\n  '  <span style="color:#86868b">font-weight:</span> <span style="color:#2d6a4f">700</span>;',\\n  '<span style="color:#c4703f">&lt;/section&gt;</span>',\\n  '',\\n  '<span style="color:#86868b">/* Services grid */</span>',\\n  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"services"</span><span style="color:#c4703f">&gt;</span>',\\n  '  <span style="color:#86868b">display:</span> <span style="color:#2d6a4f">grid</span>;',\\n  '  <span style="color:#86868b">grid-template-columns:</span> <span style="color:#2d6a4f">repeat(3, 1fr)</span>;',\\n  '  <span style="color:#86868b">gap:</span> <span style="color:#2d6a4f">24px</span>;',\\n  '  <span style="color:#c4703f">&lt;div</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"card"</span><span style="color:#c4703f">&gt;</span>',\\n  '    <span style="color:#86868b">border-radius:</span> <span style="color:#2d6a4f">12px</span>;',\\n  '    <span style="color:#86868b">box-shadow:</span> <span style="color:#2d6a4f">0 2px 16px rgba(0,0,0,0.06)</span>;',\\n  '  <span style="color:#c4703f">&lt;/div&gt;</span>',\\n  '<span style="color:#c4703f">&lt;/section&gt;</span>',\\n  '',\\n  '<span style="color:#86868b">/* About section */</span>',\\n  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"about"</span><span style="color:#c4703f">&gt;</span>',\\n  '  <span style="color:#c4703f">&lt;img</span> <span style="color:#86868b">src=</span><span style="color:#2d6a4f">"hero-portrait.jpg"</span> <span style="color:#c4703f">/&gt;</span>',\\n  '  <span style="color:#c4703f">&lt;p&gt;</span><span style="color:#1d1d1f">Your story, your way.</span><span style="color:#c4703f">&lt;/p&gt;</span>',\\n  '<span style="color:#c4703f">&lt;/section&gt;</span>',\\n  '',\\n  '<span style="color:#86868b">/* Testimonials */</span>',\\n  '<span style="color:#c4703f">&lt;blockquote&gt;</span>',\\n  '  <span style="color:#1d1d1f">"This transformed our business..."</span>',\\n  '<span style="color:#c4703f">&lt;/blockquote&gt;</span>',\\n  '',\\n  '<span style="color:#86868b">/* Footer */</span>',\\n  '<span style="color:#c4703f">&lt;footer&gt;</span>',\\n  '  <span style="color:#86868b">background:</span> <span style="color:#2d6a4f">#1d1d1f</span>;',\\n  '  <span style="color:#c4703f">&lt;nav&gt;</span> <span style="color:#1d1d1f">Home | About | Services | Contact</span> <span style="color:#c4703f">&lt;/nav&gt;</span>',\\n  '<span style="color:#c4703f">&lt;/footer&gt;</span>',\\n  '',\\n  '<span style="color:#86868b">/* Responsive */</span>',\\n  '<span style="color:#c4703f">@media</span> <span style="color:#2d6a4f">(max-width: 768px)</span> {',\\n  '  <span style="color:#86868b">.hero h1</span> { font-size: <span style="color:#2d6a4f">32px</span>; }',\\n  '  <span style="color:#86868b">.services</span> { grid-template-columns: <span style="color:#2d6a4f">1fr</span>; }',\\n  '}',\\n];\\n\\nvar GEN_NARRATIVES = [\\n  'Preparing your brand story...',\\n  'Selecting your color palette...',\\n  'Crafting your hero section...',\\n  'Writing copy that converts...',\\n  'Designing your services layout...',\\n  'Building your about page...',\\n  'Adding social proof sections...',\\n  'Optimizing for mobile screens...',\\n  'Setting up SEO metadata...',\\n  'Polishing the details...',\\n  'Almost there...',\\n];\\n\\nfunction startGenAnimation() {\\n  GEN_ANIM.pct = 0;\\n  GEN_ANIM.target = 3;\\n  GEN_ANIM.codeLines = 0;\\n  // Reset progress bar and counter\\n  var pb = document.getElementById('atelier-progress-bar');\\n  if (pb) pb.style.width = '0%';\\n  var pctEl = document.getElementById('gen-pct');\\n  if (pctEl) pctEl.textContent = '0';\\n\\n  // Smooth percentage counter + thin progress bar\\n  GEN_ANIM.interval = setInterval(function() {\\n    if (GEN_ANIM.pct < GEN_ANIM.target) {\\n      GEN_ANIM.pct = Math.min(GEN_ANIM.pct + 1, GEN_ANIM.target);\\n      var pe = document.getElementById('gen-pct');\\n      if (pe) pe.textContent = String(GEN_ANIM.pct);\\n      var bar = document.getElementById('atelier-progress-bar');\\n      if (bar) bar.style.width = GEN_ANIM.pct + '%';\\n    }\\n  }, 150);\\n\\n  // Narrative ticker\\n  var narIdx = 0;\\n  GEN_ANIM.narrativeInterval = setInterval(function() {\\n    var el = document.getElementById('gen-narrative');\\n    if (!el) return;\\n    el.style.opacity = '0';\\n    setTimeout(function() {\\n      narIdx = (narIdx + 1) % GEN_NARRATIVES.length;\\n      el.textContent = GEN_NARRATIVES[narIdx];\\n      el.style.opacity = '1';\\n    }, 400);\\n  }, 3200);\\n}\\n\\nfunction setGenProgress(target) {\\n  GEN_ANIM.target = Math.min(target, 100);\\n}\\n\\nfunction stopGenAnimation() {\\n  if (GEN_ANIM.interval) clearInterval(GEN_ANIM.interval);\\n  if (GEN_ANIM.codeInterval) clearInterval(GEN_ANIM.codeInterval);\\n  if (GEN_ANIM.narrativeInterval) clearInterval(GEN_ANIM.narrativeInterval);\\n  GEN_ANIM.pct = 100;\\n  GEN_ANIM.target = 100;\\n  var pe = document.getElementById('gen-pct');\\n  if (pe) pe.textContent = '100';\\n  var bar = document.getElementById('atelier-progress-bar');\\n  if (bar) bar.style.width = '100%';\\n  var ne = document.getElementById('gen-narrative');\\n  if (ne) ne.textContent = 'Your site is ready.';\\n}\\n\\n// \u2500\u2500 SECTION PICKER FLOW \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n\\nvar PICKER = {\\n  sections: [],\\n  currentIndex: 0,\\n  device: 'desktop',\\n  regenCount: 0,\\n  maxRegen: 3,\\n  chosen: [],\\n  variants: [],\\n  viewingOption: 0,\\n  renderedVariants: []\\n};\\n\\n// \u2500\u2500 SESSION NAVIGATION CACHE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n// Persists which screen the user was on so refresh doesn't send them\\n// back to the blueprint. Keyed by sessionId, expires after 14 hours.\\nvar DW_NAV_TTL = 14 * 3600 * 1000;\\n\\nfunction dwSaveNav(state) {\\n  if (!STATE.sessionId) return;\\n  try {\\n    localStorage.setItem('dw_nav_' + STATE.sessionId, JSON.stringify(Object.assign({ ts: Date.now() }, state)));\\n  } catch(_) {}\\n}\\n\\nfunction dwGetSavedNav(sessionId) {\\n  try {\\n    var k = 'dw_nav_' + (sessionId || STATE.sessionId);\\n    var raw = localStorage.getItem(k);\\n    if (!raw) return null;\\n    var d = JSON.parse(raw);\\n    if (Date.now() - (d.ts || 0) > DW_NAV_TTL) { localStorage.removeItem(k); return null; }\\n    return d;\\n  } catch(_) { return null; }\\n}\\n\\nfunction dwClearNav() {\\n  if (!STATE.sessionId) return;\\n  try { localStorage.removeItem('dw_nav_' + STATE.sessionId); } catch(_) {}\\n}\\n\\nfunction dwRestorePickerFromNav(nav, blueprint) {\\n  var bp = blueprint && blueprint.blueprint ? blueprint.blueprint : blueprint;\\n  var sections = bp && bp.part5 && bp.part5.sections;\\n  if (!sections || sections.length === 0) return false;\\n  // Check if photo gate needs to run first (it's per-session, cleared on refresh by design)\\n  var sid = STATE.sessionId || 'anon';\\n  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);\\n  var gateSeen = false;\\n  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}\\n  if (!hasPhoto && !gateSeen) {\\n    // Stash restore info, show photo gate first, then resume\\n    STATE._pendingPickerRestore = nav;\\n    STATE._pendingPickerBlueprint = blueprint;\\n    showPhotoGate();\\n    return true;\\n  }\\n  dwDoRestorePicker(nav, sections);\\n  return true;\\n}\\n\\nfunction dwDoRestorePicker(nav, sections) {\\n  var restoreIdx = Math.min(nav.pickerCurrentIndex || 0, sections.length - 1);\\n  PICKER.sections = sections;\\n  PICKER.currentIndex = restoreIdx;\\n  PICKER.regenCount = 0;\\n  PICKER.chosen = nav.pickerChosen || [];\\n  PICKER.variants = [];\\n  PICKER.preloaded = {};\\n  PICKER.sectionImages = {};\\n  PICKER.viewingOption = 0;\\n  PICKER.renderedVariants = [];\\n  showScreen('section-picker');\\n  showToast('Resuming where you left off\u2026');\\n  pickerLoadSection(restoreIdx);\\n}\\n\\nvar PICKER_PREVIEW_HEIGHT = 340;\\n\\nfunction startSectionPickerFlow() {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : STATE.blueprint;\\n  var sections = bp && bp.part5 && bp.part5.sections;\\n  if (!sections || sections.length === 0) {\\n    showScreen('site-screen');\\n    runSiteGeneration();\\n    return;\\n  }\\n  PICKER.sections = sections;\\n  PICKER.currentIndex = 0;\\n  PICKER.regenCount = 0;\\n  PICKER.chosen = [];\\n  PICKER.variants = [];\\n  showScreen('section-picker');\\n  fpickPhotoInit();\\n  pickerLoadSection(0);\\n}\\n\\nfunction pickerLoadSection(idx) {\\n  if (idx >= PICKER.sections.length) {\\n    pickerAssemble();\\n    return;\\n  }\\n  PICKER.currentIndex = idx;\\n  PICKER.regenCount = 0;\\n  PICKER.variants = [];\\n  var section = PICKER.sections[idx];\\n  var total = PICKER.sections.length;\\n\\n  var stepLabel = document.getElementById('picker-step-label');\\n  var nameHeader = document.getElementById('picker-section-name-header');\\n  var fill = document.getElementById('picker-progress-fill');\\n  var regenLabel = document.getElementById('picker-regen-count-label');\\n  var regenAttempts = document.getElementById('picker-regen-attempts-label');\\n\\n  if (stepLabel) stepLabel.textContent = 'Section ' + (idx + 1) + ' of ' + total;\\n  if (nameHeader) nameHeader.textContent = section.name || 'Section';\\n  if (fill) fill.style.width = (idx / total * 100) + '%';\\n  if (regenLabel) regenLabel.textContent = PICKER.maxRegen + ' left';\\n  if (regenAttempts) regenAttempts.textContent = '(' + PICKER.maxRegen + ' left)';\\n\\n  var loadingEl = document.getElementById('picker-loading-state');\\n  var optionsEl = document.getElementById('picker-options-area');\\n  if (loadingEl) loadingEl.style.display = 'flex';\\n  if (optionsEl) optionsEl.style.display = 'none';\\n  // Clear any regen feedback text from previous section\\n  var regenText = document.getElementById('picker-regen-text');\\n  if (regenText) regenText.value = '';\\n  var regenStatus = document.getElementById('picker-regen-status');\\n  if (regenStatus) regenStatus.textContent = '';\\n\\n  var loadText = document.getElementById('picker-loading-text');\\n  if (loadText) loadText.textContent = 'Generating 3 options for \u201C' + (section.name || 'this section') + '\u201D\u2026';\\n\\n  // Show right-panel loading overlay\\n  var rightLoading = document.getElementById('fpick-right-loading');\\n  var rightLoadingLabel = document.getElementById('fpick-right-loading-label');\\n  if (rightLoading) rightLoading.classList.remove('hidden');\\n  if (rightLoadingLabel) rightLoadingLabel.textContent = section.name || 'Section';\\n\\n  // Use preloaded variants if available (populated by pregen screen)\\n  if (PICKER.preloaded && PICKER.preloaded[idx]) {\\n    var cached = PICKER.preloaded[idx];\\n    PICKER.variants = cached;\\n    pickerRenderOptions(cached);\\n    return;\\n  }\\n\\n  pickerFetchVariants(idx, null);\\n}\\n\\nasync function pickerFetchVariants(idx, feedback) {\\n  try {\\n    var res = await fetch('/api/generate/section-variants', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('dw_session') || '') },\\n      body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, feedback: feedback || null })\\n    });\\n    if (!res.ok) throw new Error('Generation failed (' + res.status + ')');\\n    var data = await res.json();\\n    if (!data.variants || data.variants.length === 0) throw new Error('No variants returned');\\n    PICKER.variants = data.variants;\\n    pickerRenderOptions(data.variants);\\n  } catch (e) {\\n    var loadText = document.getElementById('picker-loading-text');\\n    if (loadText) loadText.textContent = 'Something went wrong \u2014 ';\\n    var loadingEl = document.getElementById('picker-loading-state');\\n    if (loadingEl) {\\n      var retryBtn = document.createElement('button');\\n      retryBtn.textContent = 'Try Again';\\n      retryBtn.style.cssText = 'padding:10px 24px;background:#1d1d1f;color:#fff;border:none;border-radius:50px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;';\\n      retryBtn.onclick = function() { pickerFetchVariants(idx, feedback); };\\n      loadingEl.appendChild(retryBtn);\\n    }\\n  }\\n}\\n\\nfunction pickerRenderOptions(variants) {\\n  var loadingEl = document.getElementById('picker-loading-state');\\n  var optionsEl = document.getElementById('picker-options-area');\\n  if (loadingEl) loadingEl.style.display = 'none';\\n  if (optionsEl) { optionsEl.style.display = 'flex'; optionsEl.style.flexDirection = 'column'; optionsEl.style.gap = '14px'; }\\n  // Hide right-panel loading overlay\\n  var rightLoading = document.getElementById('fpick-right-loading');\\n  if (rightLoading) rightLoading.classList.add('hidden');\\n  // Reset regen button + clear status\\n  var regenBtn = document.getElementById('picker-regen-btn');\\n  var regenStatus = document.getElementById('picker-regen-status');\\n  if (regenBtn) regenBtn.disabled = false;\\n  if (regenStatus) regenStatus.textContent = '';\\n\\n  // Always reset choose button to default state for new section\\n  var chooseBtn = document.querySelector('.fpick-choose-btn');\\n  if (chooseBtn) { chooseBtn.textContent = 'Choose this layout \u2192'; chooseBtn.style.background = ''; }\\n\\n  var section = PICKER.sections[PICKER.currentIndex];\\n  var eyebrow = document.getElementById('picker-eyebrow-text');\\n  if (eyebrow) eyebrow.textContent = section.name;\\n\\n  // Pre-render all variant HTML for fast switching\\n  PICKER.renderedVariants = variants.map(function(v) {\\n    return pickerWrapHtml(pickerRenderTemplate(v));\\n  });\\n\\n  PICKER.viewingOption = 0;\\n  pickerShowOption(0);\\n  setTimeout(function() { pickerScaleMainIframe(); }, 80);\\n}\\n\\nfunction pickerShowOption(i) {\\n  var variants = PICKER.variants;\\n  if (!variants || !variants[i]) return;\\n  PICKER.viewingOption = i;\\n  var v = variants[i];\\n  var confClass = v.confidence >= 80 ? 'high' : v.confidence >= 65 ? 'mid' : 'low';\\n\\n  // Update dots\\n  for (var d = 0; d < 3; d++) {\\n    var dot = document.getElementById('fpick-dot-' + d);\\n    if (dot) dot.className = 'fpick-option-dot' + (d === i ? ' active' : '');\\n  }\\n\\n  // Update info card\\n  var titleEl = document.getElementById('fpick-option-title');\\n  var ratEl = document.getElementById('fpick-option-rationale');\\n  var confEl = document.getElementById('fpick-confidence');\\n  var counterEl = document.getElementById('fpick-counter');\\n  if (titleEl) titleEl.textContent = v.title || ('Option ' + (i + 1));\\n  if (ratEl) ratEl.textContent = v.rationale || '';\\n  if (confEl) { confEl.className = 'fpick-confidence-pill ' + confClass; confEl.textContent = (v.confidence || 80) + '% match'; }\\n  if (counterEl) counterEl.textContent = (i + 1) + ' / ' + variants.length;\\n\\n  // Update prev/next buttons\\n  var prevBtn = document.getElementById('fpick-prev-btn');\\n  var nextBtn = document.getElementById('fpick-next-btn');\\n  if (prevBtn) prevBtn.disabled = (i === 0);\\n  if (nextBtn) nextBtn.disabled = (i >= variants.length - 1);\\n\\n  // Update iframe srcdoc\\n  var iframe = document.getElementById('fpick-main-iframe');\\n  if (iframe && PICKER.renderedVariants[i]) {\\n    iframe.srcdoc = PICKER.renderedVariants[i];\\n  }\\n  // Sync to phone iframe if in mobile mode\\n  if (PICKER.device === 'mobile') {\\n    var phoneIframe = document.getElementById('fpick-phone-iframe');\\n    if (phoneIframe && PICKER.renderedVariants[i]) {\\n      phoneIframe.srcdoc = PICKER.renderedVariants[i];\\n      setTimeout(pickerScalePhoneIframe, 80);\\n    }\\n  }\\n  setTimeout(function() { pickerScaleMainIframe(); }, 60);\\n}\\n\\nfunction pickerPrevOption() {\\n  if (PICKER.viewingOption > 0) pickerShowOption(PICKER.viewingOption - 1);\\n}\\n\\nfunction pickerNextOption() {\\n  if (PICKER.viewingOption < PICKER.variants.length - 1) pickerShowOption(PICKER.viewingOption + 1);\\n}\\n\\nfunction pickerChooseViewing() {\\n  pickerChoose(PICKER.viewingOption);\\n}\\n\\nfunction pickerScaleMainIframe() {\\n  var iframe = document.getElementById('fpick-main-iframe');\\n  var container = document.getElementById('fpick-preview-container');\\n  if (!iframe || !container) return;\\n  var w = container.offsetWidth || 800;\\n  var h = container.offsetHeight || 600;\\n  var targetW = PICKER.device === 'mobile' ? 375 : 1200;\\n  var scale = w / targetW;\\n  var scaledH = h / scale;\\n  iframe.style.width = targetW + 'px';\\n  iframe.style.height = scaledH + 'px';\\n  iframe.style.transform = 'scale(' + scale + ')';\\n}\\n\\nfunction setPickerDevice(device) {\\n  PICKER.device = device;\\n  var db = document.getElementById('picker-desktop-btn');\\n  var mb = document.getElementById('picker-mobile-btn');\\n  if (db) db.className = 'fpick-device-btn' + (device === 'desktop' ? ' active' : '');\\n  if (mb) mb.className = 'fpick-device-btn' + (device === 'mobile' ? ' active' : '');\\n  var rightPanel = document.getElementById('fpick-right-panel');\\n  if (rightPanel) {\\n    if (device === 'mobile') {\\n      rightPanel.classList.add('mobile-preview');\\n      // Sync current variant to phone iframe\\n      var mainIframe = document.getElementById('fpick-main-iframe');\\n      var phoneIframe = document.getElementById('fpick-phone-iframe');\\n      if (mainIframe && phoneIframe && mainIframe.srcdoc) {\\n        phoneIframe.srcdoc = mainIframe.srcdoc;\\n        setTimeout(pickerScalePhoneIframe, 80);\\n      }\\n    } else {\\n      rightPanel.classList.remove('mobile-preview');\\n    }\\n  }\\n  pickerScaleMainIframe();\\n}\\n\\nfunction pickerScalePhoneIframe() {\\n  var outer = document.getElementById('fpick-phone-outer');\\n  var iframe = document.getElementById('fpick-phone-iframe');\\n  if (!outer || !iframe) return;\\n  var sw = (outer.offsetWidth || 320) - 22;\\n  var sh = (outer.offsetHeight || 650) - 22;\\n  var scale = sw / 375;\\n  iframe.style.width = '375px';\\n  iframe.style.height = Math.ceil(sh / scale) + 'px';\\n  iframe.style.transform = 'scale(' + scale + ')';\\n}\\n\\nfunction pickerChoose(idx) {\\n  var variant = PICKER.variants[idx];\\n  if (!variant) return;\\n  // Flash the choose button for feedback\\n  var btn = document.querySelector('.fpick-choose-btn');\\n  if (btn) { btn.textContent = '\u2713 Selected!'; btn.style.background = '#16a34a'; }\\n  PICKER.chosen.push({\\n    sectionIndex: PICKER.currentIndex,\\n    sectionName: PICKER.sections[PICKER.currentIndex].name,\\n    html: pickerRenderTemplate(variant, PICKER.currentIndex),\\n    layout: variant.layout,\\n    slots: variant.slots\\n  });\\n  // Persist picker progress so refresh restores here\\n  dwSaveNav({ screen: 'section-picker', pickerCurrentIndex: PICKER.currentIndex + 1, pickerChosen: PICKER.chosen });\\n  setTimeout(function() { pickerLoadSection(PICKER.currentIndex + 1); }, 420);\\n}\\n\\nfunction toggleRegenInput() {\\n  var wrap = document.getElementById('picker-regen-input-wrap');\\n  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';\\n}\\n\\nasync function pickerRegenerate() {\\n  if (PICKER.regenCount >= PICKER.maxRegen) {\\n    showToast('No regenerations left. Please choose one of the options above.');\\n    return;\\n  }\\n  PICKER.regenCount++;\\n  var left = PICKER.maxRegen - PICKER.regenCount;\\n  var feedback = (document.getElementById('picker-regen-text') || {}).value || '';\\n  var btn = document.getElementById('picker-regen-btn');\\n  var status = document.getElementById('picker-regen-status');\\n  var regenLabel = document.getElementById('picker-regen-count-label');\\n  var regenAttempts = document.getElementById('picker-regen-attempts-label');\\n  if (btn) btn.disabled = true;\\n  if (status) status.textContent = (feedback && feedback.trim()) ? 'Creating from your feedback\u2026' : 'Generating 3 new options\u2026';\\n  if (regenLabel) regenLabel.textContent = left + ' left';\\n  if (regenAttempts) regenAttempts.textContent = '(' + left + ' left)';\\n  var loadingEl = document.getElementById('picker-loading-state');\\n  var optionsEl = document.getElementById('picker-options-area');\\n  if (loadingEl) { loadingEl.style.display = 'flex'; var lt = document.getElementById('picker-loading-text'); if (lt) lt.textContent = 'Generating 3 new options\u2026'; }\\n  var rightLoading2 = document.getElementById('fpick-right-loading');\\n  var rightLoadingLabel2 = document.getElementById('fpick-right-loading-label');\\n  if (rightLoading2) rightLoading2.classList.remove('hidden');\\n  if (rightLoadingLabel2) rightLoadingLabel2.textContent = (PICKER.sections[PICKER.currentIndex] || {}).name || 'Section';\\n  if (optionsEl) optionsEl.style.display = 'none';\\n  var regenText = document.getElementById('picker-regen-text');\\n  if (regenText) regenText.value = '';\\n  await pickerFetchVariants(PICKER.currentIndex, feedback);\\n}\\n\\n// Build the full deployable page HTML from chosen picker sections (no AI needed)\\nfunction pickerBuildFullPage() {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});\\n  var p1 = bp.part1 || {};\\n  var brandName = (p1.brandNames && p1.brandNames[0]) || bp.name || 'Your Brand';\\n  var fonts = (p1.visualDirection && p1.visualDirection.fonts) || {};\\n  var colors = (p1.visualDirection && p1.visualDirection.colors) || [];\\n  var headingFont = fonts.heading || 'Outfit';\\n  var bodyFont = fonts.body || 'Outfit';\\n  var primary = (colors[0] && colors[0].hex) || '#1d1d1f';\\n  var accent = (colors[2] && colors[2].hex) || '#c4703f';\\n  var bgColor = (colors[3] && colors[3].hex) || '#ffffff';\\n  var textColor = (colors[4] && colors[4].hex) || '#1d1d1f';\\n  var fontSet = [];\\n  [headingFont, bodyFont].forEach(function(f) { if (f && fontSet.indexOf(f) === -1) fontSet.push(f); });\\n  if (fontSet.indexOf('Outfit') === -1) fontSet.push('Outfit');\\n  var fontParam = fontSet.map(function(f) { return f.replace(/[^a-zA-Z0-9 ]/g,'').replace(/ /g,'+') + ':wght@300;400;500;600;700;800'; }).join('&family=');\\n\\n  // Sort chosen sections by their original index\\n  var sortedChosen = PICKER.chosen.slice().sort(function(a, b) { return a.sectionIndex - b.sectionIndex; });\\n\\n  // Nav links (max 5, using section names)\\n  var navLinks = sortedChosen.slice(0, 5).map(function(c, i) {\\n    return '<a href="#section-' + c.sectionIndex + '" style="color:' + primary + ';text-decoration:none;font-family:\\' + bodyFont + \\',Outfit,sans-serif;font-size:14px;font-weight:500;letter-spacing:0.01em;">' + (c.sectionName || '') + '</a>';\\n  }).join('');\\n\\n  var nav = '<nav style="position:sticky;top:0;z-index:100;background:' + bgColor + ';border-bottom:1px solid rgba(0,0,0,0.08);padding:0 32px;">' +\\n    '<div style="max-width:1160px;margin:0 auto;height:68px;display:flex;align-items:center;justify-content:space-between;">' +\\n    '<span style="font-family:\\' + headingFont + \\',Outfit,serif;font-size:20px;font-weight:700;color:' + primary + ';letter-spacing:-0.02em;">' + brandName + '</span>' +\\n    '<div style="display:flex;gap:32px;align-items:center;">' + navLinks + '</div>' +\\n    '</div></nav>';\\n\\n  // Section HTML wrapped with anchor IDs\\n  var sectionsHtml = sortedChosen.map(function(c) {\\n    return '<div id="section-' + c.sectionIndex + '">' + c.html + '</div>';\\n  }).join('\\n');\\n\\n  // Footer\\n  var year = new Date().getFullYear();\\n  var footer = '<footer style="background:' + primary + ';padding:52px 32px;">' +\\n    '<div style="max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">' +\\n    '<span style="font-family:\\' + headingFont + \\',Outfit,serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.01em;">' + brandName + '</span>' +\\n    '<p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0;">&copy; ' + year + ' ' + brandName + '. All rights reserved.</p>' +\\n    '</div></footer>';\\n\\n  return '<!DOCTYPE html>\\n<html lang="en">\\n<head>\\n' +\\n    '<meta charset="UTF-8">\\n' +\\n    '<meta name="viewport" content="width=device-width,initial-scale=1">\\n' +\\n    '<title>' + brandName + '</title>\\n' +\\n    '<link href="https://fonts.googleapis.com/css2?family=' + fontParam + '&display=swap" rel="stylesheet">\\n' +\\n    '<style>*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}body{font-family:\\' + bodyFont + \\',Outfit,sans-serif;background:' + bgColor + ';color:' + textColor + '}img{max-width:100%;height:auto}@media(max-width:768px){nav div:last-child{display:none}}</style>\\n' +\\n    '</head>\\n<body>\\n' +\\n    nav + '\\n' +\\n    sectionsHtml + '\\n' +\\n    footer + '\\n' +\\n    '</body>\\n</html>';\\n}\\n\\nasync function pickerAssemble() {\\n  // Show a brief assembly screen instead of the full 2-4 min generation screen\\n  showScreen('site-screen');\\n  var narrative = document.getElementById('gen-narrative');\\n  var progressEl = document.getElementById('gen-progress-bar-fill') || document.getElementById('gen-progress');\\n  var titleEl = document.querySelector('#site-screen h2') || document.querySelector('#site-screen .gen-title');\\n  if (titleEl) titleEl.textContent = 'Building Your Site';\\n  if (narrative) narrative.textContent = 'Assembling your chosen layouts\u2026';\\n  if (progressEl) progressEl.style.width = '30%';\\n  startGenAnimation();\\n  setStep(1, 'done');\\n  setStep(2, 'active');\\n\\n  try {\\n    var jwt = '';\\n    try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}\\n    var fullHtml = pickerBuildFullPage();\\n    if (narrative) narrative.textContent = 'Deploying your site\u2026';\\n    if (progressEl) progressEl.style.width = '65%';\\n    setStep(3, 'active');\\n\\n    var res = await fetch('/api/generate/deploy-picker-site', {\\n      method: 'POST',\\n      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },\\n      body: JSON.stringify({ sessionId: STATE.sessionId, html: fullHtml, chosen: PICKER.chosen, segment: STATE.currentSegment || null })\\n    });\\n    var data = await res.json();\\n    if (data.ok && data.url) {\\n      if (progressEl) progressEl.style.width = '100%';\\n      setStep(3, 'done');\\n      setStep(4, 'done');\\n      if (narrative) narrative.textContent = 'Your site is live!';\\n      STATE.siteUrl = data.url;\\n      dwSaveNav({ screen: 'site-reveal', liveUrl: data.url });\\n      setTimeout(function() { showSiteReveal(data.url); }, 800);\\n      return;\\n    }\\n    throw new Error(data.error || 'Assembly failed');\\n  } catch (e) {\\n    console.error('Fast assembly failed, falling back to full generation:', e);\\n    // Fallback: run the full generation pipeline\\n    await runSiteGeneration();\\n  }\\n}\\n\\n// \u2500\u2500 SECTION TEMPLATE RENDERING \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\\n\\nfunction pickerGetColors() {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});\\n  var vd = (bp.part1 && bp.part1.visualDirection) || {};\\n  var colors = vd.colors || [];\\n  function toHex(c) { return (c && c.hex) ? c.hex : (typeof c === 'string' ? c : ''); }\\n  // Blueprint palette: [0]=Primary, [1]=Secondary, [2]=Accent, [3]=Background, [4]=Text\\n  return {\\n    primary: toHex(colors[0]) || '#1d1d1f',\\n    accent:  toHex(colors[2]) || toHex(colors[1]) || '#c4703f',\\n    bg:      toHex(colors[3]) || '#f5f5f5',\\n    muted:   '#6b7280'\\n  };\\n}\\n\\nfunction pickerWrapHtml(sectionHtml) {\\n  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});\\n  var vdFonts = (bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.fonts) || {};\\n  var font = vdFonts.heading || vdFonts.body || 'Outfit';\\n  var safeFontName = font.replace(/[^a-zA-Z0-9 ]/g, '').replace(/ /g, '+');\\n  return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=' + safeFontName + ':wght@300;400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"' + pickerEsc(font) + '",Outfit,sans-serif}</style></head><body>' + sectionHtml + '</body></html>';\\n}\\n\\nfunction pickerEsc(str) {\\n  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\\n}\\nfunction pickerEscAttr(str) {\\n  return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    var inputEl = '<input type="text" class="intake-field-input" id="intake-f-' + i + '" placeholder="' + q.placeholder.replace(/"/g, '&quot;') + '" autocomplete="off">';
+    var dialogHtml = '';
+    if (q.dialog) {
+      var cta = q.dialogCta || 'Help me decide \u2192';
+      dialogHtml =
+        '<span class="intake-dialog-btn" onclick="intakeOpenDialog(' + i + ', \\'' + q.key + '\\')">' + cta + '</span>' +
+        '<div class="intake-dialog-panel" id="intake-dp-' + i + '">' +
+          '<div class="intake-dialog-header">' +
+            '<span class="intake-dialog-label">AI Coach</span>' +
+            '<button class="intake-dialog-close" onclick="intakeCloseDialog(' + i + ')">\xD7</button>' +
+          '</div>' +
+          '<div class="intake-dialog-messages" id="intake-dm-' + i + '"></div>' +
+          '<div id="intake-ds-' + i + '"></div>' +
+          '<div class="intake-dialog-input-row">' +
+            '<input class="intake-dialog-input" id="intake-di-' + i + '" placeholder="Type your answer..." autocomplete="off" onkeydown="if(event.key===\\'Enter\\')intakeDialogSend(' + i + ', \\'' + q.key + '\\')">' +
+            '<button class="intake-dialog-send" id="intake-db-' + i + '" onclick="intakeDialogSend(' + i + ', \\'' + q.key + '\\')">Send</button>' +
+          '</div>' +
+        '</div>';
+    }
+    return '<div class="intake-field">' +
+      '<div class="intake-field-label">' + q.label + '</div>' +
+      '<div class="intake-field-wrap">' +
+        '<span class="intake-field-icon">' + q.icon + '</span>' +
+        inputEl +
+      '</div>' +
+      '<div class="intake-field-hint">' + q.hint + '</div>' +
+      dialogHtml +
+    '</div>';
+  }).join('');
+}
+
+function intakeCollectData() {
+  var segment = STATE.currentSegment || 'expert';
+  var qs = SEGMENT_QUESTIONS[segment] || SEGMENT_QUESTIONS.expert;
+  var data = { segment: segment };
+  qs.forEach(function(q, i) {
+    var el = document.getElementById('intake-f-' + i);
+    if (el && el.value.trim()) data[q.key] = el.value.trim();
+  });
+  return data;
+}
+
+function intakeSubmit() {
+  STATE.segmentIntake = intakeCollectData();
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_intake_' + sid, '1'); } catch(_) {}
+  // Proceed to photo gate
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  if (!gateSeen && !hasPhoto) {
+    showPhotoGate();
+  } else {
+    startPregenFlow();
+  }
+}
+
+function intakeSkipAll() {
+  STATE.segmentIntake = { segment: STATE.currentSegment || 'expert', skipped: true };
+  var sid = STATE.sessionId || 'anon';
+  try { sessionStorage.setItem('dw_intake_' + sid, '1'); } catch(_) {}
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  if (!gateSeen && !hasPhoto) {
+    showPhotoGate();
+  } else {
+    startPregenFlow();
+  }
+}
+// \u2500\u2500 INTAKE DIALOG FUNCTIONS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+window.INTAKE_DIALOGS = {};
+
+function intakeOpenDialog(i, fieldKey) {
+  var panel = document.getElementById('intake-dp-' + i);
+  if (!panel) return;
+  panel.classList.add('open');
+  // Init history if fresh
+  if (!window.INTAKE_DIALOGS[i]) {
+    window.INTAKE_DIALOGS[i] = { fieldKey: fieldKey, messages: [] };
+    // Fire opening message from AI
+    intakeDialogAITurn(i, fieldKey);
+  }
+  // Focus input
+  var inp = document.getElementById('intake-di-' + i);
+  if (inp) setTimeout(function() { inp.focus(); }, 80);
+}
+
+function intakeCloseDialog(i) {
+  var panel = document.getElementById('intake-dp-' + i);
+  if (panel) panel.classList.remove('open');
+}
+
+function intakeDialogAddMsg(i, role, text) {
+  var msgs = document.getElementById('intake-dm-' + i);
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'intake-dialog-msg ' + role;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function intakeDialogSetThinking(i, on) {
+  var msgs = document.getElementById('intake-dm-' + i);
+  if (!msgs) return;
+  var existing = msgs.querySelector('.thinking');
+  if (on && !existing) {
+    var div = document.createElement('div');
+    div.className = 'intake-dialog-msg thinking';
+    div.textContent = 'Thinking...';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else if (!on && existing) {
+    existing.remove();
+  }
+}
+
+function intakeDialogShowSuggestion(i, fieldKey, suggestion) {
+  var container = document.getElementById('intake-ds-' + i);
+  if (!container) return;
+  container.innerHTML =
+    '<button class="intake-dialog-suggestion" onclick="intakeDialogUseSuggestion(' + i + ', \\'' + fieldKey + '\\')">' +
+      '<div style="flex:1">' +
+        '<span class="intake-dialog-suggestion-label">Use this answer</span>' +
+        '<span class="intake-dialog-suggestion-value" id="intake-dsv-' + i + '">' + suggestion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
+      '</div>' +
+      '<span style="font-size:18px;opacity:0.7">&#10003;</span>' +
+    '</button>';
+  // Store for retrieval
+  if (window.INTAKE_DIALOGS[i]) window.INTAKE_DIALOGS[i].lastSuggestion = suggestion;
+}
+
+function intakeDialogUseSuggestion(i, fieldKey) {
+  var s = window.INTAKE_DIALOGS[i] && window.INTAKE_DIALOGS[i].lastSuggestion;
+  if (!s) return;
+  // Fill the main input
+  var inp = document.getElementById('intake-f-' + i);
+  if (inp) {
+    inp.value = s;
+    inp.style.borderColor = '#c4703f';
+    inp.style.background = '#fffdf9';
+  }
+  intakeCloseDialog(i);
+}
+
+async function intakeDialogAITurn(i, fieldKey) {
+  var state = window.INTAKE_DIALOGS[i];
+  if (!state) return;
+  var btn = document.getElementById('intake-db-' + i);
+  if (btn) btn.disabled = true;
+  intakeDialogSetThinking(i, true);
+  try {
+    var res = await fetch('/api/intake/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: STATE.sessionId,
+        fieldKey: fieldKey,
+        messages: state.messages
+      })
+    });
+    var data = await res.json();
+    intakeDialogSetThinking(i, false);
+    if (data.reply) {
+      // Strip SUGGESTION line from display text
+      var displayText = data.reply.replace(/SUGGESTION:.*/i, '').trim();
+      intakeDialogAddMsg(i, 'ai', displayText);
+      state.messages.push({ role: 'assistant', content: data.reply });
+      if (data.suggestion) {
+        intakeDialogShowSuggestion(i, fieldKey, data.suggestion);
+      }
+    } else {
+      intakeDialogAddMsg(i, 'ai', 'Something went wrong. Try typing your answer directly.');
+    }
+  } catch (err) {
+    intakeDialogSetThinking(i, false);
+    intakeDialogAddMsg(i, 'ai', 'Could not reach the AI coach. Try typing your answer directly.');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function intakeDialogSend(i, fieldKey) {
+  var inp = document.getElementById('intake-di-' + i);
+  if (!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  // Clear previous suggestion
+  var ds = document.getElementById('intake-ds-' + i);
+  if (ds) ds.innerHTML = '';
+  var state = window.INTAKE_DIALOGS[i];
+  if (!state) { window.INTAKE_DIALOGS[i] = { fieldKey: fieldKey, messages: [] }; state = window.INTAKE_DIALOGS[i]; }
+  intakeDialogAddMsg(i, 'user', text);
+  state.messages.push({ role: 'user', content: text });
+  await intakeDialogAITurn(i, fieldKey);
+}
+// \u2500\u2500 END INTAKE DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// \u2500\u2500 TESTIMONIAL AI DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+function testimonialDialogAddMsg(role, text) {
+  var msgs = document.getElementById('testimonial-dialog-messages');
+  if (!msgs) return;
+  var div = document.createElement('div');
+  div.className = 'intake-dialog-msg ' + role;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function testimonialDialogSetThinking(on) {
+  var msgs = document.getElementById('testimonial-dialog-messages');
+  if (!msgs) return;
+  var existing = msgs.querySelector('.thinking');
+  if (on && !existing) {
+    var div = document.createElement('div');
+    div.className = 'intake-dialog-msg thinking';
+    div.textContent = 'Thinking...';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  } else if (!on && existing) {
+    existing.remove();
+  }
+}
+
+function testimonialDialogShowSuggestion(suggestion) {
+  var container = document.getElementById('testimonial-dialog-suggestion');
+  if (!container) return;
+  window._testimonialLastSuggestion = suggestion;
+  container.innerHTML =
+    '<button class="intake-dialog-suggestion" onclick="testimonialDialogUseSuggestion()">' +
+      '<div style="flex:1">' +
+        '<span class="intake-dialog-suggestion-label">Use these testimonials</span>' +
+        '<span class="intake-dialog-suggestion-value" style="white-space:pre-wrap;">' + suggestion.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
+      '</div>' +
+      '<span style="font-size:18px;opacity:0.7">&#10003;</span>' +
+    '</button>';
+}
+
+function testimonialDialogUseSuggestion() {
+  var s = window._testimonialLastSuggestion;
+  if (!s) return;
+  var textarea = document.getElementById('custom-testimonials-input');
+  if (textarea) {
+    textarea.value = s;
+    textarea.style.borderColor = '#c4703f';
+    textarea.style.background = '#fffdf9';
+  }
+  // Clear the suggestion button and show a confirmation message
+  var container = document.getElementById('testimonial-dialog-suggestion');
+  if (container) {
+    container.innerHTML = '<div style="font-size:12px;color:#c4703f;font-weight:600;padding:8px 4px;">Testimonials saved above. You can still edit them before building your site.</div>';
+  }
+}
+
+async function testimonialDialogAITurn() {
+  var messages = window.TESTIMONIAL_DIALOG_MESSAGES || [];
+  var sendBtn = document.getElementById('testimonial-dialog-send-btn');
+  if (sendBtn) sendBtn.disabled = true;
+  testimonialDialogSetThinking(true);
+  try {
+    var res = await fetch('/api/intake/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: STATE.sessionId,
+        fieldKey: 'testimonials',
+        messages: messages
+      })
+    });
+    var data = await res.json();
+    testimonialDialogSetThinking(false);
+    if (data.reply) {
+      var displayText = data.reply.replace(/SUGGESTION:.*/i, '').trim();
+      testimonialDialogAddMsg('ai', displayText);
+      window.TESTIMONIAL_DIALOG_MESSAGES.push({ role: 'assistant', content: data.reply });
+      if (data.suggestion) {
+        testimonialDialogShowSuggestion(data.suggestion);
+      }
+    } else {
+      testimonialDialogAddMsg('ai', 'Something went wrong. Try typing a client win to get started.');
+    }
+  } catch (err) {
+    testimonialDialogSetThinking(false);
+    testimonialDialogAddMsg('ai', 'Could not reach the AI coach. Try typing a client win directly.');
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+  }
+}
+
+async function testimonialDialogSend() {
+  var inp = document.getElementById('testimonial-dialog-input');
+  if (!inp || !inp.value.trim()) return;
+  var text = inp.value.trim();
+  inp.value = '';
+  // Clear previous suggestion
+  var ds = document.getElementById('testimonial-dialog-suggestion');
+  if (ds) ds.innerHTML = '';
+  if (!window.TESTIMONIAL_DIALOG_MESSAGES) window.TESTIMONIAL_DIALOG_MESSAGES = [];
+  testimonialDialogAddMsg('user', text);
+  window.TESTIMONIAL_DIALOG_MESSAGES.push({ role: 'user', content: text });
+  await testimonialDialogAITurn();
+}
+// \u2500\u2500 END TESTIMONIAL AI DIALOG \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+// \u2500\u2500 END SEGMENT INTAKE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+async function runSiteGeneration() {
+  try {
+    // Start overlay animation
+    startGenAnimation();
+    // Step 1: Preparing context
+    await delay(800);
+    setStep(1, 'done');
+    setStep(2, 'active');
+
+    // Generate images (non-blocking, site can work without images)
+    let imgOk = false;
+    try {
+      const imgRes = await fetch('/api/generate/images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: STATE.sessionId })
+      });
+      const imgData = await imgRes.json();
+      imgOk = imgData.ok;
+    } catch (_) {
+      // Images failed, continue without them
+    }
+
+    setStep(2, imgOk ? 'done' : 'done');
+    setStep(3, 'active');
+
+    // Generate site HTML with automatic retry on 502/503/timeout
+    async function fetchWithRetry(url, options, maxRetries) {
+      maxRetries = maxRetries || 2;
+      for (var attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          var res = await fetch(url, options);
+          if (res.status === 502 || res.status === 503 || res.status === 504) {
+            if (attempt < maxRetries) {
+              console.warn('Site generation attempt ' + attempt + ' returned ' + res.status + ', retrying...');
+              await delay(2000);
+              continue;
+            }
+          }
+          return res;
+        } catch (networkErr) {
+          if (attempt < maxRetries) {
+            console.warn('Site generation attempt ' + attempt + ' network error, retrying...');
+            await delay(2000);
+            continue;
+          }
+          throw networkErr;
+        }
+      }
+    }
+
+    // Get testimonial preference
+    var testimPref = typeof getTestimonialPref === 'function' ? getTestimonialPref() : { pref: 'generate', customText: '' };
+
+    const siteRes = await fetchWithRetry('/api/generate/site', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId, testimonialPref: testimPref.pref, customTestimonials: testimPref.customText, segmentIntake: STATE.segmentIntake || null, segment: STATE.currentSegment || null, userPhotoUrl: (window.PICKER_PHOTO && (window.PICKER_PHOTO.processedUrl || window.PICKER_PHOTO.dataUrl)) || null })
+    }, 2);
+
+    if (!siteRes.ok) {
+      const errData = await siteRes.json().catch(function() { return {}; });
+      throw new Error(errData.error || 'Site generation failed (status ' + siteRes.status + ')');
+    }
+
+    const siteData = await siteRes.json();
+
+    if (siteData.html) {
+      STATE.generatedSiteHtml = siteData.html;
+    }
+
+    setStep(3, 'done');
+
+    // Per-section finalization: show each section name in the narrative
+    // This gives the "designed beforehand" experience the user expects
+    try {
+      var bpGen = STATE.blueprint?.blueprint || STATE.blueprint || {};
+      var bpGenSections = bpGen.part5?.sections || [];
+      if (bpGenSections.length > 0) {
+        var sectionNarratives = ['Perfecting your hero section...'];
+        bpGenSections.forEach(function(s) {
+          sectionNarratives.push('Perfecting ' + (s.name || 'section') + '...');
+        });
+        sectionNarratives.push('Polishing the footer...');
+        setGenProgress(72);
+        for (var sni = 0; sni < sectionNarratives.length; sni++) {
+          var narEl2 = document.getElementById('gen-narrative');
+          if (narEl2) {
+            narEl2.style.opacity = '0';
+            await delay(140);
+            narEl2.textContent = sectionNarratives[sni];
+            narEl2.style.opacity = '1';
+          }
+          setGenProgress(72 + Math.round((sni + 1) / sectionNarratives.length * 16));
+          await delay(Math.round(1800 / Math.max(sectionNarratives.length, 1)));
+        }
+      }
+    } catch(_) {}
+
+    // Step 4: SEO + Launch Optimization (happens during deploy)
+    setStep(4, 'active');
+    await delay(600);
+
+    // Step 5: Deploy (SEO injection happens server side in handleDeploy)
+    setStep(4, 'done');
+    setStep(5, 'active');
+
+    let deployUrl = null;
+    let deployProject = null;
+    try {
+      const deployRes = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: STATE.sessionId })
+      });
+      const deployData = await deployRes.json();
+      if (deployData.url) {
+        deployUrl = deployData.url;
+        deployProject = deployData.slug || deployData.projectName;
+      } else if (deployData.error) {
+        console.error('Deploy error:', deployData.error);
+      }
+    } catch (deployErr) {
+      console.error('Deploy network error:', deployErr);
+    }
+
+    setStep(5, 'done');
+    stopGenAnimation();
+
+    if (deployUrl) {
+      STATE.liveUrl = deployUrl;
+      STATE.projectName = deployProject;
+      await delay(1200);
+    }
+
+    showSiteReveal(deployUrl);
+
+  } catch (e) {
+    console.error('Site generation error:', e);
+    stopGenAnimation();
+    // Show error in the generation screen instead of just a toast
+    const stepsEl = document.getElementById('gen-steps');
+    if (stepsEl) {
+      stepsEl.innerHTML += '<div style="margin-top:24px;padding:16px 20px;background:#fdf2f2;border:1.5px solid #e74c3c;border-radius:10px;color:#c0392b;font-size:14px;line-height:1.6;"><strong>Something went wrong</strong><br>' + (e.message || 'An unexpected error occurred.') + '<br><br><button class="btn btn-gold" onclick="runSiteGeneration()" style="padding:10px 20px;font-size:14px;">Try Again</button> <button class="btn" onclick="location.reload()" style="padding:10px 20px;font-size:14px;margin-left:8px;">Refresh Page</button></div>';
+    }
+  }
+}
+
+function showMissionControl(liveUrl, projectName) {
+  showScreen('mission-control');
+  const bp = STATE.blueprint?.blueprint || STATE.blueprint || {};
+  const brandName = bp.part1?.brandNames?.[0] || 'Your Brand';
+  const mcBrand = document.getElementById('mc-brand-name');
+  if (mcBrand) mcBrand.textContent = brandName;
+
+  const urlSection = document.getElementById('mc-live-url');
+  const urlLink = document.getElementById('mc-url-link');
+  const visitBtn = document.getElementById('mc-visit-btn');
+  const previewFrame = document.getElementById('mc-preview');
+  const previewPlaceholder = document.getElementById('mc-preview-placeholder');
+  const previewDomain = document.getElementById('mc-preview-domain');
+  const noUrl = document.getElementById('mc-no-url');
+
+  if (liveUrl) {
+    if (urlSection) urlSection.style.display = '';
+    if (noUrl) noUrl.style.display = 'none';
+    if (urlLink) { urlLink.href = liveUrl; urlLink.textContent = liveUrl.replace('https://',''); }
+    if (visitBtn) visitBtn.href = liveUrl;
+    if (previewDomain) previewDomain.textContent = liveUrl.replace('https://','');
+    if (previewFrame) {
+      previewFrame.src = liveUrl;
+      previewFrame.style.display = '';
+      previewFrame.onload = function() {
+        if (previewPlaceholder) previewPlaceholder.style.display = 'none';
+      };
+    }
+  } else {
+    if (urlSection) urlSection.style.display = 'none';
+    if (noUrl) noUrl.style.display = '';
+    if (previewFrame) previewFrame.style.display = 'none';
+    if (previewPlaceholder) previewPlaceholder.textContent = 'Deploy is processing...';
+  }
+}
+
+async function downloadSite() {
+  const btn = document.getElementById('download-site-btn');
+  const originalText = btn ? btn.textContent : 'Download Site';
+  try {
+    if (btn) { btn.textContent = 'Preparing...'; btn.disabled = true; }
+    const exportHeaders = {};
+    if (STATE.sessionJwt) exportHeaders['Authorization'] = 'Bearer ' + STATE.sessionJwt;
+    const res = await fetch('/api/export-site?sessionId=' + STATE.sessionId, { headers: exportHeaders });
+    if (!res.ok) throw new Error('status ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const bp = STATE.blueprint?.blueprint || {};
+    const brandName = bp.part1?.brandNames?.[0] || 'my-site';
+    const safeName = brandName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'my-site';
+    a.download = safeName + '.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Download started!');
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
+  } catch (e) {
+    showToast('Download failed \u2014 please try again.');
+    if (btn) { btn.textContent = originalText; btn.disabled = false; }
+  }
+}
+
+function copyMcUrl() {
+  const url = document.getElementById('mc-url-link')?.href;
+  if (url) {
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('mc-copy-btn');
+      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy Link', 2000); }
+    });
+  }
+}
+
+function emailMySite() {
+  const url = document.getElementById('mc-url-link')?.href || '';
+  const brand = document.getElementById('mc-brand-name')?.textContent || 'My Website';
+  window.open('mailto:?subject=' + encodeURIComponent(brand + ' is Live') + '&body=' + encodeURIComponent('Check out my new website: ' + url), '_blank');
+}
+
+function handleBookCall() {
+  // Redirect to strategy call checkout
+  handleCheckoutRedirect('call');
+}
+
+async function handleCheckoutRedirect(tier) {
+  try {
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId, tier })
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else showToast('Could not start checkout. Please try again.');
+  } catch (e) {
+    showToast('Something went wrong. Please try again.');
+  }
+}
+
+function setStep(num, state) {
+  updateSiteGenState(num, state);
+}
+function updateSiteGenState(num, state) {
+  // Update step visual
+  var el = document.getElementById('step-' + num + '-icon');
+  if (!el) return;
+  el.className = 'step-icon ' + state;
+  el.textContent = '';
+  // Update step text color (dark Atelier theme)
+  var row = document.getElementById('gen-step-row-' + num);
+  if (row) {
+    var title = row.querySelector('.gen-step-title');
+    var desc = row.querySelector('.gen-step-desc');
+    if (title) title.style.color = (state === 'pending') ? '#c8c0b8' : '#1d1d1f';
+    if (desc) desc.style.color = (state === 'pending') ? '#ddd8d2' : (state === 'active' ? '#c4703f' : '#b0a89e');
+  }
+  // Populate name from STATE if available
+  var nameEl = document.getElementById('gen-preview-name');
+  if (nameEl && STATE && STATE.blueprint && STATE.blueprint.blueprint && STATE.blueprint.blueprint.name) {
+    nameEl.textContent = STATE.blueprint.blueprint.name;
+  }
+  // Unblur preview at step 3+
+  var wrap = document.getElementById('site-gen-preview-wrap');
+  if (wrap && num >= 3 && state !== 'pending') {
+    wrap.style.filter = 'blur(1px)';
+  }
+  if (wrap && state === 'done' && num === 5) {
+    wrap.style.filter = 'blur(0px)';
+  }
+  // Update status label
+  var labels = ['', 'Preparing your brand...', 'Generating brand imagery...', 'Writing your website...', 'Optimizing for search...', 'Deploying to the web...'];
+  var labelEl = document.getElementById('gen-status-label');
+  if (labelEl && labels[num]) labelEl.textContent = labels[num];
+  // Update overlay progress
+  var pctMap = { '1_active': 5, '1_done': 12, '2_active': 18, '2_done': 38, '3_active': 42, '3_done': 78, '4_active': 82, '4_done': 88, '5_active': 92, '5_done': 100 };
+  var pKey = num + '_' + state;
+  if (pctMap[pKey]) setGenProgress(pctMap[pKey]);
+}
+
+
+// \u2500\u2500 SITE GEN OVERLAY ANIMATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+var GEN_ANIM = { pct: 0, target: 0, interval: null, codeInterval: null, narrativeInterval: null, codeLines: 0 };
+
+var GEN_CODE_SNIPPETS = [
+  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"hero"</span><span style="color:#c4703f">&gt;</span>',
+  '  <span style="color:#86868b">background:</span> <span style="color:#2d6a4f">linear-gradient(135deg, #1B2A4A, #D4A853)</span>;',
+  '  <span style="color:#c4703f">&lt;h1&gt;</span><span style="color:#1d1d1f">Your Brand Headline</span><span style="color:#c4703f">&lt;/h1&gt;</span>',
+  '  <span style="color:#86868b">font-family:</span> <span style="color:#2d6a4f">Outfit, sans-serif</span>;',
+  '  <span style="color:#86868b">font-weight:</span> <span style="color:#2d6a4f">700</span>;',
+  '<span style="color:#c4703f">&lt;/section&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Services grid */</span>',
+  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"services"</span><span style="color:#c4703f">&gt;</span>',
+  '  <span style="color:#86868b">display:</span> <span style="color:#2d6a4f">grid</span>;',
+  '  <span style="color:#86868b">grid-template-columns:</span> <span style="color:#2d6a4f">repeat(3, 1fr)</span>;',
+  '  <span style="color:#86868b">gap:</span> <span style="color:#2d6a4f">24px</span>;',
+  '  <span style="color:#c4703f">&lt;div</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"card"</span><span style="color:#c4703f">&gt;</span>',
+  '    <span style="color:#86868b">border-radius:</span> <span style="color:#2d6a4f">12px</span>;',
+  '    <span style="color:#86868b">box-shadow:</span> <span style="color:#2d6a4f">0 2px 16px rgba(0,0,0,0.06)</span>;',
+  '  <span style="color:#c4703f">&lt;/div&gt;</span>',
+  '<span style="color:#c4703f">&lt;/section&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* About section */</span>',
+  '<span style="color:#c4703f">&lt;section</span> <span style="color:#86868b">class=</span><span style="color:#2d6a4f">"about"</span><span style="color:#c4703f">&gt;</span>',
+  '  <span style="color:#c4703f">&lt;img</span> <span style="color:#86868b">src=</span><span style="color:#2d6a4f">"hero-portrait.jpg"</span> <span style="color:#c4703f">/&gt;</span>',
+  '  <span style="color:#c4703f">&lt;p&gt;</span><span style="color:#1d1d1f">Your story, your way.</span><span style="color:#c4703f">&lt;/p&gt;</span>',
+  '<span style="color:#c4703f">&lt;/section&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Testimonials */</span>',
+  '<span style="color:#c4703f">&lt;blockquote&gt;</span>',
+  '  <span style="color:#1d1d1f">"This transformed our business..."</span>',
+  '<span style="color:#c4703f">&lt;/blockquote&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Footer */</span>',
+  '<span style="color:#c4703f">&lt;footer&gt;</span>',
+  '  <span style="color:#86868b">background:</span> <span style="color:#2d6a4f">#1d1d1f</span>;',
+  '  <span style="color:#c4703f">&lt;nav&gt;</span> <span style="color:#1d1d1f">Home | About | Services | Contact</span> <span style="color:#c4703f">&lt;/nav&gt;</span>',
+  '<span style="color:#c4703f">&lt;/footer&gt;</span>',
+  '',
+  '<span style="color:#86868b">/* Responsive */</span>',
+  '<span style="color:#c4703f">@media</span> <span style="color:#2d6a4f">(max-width: 768px)</span> {',
+  '  <span style="color:#86868b">.hero h1</span> { font-size: <span style="color:#2d6a4f">32px</span>; }',
+  '  <span style="color:#86868b">.services</span> { grid-template-columns: <span style="color:#2d6a4f">1fr</span>; }',
+  '}',
+];
+
+var GEN_NARRATIVES = [
+  'Preparing your brand story...',
+  'Selecting your color palette...',
+  'Crafting your hero section...',
+  'Writing copy that converts...',
+  'Designing your services layout...',
+  'Building your about page...',
+  'Adding social proof sections...',
+  'Optimizing for mobile screens...',
+  'Setting up SEO metadata...',
+  'Polishing the details...',
+  'Almost there...',
+];
+
+function startGenAnimation() {
+  GEN_ANIM.pct = 0;
+  GEN_ANIM.target = 3;
+  GEN_ANIM.codeLines = 0;
+  // Reset progress bar and counter
+  var pb = document.getElementById('atelier-progress-bar');
+  if (pb) pb.style.width = '0%';
+  var pctEl = document.getElementById('gen-pct');
+  if (pctEl) pctEl.textContent = '0';
+
+  // Smooth percentage counter + thin progress bar
+  GEN_ANIM.interval = setInterval(function() {
+    if (GEN_ANIM.pct < GEN_ANIM.target) {
+      GEN_ANIM.pct = Math.min(GEN_ANIM.pct + 1, GEN_ANIM.target);
+      var pe = document.getElementById('gen-pct');
+      if (pe) pe.textContent = String(GEN_ANIM.pct);
+      var bar = document.getElementById('atelier-progress-bar');
+      if (bar) bar.style.width = GEN_ANIM.pct + '%';
+    }
+  }, 150);
+
+  // Narrative ticker
+  var narIdx = 0;
+  GEN_ANIM.narrativeInterval = setInterval(function() {
+    var el = document.getElementById('gen-narrative');
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(function() {
+      narIdx = (narIdx + 1) % GEN_NARRATIVES.length;
+      el.textContent = GEN_NARRATIVES[narIdx];
+      el.style.opacity = '1';
+    }, 400);
+  }, 3200);
+}
+
+function setGenProgress(target) {
+  GEN_ANIM.target = Math.min(target, 100);
+}
+
+function stopGenAnimation() {
+  if (GEN_ANIM.interval) clearInterval(GEN_ANIM.interval);
+  if (GEN_ANIM.codeInterval) clearInterval(GEN_ANIM.codeInterval);
+  if (GEN_ANIM.narrativeInterval) clearInterval(GEN_ANIM.narrativeInterval);
+  GEN_ANIM.pct = 100;
+  GEN_ANIM.target = 100;
+  var pe = document.getElementById('gen-pct');
+  if (pe) pe.textContent = '100';
+  var bar = document.getElementById('atelier-progress-bar');
+  if (bar) bar.style.width = '100%';
+  var ne = document.getElementById('gen-narrative');
+  if (ne) ne.textContent = 'Your site is ready.';
+}
+
+// \u2500\u2500 SECTION PICKER FLOW \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+var PICKER = {
+  sections: [],
+  currentIndex: 0,
+  device: 'desktop',
+  regenCount: 0,
+  maxRegen: 3,
+  chosen: [],
+  variants: [],
+  viewingOption: 0,
+  renderedVariants: []
+};
+
+// \u2500\u2500 SESSION NAVIGATION CACHE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Persists which screen the user was on so refresh doesn't send them
+// back to the blueprint. Keyed by sessionId, expires after 14 hours.
+var DW_NAV_TTL = 14 * 3600 * 1000;
+
+function dwSaveNav(state) {
+  if (!STATE.sessionId) return;
+  try {
+    localStorage.setItem('dw_nav_' + STATE.sessionId, JSON.stringify(Object.assign({ ts: Date.now() }, state)));
+  } catch(_) {}
+}
+
+function dwGetSavedNav(sessionId) {
+  try {
+    var k = 'dw_nav_' + (sessionId || STATE.sessionId);
+    var raw = localStorage.getItem(k);
+    if (!raw) return null;
+    var d = JSON.parse(raw);
+    if (Date.now() - (d.ts || 0) > DW_NAV_TTL) { localStorage.removeItem(k); return null; }
+    return d;
+  } catch(_) { return null; }
+}
+
+function dwClearNav() {
+  if (!STATE.sessionId) return;
+  try { localStorage.removeItem('dw_nav_' + STATE.sessionId); } catch(_) {}
+}
+
+function dwRestorePickerFromNav(nav, blueprint) {
+  var bp = blueprint && blueprint.blueprint ? blueprint.blueprint : blueprint;
+  var sections = bp && bp.part5 && bp.part5.sections;
+  if (!sections || sections.length === 0) return false;
+  // Check if photo gate needs to run first (it's per-session, cleared on refresh by design)
+  var sid = STATE.sessionId || 'anon';
+  var hasPhoto = !!(window.PICKER_PHOTO && window.PICKER_PHOTO.dataUrl);
+  var gateSeen = false;
+  try { gateSeen = !!sessionStorage.getItem('dw_photo_gate_' + sid); } catch(_) {}
+  if (!hasPhoto && !gateSeen) {
+    // Stash restore info, show photo gate first, then resume
+    STATE._pendingPickerRestore = nav;
+    STATE._pendingPickerBlueprint = blueprint;
+    showPhotoGate();
+    return true;
+  }
+  dwDoRestorePicker(nav, sections);
+  return true;
+}
+
+function dwDoRestorePicker(nav, sections) {
+  var restoreIdx = Math.min(nav.pickerCurrentIndex || 0, sections.length - 1);
+  PICKER.sections = sections;
+  PICKER.currentIndex = restoreIdx;
+  PICKER.regenCount = 0;
+  PICKER.chosen = nav.pickerChosen || [];
+  PICKER.variants = [];
+  PICKER.preloaded = {};
+  PICKER.sectionImages = {};
+  PICKER.viewingOption = 0;
+  PICKER.renderedVariants = [];
+  showScreen('section-picker');
+  showToast('Resuming where you left off\u2026');
+  pickerLoadSection(restoreIdx);
+}
+
+var PICKER_PREVIEW_HEIGHT = 340;
+
+function startSectionPickerFlow() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : STATE.blueprint;
+  var sections = bp && bp.part5 && bp.part5.sections;
+  if (!sections || sections.length === 0) {
+    showScreen('site-screen');
+    runSiteGeneration();
+    return;
+  }
+  PICKER.sections = sections;
+  PICKER.currentIndex = 0;
+  PICKER.regenCount = 0;
+  PICKER.chosen = [];
+  PICKER.variants = [];
+  showScreen('section-picker');
+  fpickPhotoInit();
+  pickerLoadSection(0);
+}
+
+function pickerLoadSection(idx) {
+  if (idx >= PICKER.sections.length) {
+    pickerAssemble();
+    return;
+  }
+  PICKER.currentIndex = idx;
+  PICKER.regenCount = 0;
+  PICKER.variants = [];
+  var section = PICKER.sections[idx];
+  var total = PICKER.sections.length;
+
+  var stepLabel = document.getElementById('picker-step-label');
+  var nameHeader = document.getElementById('picker-section-name-header');
+  var fill = document.getElementById('picker-progress-fill');
+  var regenLabel = document.getElementById('picker-regen-count-label');
+  var regenAttempts = document.getElementById('picker-regen-attempts-label');
+
+  if (stepLabel) stepLabel.textContent = 'Section ' + (idx + 1) + ' of ' + total;
+  if (nameHeader) nameHeader.textContent = section.name || 'Section';
+  if (fill) fill.style.width = (idx / total * 100) + '%';
+  if (regenLabel) regenLabel.textContent = PICKER.maxRegen + ' left';
+  if (regenAttempts) regenAttempts.textContent = '(' + PICKER.maxRegen + ' left)';
+
+  var loadingEl = document.getElementById('picker-loading-state');
+  var optionsEl = document.getElementById('picker-options-area');
+  if (loadingEl) loadingEl.style.display = 'flex';
+  if (optionsEl) optionsEl.style.display = 'none';
+  // Clear any regen feedback text from previous section
+  var regenText = document.getElementById('picker-regen-text');
+  if (regenText) regenText.value = '';
+  var regenStatus = document.getElementById('picker-regen-status');
+  if (regenStatus) regenStatus.textContent = '';
+
+  var loadText = document.getElementById('picker-loading-text');
+  if (loadText) loadText.textContent = 'Generating 3 options for \u201C' + (section.name || 'this section') + '\u201D\u2026';
+
+  // Show right-panel loading overlay
+  var rightLoading = document.getElementById('fpick-right-loading');
+  var rightLoadingLabel = document.getElementById('fpick-right-loading-label');
+  if (rightLoading) rightLoading.classList.remove('hidden');
+  if (rightLoadingLabel) rightLoadingLabel.textContent = section.name || 'Section';
+
+  // Use preloaded variants if available (populated by pregen screen)
+  if (PICKER.preloaded && PICKER.preloaded[idx]) {
+    var cached = PICKER.preloaded[idx];
+    PICKER.variants = cached;
+    pickerRenderOptions(cached);
+    return;
+  }
+
+  pickerFetchVariants(idx, null);
+}
+
+async function pickerFetchVariants(idx, feedback) {
+  try {
+    var res = await fetch('/api/generate/section-variants', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('dw_session') || '') },
+      body: JSON.stringify({ sessionId: STATE.sessionId, sectionIndex: idx, feedback: feedback || null })
+    });
+    if (!res.ok) throw new Error('Generation failed (' + res.status + ')');
+    var data = await res.json();
+    if (!data.variants || data.variants.length === 0) throw new Error('No variants returned');
+    PICKER.variants = data.variants;
+    pickerRenderOptions(data.variants);
+  } catch (e) {
+    var loadText = document.getElementById('picker-loading-text');
+    if (loadText) loadText.textContent = 'Something went wrong \u2014 ';
+    var loadingEl = document.getElementById('picker-loading-state');
+    if (loadingEl) {
+      var retryBtn = document.createElement('button');
+      retryBtn.textContent = 'Try Again';
+      retryBtn.style.cssText = 'padding:10px 24px;background:#1d1d1f;color:#fff;border:none;border-radius:50px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;';
+      retryBtn.onclick = function() { pickerFetchVariants(idx, feedback); };
+      loadingEl.appendChild(retryBtn);
+    }
+  }
+}
+
+function pickerRenderOptions(variants) {
+  var loadingEl = document.getElementById('picker-loading-state');
+  var optionsEl = document.getElementById('picker-options-area');
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (optionsEl) { optionsEl.style.display = 'flex'; optionsEl.style.flexDirection = 'column'; optionsEl.style.gap = '14px'; }
+  // Hide right-panel loading overlay
+  var rightLoading = document.getElementById('fpick-right-loading');
+  if (rightLoading) rightLoading.classList.add('hidden');
+  // Reset regen button + clear status
+  var regenBtn = document.getElementById('picker-regen-btn');
+  var regenStatus = document.getElementById('picker-regen-status');
+  if (regenBtn) regenBtn.disabled = false;
+  if (regenStatus) regenStatus.textContent = '';
+
+  // Always reset choose button to default state for new section
+  var chooseBtn = document.querySelector('.fpick-choose-btn');
+  if (chooseBtn) { chooseBtn.textContent = 'Choose this layout \u2192'; chooseBtn.style.background = ''; }
+
+  var section = PICKER.sections[PICKER.currentIndex];
+  var eyebrow = document.getElementById('picker-eyebrow-text');
+  if (eyebrow) eyebrow.textContent = section.name;
+
+  // Pre-render all variant HTML for fast switching
+  PICKER.renderedVariants = variants.map(function(v) {
+    return pickerWrapHtml(pickerRenderTemplate(v));
+  });
+
+  PICKER.viewingOption = 0;
+  pickerShowOption(0);
+  setTimeout(function() { pickerScaleMainIframe(); }, 80);
+}
+
+function pickerShowOption(i) {
+  var variants = PICKER.variants;
+  if (!variants || !variants[i]) return;
+  PICKER.viewingOption = i;
+  var v = variants[i];
+  var confClass = v.confidence >= 80 ? 'high' : v.confidence >= 65 ? 'mid' : 'low';
+
+  // Update dots
+  for (var d = 0; d < 3; d++) {
+    var dot = document.getElementById('fpick-dot-' + d);
+    if (dot) dot.className = 'fpick-option-dot' + (d === i ? ' active' : '');
+  }
+
+  // Update info card
+  var titleEl = document.getElementById('fpick-option-title');
+  var ratEl = document.getElementById('fpick-option-rationale');
+  var confEl = document.getElementById('fpick-confidence');
+  var counterEl = document.getElementById('fpick-counter');
+  if (titleEl) titleEl.textContent = v.title || ('Option ' + (i + 1));
+  if (ratEl) ratEl.textContent = v.rationale || '';
+  if (confEl) { confEl.className = 'fpick-confidence-pill ' + confClass; confEl.textContent = (v.confidence || 80) + '% match'; }
+  if (counterEl) counterEl.textContent = (i + 1) + ' / ' + variants.length;
+
+  // Update prev/next buttons
+  var prevBtn = document.getElementById('fpick-prev-btn');
+  var nextBtn = document.getElementById('fpick-next-btn');
+  if (prevBtn) prevBtn.disabled = (i === 0);
+  if (nextBtn) nextBtn.disabled = (i >= variants.length - 1);
+
+  // Update iframe srcdoc
+  var iframe = document.getElementById('fpick-main-iframe');
+  if (iframe && PICKER.renderedVariants[i]) {
+    iframe.srcdoc = PICKER.renderedVariants[i];
+  }
+  // Sync to phone iframe if in mobile mode
+  if (PICKER.device === 'mobile') {
+    var phoneIframe = document.getElementById('fpick-phone-iframe');
+    if (phoneIframe && PICKER.renderedVariants[i]) {
+      phoneIframe.srcdoc = PICKER.renderedVariants[i];
+      setTimeout(pickerScalePhoneIframe, 80);
+    }
+  }
+  setTimeout(function() { pickerScaleMainIframe(); }, 60);
+}
+
+function pickerPrevOption() {
+  if (PICKER.viewingOption > 0) pickerShowOption(PICKER.viewingOption - 1);
+}
+
+function pickerNextOption() {
+  if (PICKER.viewingOption < PICKER.variants.length - 1) pickerShowOption(PICKER.viewingOption + 1);
+}
+
+function pickerChooseViewing() {
+  pickerChoose(PICKER.viewingOption);
+}
+
+function pickerScaleMainIframe() {
+  var iframe = document.getElementById('fpick-main-iframe');
+  var container = document.getElementById('fpick-preview-container');
+  if (!iframe || !container) return;
+  var w = container.offsetWidth || 800;
+  var h = container.offsetHeight || 600;
+  var targetW = PICKER.device === 'mobile' ? 375 : 1200;
+  var scale = w / targetW;
+  var scaledH = h / scale;
+  iframe.style.width = targetW + 'px';
+  iframe.style.height = scaledH + 'px';
+  iframe.style.transform = 'scale(' + scale + ')';
+}
+
+function setPickerDevice(device) {
+  PICKER.device = device;
+  var db = document.getElementById('picker-desktop-btn');
+  var mb = document.getElementById('picker-mobile-btn');
+  if (db) db.className = 'fpick-device-btn' + (device === 'desktop' ? ' active' : '');
+  if (mb) mb.className = 'fpick-device-btn' + (device === 'mobile' ? ' active' : '');
+  var rightPanel = document.getElementById('fpick-right-panel');
+  if (rightPanel) {
+    if (device === 'mobile') {
+      rightPanel.classList.add('mobile-preview');
+      // Sync current variant to phone iframe
+      var mainIframe = document.getElementById('fpick-main-iframe');
+      var phoneIframe = document.getElementById('fpick-phone-iframe');
+      if (mainIframe && phoneIframe && mainIframe.srcdoc) {
+        phoneIframe.srcdoc = mainIframe.srcdoc;
+        setTimeout(pickerScalePhoneIframe, 80);
+      }
+    } else {
+      rightPanel.classList.remove('mobile-preview');
+    }
+  }
+  pickerScaleMainIframe();
+}
+
+function pickerScalePhoneIframe() {
+  var outer = document.getElementById('fpick-phone-outer');
+  var iframe = document.getElementById('fpick-phone-iframe');
+  if (!outer || !iframe) return;
+  var sw = (outer.offsetWidth || 320) - 22;
+  var sh = (outer.offsetHeight || 650) - 22;
+  var scale = sw / 375;
+  iframe.style.width = '375px';
+  iframe.style.height = Math.ceil(sh / scale) + 'px';
+  iframe.style.transform = 'scale(' + scale + ')';
+}
+
+function pickerChoose(idx) {
+  var variant = PICKER.variants[idx];
+  if (!variant) return;
+  // Flash the choose button for feedback
+  var btn = document.querySelector('.fpick-choose-btn');
+  if (btn) { btn.textContent = '\u2713 Selected!'; btn.style.background = '#16a34a'; }
+  PICKER.chosen.push({
+    sectionIndex: PICKER.currentIndex,
+    sectionName: PICKER.sections[PICKER.currentIndex].name,
+    html: pickerRenderTemplate(variant, PICKER.currentIndex),
+    layout: variant.layout,
+    slots: variant.slots
+  });
+  // Persist picker progress so refresh restores here
+  dwSaveNav({ screen: 'section-picker', pickerCurrentIndex: PICKER.currentIndex + 1, pickerChosen: PICKER.chosen });
+  setTimeout(function() { pickerLoadSection(PICKER.currentIndex + 1); }, 420);
+}
+
+function toggleRegenInput() {
+  var wrap = document.getElementById('picker-regen-input-wrap');
+  if (wrap) wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+}
+
+async function pickerRegenerate() {
+  if (PICKER.regenCount >= PICKER.maxRegen) {
+    showToast('No regenerations left. Please choose one of the options above.');
+    return;
+  }
+  PICKER.regenCount++;
+  var left = PICKER.maxRegen - PICKER.regenCount;
+  var feedback = (document.getElementById('picker-regen-text') || {}).value || '';
+  var btn = document.getElementById('picker-regen-btn');
+  var status = document.getElementById('picker-regen-status');
+  var regenLabel = document.getElementById('picker-regen-count-label');
+  var regenAttempts = document.getElementById('picker-regen-attempts-label');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = (feedback && feedback.trim()) ? 'Creating from your feedback\u2026' : 'Generating 3 new options\u2026';
+  if (regenLabel) regenLabel.textContent = left + ' left';
+  if (regenAttempts) regenAttempts.textContent = '(' + left + ' left)';
+  var loadingEl = document.getElementById('picker-loading-state');
+  var optionsEl = document.getElementById('picker-options-area');
+  if (loadingEl) { loadingEl.style.display = 'flex'; var lt = document.getElementById('picker-loading-text'); if (lt) lt.textContent = 'Generating 3 new options\u2026'; }
+  var rightLoading2 = document.getElementById('fpick-right-loading');
+  var rightLoadingLabel2 = document.getElementById('fpick-right-loading-label');
+  if (rightLoading2) rightLoading2.classList.remove('hidden');
+  if (rightLoadingLabel2) rightLoadingLabel2.textContent = (PICKER.sections[PICKER.currentIndex] || {}).name || 'Section';
+  if (optionsEl) optionsEl.style.display = 'none';
+  var regenText = document.getElementById('picker-regen-text');
+  if (regenText) regenText.value = '';
+  await pickerFetchVariants(PICKER.currentIndex, feedback);
+}
+
+// Build the full deployable page HTML from chosen picker sections (no AI needed)
+function pickerBuildFullPage() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var p1 = bp.part1 || {};
+  var brandName = (p1.brandNames && p1.brandNames[0]) || bp.name || 'Your Brand';
+  var fonts = (p1.visualDirection && p1.visualDirection.fonts) || {};
+  var colors = (p1.visualDirection && p1.visualDirection.colors) || [];
+  var headingFont = fonts.heading || 'Outfit';
+  var bodyFont = fonts.body || 'Outfit';
+  var primary = (colors[0] && colors[0].hex) || '#1d1d1f';
+  var accent = (colors[2] && colors[2].hex) || '#c4703f';
+  var bgColor = (colors[3] && colors[3].hex) || '#ffffff';
+  var textColor = (colors[4] && colors[4].hex) || '#1d1d1f';
+  var fontSet = [];
+  [headingFont, bodyFont].forEach(function(f) { if (f && fontSet.indexOf(f) === -1) fontSet.push(f); });
+  if (fontSet.indexOf('Outfit') === -1) fontSet.push('Outfit');
+  var fontParam = fontSet.map(function(f) { return f.replace(/[^a-zA-Z0-9 ]/g,'').replace(/ /g,'+') + ':wght@300;400;500;600;700;800'; }).join('&family=');
+
+  // Sort chosen sections by their original index
+  var sortedChosen = PICKER.chosen.slice().sort(function(a, b) { return a.sectionIndex - b.sectionIndex; });
+
+  // Nav links (max 5, using section names)
+  var navLinks = sortedChosen.slice(0, 5).map(function(c, i) {
+    return '<a href="#section-' + c.sectionIndex + '" style="color:' + primary + ';text-decoration:none;font-family:\\' + bodyFont + \\',Outfit,sans-serif;font-size:14px;font-weight:500;letter-spacing:0.01em;">' + (c.sectionName || '') + '</a>';
+  }).join('');
+
+  var nav = '<nav style="position:sticky;top:0;z-index:100;background:' + bgColor + ';border-bottom:1px solid rgba(0,0,0,0.08);padding:0 32px;">' +
+    '<div style="max-width:1160px;margin:0 auto;height:68px;display:flex;align-items:center;justify-content:space-between;">' +
+    '<span style="font-family:\\' + headingFont + \\',Outfit,serif;font-size:20px;font-weight:700;color:' + primary + ';letter-spacing:-0.02em;">' + brandName + '</span>' +
+    '<div style="display:flex;gap:32px;align-items:center;">' + navLinks + '</div>' +
+    '</div></nav>';
+
+  // Section HTML wrapped with anchor IDs
+  var sectionsHtml = sortedChosen.map(function(c) {
+    return '<div id="section-' + c.sectionIndex + '">' + c.html + '</div>';
+  }).join('
+');
+
+  // Footer
+  var year = new Date().getFullYear();
+  var footer = '<footer style="background:' + primary + ';padding:52px 32px;">' +
+    '<div style="max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">' +
+    '<span style="font-family:\\' + headingFont + \\',Outfit,serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.01em;">' + brandName + '</span>' +
+    '<p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0;">&copy; ' + year + ' ' + brandName + '. All rights reserved.</p>' +
+    '</div></footer>';
+
+  return '<!DOCTYPE html>
+<html lang="en">
+<head>
+' +
+    '<meta charset="UTF-8">
+' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">
+' +
+    '<title>' + brandName + '</title>
+' +
+    '<link href="https://fonts.googleapis.com/css2?family=' + fontParam + '&display=swap" rel="stylesheet">
+' +
+    '<style>*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}body{font-family:\\' + bodyFont + \\',Outfit,sans-serif;background:' + bgColor + ';color:' + textColor + '}img{max-width:100%;height:auto}@media(max-width:768px){nav div:last-child{display:none}}</style>
+' +
+    '</head>
+<body>
+' +
+    nav + '
+' +
+    sectionsHtml + '
+' +
+    footer + '
+' +
+    '</body>
+</html>';
+}
+
+async function pickerAssemble() {
+  // Show a brief assembly screen instead of the full 2-4 min generation screen
+  showScreen('site-screen');
+  var narrative = document.getElementById('gen-narrative');
+  var progressEl = document.getElementById('gen-progress-bar-fill') || document.getElementById('gen-progress');
+  var titleEl = document.querySelector('#site-screen h2') || document.querySelector('#site-screen .gen-title');
+  if (titleEl) titleEl.textContent = 'Building Your Site';
+  if (narrative) narrative.textContent = 'Assembling your chosen layouts\u2026';
+  if (progressEl) progressEl.style.width = '30%';
+  startGenAnimation();
+  setStep(1, 'done');
+  setStep(2, 'active');
+
+  try {
+    var jwt = '';
+    try { jwt = localStorage.getItem('dw_session') || ''; } catch(_) {}
+    var fullHtml = pickerBuildFullPage();
+    if (narrative) narrative.textContent = 'Deploying your site\u2026';
+    if (progressEl) progressEl.style.width = '65%';
+    setStep(3, 'active');
+
+    var res = await fetch('/api/generate/deploy-picker-site', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+      body: JSON.stringify({ sessionId: STATE.sessionId, html: fullHtml, chosen: PICKER.chosen, segment: STATE.currentSegment || null })
+    });
+    var data = await res.json();
+    if (data.ok && data.url) {
+      if (progressEl) progressEl.style.width = '100%';
+      setStep(3, 'done');
+      setStep(4, 'done');
+      if (narrative) narrative.textContent = 'Your site is live!';
+      STATE.siteUrl = data.url;
+      dwSaveNav({ screen: 'site-reveal', liveUrl: data.url });
+      setTimeout(function() { showSiteReveal(data.url); }, 800);
+      return;
+    }
+    throw new Error(data.error || 'Assembly failed');
+  } catch (e) {
+    console.error('Fast assembly failed, falling back to full generation:', e);
+    // Fallback: run the full generation pipeline
+    await runSiteGeneration();
+  }
+}
+
+// \u2500\u2500 SECTION TEMPLATE RENDERING \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+function pickerGetColors() {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var vd = (bp.part1 && bp.part1.visualDirection) || {};
+  var colors = vd.colors || [];
+  function toHex(c) { return (c && c.hex) ? c.hex : (typeof c === 'string' ? c : ''); }
+  // Blueprint palette: [0]=Primary, [1]=Secondary, [2]=Accent, [3]=Background, [4]=Text
+  return {
+    primary: toHex(colors[0]) || '#1d1d1f',
+    accent:  toHex(colors[2]) || toHex(colors[1]) || '#c4703f',
+    bg:      toHex(colors[3]) || '#f5f5f5',
+    muted:   '#6b7280'
+  };
+}
+
+function pickerWrapHtml(sectionHtml) {
+  var bp = STATE.blueprint && STATE.blueprint.blueprint ? STATE.blueprint.blueprint : (STATE.blueprint || {});
+  var vdFonts = (bp.part1 && bp.part1.visualDirection && bp.part1.visualDirection.fonts) || {};
+  var font = vdFonts.heading || vdFonts.body || 'Outfit';
+  var safeFontName = font.replace(/[^a-zA-Z0-9 ]/g, '').replace(/ /g, '+');
+  return '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=' + safeFontName + ':wght@300;400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"' + pickerEsc(font) + '",Outfit,sans-serif}</style></head><body>' + sectionHtml + '</body></html>';
+}
+
+function pickerEsc(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function pickerEscAttr(str) {
+  return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
 function pickerRenderTemplate(variant, sectionIdx) {
@@ -9609,490 +11521,7 @@ const API = '';  // same origin
 // XSS prevention helper
 function esc(s) {
   if (s == null) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');\\n}\\n\\n// BOOT\\nwindow.addEventListener('DOMContentLoaded', async () => {\\n  const params = new URLSearchParams(location.search);\\n  // Handle server-side magic link redirect \u2014 JWT passed directly in _s param\\n  const _sJwt = params.get('_s');\\n  if (_sJwt) {\\n    AUTH_TOKEN = _sJwt;\\n    localStorage.setItem('dw_admin_token', _sJwt);\\n    history.replaceState(null, '', '/admin');\\n    await tryAutoLogin();\\n    return;\\n  }\\n  const magic = params.get('magic');\\n  if (magic) {\\n    await handleMagicLogin(magic);\\n    return;\\n  }\\n  if (AUTH_TOKEN) {\\n    await tryAutoLogin();\\n  }\\n});\\n\\nasync function tryAutoLogin() {\\n  try {\\n    const res = await api('GET', '/api/auth/me');\\n    const user = res.user || res;\\n    if (user && user.role === 'admin') {\\n      CURRENT_USER = user;\\n      localStorage.setItem('dw_admin_token', AUTH_TOKEN);\\n      showApp();\\n    } else {\\n      AUTH_TOKEN = '';\\n      localStorage.removeItem('dw_admin_token');\\n    }\\n  } catch {\\n    AUTH_TOKEN = '';\\n    localStorage.removeItem('dw_admin_token');\\n  }\\n}\\n\\nasync function handleMagicLogin(token) {\\n  try {\\n    const res = await api('POST', '/api/auth/magic', { token });\\n    if ((res.token || res.sessionToken) && res.user?.role === 'admin') {\\n      AUTH_TOKEN = res.token || res.sessionToken;\\n      localStorage.setItem('dw_admin_token', AUTH_TOKEN);\\n      CURRENT_USER = res.user;\\n      history.replaceState({}, '', '/admin');\\n      showApp();\\n    } else {\\n      toast('Magic link invalid or expired.');\\n    }\\n  } catch {\\n    toast('Magic link failed.');\\n  }\\n}\\n\\n// AUTH\\nfunction showLoginStatus(id, type, msg) {\\n  const el = document.getElementById(id);\\n  el.className = 'login-status ' + type;\\n  el.textContent = msg;\\n}\\nfunction clearLoginStatus(id) {\\n  const el = document.getElementById(id);\\n  el.className = 'login-status';\\n  el.textContent = '';\\n}\\n\\nasync function requestMagicLink() {\\n  const email = document.getElementById('login-email').value.trim();\\n  if (!email) { showLoginStatus('magic-status', 'error', 'Enter your email.'); return; }\\n  clearLoginStatus('magic-status');\\n\\n  const btn = document.getElementById('magic-btn');\\n  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(196,112,63,0.4);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;"></span>Sending...';\\n  btn.disabled = true;\\n\\n  try {\\n    const res = await api('POST', '/api/auth/request-magic', { email });\\n    showLoginStatus('magic-status', 'success', 'Check your inbox. A login link is on its way.');\\n  } catch {\\n    showLoginStatus('magic-status', 'error', 'Failed to send magic link.');\\n  } finally {\\n    btn.innerHTML = 'Send Magic Link';\\n    btn.disabled = false;\\n  }\\n}\\n\\nfunction logout() {\\n  localStorage.removeItem('dw_admin_token');\\n  localStorage.removeItem('dw_session');\\n  document.cookie = 'dw_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';\\n  window.location.href = '/logout';\\n}\\n\\n// SHOW APP\\nfunction showApp() {\\n  document.getElementById('login-screen').style.display = 'none';\\n  document.getElementById('shell').style.display = 'flex';\\n  document.getElementById('sidebar-email').textContent = CURRENT_USER?.email || '';\\n  loadDashboard();\\n}\\n\\n// NAVIGATION\\nfunction showPage(name) {\\n  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));\\n  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));\\n  document.getElementById('page-' + name).classList.add('active');\\n  document.getElementById('nav-' + name).classList.add('active');\\n\\n  const titles = { dashboard: 'Dashboard', users: 'Users', sessions: 'Sessions', 'prompt-lab': 'Prompt Lab', monitoring: 'Monitoring', settings: 'Settings', testing: 'Testing Lab', 'api-costs': 'API Costs' };\\n  document.getElementById('page-title').textContent = titles[name] || name;\\n\\n  if (name === 'users') loadUsers();\\n  else if (name === 'sessions') loadSessions();\\n  else if (name === 'settings') loadSettings();\\n  else if (name === 'prompt-lab') loadPrompt();\\n  else if (name === 'monitoring') loadMonitoring();\\n  else if (name === 'testing') loadTesting();\\n  else if (name === 'api-costs') loadApiCosts();\\n}\\n\\nfunction refreshPage() {\\n  const active = document.querySelector('.page.active')?.id?.replace('page-', '');\\n  if (active === 'dashboard') loadDashboard();\\n  else if (active === 'api-costs') loadApiCosts();\\n  else if (active) showPage(active);\\n}\\n\\n// DASHBOARD\\nasync function loadDashboard() {\\n  try {\\n    const stats = await api('GET', '/api/admin/stats');\\n\\n    document.getElementById('stat-sessions').textContent = stats.sessions ?? '\u2014';\\n    document.getElementById('stat-sessions-sub').textContent = (stats.sessionsToday ?? 0) + ' today';\\n    document.getElementById('stat-blueprints').textContent = stats.completed ?? '\u2014';\\n    document.getElementById('stat-blueprints-sub').textContent = 'of total sessions';\\n    document.getElementById('stat-rate').textContent = stats.sessions > 0 ? Math.round((stats.completed / stats.sessions) * 100) + '%' : '0%';\\n    document.getElementById('stat-rate-sub').textContent = 'completion rate';\\n    document.getElementById('stat-users').textContent = stats.users ?? '\u2014';\\n    document.getElementById('stat-users-sub').textContent = 'total users';\\n\\n    renderFunnel(stats.funnel || {});\\n    renderRecentSessions(stats.recentSessions || []);\\n  } catch (e) {\\n    console.error(e);\\n  }\\n}\\n\\nfunction renderFunnel(funnel) {\\n  const el = document.getElementById('funnel-chart');\\n  if (!el) return;\\n  if (typeof funnel === 'object' && !Array.isArray(funnel)) {\\n    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">' +\\n      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.today || 0) + '</div><div class="funnel-label">Today</div></div>' +\\n      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.week || 0) + '</div><div class="funnel-label">This Week</div></div>' +\\n      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.month || 0) + '</div><div class="funnel-label">This Month</div></div>' +
-      '</div>';
-    return;
-  }
-  if (Array.isArray(funnel) && funnel.length) {
-    const max = funnel[0]?.count || 1;
-    el.innerHTML = funnel.map(f => \`
-      <div style="margin-bottom:12px">\\n        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">\\n          <span>Phase \${f.phase}: \${f.label}</span>\\n          <span style="font-weight:600">\${f.count}</span>\\n        </div>\\n        <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden">\\n          <div style="background:var(--gold);height:100%;width:\${Math.round((f.count/max)*100)}%"></div>
-        </div>
-      </div>
-    \`).join('');
-  } else {
-    el.innerHTML = '<div style="color:var(--text2);font-size:13px">No funnel data available.</div>';
-  }
-}
-
-function renderRecentSessions(sessions) {
-  document.getElementById('recent-sessions-tbody').innerHTML = sessions.map(s => \`
-    <tr>
-      <td>\${esc(s.user_email || s.id?.slice(0,14) || 'anon')}</td>
-      <td><span class="badge \${s.tier === 'site' ? 'badge-gold' : 'badge-gray'}">\${esc(s.tier)}</span></td>\\n      <td>\${s.phase}/8</td>\\n      <td>\${s.blueprint_generated ? '<span class="badge badge-green">Done</span>' : '<span class="badge badge-gray">In progress</span>'}</td>
-    </tr>
-  \`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';\\n}\\n\\n// USERS\\nasync function loadUsers() {\\n  const tbody = document.getElementById('users-tbody');\\n  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Loading...</td></tr>';\\n  try {\\n    const res = await api('GET', '/api/admin/users');\\n    ALL_USERS = res.users || [];\\n    renderUsersTable(ALL_USERS);\\n  } catch {\\n    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Failed to load.</td></tr>';
-  }
-}
-
-function renderUsersTable(users) {
-  document.getElementById('users-tbody').innerHTML = users.map(u => \`
-    <tr>
-      <td style="color:var(--text)">\${esc(u.email)}</td>\\n      <td>\${esc(u.name) || '\u2014'}</td>\\n      <td><span class="badge \${u.role === 'admin' ? 'badge-gold' : 'badge-gray'}">\${esc(u.role)}</span></td>\\n      <td>\${u.tier ? '<span class="badge badge-blue">'+esc(u.tier)+'</span>' : '\u2014'}</td>\\n      <td>\${u.sessions_count || 0}</td>\\n      <td>\${fmtDate(u.created_at)}</td>\\n      <td>\\n        <button class="btn btn-outline btn-sm" onclick="sendMagicLink('\${esc(u.id)}','\${esc(u.email)}')">Magic Link</button>
-      </td>
-    </tr>
-  \`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No users yet.</td></tr>';\\n}\\n\\nfunction filterUsers(q) {\\n  const filtered = q ? ALL_USERS.filter(u => u.email.includes(q) || (u.name||'').toLowerCase().includes(q.toLowerCase())) : ALL_USERS;\\n  renderUsersTable(filtered);\\n}\\n\\nasync function createUser() {\\n  const email = document.getElementById('new-user-email').value.trim();\\n  const name = document.getElementById('new-user-name').value.trim();\\n  const role = document.getElementById('new-user-role').value;\\n  const tier = document.getElementById('new-user-tier').value;\\n  if (!email) { toast('Enter an email.'); return; }\\n\\n  try {\\n    const res = await api('POST', '/api/admin/users', { email, name, role, tier });\\n    if (res.user) {\\n      closeModal('create-user');\\n      toast('User created. Magic link copied to clipboard.');\\n      if (res.magicLink) navigator.clipboard?.writeText(res.magicLink).catch(()=>{});\\n      loadUsers();\\n    } else {\\n      toast(res.error || 'Failed to create user.');\\n    }\\n  } catch {\\n    toast('Failed to create user.');\\n  }\\n}\\n\\nasync function sendMagicLink(userId, email) {\\n  try {\\n    const res = await api('POST', '/api/admin/magic-link', { userId, email });\\n    if (res.magicLink) {\\n      await navigator.clipboard?.writeText(res.magicLink).catch(()=>{});\\n      toast('Magic link copied to clipboard.');\\n    }\\n  } catch {\\n    toast('Failed to generate magic link.');\\n  }\\n}\\n\\n// SESSIONS\\nasync function loadSessions() {\\n  const tier = document.getElementById('session-filter-tier')?.value || '';\\n  const status = document.getElementById('session-filter-status')?.value || '';\\n  const tbody = document.getElementById('sessions-tbody');\\n  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">Loading...</td></tr>';
-
-  try {
-    const res = await api('GET', \`/api/admin/sessions?tier=\${tier}&status=\${status}&limit=50\`);
-    const sessions = res.sessions || [];
-    tbody.innerHTML = sessions.map(s => \`
-      <tr>
-        <td style="font-family:monospace;font-size:11px">\${esc(s.id?.slice(0,20))}...</td>\\n        <td><span class="badge \${s.tier==='site'?'badge-gold':'badge-gray'}">\${esc(s.tier)}</span></td>\\n        <td>\${s.phase}/8</td>\\n        <td>\${s.message_count || 0}</td>\\n        <td>\${s.blueprint_generated ? '\u2713' : '\u2014'}</td>\\n        <td>\${s.site_generated ? '\u2713' : '\u2014'}</td>\\n        <td>\${fmtDate(s.created_at)}</td>\\n        <td><button class="btn btn-outline btn-sm" onclick="viewSession('\${esc(s.id)}')">View</button></td>
-      </tr>
-    \`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';\\n  } catch {\\n    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">Failed to load sessions.</td></tr>';\\n  }\\n}\\n\\nasync function viewSession(sessionId) {\\n  document.getElementById('session-modal-title').textContent = sessionId.slice(0, 20) + '...';\\n  document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px">Loading...</div>';
-  openModal('view-session');
-
-  try {
-    const res = await api('GET', \`/api/admin/session/\${sessionId}\`);
-    const messages = res.messages || [];
-    document.getElementById('session-modal-messages').innerHTML = messages
-      .filter(m => !m.content?.includes('METADATA:'))
-      .map(m => \`
-        <div style="margin-bottom:12px;display:flex;gap:10px;\${m.role === 'user' ? 'flex-direction:row-reverse' : ''}">\\n          <div style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:\${m.role === 'assistant' ? 'var(--gold)' : 'var(--bg2)'};color:\${m.role === 'assistant' ? 'white' : 'var(--text)'}">\\n            \${m.role === 'assistant' ? 'AI' : 'U'}\\n          </div>\\n          <div style="background:var(--bg2);padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.5;max-width:75%">
-            \${(m.content || '').replace(/METADATA:\\{[^\\n]*\\}/g,'').replace(/\\\`\\\`\\\`json[\\s\\S]*?\\\`\\\`\\\`/g,'[Blueprint JSON]').slice(0,600)}
-          </div>
-        </div>
-      \`).join('') || '<div style="color:var(--text2);text-align:center;padding:20px">No messages.</div>';\\n  } catch {\\n    document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px">Failed to load session.</div>';
-  }
-}
-
-// PROMPT LAB
-async function loadPrompt() {
-  try {
-    const res = await api('GET', '/api/admin/prompt');
-    document.getElementById('prompt-editor-ta').value = res.prompt || '';
-    document.getElementById('ps-version').textContent = 'v' + (res.version || 1);
-    document.getElementById('ps-satisfaction').textContent = res.avgSatisfaction ? res.avgSatisfaction.toFixed(1) + '/10' : '\u2014';
-    document.getElementById('ps-count').textContent = res.sessionsCount || 0;
-  } catch {
-    toast('Failed to load prompt.');
-  }
-}
-
-async function savePrompt() {
-  const prompt = document.getElementById('prompt-editor-ta').value.trim();
-  if (!prompt) { toast('Prompt cannot be empty.'); return; }
-  try {
-    const res = await api('POST', '/api/admin/prompt', { prompt });
-    if (res.ok) { toast('Prompt saved. New version is active.'); loadPrompt(); }
-    else toast(res.error || 'Failed to save.');
-  } catch {
-    toast('Failed to save prompt.');
-  }
-}
-
-// SETTINGS
-async function loadSettings() {
-  try {
-    const res = await api('GET', '/api/admin/settings');
-    SETTINGS = res.settings || {};
-    document.getElementById('s-calendar-link').value = SETTINGS.calendar_link || '';
-    document.getElementById('s-welcome-message').value = SETTINGS.welcome_message || '';
-    document.getElementById('s-banner-text').value = SETTINGS.app_banner_text || '';
-    document.getElementById('s-report-email').value = SETTINGS.weekly_report_email || '';
-    document.getElementById('s-blueprint-price').value = SETTINGS.blueprint_price_display || '';
-    document.getElementById('s-site-price').value = SETTINGS.site_price_display || '';
-    document.getElementById('s-call-price').value = SETTINGS.call_price_display || '';
-    setToggle('banner', SETTINGS.app_banner_enabled === 'true');
-    setToggle('rag', SETTINGS.rag_auto_save !== 'false');
-  } catch {
-    toast('Failed to load settings.');
-  }
-}
-
-async function saveSettings() {
-  try {
-    const updates = {
-      calendar_link: document.getElementById('s-calendar-link').value.trim(),
-      welcome_message: document.getElementById('s-welcome-message').value.trim(),
-      app_banner_text: document.getElementById('s-banner-text').value.trim(),
-      weekly_report_email: document.getElementById('s-report-email').value.trim(),
-      blueprint_price_display: document.getElementById('s-blueprint-price').value.trim(),
-      site_price_display: document.getElementById('s-site-price').value.trim(),
-      call_price_display: document.getElementById('s-call-price').value.trim(),
-      app_banner_enabled: String(document.getElementById('toggle-banner').classList.contains('on')),
-      rag_auto_save: String(document.getElementById('toggle-rag').classList.contains('on')),
-    };
-    const res = await api('POST', '/api/admin/settings', updates);
-    if (res.ok) toast('Settings saved.');
-    else toast('Failed to save settings.');
-  } catch {
-    toast('Failed to save settings.');
-  }
-}
-
-async function generateAdminMagicLink() {
-  const email = document.getElementById('magic-gen-email').value.trim();
-  const tier = document.getElementById('magic-gen-tier').value;
-  if (!email) { toast('Enter an email address.'); return; }
-  try {
-    const res = await api('POST', '/api/admin/magic-link', { email, tier, createIfMissing: true });
-    if (res.magicLink) {
-      document.getElementById('magic-gen-result').innerHTML = \`
-        <div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>\\n        <div style="font-size:12px;color:var(--text2)">Click to copy. Valid for 72 hours. Single use.</div>
-      \`;
-    } else {
-      toast(res.error || 'Failed to generate link.');
-    }
-  } catch {
-    toast('Failed to generate link.');
-  }
-}
-
-// USER DROPDOWN HELPERS
-let dropdownTimeout = null;
-function showUserDropdown(input, dropdownId) {
-  clearTimeout(dropdownTimeout);
-  const dd = document.getElementById(dropdownId);
-  const q = input.value.trim().toLowerCase();
-  const statusEl = input.closest('.form-group').querySelector('[id$="-user-status"]');
-
-  if (!q) { dd.style.display = 'none'; if (statusEl) statusEl.innerHTML = ''; return; }
-
-  const matches = (ALL_USERS || []).filter(u =>
-    u.email.toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)
-  ).slice(0, 6);
-
-  const isValidEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(q);
-  const exactMatch = matches.find(u => u.email.toLowerCase() === q);
-
-  let html = '';
-  if (matches.length > 0) {
-    html = matches.map(u => \`
-      <div class="user-dropdown-item" onmousedown="selectUser('\${u.email}','\${input.id}','\${dropdownId}')">\\n        <span class="ud-email">\${u.email}</span>\\n        <span class="ud-meta">\${u.name || ''} \${u.role === 'admin' ? '(admin)' : ''}</span>
-      </div>
-    \`).join('');
-  }
-
-  if (isValidEmail && !exactMatch) {
-    html += \`
-      <div class="user-dropdown-item ud-create" onmousedown="selectUser('\${q}','\${input.id}','\${dropdownId}',true)">
-        + Create new user: \${q}
-      </div>
-    \`;
-  } else if (!isValidEmail && matches.length === 0) {
-    html = '<div class="user-dropdown-empty">Type a valid email to create a new user</div>';\\n  }\\n\\n  dd.innerHTML = html;\\n  dd.style.display = html ? 'block' : 'none';\\n\\n  if (statusEl) {\\n    if (exactMatch) {\\n      statusEl.innerHTML = '<span style="color:var(--green)">Existing user found</span>';\\n    } else if (isValidEmail) {\\n      statusEl.innerHTML = '<span style="color:var(--gold)">New user will be created automatically</span>';\\n    } else {\\n      statusEl.innerHTML = '';\\n    }\\n  }\\n}\\n\\nfunction selectUser(email, inputId, dropdownId, isNew) {\\n  document.getElementById(inputId).value = email;\\n  document.getElementById(dropdownId).style.display = 'none';\\n  const statusEl = document.getElementById(inputId).closest('.form-group').querySelector('[id$="-user-status"]');\\n  if (statusEl) {\\n    statusEl.innerHTML = isNew\\n      ? '<span style="color:var(--gold)">New user will be created automatically</span>'\\n      : '<span style="color:var(--green)">Existing user selected</span>';\\n  }\\n}\\n\\ndocument.addEventListener('click', function(e) {\\n  document.querySelectorAll('.user-dropdown').forEach(dd => {\\n    if (!dd.parentElement.contains(e.target)) dd.style.display = 'none';\\n  });\\n});\\n\\n// TEST BLUEPRINT GENERATOR\\nasync function generateTestBlueprint() {\\n  const email = document.getElementById('test-bp-email').value.trim();\\n  if (!email) { toast('Select a user or enter an email address.'); return; }\\n  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }\\n  const brandName = document.getElementById('test-bp-brand').value.trim() || 'Test Brand';\\n  const niche = document.getElementById('test-bp-niche').value.trim() || 'Business coaching';\\n  const resultEl = document.getElementById('test-bp-result');\\n  const btn = document.getElementById('test-bp-btn');\\n\\n  btn.disabled = true;\\n  btn.textContent = 'Generating blueprint + debrief...';\\n  resultEl.innerHTML = '<div style="color:var(--text2)">This usually takes 15 to 30 seconds. Generating blueprint with AI, then creating strategist debrief...</div>';
-
-  try {
-    const res = await api('POST', '/api/admin/generate-test-blueprint', { email, brandName, niche });
-    btn.disabled = false;
-    btn.textContent = 'Generate Blueprint + Debrief';
-    if (res.ok) {
-      resultEl.innerHTML = \`
-        <div style="color:var(--green);font-weight:600;margin-bottom:8px">Blueprint created successfully</div>\\n        \${res.userCreated ? '<div style="font-size:12px;color:var(--gold);margin-bottom:4px">New user created automatically</div>' : ''}\\n        <div style="font-size:12px;color:var(--text2)">Session: \${res.sessionId}</div>\\n        <div style="font-size:12px;color:var(--text2);margin-top:4px">Strategist Debrief: \${res.hasDebrief ? '<span style="color:var(--green)">Included</span>' : '<span style="color:var(--orange,#e67e22)">Not generated</span>'}</div>
-        \${!res.hasDebrief ? \`<button onclick="generateDebrief('\${res.sessionId}')" style="margin-top:8px;padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">Generate Debrief (Opus)</button>\` : ''}
-        \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)" style="margin-top:8px">\${res.magicLink}</div>\\n        <div style="font-size:11px;color:var(--text2)">Click to copy magic link. Opens directly to blueprint view.</div>\` : ''}
-      \`;
-      loadUsers();
-    } else {
-      resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to generate blueprint.'}</div>\`;
-    }
-  } catch (e) {
-    btn.disabled = false;
-    btn.textContent = 'Generate Blueprint + Debrief';
-    resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';\\n  }\\n}\\n\\nasync function quickTestSession() {\\n  const email = document.getElementById('quick-test-email').value.trim();\\n  if (!email) { toast('Select a user or enter an email address.'); return; }\\n  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }\\n  const tier = document.getElementById('quick-test-tier').value;\\n  const resultEl = document.getElementById('quick-test-result');\\n  const btn = document.getElementById('quick-test-btn');\\n\\n  btn.disabled = true;\\n  btn.textContent = tier === 'site' ? 'Creating session + blueprint + debrief...' : 'Creating session...';\\n  resultEl.innerHTML = '<div style="color:var(--text2)">Setting up test session...</div>';
-
-  try {
-    const res = await api('POST', '/api/admin/quick-test-session', { email, tier });
-    btn.disabled = false;
-    btn.textContent = 'Create Test Session';
-    if (res.ok) {
-      resultEl.innerHTML = \`
-        <div style="color:var(--green);font-weight:600;margin-bottom:8px">Test session created</div>\\n        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">User: \${res.userId}</div>\\n        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Session: \${res.sessionId}</div>\\n        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Tier: \${res.tier} | Blueprint: \${res.hasBlueprint ? 'Yes' : 'No'}</div>\\n        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Strategist Debrief: \${res.hasDebrief ? '<span style="color:var(--green)">Included</span>' : '<span style="color:var(--orange,#e67e22)">Not generated</span>'}</div>
-        \${!res.hasDebrief && res.hasBlueprint ? \`<button onclick="generateDebrief('\${res.sessionId}')" style="margin-top:4px;margin-bottom:8px;padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">Generate Debrief (Opus)</button>\` : ''}
-        \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>\\n        <div style="font-size:11px;color:var(--text2)">Click to copy. Opens to \${res.hasBlueprint ? 'blueprint' : 'interview'}.</div>\` : ''}
-      \`;
-      loadUsers();
-    } else {
-      resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to create test session.'}</div>\`;
-    }
-  } catch (e) {
-    btn.disabled = false;
-    btn.textContent = 'Create Test Session';
-    resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';\\n  }\\n}\\n\\n// GENERATE DEBRIEF for existing session\\nasync function generateDebrief(sessionId) {\\n  const btn = event.target;\\n  btn.disabled = true;\\n  btn.textContent = 'Generating debrief (Opus)...';\\n  try {\\n    const res = await api('POST', '/api/admin/generate-debrief', { sessionId });\\n    if (res.ok) {\\n      btn.textContent = 'Debrief generated!';\\n      btn.style.background = 'var(--green)';\\n      toast('Strategist debrief generated successfully. Reload the blueprint to see it.');\\n    } else {\\n      btn.textContent = 'Failed';\\n      btn.style.background = 'var(--red)';\\n      toast(res.error || 'Failed to generate debrief');\\n    }\\n  } catch (e) {\\n    btn.textContent = 'Error';\\n    btn.style.background = 'var(--red)';\\n    toast('Request failed. Check console.');\\n  }\\n}\\n\\n// ENDPOINT HEALTH TEST\\nasync function testAllEndpoints() {\\n  const el = document.getElementById('endpoint-health-results');\\n  el.innerHTML = '<div style="color:var(--text2)">Testing all endpoints...</div>';
-
-  const endpoints = [
-    '/api/admin/stats',
-    '/api/admin/users',
-    '/api/admin/sessions',
-    '/api/admin/settings',
-    '/api/admin/prompt',
-    '/api/admin/health',
-    '/api/admin/monitoring',
-    '/api/admin/api-usage',
-    '/api/admin/errors'
-  ];
-
-  const results = [];
-  let passed = 0;
-
-  for (const endpoint of endpoints) {
-    const startTime = performance.now();
-    try {
-      const res = await api('GET', endpoint);
-      const endTime = performance.now();
-      const time = Math.round(endTime - startTime);
-      results.push({ endpoint, status: 'pass', time, code: 200 });
-      passed++;
-    } catch (e) {
-      const endTime = performance.now();
-      const time = Math.round(endTime - startTime);
-      results.push({ endpoint, status: 'fail', time, code: 500 });
-    }
-  }
-
-  el.innerHTML = results.map(r => \`
-    <div class="endpoint-test \${r.status}">\\n      <div class="endpoint-name">\${r.endpoint}</div>\\n      <div class="endpoint-status">\${r.status === 'pass' ? '\u2713 OK' : '\u2717 Failed'} \u2022 \${r.time}ms</div>
-    </div>
-  \`).join('') + \`<div style="margin-top:12px;font-weight:600;color:var(--text)">\${passed}/\${endpoints.length} endpoints healthy</div>\`;
-}
-
-// TOGGLE HELPERS
-function toggleSetting(name) {
-  const el = document.getElementById('toggle-' + name);
-  el.classList.toggle('on');
-}
-
-function setToggle(name, val) {
-  const el = document.getElementById('toggle-' + name);
-  if (val) el.classList.add('on'); else el.classList.remove('on');
-}
-
-// MODAL HELPERS
-function openModal(name) {
-  document.getElementById('modal-' + name).classList.add('open');
-}
-function closeModal(name) {
-  document.getElementById('modal-' + name).classList.remove('open');
-}
-
-// API HELPER
-async function api(method, path, body) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AUTH_TOKEN }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(API + path, opts);
-  if (res.status === 401) { logout(); return {}; }
-  return res.json();
-}
-
-// UTILS
-function toast(msg, ms = 3500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), ms);
-}
-
-function fmtDate(d) {
-  if (!d) return '\u2014';
-  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard?.writeText(text).then(() => toast('Copied to clipboard.'));
-}
-
-// MONITORING
-async function loadMonitoring() {
-  try {
-    const [monData, apiData] = await Promise.all([
-      api('GET', '/api/admin/monitoring'),
-      api('GET', '/api/admin/api-usage?hours=24'),
-    ]);
-
-    // Health grid
-    const healthGrid = document.getElementById('health-grid');
-    if (monData.health && monData.health.length) {
-      healthGrid.innerHTML = monData.health.map(h => {
-        const d = h.details ? JSON.parse(h.details) : {};
-        const statusClass = h.status === 'healthy' ? 'green' : h.status === 'warning' ? 'yellow' : 'red';
-        return '<div class="stat-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="health-dot ' + statusClass + '"></div><div style="font-size:12px;font-weight:600">' + h.check_type + '</div></div><div class="stat-label">' +\\n          h.status + (d.latencyMs ? ' \xB7 ' + d.latencyMs + 'ms' : '') + (d.error ? ' \xB7 ' + d.error : '') + '</div></div>';\\n      }).join('');\\n    } else {\\n      healthGrid.innerHTML = '<div class="stat-card"><div class="stat-value">\u2014</div><div class="stat-label">No checks yet</div></div>';\\n    }\\n\\n    // Funnel health\\n    const fh = document.getElementById('funnel-health');\\n    const f = monData.funnel;\\n    if (f) {\\n      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';\\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.total || 0) + '</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Sessions</div></div>';\\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.completionRate || 0) + '%</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Completion</div></div>';\\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.avgPhase || 0) + '</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Avg Phase</div></div>';\\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.dropOffRate || 0) + '%</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Drop-off</div></div>';\\n      html += '</div>';\\n      if (f.warnings && f.warnings.length) {\\n        html += f.warnings.map(w => '<div style="background:rgba(217,119,6,0.08);border-left:3px solid #D97706;padding:8px 12px;margin:6px 0;border-radius:0 6px 6px 0;font-size:13px;color:#92400E">' + w + '</div>').join('');\\n      }\\n      if (f.lastFivePhases) html += '<p style="font-size:12px;color:var(--text2);margin-top:8px">Last 5: phases ' + f.lastFivePhases.join(', ') + '</p>';\\n      fh.innerHTML = html;\\n    }\\n\\n    // API usage\\n    const au = document.getElementById('api-usage');\\n    if (apiData.byProvider && apiData.byProvider.length) {\\n      let html = '<div style="font-size:13px;">';\\n      html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-weight:600;color:var(--text2)"><span>Provider</span><span>Calls</span><span>Avg ms</span></div>';\\n      apiData.byProvider.forEach(p => {\\n        const name = p.metric_name.replace('api.', '').replace('.call', '');\\n        html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>' + name + '</span><span style="font-weight:600">' + p.calls + '</span><span>' + (p.avg_latency_ms || 0) + 'ms</span></div>';\\n      });\\n      if (apiData.rateLimitHits?.length) {\\n        html += '<p style="color:#D97706;margin-top:8px;font-size:12px">\u26A0 ' + apiData.rateLimitHits.length + ' rate limit hit(s)</p>';\\n      }\\n      html += '<p style="color:var(--text2);margin-top:8px;font-size:12px">Total: ' + apiData.totalCalls + ' calls in ' + apiData.period + '</p>';\\n      html += '</div>';\\n      au.innerHTML = html;\\n    } else {\\n      au.innerHTML = '<p style="color:var(--text2);font-size:14px">No API calls recorded yet.</p>';\\n    }\\n\\n    // Alerts\\n    const al = document.getElementById('alerts-list');\\n    const alerts = (monData.alerts || []).filter(a => !a.resolved);\\n    if (alerts.length) {\\n      al.innerHTML = alerts.map(a => {\\n        const dot = a.severity === 'critical' ? '\u{1F534}' : '\u{1F7E1}';\\n        return '<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:8px">' + dot +\\n          ' <strong style="font-size:13px">' + a.title + '</strong>' +\\n          '<button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="resolveAlert(' + a.id + ')">Resolve</button></div>' +\\n          '<p style="font-size:12px;color:var(--text2);margin-top:4px">' + (a.message || '').slice(0, 120) + '</p>' +\\n          '<p style="font-size:11px;color:var(--text3)">' + fmtDate(a.created_at) + '</p></div>';\\n      }).join('');\\n    } else {\\n      al.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No active alerts</p>';\\n    }\\n\\n    // Errors\\n    const el = document.getElementById('errors-list');\\n    const errors = monData.errors || [];\\n    if (errors.length) {\\n      el.innerHTML = errors.slice(0, 15).map(e =>\\n        '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:12px;font-weight:600;color:var(--text)">' + (e.endpoint || '?') + ' <span style="color:var(--red)">' + (e.status_code || 500) + '</span></div>' +\\n        '<div style="font-size:12px;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (e.error_message || '').slice(0, 100) + '</div>' +\\n        '<div style="font-size:11px;color:var(--text3)">' + fmtDate(e.created_at) + '</div></div>'\\n      ).join('');\\n    } else {\\n      el.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No errors in log</p>';\\n    }\\n  } catch (err) {\\n    toast('Failed to load monitoring: ' + err.message);\\n  }\\n}\\n\\nasync function runHealthCheck() {\\n  const el = document.getElementById('health-results');\\n  el.innerHTML = '<div style="color:var(--text2);font-size:13px">Checking all systems...</div>';
-
-  try {
-    const res = await api('GET', '/api/admin/system-health');
-    const checks = res.checks || [];
-
-    el.innerHTML = checks.map(c => \`
-      <div class="health-row">\\n        <span class="health-label">\${c.name}</span>\\n        <span class="health-status \${c.ok ? 'health-ok' : 'health-fail'}">\${c.ok ? '\u2713 OK' : '\u2717 ' + (c.error || 'Failed')}</span>
-      </div>
-    \`).join('') || '<div style="color:var(--text2);font-size:13px">No results returned.</div>';
-
-    const passed = checks.filter(c => c.ok).length;
-    const total = checks.length;
-    toast(passed + '/' + total + ' systems healthy');
-  } catch (err) {
-    el.innerHTML = \`<div style="color:var(--red);font-size:13px">Health check failed: \${err.message}</div>\`;
-  }
-}
-
-async function sendDigest() {
-  toast('Generating digest...');
-  try {
-    const res = await api('POST', '/api/admin/digest');
-    toast('Digest sent. Sessions: ' + (res.newSessions || 0) + ', Errors: ' + (res.errorsLogged || 0));
-  } catch (err) {
-    toast('Digest failed: ' + err.message);
-  }
-}
-
-async function resolveAlert(id) {
-  try {
-    await api('POST', '/api/admin/resolve-alert', { alertId: id });
-    toast('Alert resolved.');
-    loadMonitoring();
-  } catch (err) {
-    toast('Failed to resolve alert.');
-  }
-}
-
-// TESTING PAGE
-const CHECKLIST = {
-  purchase: [
-    { id: 'p1', label: 'DWI Stripe payment link loads without errors' },
-    { id: 'p2', label: 'Completing test purchase redirects to thank you page' },
-    { id: 'p3', label: 'Stripe webhook fires and is received' },
-    { id: 'p4', label: 'GHL contact created or updated with purchase tag' },
-    { id: 'p5', label: 'Magic login link generated and delivered by email' },
-  ],
-  app: [
-    { id: 'a1', label: 'App loads at love.jamesguldan.com without errors' },
-    { id: 'a2', label: 'Intake form collects name, email, and phone' },
-    { id: 'a3', label: 'Phase 1 question appears after intake submission' },
-    { id: 'a4', label: 'Microphone input works on mobile' },
-    { id: 'a5', label: 'Phase banner shows on completion of each phase' },
-    { id: 'a6', label: 'Session saves and restores after closing browser' },
-  ],
-  blueprint: [
-    { id: 'b1', label: 'Phase 8 generates a blueprint with no raw JSON visible' },
-    { id: 'b2', label: 'Blueprint screen renders with all sections' },
-    { id: 'b3', label: 'Download Blueprint button produces valid file' },
-    { id: 'b4', label: 'Upsell to Site in Sixty shows on blueprint screen' },
-  ],
-  email: [
-    { id: 'e1', label: 'interview_started fires to drip worker on session start' },
-    { id: 'e2', label: 'DWI email arrives within 5 minutes of trigger' },
-    { id: 'e3', label: 'Nudge email queued for 24 hours after interview start' },
-    { id: 'e4', label: 'SMS fires within 5 minutes of purchase' },
-    { id: 'e5', label: 'interview_completed fires when blueprint generates' },
-    { id: 'e6', label: 'SIS pitch email queued for 2 days after interview' },
-    { id: 'e7', label: 'SIS emails stop when purchase tag is added' },
-    { id: 'e8', label: 'Strategy call pitch starts after SIS sequence ends' },
-  ],
-  abandon: [
-    { id: 'ab1', label: 'Use manual trigger to fire interview_abandoned event' },
-    { id: 'ab2', label: 'Recovery email arrives within 5 minutes' },
-    { id: 'ab3', label: 'Email link returns to app and resumes correct phase' },
-    { id: 'ab4', label: 'Cron abandonment check runs every 2 hours' },
-    { id: 'ab5', label: 'Inactive sessions appear in D1 with abandonment flag' },
-  ],
-  ghl: [
-    { id: 'g1', label: 'GHL Pipeline: DWI buyers land in correct stage' },
-    { id: 'g2', label: 'GHL Pipeline: SIS buyers move to correct stage' },
-    { id: 'g3', label: 'GHL Pipeline: Call bookings land in correct stage' },
-    { id: 'g4', label: 'Tags applied correctly to all contacts' },
-    { id: 'g5', label: 'Daily 9am health check fires and logs results' },
-  ],
-};
-
-// API COSTS
-async function loadApiCosts() {
-  const days = document.getElementById('cost-days-filter')?.value || '30';
-  try {
-    const data = await api('GET', '/api/admin/usage?days=' + days);
-
-    // Summary cards
-    document.getElementById('cost-this-month').textContent = data.thisMonth?.costDollars || '$0.00';
-    document.getElementById('cost-month-calls').textContent = (data.thisMonth?.calls || 0) + ' API calls this month';
-    document.getElementById('cost-all-time').textContent = data.allTime?.costDollars || '$0.00';
-    document.getElementById('cost-all-calls').textContent = (data.allTime?.calls || 0) + ' total API calls';
-    document.getElementById('cost-per-user').textContent = '$' + ((data.avgPerUser?.avgCostCents || 0) / 100).toFixed(2);
-    document.getElementById('cost-per-user-calls').textContent = (data.avgPerUser?.avgCalls || 0) + ' avg calls per user';
-    document.getElementById('cost-users').textContent = data.allTime?.users || 0;
-    document.getElementById('cost-sessions').textContent = (data.allTime?.sessions || 0) + ' total sessions';
-
-    // Cost by model
-    const modelEl = document.getElementById('cost-by-model');
-    if (data.byModel && data.byModel.length) {
-      const totalCost = data.byModel.reduce((s,m) => s + (m.cost_cents || 0), 0);
-      modelEl.innerHTML = data.byModel.map(m => {
-        const pct = totalCost > 0 ? Math.round((m.cost_cents / totalCost) * 100) : 0;
-        const cost = '$' + ((m.cost_cents || 0) / 100).toFixed(2);
-        const tokens = ((m.input || 0) + (m.output || 0)).toLocaleString();
-        return '<div style="margin-bottom:16px">' +\\n          '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">' +\\n            '<span style="font-weight:600">' + esc(m.model) + '</span>' +\\n            '<span>' + cost + ' (' + pct + '%)</span>' +\\n          '</div>' +\\n          '<div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden">' +\\n            '<div style="background:var(--gold);height:100%;width:' + pct + '%;border-radius:4px"></div>' +\\n          '</div>' +\\n          '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + (m.calls || 0) + ' calls, ' + tokens + ' tokens</div>' +\\n        '</div>';\\n      }).join('');\\n    } else {\\n      modelEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No usage data yet.</div>';\\n    }\\n\\n    // Projections\\n    const projEl = document.getElementById('cost-projections');\\n    const monthCost = (data.thisMonth?.costCents || 0) / 100;\\n    const dayOfMonth = new Date().getDate();\\n    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();\\n    const projected = dayOfMonth > 0 ? (monthCost / dayOfMonth) * daysInMonth : 0;\\n    const dailyAvg = dayOfMonth > 0 ? monthCost / dayOfMonth : 0;\\n    const usersPerDay = data.thisMonth?.sessions > 0 ? (data.thisMonth.sessions / dayOfMonth).toFixed(1) : '0';\\n    const costPerSession = data.thisMonth?.sessions > 0 ? (monthCost / data.thisMonth.sessions).toFixed(2) : '0.00';\\n\\n    projEl.innerHTML =\\n      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +\\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Projected This Month</div>' +\\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + projected.toFixed(2) + '</div>' +\\n        '</div>' +\\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Daily Average</div>' +\\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + dailyAvg.toFixed(2) + '</div>' +\\n        '</div>' +\\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Avg Sessions/Day</div>' +\\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">' + usersPerDay + '</div>' +\\n        '</div>' +\\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Cost Per Session</div>' +\\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + costPerSession + '</div>' +\\n        '</div>' +\\n      '</div>' +\\n      '<div style="margin-top:16px;padding:12px;background:rgba(196,112,63,0.08);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text)">' +\\n        '<strong style="color:var(--gold)">Cost Breakdown by Service (estimated):</strong><br>' +\\n        'Anthropic API (Claude Opus/Sonnet): ~85% of total<br>' +\\n        'Gemini/Imagen (image generation): ~5% of total<br>' +\\n        'Resend (transactional emails): ~1% of total<br>' +\\n        'Cloudflare (D1, KV, R2, Workers): ~1% of total<br>' +\\n        'Stripe processing: 2.9% + $0.30 per transaction' +\\n      '</div>';\\n\\n    // Daily trend chart (simple bar chart)\\n    const chartEl = document.getElementById('cost-daily-chart');\\n    if (data.daily && data.daily.length) {\\n      const maxCost = Math.max(...data.daily.map(d => d.cost_cents || 0), 1);\\n      chartEl.innerHTML =\\n        '<div style="display:flex;align-items:flex-end;gap:3px;height:160px;padding-bottom:24px;position:relative">' +\\n        data.daily.slice().reverse().map(d => {\\n          const h = Math.max(((d.cost_cents || 0) / maxCost) * 130, 2);\\n          const cost = '$' + ((d.cost_cents || 0) / 100).toFixed(2);\\n          const label = d.day?.slice(5) || '';\\n          return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0">' +\\n            '<div title="' + label + ': ' + cost + ' (' + (d.calls||0) + ' calls)" style="width:100%;max-width:32px;height:' + h + 'px;background:var(--gold);border-radius:3px 3px 0 0;cursor:pointer;opacity:0.85;transition:opacity 0.2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85"></div>' +\\n            '<div style="font-size:9px;color:var(--text2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">' + label + '</div>' +\\n          '</div>';\\n        }).join('') +\\n        '</div>';\\n    } else {\\n      chartEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No daily data yet.</div>';\\n    }\\n\\n    // Top users table\\n    const tbody = document.getElementById('cost-users-tbody');\\n    if (data.topUsers && data.topUsers.length) {\\n      tbody.innerHTML = data.topUsers.map(u => {\\n        const tokens = ((u.input || 0) + (u.output || 0)).toLocaleString();\\n        const cost = '$' + ((u.cost_cents || 0) / 100).toFixed(2);\\n        return '<tr>' +\\n          '<td>' + esc(u.email || 'unknown') + '</td>' +\\n          '<td>' + esc(u.name || '') + '</td>' +\\n          '<td>' + (u.sessions || 0) + '</td>' +\\n          '<td>' + (u.calls || 0) + '</td>' +\\n          '<td>' + tokens + '</td>' +\\n          '<td style="font-weight:600">' + cost + '</td>' +\\n          '<td>' + fmtDate(u.last_active) + '</td>' +\\n        '</tr>';\\n      }).join('');\\n    } else {\\n      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No usage data yet.</td></tr>';\\n    }\\n\\n  } catch(e) {\\n    console.error('Failed to load API costs:', e);\\n    document.getElementById('cost-by-model').innerHTML = '<div style="color:var(--red)">Failed to load cost data.</div>';
-  }
-}
-
-let checklistState = JSON.parse(localStorage.getItem('dw_checklist') || '{}');
-
-function loadTesting() {
-  for (const [group, items] of Object.entries(CHECKLIST)) {
-    const el = document.getElementById('checklist-' + group);
-    if (!el) continue;
-    el.innerHTML = items.map(item => \`
-      <div class="checklist-item \${checklistState[item.id] ? 'done' : ''}" onclick="toggleCheck('\${item.id}', this)">\\n        <div class="ci-box">\${checklistState[item.id] ? '\u2713' : ''}</div>\\n        <span class="ci-label">\${item.label}</span>
-      </div>
-    \`).join('');
-  }
-  updateChecklistScore();
-}
-
-function toggleCheck(id, el) {
-  checklistState[id] = !checklistState[id];
-  localStorage.setItem('dw_checklist', JSON.stringify(checklistState));
-  el.classList.toggle('done', checklistState[id]);
-  el.querySelector('.ci-box').textContent = checklistState[id] ? '\u2713' : '';
-  updateChecklistScore();
-}
-
-function updateChecklistScore() {
-  const total = Object.values(CHECKLIST).flat().length;
-  const done = Object.values(checklistState).filter(Boolean).length;
-  const el = document.getElementById('checklist-score');
-  if (el) el.textContent = done + ' of ' + total + ' items verified';
-}
-
-function resetChecklist() {
-  checklistState = {};
-  localStorage.removeItem('dw_checklist');
-  loadTesting();
-}
-
-async function runTestTrigger() {
-  const email = document.getElementById('test-email').value.trim();
-  const name = document.getElementById('test-name').value.trim();
-  const phone = document.getElementById('test-phone').value.trim();
-  const event_type = document.getElementById('test-event').value;
-  const phase = document.getElementById('test-phase').value;
-  const result = document.getElementById('test-trigger-result');
-
-  if (!email) { result.innerHTML = '<span style="color:var(--red)">Enter an email address.</span>'; return; }\\n\\n  result.innerHTML = '<span style="color:var(--text2)">Firing event...</span>';
-
-  try {
-    const res = await api('POST', '/api/admin/test-trigger', {
-      email, name, phone, event_type, phase: phase ? parseInt(phase) : undefined
-    });
-    result.innerHTML = \`<span style="color:var(--green)">\u2713 Event fired successfully.</span>\\n      <pre style="margin-top:8px;font-size:11px;background:var(--bg2);padding:10px;border-radius:6px;overflow:auto">\${JSON.stringify(res, null, 2)}</pre>\`;
-  } catch (err) {
-    result.innerHTML = \`<span style="color:var(--red)">\u2717 Failed: \${err.message}</span>\`;
-  }
-}
-<\/script>
-</body>
-</html>
-`, "getAdminHTML");
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');\n}\n\n// BOOT\nwindow.addEventListener('DOMContentLoaded', async () => {\n  const params = new URLSearchParams(location.search);\n  // Handle server-side magic link redirect \u2014 JWT passed directly in _s param\n  const _sJwt = params.get('_s');\n  if (_sJwt) {\n    AUTH_TOKEN = _sJwt;\n    localStorage.setItem('dw_admin_token', _sJwt);\n    history.replaceState(null, '', '/admin');\n    await tryAutoLogin();\n    return;\n  }\n  const magic = params.get('magic');\n  if (magic) {\n    await handleMagicLogin(magic);\n    return;\n  }\n  if (AUTH_TOKEN) {\n    await tryAutoLogin();\n  }\n});\n\nasync function tryAutoLogin() {\n  try {\n    const res = await api('GET', '/api/auth/me');\n    const user = res.user || res;\n    if (user && user.role === 'admin') {\n      CURRENT_USER = user;\n      localStorage.setItem('dw_admin_token', AUTH_TOKEN);\n      showApp();\n    } else {\n      AUTH_TOKEN = '';\n      localStorage.removeItem('dw_admin_token');\n    }\n  } catch {\n    AUTH_TOKEN = '';\n    localStorage.removeItem('dw_admin_token');\n  }\n}\n\nasync function handleMagicLogin(token) {\n  try {\n    const res = await api('POST', '/api/auth/magic', { token });\n    if ((res.token || res.sessionToken) && res.user?.role === 'admin') {\n      AUTH_TOKEN = res.token || res.sessionToken;\n      localStorage.setItem('dw_admin_token', AUTH_TOKEN);\n      CURRENT_USER = res.user;\n      history.replaceState({}, '', '/admin');\n      showApp();\n    } else {\n      toast('Magic link invalid or expired.');\n    }\n  } catch {\n    toast('Magic link failed.');\n  }\n}\n\n// AUTH\nfunction showLoginStatus(id, type, msg) {\n  const el = document.getElementById(id);\n  el.className = 'login-status ' + type;\n  el.textContent = msg;\n}\nfunction clearLoginStatus(id) {\n  const el = document.getElementById(id);\n  el.className = 'login-status';\n  el.textContent = '';\n}\n\nasync function requestMagicLink() {\n  const email = document.getElementById('login-email').value.trim();\n  if (!email) { showLoginStatus('magic-status', 'error', 'Enter your email.'); return; }\n  clearLoginStatus('magic-status');\n\n  const btn = document.getElementById('magic-btn');\n  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(196,112,63,0.4);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px;"></span>Sending...';\n  btn.disabled = true;\n\n  try {\n    const res = await api('POST', '/api/auth/request-magic', { email });\n    showLoginStatus('magic-status', 'success', 'Check your inbox. A login link is on its way.');\n  } catch {\n    showLoginStatus('magic-status', 'error', 'Failed to send magic link.');\n  } finally {\n    btn.innerHTML = 'Send Magic Link';\n    btn.disabled = false;\n  }\n}\n\nfunction logout() {\n  localStorage.removeItem('dw_admin_token');\n  localStorage.removeItem('dw_session');\n  document.cookie = 'dw_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';\n  window.location.href = '/logout';\n}\n\n// SHOW APP\nfunction showApp() {\n  document.getElementById('login-screen').style.display = 'none';\n  document.getElementById('shell').style.display = 'flex';\n  document.getElementById('sidebar-email').textContent = CURRENT_USER?.email || '';\n  loadDashboard();\n}\n\n// NAVIGATION\nfunction showPage(name) {\n  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));\n  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));\n  document.getElementById('page-' + name).classList.add('active');\n  document.getElementById('nav-' + name).classList.add('active');\n\n  const titles = { dashboard: 'Dashboard', users: 'Users', sessions: 'Sessions', 'prompt-lab': 'Prompt Lab', monitoring: 'Monitoring', settings: 'Settings', testing: 'Testing Lab', 'api-costs': 'API Costs' };\n  document.getElementById('page-title').textContent = titles[name] || name;\n\n  if (name === 'users') loadUsers();\n  else if (name === 'sessions') loadSessions();\n  else if (name === 'settings') loadSettings();\n  else if (name === 'prompt-lab') loadPrompt();\n  else if (name === 'monitoring') loadMonitoring();\n  else if (name === 'testing') loadTesting();\n  else if (name === 'api-costs') loadApiCosts();\n}\n\nfunction refreshPage() {\n  const active = document.querySelector('.page.active')?.id?.replace('page-', '');\n  if (active === 'dashboard') loadDashboard();\n  else if (active === 'api-costs') loadApiCosts();\n  else if (active) showPage(active);\n}\n\n// DASHBOARD\nasync function loadDashboard() {\n  try {\n    const stats = await api('GET', '/api/admin/stats');\n\n    document.getElementById('stat-sessions').textContent = stats.sessions ?? '\u2014';\n    document.getElementById('stat-sessions-sub').textContent = (stats.sessionsToday ?? 0) + ' today';\n    document.getElementById('stat-blueprints').textContent = stats.completed ?? '\u2014';\n    document.getElementById('stat-blueprints-sub').textContent = 'of total sessions';\n    document.getElementById('stat-rate').textContent = stats.sessions > 0 ? Math.round((stats.completed / stats.sessions) * 100) + '%' : '0%';\n    document.getElementById('stat-rate-sub').textContent = 'completion rate';\n    document.getElementById('stat-users').textContent = stats.users ?? '\u2014';\n    document.getElementById('stat-users-sub').textContent = 'total users';\n\n    renderFunnel(stats.funnel || {});\n    renderRecentSessions(stats.recentSessions || []);\n  } catch (e) {\n    console.error(e);\n  }\n}\n\nfunction renderFunnel(funnel) {\n  const el = document.getElementById('funnel-chart');\n  if (!el) return;\n  if (typeof funnel === 'object' && !Array.isArray(funnel)) {\n    el.innerHTML = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">' +\n      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.today || 0) + '</div><div class="funnel-label">Today</div></div>' +\n      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.week || 0) + '</div><div class="funnel-label">This Week</div></div>' +\n      '<div class="funnel-stat"><div class="funnel-num">' + (funnel.month || 0) + '</div><div class="funnel-label">This Month</div></div>' +\n      '</div>';\n    return;\n  }\n  if (Array.isArray(funnel) && funnel.length) {\n    const max = funnel[0]?.count || 1;\n    el.innerHTML = funnel.map(f => \`\n      <div style="margin-bottom:12px">\n        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">\n          <span>Phase \${f.phase}: \${f.label}</span>\n          <span style="font-weight:600">\${f.count}</span>\n        </div>\n        <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden">\n          <div style="background:var(--gold);height:100%;width:\${Math.round((f.count/max)*100)}%"></div>\n        </div>\n      </div>\n    \`).join('');\n  } else {\n    el.innerHTML = '<div style="color:var(--text2);font-size:13px">No funnel data available.</div>';\n  }\n}\n\nfunction renderRecentSessions(sessions) {\n  document.getElementById('recent-sessions-tbody').innerHTML = sessions.map(s => \`\n    <tr>\n      <td>\${esc(s.user_email || s.id?.slice(0,14) || 'anon')}</td>\n      <td><span class="badge \${s.tier === 'site' ? 'badge-gold' : 'badge-gray'}">\${esc(s.tier)}</span></td>\n      <td>\${s.phase}/8</td>\n      <td>\${s.blueprint_generated ? '<span class="badge badge-green">Done</span>' : '<span class="badge badge-gray">In progress</span>'}</td>\n    </tr>\n  \`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';\n}\n\n// USERS\nasync function loadUsers() {\n  const tbody = document.getElementById('users-tbody');\n  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Loading...</td></tr>';\n  try {\n    const res = await api('GET', '/api/admin/users');\n    ALL_USERS = res.users || [];\n    renderUsersTable(ALL_USERS);\n  } catch {\n    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">Failed to load.</td></tr>';\n  }\n}\n\nfunction renderUsersTable(users) {\n  document.getElementById('users-tbody').innerHTML = users.map(u => \`\n    <tr>\n      <td style="color:var(--text)">\${esc(u.email)}</td>\n      <td>\${esc(u.name) || '\u2014'}</td>\n      <td><span class="badge \${u.role === 'admin' ? 'badge-gold' : 'badge-gray'}">\${esc(u.role)}</span></td>\n      <td>\${u.tier ? '<span class="badge badge-blue">'+esc(u.tier)+'</span>' : '\u2014'}</td>\n      <td>\${u.sessions_count || 0}</td>\n      <td>\${fmtDate(u.created_at)}</td>\n      <td>\n        <button class="btn btn-outline btn-sm" onclick="sendMagicLink('\${esc(u.id)}','\${esc(u.email)}')">Magic Link</button>\n      </td>\n    </tr>\n  \`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No users yet.</td></tr>';\n}\n\nfunction filterUsers(q) {\n  const filtered = q ? ALL_USERS.filter(u => u.email.includes(q) || (u.name||'').toLowerCase().includes(q.toLowerCase())) : ALL_USERS;\n  renderUsersTable(filtered);\n}\n\nasync function createUser() {\n  const email = document.getElementById('new-user-email').value.trim();\n  const name = document.getElementById('new-user-name').value.trim();\n  const role = document.getElementById('new-user-role').value;\n  const tier = document.getElementById('new-user-tier').value;\n  if (!email) { toast('Enter an email.'); return; }\n\n  try {\n    const res = await api('POST', '/api/admin/users', { email, name, role, tier });\n    if (res.user) {\n      closeModal('create-user');\n      toast('User created. Magic link copied to clipboard.');\n      if (res.magicLink) navigator.clipboard?.writeText(res.magicLink).catch(()=>{});\n      loadUsers();\n    } else {\n      toast(res.error || 'Failed to create user.');\n    }\n  } catch {\n    toast('Failed to create user.');\n  }\n}\n\nasync function sendMagicLink(userId, email) {\n  try {\n    const res = await api('POST', '/api/admin/magic-link', { userId, email });\n    if (res.magicLink) {\n      await navigator.clipboard?.writeText(res.magicLink).catch(()=>{});\n      toast('Magic link copied to clipboard.');\n    }\n  } catch {\n    toast('Failed to generate magic link.');\n  }\n}\n\n// SESSIONS\nasync function loadSessions() {\n  const tier = document.getElementById('session-filter-tier')?.value || '';\n  const status = document.getElementById('session-filter-status')?.value || '';\n  const tbody = document.getElementById('sessions-tbody');\n  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">Loading...</td></tr>';\n\n  try {\n    const res = await api('GET', \`/api/admin/sessions?tier=\${tier}&status=\${status}&limit=50\`);\n    const sessions = res.sessions || [];\n    tbody.innerHTML = sessions.map(s => \`\n      <tr>\n        <td style="font-family:monospace;font-size:11px">\${esc(s.id?.slice(0,20))}...</td>\n        <td><span class="badge \${s.tier==='site'?'badge-gold':'badge-gray'}">\${esc(s.tier)}</span></td>\n        <td>\${s.phase}/8</td>\n        <td>\${s.message_count || 0}</td>\n        <td>\${s.blueprint_generated ? '\u2713' : '\u2014'}</td>\n        <td>\${s.site_generated ? '\u2713' : '\u2014'}</td>\n        <td>\${fmtDate(s.created_at)}</td>\n        <td><button class="btn btn-outline btn-sm" onclick="viewSession('\${esc(s.id)}')">View</button></td>\n      </tr>\n    \`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';\n  } catch {\n    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">Failed to load sessions.</td></tr>';\n  }\n}\n\nasync function viewSession(sessionId) {\n  document.getElementById('session-modal-title').textContent = sessionId.slice(0, 20) + '...';\n  document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px">Loading...</div>';\n  openModal('view-session');\n\n  try {\n    const res = await api('GET', \`/api/admin/session/\${sessionId}\`);\n    const messages = res.messages || [];\n    document.getElementById('session-modal-messages').innerHTML = messages\n      .filter(m => !m.content?.includes('METADATA:'))\n      .map(m => \`\n        <div style="margin-bottom:12px;display:flex;gap:10px;\${m.role === 'user' ? 'flex-direction:row-reverse' : ''}">\n          <div style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:\${m.role === 'assistant' ? 'var(--gold)' : 'var(--bg2)'};color:\${m.role === 'assistant' ? 'white' : 'var(--text)'}">\n            \${m.role === 'assistant' ? 'AI' : 'U'}\n          </div>\n          <div style="background:var(--bg2);padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.5;max-width:75%">\n            \${(m.content || '').replace(/METADATA:\\{[^\\n]*\\}/g,'').replace(/\\\`\\\`\\\`json[\\s\\S]*?\\\`\\\`\\\`/g,'[Blueprint JSON]').slice(0,600)}\n          </div>\n        </div>\n      \`).join('') || '<div style="color:var(--text2);text-align:center;padding:20px">No messages.</div>';\n  } catch {\n    document.getElementById('session-modal-messages').innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px">Failed to load session.</div>';\n  }\n}\n\n// PROMPT LAB\nasync function loadPrompt() {\n  try {\n    const res = await api('GET', '/api/admin/prompt');\n    document.getElementById('prompt-editor-ta').value = res.prompt || '';\n    document.getElementById('ps-version').textContent = 'v' + (res.version || 1);\n    document.getElementById('ps-satisfaction').textContent = res.avgSatisfaction ? res.avgSatisfaction.toFixed(1) + '/10' : '\u2014';\n    document.getElementById('ps-count').textContent = res.sessionsCount || 0;\n  } catch {\n    toast('Failed to load prompt.');\n  }\n}\n\nasync function savePrompt() {\n  const prompt = document.getElementById('prompt-editor-ta').value.trim();\n  if (!prompt) { toast('Prompt cannot be empty.'); return; }\n  try {\n    const res = await api('POST', '/api/admin/prompt', { prompt });\n    if (res.ok) { toast('Prompt saved. New version is active.'); loadPrompt(); }\n    else toast(res.error || 'Failed to save.');\n  } catch {\n    toast('Failed to save prompt.');\n  }\n}\n\n// SETTINGS\nasync function loadSettings() {\n  try {\n    const res = await api('GET', '/api/admin/settings');\n    SETTINGS = res.settings || {};\n    document.getElementById('s-calendar-link').value = SETTINGS.calendar_link || '';\n    document.getElementById('s-welcome-message').value = SETTINGS.welcome_message || '';\n    document.getElementById('s-banner-text').value = SETTINGS.app_banner_text || '';\n    document.getElementById('s-report-email').value = SETTINGS.weekly_report_email || '';\n    document.getElementById('s-blueprint-price').value = SETTINGS.blueprint_price_display || '';\n    document.getElementById('s-site-price').value = SETTINGS.site_price_display || '';\n    document.getElementById('s-call-price').value = SETTINGS.call_price_display || '';\n    setToggle('banner', SETTINGS.app_banner_enabled === 'true');\n    setToggle('rag', SETTINGS.rag_auto_save !== 'false');\n  } catch {\n    toast('Failed to load settings.');\n  }\n}\n\nasync function saveSettings() {\n  try {\n    const updates = {\n      calendar_link: document.getElementById('s-calendar-link').value.trim(),\n      welcome_message: document.getElementById('s-welcome-message').value.trim(),\n      app_banner_text: document.getElementById('s-banner-text').value.trim(),\n      weekly_report_email: document.getElementById('s-report-email').value.trim(),\n      blueprint_price_display: document.getElementById('s-blueprint-price').value.trim(),\n      site_price_display: document.getElementById('s-site-price').value.trim(),\n      call_price_display: document.getElementById('s-call-price').value.trim(),\n      app_banner_enabled: String(document.getElementById('toggle-banner').classList.contains('on')),\n      rag_auto_save: String(document.getElementById('toggle-rag').classList.contains('on')),\n    };\n    const res = await api('POST', '/api/admin/settings', updates);\n    if (res.ok) toast('Settings saved.');\n    else toast('Failed to save settings.');\n  } catch {\n    toast('Failed to save settings.');\n  }\n}\n\nasync function generateAdminMagicLink() {\n  const email = document.getElementById('magic-gen-email').value.trim();\n  const tier = document.getElementById('magic-gen-tier').value;\n  if (!email) { toast('Enter an email address.'); return; }\n  try {\n    const res = await api('POST', '/api/admin/magic-link', { email, tier, createIfMissing: true });\n    if (res.magicLink) {\n      document.getElementById('magic-gen-result').innerHTML = \`\n        <div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>\n        <div style="font-size:12px;color:var(--text2)">Click to copy. Valid for 72 hours. Single use.</div>\n      \`;\n    } else {\n      toast(res.error || 'Failed to generate link.');\n    }\n  } catch {\n    toast('Failed to generate link.');\n  }\n}\n\n// USER DROPDOWN HELPERS\nlet dropdownTimeout = null;\nfunction showUserDropdown(input, dropdownId) {\n  clearTimeout(dropdownTimeout);\n  const dd = document.getElementById(dropdownId);\n  const q = input.value.trim().toLowerCase();\n  const statusEl = input.closest('.form-group').querySelector('[id$="-user-status"]');\n\n  if (!q) { dd.style.display = 'none'; if (statusEl) statusEl.innerHTML = ''; return; }\n\n  const matches = (ALL_USERS || []).filter(u =>\n    u.email.toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)\n  ).slice(0, 6);\n\n  const isValidEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(q);\n  const exactMatch = matches.find(u => u.email.toLowerCase() === q);\n\n  let html = '';\n  if (matches.length > 0) {\n    html = matches.map(u => \`\n      <div class="user-dropdown-item" onmousedown="selectUser('\${u.email}','\${input.id}','\${dropdownId}')">\n        <span class="ud-email">\${u.email}</span>\n        <span class="ud-meta">\${u.name || ''} \${u.role === 'admin' ? '(admin)' : ''}</span>\n      </div>\n    \`).join('');\n  }\n\n  if (isValidEmail && !exactMatch) {\n    html += \`\n      <div class="user-dropdown-item ud-create" onmousedown="selectUser('\${q}','\${input.id}','\${dropdownId}',true)">\n        + Create new user: \${q}\n      </div>\n    \`;\n  } else if (!isValidEmail && matches.length === 0) {\n    html = '<div class="user-dropdown-empty">Type a valid email to create a new user</div>';\n  }\n\n  dd.innerHTML = html;\n  dd.style.display = html ? 'block' : 'none';\n\n  if (statusEl) {\n    if (exactMatch) {\n      statusEl.innerHTML = '<span style="color:var(--green)">Existing user found</span>';\n    } else if (isValidEmail) {\n      statusEl.innerHTML = '<span style="color:var(--gold)">New user will be created automatically</span>';\n    } else {\n      statusEl.innerHTML = '';\n    }\n  }\n}\n\nfunction selectUser(email, inputId, dropdownId, isNew) {\n  document.getElementById(inputId).value = email;\n  document.getElementById(dropdownId).style.display = 'none';\n  const statusEl = document.getElementById(inputId).closest('.form-group').querySelector('[id$="-user-status"]');\n  if (statusEl) {\n    statusEl.innerHTML = isNew\n      ? '<span style="color:var(--gold)">New user will be created automatically</span>'\n      : '<span style="color:var(--green)">Existing user selected</span>';\n  }\n}\n\ndocument.addEventListener('click', function(e) {\n  document.querySelectorAll('.user-dropdown').forEach(dd => {\n    if (!dd.parentElement.contains(e.target)) dd.style.display = 'none';\n  });\n});\n\n// TEST BLUEPRINT GENERATOR\nasync function generateTestBlueprint() {\n  const email = document.getElementById('test-bp-email').value.trim();\n  if (!email) { toast('Select a user or enter an email address.'); return; }\n  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }\n  const brandName = document.getElementById('test-bp-brand').value.trim() || 'Test Brand';\n  const niche = document.getElementById('test-bp-niche').value.trim() || 'Business coaching';\n  const resultEl = document.getElementById('test-bp-result');\n  const btn = document.getElementById('test-bp-btn');\n\n  btn.disabled = true;\n  btn.textContent = 'Generating blueprint + debrief...';\n  resultEl.innerHTML = '<div style="color:var(--text2)">This usually takes 15 to 30 seconds. Generating blueprint with AI, then creating strategist debrief...</div>';\n\n  try {\n    const res = await api('POST', '/api/admin/generate-test-blueprint', { email, brandName, niche });\n    btn.disabled = false;\n    btn.textContent = 'Generate Blueprint + Debrief';\n    if (res.ok) {\n      resultEl.innerHTML = \`\n        <div style="color:var(--green);font-weight:600;margin-bottom:8px">Blueprint created successfully</div>\n        \${res.userCreated ? '<div style="font-size:12px;color:var(--gold);margin-bottom:4px">New user created automatically</div>' : ''}\n        <div style="font-size:12px;color:var(--text2)">Session: \${res.sessionId}</div>\n        <div style="font-size:12px;color:var(--text2);margin-top:4px">Strategist Debrief: \${res.hasDebrief ? '<span style="color:var(--green)">Included</span>' : '<span style="color:var(--orange,#e67e22)">Not generated</span>'}</div>\n        \${!res.hasDebrief ? \`<button onclick="generateDebrief('\${res.sessionId}')" style="margin-top:8px;padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">Generate Debrief (Opus)</button>\` : ''}\n        \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)" style="margin-top:8px">\${res.magicLink}</div>\n        <div style="font-size:11px;color:var(--text2)">Click to copy magic link. Opens directly to blueprint view.</div>\` : ''}\n      \`;\n      loadUsers();\n    } else {\n      resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to generate blueprint.'}</div>\`;\n    }\n  } catch (e) {\n    btn.disabled = false;\n    btn.textContent = 'Generate Blueprint + Debrief';\n    resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';\n  }\n}\n\nasync function quickTestSession() {\n  const email = document.getElementById('quick-test-email').value.trim();\n  if (!email) { toast('Select a user or enter an email address.'); return; }\n  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) { toast('Please enter a valid email address.'); return; }\n  const tier = document.getElementById('quick-test-tier').value;\n  const resultEl = document.getElementById('quick-test-result');\n  const btn = document.getElementById('quick-test-btn');\n\n  btn.disabled = true;\n  btn.textContent = tier === 'site' ? 'Creating session + blueprint + debrief...' : 'Creating session...';\n  resultEl.innerHTML = '<div style="color:var(--text2)">Setting up test session...</div>';\n\n  try {\n    const res = await api('POST', '/api/admin/quick-test-session', { email, tier });\n    btn.disabled = false;\n    btn.textContent = 'Create Test Session';\n    if (res.ok) {\n      resultEl.innerHTML = \`\n        <div style="color:var(--green);font-weight:600;margin-bottom:8px">Test session created</div>\n        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">User: \${res.userId}</div>\n        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Session: \${res.sessionId}</div>\n        <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Tier: \${res.tier} | Blueprint: \${res.hasBlueprint ? 'Yes' : 'No'}</div>\n        <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Strategist Debrief: \${res.hasDebrief ? '<span style="color:var(--green)">Included</span>' : '<span style="color:var(--orange,#e67e22)">Not generated</span>'}</div>\n        \${!res.hasDebrief && res.hasBlueprint ? \`<button onclick="generateDebrief('\${res.sessionId}')" style="margin-top:4px;margin-bottom:8px;padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px">Generate Debrief (Opus)</button>\` : ''}\n        \${res.magicLink ? \`<div class="magic-link-box" onclick="copyToClipboard(this.textContent)">\${res.magicLink}</div>\n        <div style="font-size:11px;color:var(--text2)">Click to copy. Opens to \${res.hasBlueprint ? 'blueprint' : 'interview'}.</div>\` : ''}\n      \`;\n      loadUsers();\n    } else {\n      resultEl.innerHTML = \`<div style="color:var(--red)">\${res.error || 'Failed to create test session.'}</div>\`;\n    }\n  } catch (e) {\n    btn.disabled = false;\n    btn.textContent = 'Create Test Session';\n    resultEl.innerHTML = '<div style="color:var(--red)">Request failed. Check console.</div>';\n  }\n}\n\n// GENERATE DEBRIEF for existing session\nasync function generateDebrief(sessionId) {\n  const btn = event.target;\n  btn.disabled = true;\n  btn.textContent = 'Generating debrief (Opus)...';\n  try {\n    const res = await api('POST', '/api/admin/generate-debrief', { sessionId });\n    if (res.ok) {\n      btn.textContent = 'Debrief generated!';\n      btn.style.background = 'var(--green)';\n      toast('Strategist debrief generated successfully. Reload the blueprint to see it.');\n    } else {\n      btn.textContent = 'Failed';\n      btn.style.background = 'var(--red)';\n      toast(res.error || 'Failed to generate debrief');\n    }\n  } catch (e) {\n    btn.textContent = 'Error';\n    btn.style.background = 'var(--red)';\n    toast('Request failed. Check console.');\n  }\n}\n\n// ENDPOINT HEALTH TEST\nasync function testAllEndpoints() {\n  const el = document.getElementById('endpoint-health-results');\n  el.innerHTML = '<div style="color:var(--text2)">Testing all endpoints...</div>';\n\n  const endpoints = [\n    '/api/admin/stats',\n    '/api/admin/users',\n    '/api/admin/sessions',\n    '/api/admin/settings',\n    '/api/admin/prompt',\n    '/api/admin/health',\n    '/api/admin/monitoring',\n    '/api/admin/api-usage',\n    '/api/admin/errors'\n  ];\n\n  const results = [];\n  let passed = 0;\n\n  for (const endpoint of endpoints) {\n    const startTime = performance.now();\n    try {\n      const res = await api('GET', endpoint);\n      const endTime = performance.now();\n      const time = Math.round(endTime - startTime);\n      results.push({ endpoint, status: 'pass', time, code: 200 });\n      passed++;\n    } catch (e) {\n      const endTime = performance.now();\n      const time = Math.round(endTime - startTime);\n      results.push({ endpoint, status: 'fail', time, code: 500 });\n    }\n  }\n\n  el.innerHTML = results.map(r => \`\n    <div class="endpoint-test \${r.status}">\n      <div class="endpoint-name">\${r.endpoint}</div>\n      <div class="endpoint-status">\${r.status === 'pass' ? '\u2713 OK' : '\u2717 Failed'} \u2022 \${r.time}ms</div>\n    </div>\n  \`).join('') + \`<div style="margin-top:12px;font-weight:600;color:var(--text)">\${passed}/\${endpoints.length} endpoints healthy</div>\`;\n}\n\n// TOGGLE HELPERS\nfunction toggleSetting(name) {\n  const el = document.getElementById('toggle-' + name);\n  el.classList.toggle('on');\n}\n\nfunction setToggle(name, val) {\n  const el = document.getElementById('toggle-' + name);\n  if (val) el.classList.add('on'); else el.classList.remove('on');\n}\n\n// MODAL HELPERS\nfunction openModal(name) {\n  document.getElementById('modal-' + name).classList.add('open');\n}\nfunction closeModal(name) {\n  document.getElementById('modal-' + name).classList.remove('open');\n}\n\n// API HELPER\nasync function api(method, path, body) {\n  const opts = {\n    method,\n    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AUTH_TOKEN }\n  };\n  if (body) opts.body = JSON.stringify(body);\n  const res = await fetch(API + path, opts);\n  if (res.status === 401) { logout(); return {}; }\n  return res.json();\n}\n\n// UTILS\nfunction toast(msg, ms = 3500) {\n  const t = document.getElementById('toast');\n  t.textContent = msg; t.classList.add('show');\n  setTimeout(() => t.classList.remove('show'), ms);\n}\n\nfunction fmtDate(d) {\n  if (!d) return '\u2014';\n  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });\n}\n\nfunction copyToClipboard(text) {\n  navigator.clipboard?.writeText(text).then(() => toast('Copied to clipboard.'));\n}\n\n// MONITORING\nasync function loadMonitoring() {\n  try {\n    const [monData, apiData] = await Promise.all([\n      api('GET', '/api/admin/monitoring'),\n      api('GET', '/api/admin/api-usage?hours=24'),\n    ]);\n\n    // Health grid\n    const healthGrid = document.getElementById('health-grid');\n    if (monData.health && monData.health.length) {\n      healthGrid.innerHTML = monData.health.map(h => {\n        const d = h.details ? JSON.parse(h.details) : {};\n        const statusClass = h.status === 'healthy' ? 'green' : h.status === 'warning' ? 'yellow' : 'red';\n        return '<div class="stat-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="health-dot ' + statusClass + '"></div><div style="font-size:12px;font-weight:600">' + h.check_type + '</div></div><div class="stat-label">' +\n          h.status + (d.latencyMs ? ' \xB7 ' + d.latencyMs + 'ms' : '') + (d.error ? ' \xB7 ' + d.error : '') + '</div></div>';\n      }).join('');\n    } else {\n      healthGrid.innerHTML = '<div class="stat-card"><div class="stat-value">\u2014</div><div class="stat-label">No checks yet</div></div>';\n    }\n\n    // Funnel health\n    const fh = document.getElementById('funnel-health');\n    const f = monData.funnel;\n    if (f) {\n      let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">';\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.total || 0) + '</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Sessions</div></div>';\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.completionRate || 0) + '%</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Completion</div></div>';\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.avgPhase || 0) + '</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Avg Phase</div></div>';\n      html += '<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700">' + (f.dropOffRate || 0) + '%</div><div style="font-size:11px;color:var(--text2);text-transform:uppercase">Drop-off</div></div>';\n      html += '</div>';\n      if (f.warnings && f.warnings.length) {\n        html += f.warnings.map(w => '<div style="background:rgba(217,119,6,0.08);border-left:3px solid #D97706;padding:8px 12px;margin:6px 0;border-radius:0 6px 6px 0;font-size:13px;color:#92400E">' + w + '</div>').join('');\n      }\n      if (f.lastFivePhases) html += '<p style="font-size:12px;color:var(--text2);margin-top:8px">Last 5: phases ' + f.lastFivePhases.join(', ') + '</p>';\n      fh.innerHTML = html;\n    }\n\n    // API usage\n    const au = document.getElementById('api-usage');\n    if (apiData.byProvider && apiData.byProvider.length) {\n      let html = '<div style="font-size:13px;">';\n      html += '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-weight:600;color:var(--text2)"><span>Provider</span><span>Calls</span><span>Avg ms</span></div>';\n      apiData.byProvider.forEach(p => {\n        const name = p.metric_name.replace('api.', '').replace('.call', '');\n        html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span>' + name + '</span><span style="font-weight:600">' + p.calls + '</span><span>' + (p.avg_latency_ms || 0) + 'ms</span></div>';\n      });\n      if (apiData.rateLimitHits?.length) {\n        html += '<p style="color:#D97706;margin-top:8px;font-size:12px">\u26A0 ' + apiData.rateLimitHits.length + ' rate limit hit(s)</p>';\n      }\n      html += '<p style="color:var(--text2);margin-top:8px;font-size:12px">Total: ' + apiData.totalCalls + ' calls in ' + apiData.period + '</p>';\n      html += '</div>';\n      au.innerHTML = html;\n    } else {\n      au.innerHTML = '<p style="color:var(--text2);font-size:14px">No API calls recorded yet.</p>';\n    }\n\n    // Alerts\n    const al = document.getElementById('alerts-list');\n    const alerts = (monData.alerts || []).filter(a => !a.resolved);\n    if (alerts.length) {\n      al.innerHTML = alerts.map(a => {\n        const dot = a.severity === 'critical' ? '\u{1F534}' : '\u{1F7E1}';\n        return '<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:8px">' + dot +\n          ' <strong style="font-size:13px">' + a.title + '</strong>' +\n          '<button class="btn btn-outline btn-sm" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="resolveAlert(' + a.id + ')">Resolve</button></div>' +\n          '<p style="font-size:12px;color:var(--text2);margin-top:4px">' + (a.message || '').slice(0, 120) + '</p>' +\n          '<p style="font-size:11px;color:var(--text3)">' + fmtDate(a.created_at) + '</p></div>';\n      }).join('');\n    } else {\n      al.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No active alerts</p>';\n    }\n\n    // Errors\n    const el = document.getElementById('errors-list');\n    const errors = monData.errors || [];\n    if (errors.length) {\n      el.innerHTML = errors.slice(0, 15).map(e =>\n        '<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:12px;font-weight:600;color:var(--text)">' + (e.endpoint || '?') + ' <span style="color:var(--red)">' + (e.status_code || 500) + '</span></div>' +\n        '<div style="font-size:12px;color:var(--text2);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (e.error_message || '').slice(0, 100) + '</div>' +\n        '<div style="font-size:11px;color:var(--text3)">' + fmtDate(e.created_at) + '</div></div>'\n      ).join('');\n    } else {\n      el.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No errors in log</p>';\n    }\n  } catch (err) {\n    toast('Failed to load monitoring: ' + err.message);\n  }\n}\n\nasync function runHealthCheck() {\n  const el = document.getElementById('health-results');\n  el.innerHTML = '<div style="color:var(--text2);font-size:13px">Checking all systems...</div>';\n\n  try {\n    const res = await api('GET', '/api/admin/system-health');\n    const checks = res.checks || [];\n\n    el.innerHTML = checks.map(c => \`\n      <div class="health-row">\n        <span class="health-label">\${c.name}</span>\n        <span class="health-status \${c.ok ? 'health-ok' : 'health-fail'}">\${c.ok ? '\u2713 OK' : '\u2717 ' + (c.error || 'Failed')}</span>\n      </div>\n    \`).join('') || '<div style="color:var(--text2);font-size:13px">No results returned.</div>';\n\n    const passed = checks.filter(c => c.ok).length;\n    const total = checks.length;\n    toast(passed + '/' + total + ' systems healthy');\n  } catch (err) {\n    el.innerHTML = \`<div style="color:var(--red);font-size:13px">Health check failed: \${err.message}</div>\`;\n  }\n}\n\nasync function sendDigest() {\n  toast('Generating digest...');\n  try {\n    const res = await api('POST', '/api/admin/digest');\n    toast('Digest sent. Sessions: ' + (res.newSessions || 0) + ', Errors: ' + (res.errorsLogged || 0));\n  } catch (err) {\n    toast('Digest failed: ' + err.message);\n  }\n}\n\nasync function resolveAlert(id) {\n  try {\n    await api('POST', '/api/admin/resolve-alert', { alertId: id });\n    toast('Alert resolved.');\n    loadMonitoring();\n  } catch (err) {\n    toast('Failed to resolve alert.');\n  }\n}\n\n// TESTING PAGE\nconst CHECKLIST = {\n  purchase: [\n    { id: 'p1', label: 'DWI Stripe payment link loads without errors' },\n    { id: 'p2', label: 'Completing test purchase redirects to thank you page' },\n    { id: 'p3', label: 'Stripe webhook fires and is received' },\n    { id: 'p4', label: 'GHL contact created or updated with purchase tag' },\n    { id: 'p5', label: 'Magic login link generated and delivered by email' },\n  ],\n  app: [\n    { id: 'a1', label: 'App loads at love.jamesguldan.com without errors' },\n    { id: 'a2', label: 'Intake form collects name, email, and phone' },\n    { id: 'a3', label: 'Phase 1 question appears after intake submission' },\n    { id: 'a4', label: 'Microphone input works on mobile' },\n    { id: 'a5', label: 'Phase banner shows on completion of each phase' },\n    { id: 'a6', label: 'Session saves and restores after closing browser' },\n  ],\n  blueprint: [\n    { id: 'b1', label: 'Phase 8 generates a blueprint with no raw JSON visible' },\n    { id: 'b2', label: 'Blueprint screen renders with all sections' },\n    { id: 'b3', label: 'Download Blueprint button produces valid file' },\n    { id: 'b4', label: 'Upsell to Site in Sixty shows on blueprint screen' },\n  ],\n  email: [\n    { id: 'e1', label: 'interview_started fires to drip worker on session start' },\n    { id: 'e2', label: 'DWI email arrives within 5 minutes of trigger' },\n    { id: 'e3', label: 'Nudge email queued for 24 hours after interview start' },\n    { id: 'e4', label: 'SMS fires within 5 minutes of purchase' },\n    { id: 'e5', label: 'interview_completed fires when blueprint generates' },\n    { id: 'e6', label: 'SIS pitch email queued for 2 days after interview' },\n    { id: 'e7', label: 'SIS emails stop when purchase tag is added' },\n    { id: 'e8', label: 'Strategy call pitch starts after SIS sequence ends' },\n  ],\n  abandon: [\n    { id: 'ab1', label: 'Use manual trigger to fire interview_abandoned event' },\n    { id: 'ab2', label: 'Recovery email arrives within 5 minutes' },\n    { id: 'ab3', label: 'Email link returns to app and resumes correct phase' },\n    { id: 'ab4', label: 'Cron abandonment check runs every 2 hours' },\n    { id: 'ab5', label: 'Inactive sessions appear in D1 with abandonment flag' },\n  ],\n  ghl: [\n    { id: 'g1', label: 'GHL Pipeline: DWI buyers land in correct stage' },\n    { id: 'g2', label: 'GHL Pipeline: SIS buyers move to correct stage' },\n    { id: 'g3', label: 'GHL Pipeline: Call bookings land in correct stage' },\n    { id: 'g4', label: 'Tags applied correctly to all contacts' },\n    { id: 'g5', label: 'Daily 9am health check fires and logs results' },\n  ],\n};\n\n// API COSTS\nasync function loadApiCosts() {\n  const days = document.getElementById('cost-days-filter')?.value || '30';\n  try {\n    const data = await api('GET', '/api/admin/usage?days=' + days);\n\n    // Summary cards\n    document.getElementById('cost-this-month').textContent = data.thisMonth?.costDollars || '$0.00';\n    document.getElementById('cost-month-calls').textContent = (data.thisMonth?.calls || 0) + ' API calls this month';\n    document.getElementById('cost-all-time').textContent = data.allTime?.costDollars || '$0.00';\n    document.getElementById('cost-all-calls').textContent = (data.allTime?.calls || 0) + ' total API calls';\n    document.getElementById('cost-per-user').textContent = '$' + ((data.avgPerUser?.avgCostCents || 0) / 100).toFixed(2);\n    document.getElementById('cost-per-user-calls').textContent = (data.avgPerUser?.avgCalls || 0) + ' avg calls per user';\n    document.getElementById('cost-users').textContent = data.allTime?.users || 0;\n    document.getElementById('cost-sessions').textContent = (data.allTime?.sessions || 0) + ' total sessions';\n\n    // Cost by model\n    const modelEl = document.getElementById('cost-by-model');\n    if (data.byModel && data.byModel.length) {\n      const totalCost = data.byModel.reduce((s,m) => s + (m.cost_cents || 0), 0);\n      modelEl.innerHTML = data.byModel.map(m => {\n        const pct = totalCost > 0 ? Math.round((m.cost_cents / totalCost) * 100) : 0;\n        const cost = '$' + ((m.cost_cents || 0) / 100).toFixed(2);\n        const tokens = ((m.input || 0) + (m.output || 0)).toLocaleString();\n        return '<div style="margin-bottom:16px">' +\n          '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">' +\n            '<span style="font-weight:600">' + esc(m.model) + '</span>' +\n            '<span>' + cost + ' (' + pct + '%)</span>' +\n          '</div>' +\n          '<div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden">' +\n            '<div style="background:var(--gold);height:100%;width:' + pct + '%;border-radius:4px"></div>' +\n          '</div>' +\n          '<div style="font-size:11px;color:var(--text2);margin-top:4px">' + (m.calls || 0) + ' calls, ' + tokens + ' tokens</div>' +\n        '</div>';\n      }).join('');\n    } else {\n      modelEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No usage data yet.</div>';\n    }\n\n    // Projections\n    const projEl = document.getElementById('cost-projections');\n    const monthCost = (data.thisMonth?.costCents || 0) / 100;\n    const dayOfMonth = new Date().getDate();\n    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();\n    const projected = dayOfMonth > 0 ? (monthCost / dayOfMonth) * daysInMonth : 0;\n    const dailyAvg = dayOfMonth > 0 ? monthCost / dayOfMonth : 0;\n    const usersPerDay = data.thisMonth?.sessions > 0 ? (data.thisMonth.sessions / dayOfMonth).toFixed(1) : '0';\n    const costPerSession = data.thisMonth?.sessions > 0 ? (monthCost / data.thisMonth.sessions).toFixed(2) : '0.00';\n\n    projEl.innerHTML =\n      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Projected This Month</div>' +\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + projected.toFixed(2) + '</div>' +\n        '</div>' +\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Daily Average</div>' +\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + dailyAvg.toFixed(2) + '</div>' +\n        '</div>' +\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Avg Sessions/Day</div>' +\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">' + usersPerDay + '</div>' +\n        '</div>' +\n        '<div style="background:var(--bg2);padding:16px;border-radius:8px">' +\n          '<div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Cost Per Session</div>' +\n          '<div style="font-size:24px;font-weight:700;color:var(--text)">$' + costPerSession + '</div>' +\n        '</div>' +\n      '</div>' +\n      '<div style="margin-top:16px;padding:12px;background:rgba(196,112,63,0.08);border-radius:8px;font-size:12px;line-height:1.6;color:var(--text)">' +\n        '<strong style="color:var(--gold)">Cost Breakdown by Service (estimated):</strong><br>' +\n        'Anthropic API (Claude Opus/Sonnet): ~85% of total<br>' +\n        'Gemini/Imagen (image generation): ~5% of total<br>' +\n        'Resend (transactional emails): ~1% of total<br>' +\n        'Cloudflare (D1, KV, R2, Workers): ~1% of total<br>' +\n        'Stripe processing: 2.9% + $0.30 per transaction' +\n      '</div>';\n\n    // Daily trend chart (simple bar chart)\n    const chartEl = document.getElementById('cost-daily-chart');\n    if (data.daily && data.daily.length) {\n      const maxCost = Math.max(...data.daily.map(d => d.cost_cents || 0), 1);\n      chartEl.innerHTML =\n        '<div style="display:flex;align-items:flex-end;gap:3px;height:160px;padding-bottom:24px;position:relative">' +\n        data.daily.slice().reverse().map(d => {\n          const h = Math.max(((d.cost_cents || 0) / maxCost) * 130, 2);\n          const cost = '$' + ((d.cost_cents || 0) / 100).toFixed(2);\n          const label = d.day?.slice(5) || '';\n          return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;min-width:0">' +\n            '<div title="' + label + ': ' + cost + ' (' + (d.calls||0) + ' calls)" style="width:100%;max-width:32px;height:' + h + 'px;background:var(--gold);border-radius:3px 3px 0 0;cursor:pointer;opacity:0.85;transition:opacity 0.2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85"></div>' +\n            '<div style="font-size:9px;color:var(--text2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">' + label + '</div>' +\n          '</div>';\n        }).join('') +\n        '</div>';\n    } else {\n      chartEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No daily data yet.</div>';\n    }\n\n    // Top users table\n    const tbody = document.getElementById('cost-users-tbody');\n    if (data.topUsers && data.topUsers.length) {\n      tbody.innerHTML = data.topUsers.map(u => {\n        const tokens = ((u.input || 0) + (u.output || 0)).toLocaleString();\n        const cost = '$' + ((u.cost_cents || 0) / 100).toFixed(2);\n        return '<tr>' +\n          '<td>' + esc(u.email || 'unknown') + '</td>' +\n          '<td>' + esc(u.name || '') + '</td>' +\n          '<td>' + (u.sessions || 0) + '</td>' +\n          '<td>' + (u.calls || 0) + '</td>' +\n          '<td>' + tokens + '</td>' +\n          '<td style="font-weight:600">' + cost + '</td>' +\n          '<td>' + fmtDate(u.last_active) + '</td>' +\n        '</tr>';\n      }).join('');\n    } else {\n      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No usage data yet.</td></tr>';\n    }\n\n  } catch(e) {\n    console.error('Failed to load API costs:', e);\n    document.getElementById('cost-by-model').innerHTML = '<div style="color:var(--red)">Failed to load cost data.</div>';\n  }\n}\n\nlet checklistState = JSON.parse(localStorage.getItem('dw_checklist') || '{}');\n\nfunction loadTesting() {\n  for (const [group, items] of Object.entries(CHECKLIST)) {\n    const el = document.getElementById('checklist-' + group);\n    if (!el) continue;\n    el.innerHTML = items.map(item => \`\n      <div class="checklist-item \${checklistState[item.id] ? 'done' : ''}" onclick="toggleCheck('\${item.id}', this)">\n        <div class="ci-box">\${checklistState[item.id] ? '\u2713' : ''}</div>\n        <span class="ci-label">\${item.label}</span>\n      </div>\n    \`).join('');\n  }\n  updateChecklistScore();\n}\n\nfunction toggleCheck(id, el) {\n  checklistState[id] = !checklistState[id];\n  localStorage.setItem('dw_checklist', JSON.stringify(checklistState));\n  el.classList.toggle('done', checklistState[id]);\n  el.querySelector('.ci-box').textContent = checklistState[id] ? '\u2713' : '';\n  updateChecklistScore();\n}\n\nfunction updateChecklistScore() {\n  const total = Object.values(CHECKLIST).flat().length;\n  const done = Object.values(checklistState).filter(Boolean).length;\n  const el = document.getElementById('checklist-score');\n  if (el) el.textContent = done + ' of ' + total + ' items verified';\n}\n\nfunction resetChecklist() {\n  checklistState = {};\n  localStorage.removeItem('dw_checklist');\n  loadTesting();\n}\n\nasync function runTestTrigger() {\n  const email = document.getElementById('test-email').value.trim();\n  const name = document.getElementById('test-name').value.trim();\n  const phone = document.getElementById('test-phone').value.trim();\n  const event_type = document.getElementById('test-event').value;\n  const phase = document.getElementById('test-phase').value;\n  const result = document.getElementById('test-trigger-result');\n\n  if (!email) { result.innerHTML = '<span style="color:var(--red)">Enter an email address.</span>'; return; }\n\n  result.innerHTML = '<span style="color:var(--text2)">Firing event...</span>';\n\n  try {\n    const res = await api('POST', '/api/admin/test-trigger', {\n      email, name, phone, event_type, phase: phase ? parseInt(phase) : undefined\n    });\n    result.innerHTML = \`<span style="color:var(--green)">\u2713 Event fired successfully.</span>\n      <pre style="margin-top:8px;font-size:11px;background:var(--bg2);padding:10px;border-radius:6px;overflow:auto">\${JSON.stringify(res, null, 2)}</pre>\`;\n  } catch (err) {\n    result.innerHTML = \`<span style="color:var(--red)">\u2717 Failed: \${err.message}</span>\`;\n  }\n}\n<\/script>\n</body>\n</html>\n`, "getAdminHTML");
 function getLoginHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -10462,51 +11891,7 @@ function getLoginHTML() {
       <span style="font-size:12px;color:#B8B4AF;display:inline-flex;align-items:center;gap:4px;">&#10003; Pause &amp; resume any time</span>
     </div>
   </div>
-  <p class="footer-note" id="footerNote">Don't have access yet? <a href="https://jamesguldan.com/deep-work" target="_blank">Learn more \u2192</a></p>
-  <div class="legal-links">
-    <a href="/terms" target="_blank">Terms</a>
-    &nbsp;&middot;&nbsp;
-    <a href="/privacy" target="_blank">Privacy</a>
-    &nbsp;&middot;&nbsp;
-    &copy; 2026 Align Consulting LLC
-  </div>
-</div>
-
-<script>
-// \u2500\u2500 Handle ?magic=TOKEN in URL (redirect from /magic) \u2500\u2500
-(async function checkMagicInUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const magic = params.get('magic');
-  if (!magic) return;
-
-  showLoading('Verifying your link...');
-  try {
-    const res = await fetch('/api/auth/magic', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: magic })
-    });
-    const data = await res.json();
-    if (data.token) {
-      storeSession(data.token, data.user);
-      redirectAfterLogin(data.user);
-    } else {
-      hideLoading();
-      showStatus('loginStatus', 'error', data.error || 'This link has expired or already been used. Please request a new one.');
-    }
-  } catch(e) {
-    hideLoading();
-    showStatus('loginStatus', 'error', 'Something went wrong. Please try again.');
-  }
-})();
-
-// \u2500\u2500 Check existing session \u2014 auto-redirect to app if logged in \u2500\u2500
-(function checkExistingSession() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.has('logout') || params.has('switch')) return;
-  const token = localStorage.getItem('dw_session');
-  if (!token) return;
-  // Immediately redirect \u2014 don't show login page at all
+  <p class="footer-note" id="footerNote">Don't have access yet? <a href="https://jamesguldan.com/deep-work" target="_blank">Learn more \u2192</a></p>\n  <div class="legal-links">\n    <a href="/terms" target="_blank">Terms</a>\n    &nbsp;&middot;&nbsp;\n    <a href="/privacy" target="_blank">Privacy</a>\n    &nbsp;&middot;&nbsp;\n    &copy; 2026 Align Consulting LLC\n  </div>\n</div>\n\n<script>\n// \u2500\u2500 Handle ?magic=TOKEN in URL (redirect from /magic) \u2500\u2500\n(async function checkMagicInUrl() {\n  const params = new URLSearchParams(window.location.search);\n  const magic = params.get('magic');\n  if (!magic) return;\n\n  showLoading('Verifying your link...');\n  try {\n    const res = await fetch('/api/auth/magic', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ token: magic })\n    });\n    const data = await res.json();\n    if (data.token) {\n      storeSession(data.token, data.user);\n      redirectAfterLogin(data.user);\n    } else {\n      hideLoading();\n      showStatus('loginStatus', 'error', data.error || 'This link has expired or already been used. Please request a new one.');\n    }\n  } catch(e) {\n    hideLoading();\n    showStatus('loginStatus', 'error', 'Something went wrong. Please try again.');\n  }\n})();\n\n// \u2500\u2500 Check existing session \u2014 auto-redirect to app if logged in \u2500\u2500\n(function checkExistingSession() {\n  const params = new URLSearchParams(window.location.search);\n  if (params.has('logout') || params.has('switch')) return;\n  const token = localStorage.getItem('dw_session');\n  if (!token) return;\n  // Immediately redirect \u2014 don't show login page at all
   fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
     .then(r => r.json())
     .then(user => {
