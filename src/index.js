@@ -1165,20 +1165,20 @@ SOCIAL HANDLES (use in .footer-social div in footer):
 ${Object.entries(socialHandles).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" | ")}` : ""}
 
 \u2501\u2501\u2501 COPY RULES \u2501\u2501\u2501
-- PROOF NUMBERS: Use the exact stats from DATA SIGNALS in the hero stats bar and About section. Never fabricate numbers that aren't grounded in the data above or the interview context. CRITICAL: Write the ACTUAL number directly inside each .hero-stat-num span — NEVER write 0 as a placeholder. The counter animation reads this number and counts UP to it. If you write 0, the visitor sees 0. Write "40+" not "0". Write "$5,000" not "$0". Write "200+" not "0%".
+- PROOF NUMBERS: Use the exact stats from DATA SIGNALS in the hero stats bar and About section. Never fabricate numbers that aren't grounded in the data above or the interview context. CRITICAL: Write the ACTUAL number directly inside each .hero-stat-num span â NEVER write 0 as a placeholder. The counter animation reads this number and counts UP to it. If you write 0, the visitor sees 0. Write "40+" not "0". Write "$5,000" not "$0". Write "200+" not "0%".
 - AVATAR'S EXACT WORDS: The first 200 words of the site must contain at least one phrase from the exactWords list above. Use them verbatim in the hero sub or first problem section.
 - SECTION HEADLINE FORMULA: Every section h2 must be a VALUE PROMISE or a TENSION \u2014 never a label. "About Me" is a label. "Why I Left a $400k Job to Build This" is a tension. "What Changes When You Work With Me" is a value promise. The only exception is the nav.
 - ABOUT SECTION ARC: Write the about section copy in this exact arc: "I used to [their before state \u2014 specific]. Then [the pivotal moment \u2014 specific]. Now I help [who they serve] [achieve what outcome]. [One sentence credential or proof]." Four sentences maximum.
 - TESTIMONIAL ATTRIBUTION: Always attribute testimonials in this format: [Full name or First + Last initial], [their role or situation], [result they achieved or company]. Example: "Sarah K., startup founder, went from $80k to $220k in 8 months." Never attribute as just a name.
 - CTA COPY: Every button must be outcome-focused. "Get Your Free Strategy Call" not "Contact Me." "Join 12,000+ Weekly Readers" not "Subscribe." "Book James to Speak" not "Get In Touch." The button text must answer the visitor's unspoken question: "What do I get if I click this?"
 - WRITE 2 testimonials max following the testimonial style guidance above. If bestTestimonial is provided above, use it verbatim as one of them.
-- HEADLINE SPACING: Every sentence within a heading must have a space after the period. Never write "frameworks.I" — always write "frameworks. I". This applies to every h1, h2, h3, and .eyebrow element.
+- HEADLINE SPACING: Every sentence within a heading must have a space after the period. Never write "frameworks.I" â always write "frameworks. I". This applies to every h1, h2, h3, and .eyebrow element.
 - VISUAL VARIETY: At least one body section (not the hero, not the about section) must use a 2-column layout using .card-grid-2 or two side-by-side divs. At least one section must use a .quote-block or .contrary-quote pullquote for visual rhythm.
 - SECTION ORDER: Follow this segment-specific section structure exactly:
-  Speaker/Catalyst: hero → problem-reframe section → contrary-quote section → about-2col → methodology/speaking-topics cards → testimonials → offers → CTA
-  Coach/Luminary: hero → problem-from-client-POV section (use their exact words) → transformation-arc section → about-2col → results/testimonials → offers → CTA
-  Consultant/Architect: hero → authority-and-problem section → methodology (numbered steps, .card-grid) → client-results section → offers → CTA
-  Default: hero → problem section → about-2col → how-it-works (3 steps) → testimonials → offers → CTA
+  Speaker/Catalyst: hero â problem-reframe section â contrary-quote section â about-2col â methodology/speaking-topics cards â testimonials â offers â CTA
+  Coach/Luminary: hero â problem-from-client-POV section (use their exact words) â transformation-arc section â about-2col â results/testimonials â offers â CTA
+  Consultant/Architect: hero â authority-and-problem section â methodology (numbered steps, .card-grid) â client-results section â offers â CTA
+  Default: hero â problem section â about-2col â how-it-works (3 steps) â testimonials â offers â CTA
 - COPY CEILING: Each section must have exactly ONE prose block. That block is 3 sentences maximum and 50 words maximum. If you need more content, use cards, not more prose. Never write two paragraphs in a single section.
 - HERO FONT CEILING: If you write a custom <style> block, the hero h1 font-size clamp max must never exceed 3.2rem (about 51px). The hero must fit entirely in the viewport with stats and CTAs visible on first load.
 - NAV SIMPLICITY: Nav must contain exactly 3 anchor links on desktop. On mobile keep only the logo and the CTA button. Never let nav items touch the screen edge.
@@ -6906,7 +6906,7 @@ function renderBlueprintV2(blueprint, userName) {
   html += `<div class="bp-tab-bar" id="bpTabBar" ${hasDebrief?'style="opacity:0; transition: opacity 0.6s ease;"':''}><button class="bp-tab-btn active" onclick="switchBlueprintTab('story')">Your Brand Story</button><button class="bp-tab-btn" onclick="switchBlueprintTab('positioning')">Your Positioning</button><button class="bp-tab-btn" onclick="switchBlueprintTab('offers')">Your Offers</button></div>\n`;
   html += '<div id="bp-tab-story" class="bp-tab-content active"><div class="bp-tab-inner">';
   if (brandNames.length > 1) html += `<div class="bp-section"><div class="bp-eyebrow">Brand Name Options</div><div class="bp-section-title">${primaryBrandName}</div><div class="bp-card"><div class="bp-card-label">Alternatives</div><div class="bp-card-body">${brandNames.slice(1).join(' &nbsp;&middot;&nbsp; ')}</div></div></div>`;
-  if (taglines) html += `<div class="bp-section"><div class="bp-eyebrow">Tagline Options</div><div class="bp-pullquote">"${(part1?.taglines?.[0]?.text||part1?.taglines?.[0]?.tagline||part1?.taglines?.[0]||'').replace(/^"|"$/g,'')}"</div>${taglines.split('·').length>1?`<div class="bp-card"><div class="bp-card-body">${taglines}</div></div>`:''}</div>`;
+  if (taglines) html += `<div class="bp-section"><div class="bp-eyebrow">Tagline Options</div><div class="bp-pullquote">"${(part1?.taglines?.[0]?.text||part1?.taglines?.[0]?.tagline||part1?.taglines?.[0]||'').replace(/^"|"$/g,'')}"</div>${taglines.split('Â·').length>1?`<div class="bp-card"><div class="bp-card-body">${taglines}</div></div>`:''}</div>`;
   if (colorSwatches) html += `<div class="bp-section"><div class="bp-eyebrow">Visual Direction</div><div class="bp-section-title">Colors &amp; Typography</div><div class="bp-color-palette">${colorSwatches}</div>${part1?.visualDirection?.fonts?`<div class="bp-card"><div class="bp-card-label">Recommended Fonts</div><div class="bp-card-body">${Array.isArray(part1.visualDirection.fonts)?part1.visualDirection.fonts.join(', '):part1.visualDirection.fonts}</div></div>`:''} ${part1?.visualDirection?.aesthetic?`<div class="bp-card"><div class="bp-card-label">Aesthetic</div><div class="bp-card-body">${part1.visualDirection.aesthetic}</div></div>`:''}</div>`;
   if (voiceTags) html += `<div class="bp-section"><div class="bp-eyebrow">Brand Voice</div><div class="bp-section-title">How You Sound</div><div class="bp-voice-tags">${voiceTags}</div></div>`;
   if (part1?.coreBrandPromise) html += `<div class="bp-section"><div class="bp-pullquote">"${part1.coreBrandPromise.replace(/^"|"$/g,'')}"</div></div>`;
@@ -6948,8 +6948,34 @@ function renderBlueprintV2(blueprint, userName) {
       }, { threshold: 0.3 });
       obs.observe(reveal);
     }
+  
+    var forkEl = document.getElementById("blueprint-fork");
+    if (forkEl) { setTimeout(function() { forkEl.style.opacity = "1"; forkEl.style.transform = "translateY(0)"; }, 500); }
   }, 100);
-  return html;
+  
+
+  // ── Two-Path Fork (The Invitation) ──
+  var nicheStmt = bp?.blueprint?.part3?.nicheStatement || "";
+  html += '<div id="blueprint-fork" style="max-width:640px;margin:80px auto 0;padding:0 24px 60px;opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease;">' +
+    '<div style="width:40px;height:2px;background:#C4703F;margin-bottom:24px;"></div>' +
+    '<p style="font-family:Inter,sans-serif;font-size:15px;line-height:1.85;color:#555;margin:0 0 20px;">' +
+    'Now you have something most people never get: a real blueprint for your brand, built from your own words and your own story. Not a template. Not someone else\'s framework. Yours.' +
+    '</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:15px;line-height:1.85;color:#555;margin:0 0 20px;">' +
+    'If you\'re the kind of person who takes a strategy and runs with it, I\'ve built export tools that turn your blueprint into prompts for Lovable, Framer, or any builder you prefer. You\'ll also get the full PDF. Everything you need to start building today.' +
+    '</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:15px;line-height:1.85;color:#555;margin:0 0 20px;">' +
+    'If you\'d rather not do this alone, I have a small number of 1:1 deep work sessions each month where we take your blueprint and turn it into something real. Strategy, visuals, messaging, and a clear plan for what to build first. Most people leave that session with more clarity in 60 minutes than they\'ve had in months of trying to figure it out on their own.' +
+    '</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:15px;line-height:1.85;color:#555;margin:0 0 28px;">' +
+    'Either way, your blueprint is yours. No expiration. No pressure. Just two good paths forward.' +
+    '</p>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;">' +
+    '<button onclick="showExportKit()" style="display:inline-block;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:14px;padding:14px 32px;border-radius:50px;border:none;cursor:pointer;">Get My Export Kit</button>' +
+    '<a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" target="_blank" style="display:inline-block;background:transparent;color:#1D1D1F;font-family:Outfit,sans-serif;font-weight:600;font-size:14px;padding:14px 32px;border-radius:50px;border:1px solid #E8E8E8;text-decoration:none;cursor:pointer;">Book a Session with James</a>' +
+    '</div>' +
+    '</div>';
+return html;
 }
 
 function switchBlueprintTab(tabName) {
@@ -6962,6 +6988,133 @@ function switchBlueprintTab(tabName) {
   requestAnimationFrame(function() { target.style.opacity = '1'; });
   window.scrollTo({ top: document.querySelector('.bp-tab-bar').offsetTop, behavior: 'smooth' });
 }
+
+
+// ── Export Kit Functions ──
+function showExportKit() {
+  if (document.getElementById("export-kit-overlay")) {
+    document.getElementById("export-kit-overlay").style.display = "flex";
+    return;
+  }
+  var bp = window.STATE?.blueprint?.blueprint || window.STATE?.blueprint || {};
+  var brandName = (bp.part1?.brandNames?.[0]) || bp.part1?.brandName || "Your Brand";
+  var niche = bp.part3?.nicheStatement || "";
+  var lovablePrompt = generateLovablePrompt(bp, brandName, niche);
+  var framerPrompt = generateFramerPrompt(bp, brandName, niche);
+  var overlay = document.createElement("div");
+  overlay.id = "export-kit-overlay";
+  overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10000;backdrop-filter:blur(4px);";
+  var modal = document.createElement("div");
+  modal.style.cssText = "background:#fff;border-radius:16px;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;padding:40px;";
+  modal.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">' +
+    '<div><p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 4px;">YOUR EXPORT KIT</p>' +
+    '<h2 style="font-family:Outfit,sans-serif;font-weight:700;font-size:24px;color:#1D1D1F;margin:0;letter-spacing:-0.02em;">Take Your Blueprint and Build</h2></div>' +
+    '<button onclick="document.getElementById(\'export-kit-overlay\').style.display=\'none\'" style="background:none;border:none;font-size:24px;color:#86868B;cursor:pointer;padding:8px;">&times;</button>' +
+    '</div>' +
+    '<div style="margin-bottom:24px;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Lovable.dev Prompt</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Lovable to generate your site.</p>' +
+    '<textarea id="lovable-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +
+    '<button onclick="copyExportPrompt(\'lovable-prompt\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Lovable Prompt</button>' +
+    '</div>' +
+    '<div style="margin-bottom:24px;">' +
+    '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Framer Prompt</p>' +
+    '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Framer AI to generate your site.</p>' +
+    '<textarea id="framer-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +
+    '<button onclick="copyExportPrompt(\'framer-prompt\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Framer Prompt</button>' +
+    '</div>' +
+    '<div style="border-top:1px solid #F0F0F0;padding-top:20px;">' +
+    '<button onclick="downloadBlueprintPDF()" style="background:transparent;color:#1D1D1F;font-family:Outfit,sans-serif;font-weight:600;font-size:13px;padding:12px 24px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;">Download Full PDF</button>' +
+    '</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  document.getElementById("lovable-prompt").value = lovablePrompt;
+  document.getElementById("framer-prompt").value = framerPrompt;
+  overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.style.display = "none"; });
+}
+
+function generateLovablePrompt(bp, brandName, niche) {
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p5 = bp.part5 || {};
+  var p7 = bp.part7 || {};
+  var offers = (p4.offers || p4.offerSuite || []).map(function(o) {
+    return o.name + " (" + (o.price || o.priceRange || "TBD") + "): " + (o.description || o.oneLiner || "");
+  }).join("\n");
+  var headlines = (p7.headlines || []).slice(0, 3).join("\n");
+  return "Build a modern, conversion-focused website for " + brandName + ".\n\n" +
+    "BRAND IDENTITY:\n" +
+    "Brand Name: " + brandName + "\n" +
+    "Niche: " + (niche || "See positioning below") + "\n" +
+    "Target Audience: " + (p3.targetAudience || p3.idealClient || "See below") + "\n" +
+    "Brand Voice: " + (p1.brandVoice || p1.tone || "Professional, warm, direct") + "\n\n" +
+    "ORIGIN STORY:\n" +
+    (p2.originNarrative || p2.brandStory || "The founder's personal story of transformation.") + "\n\n" +
+    "POSITIONING STATEMENT:\n" +
+    (niche || p3.positioningStatement || "") + "\n\n" +
+    "OFFERS:\n" + (offers || "Offer details in the blueprint.") + "\n\n" +
+    "HEADLINES/COPY DIRECTION:\n" + (headlines || (p7.headline || "")) + "\n\n" +
+    "DESIGN DIRECTION:\n" +
+    "Clean, modern, Apple-inspired aesthetic. White background (#FFFFFF). Primary text #1D1D1F. Accent color: warm copper #C4703F used sparingly for eyebrow labels only. Font pairing: Outfit for headlines, Inter for body text. Cards with subtle #F0F0F0 borders, 16px radius. Pill-shaped CTA buttons with dark fill (#1D1D1F).\n\n" +
+    "PAGE STRUCTURE:\n" +
+    "1. Hero: Brand name + niche statement + primary CTA\n" +
+    "2. Story section: Origin narrative with emotional pull\n" +
+    "3. Services/Offers: Card layout with name, description, price, CTA\n" +
+    "4. Testimonials: Pull quotes in Playfair Display italic\n" +
+    "5. About: Personal story + credibility markers\n" +
+    "6. Contact/CTA: Final conversion section\n\n" +
+    "Make it feel premium, personal, and trustworthy. Not flashy or salesy. The kind of site that makes someone think: this person is the real deal.";
+}
+
+function generateFramerPrompt(bp, brandName, niche) {
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p7 = bp.part7 || {};
+  var offers = (p4.offers || p4.offerSuite || []).map(function(o) {
+    return "- " + o.name + ": " + (o.description || o.oneLiner || "");
+  }).join("\n");
+  return "Create a Framer website for " + brandName + ".\n\n" +
+    "BRAND:\n" +
+    "Name: " + brandName + "\n" +
+    "Positioning: " + (niche || p3.positioningStatement || "") + "\n" +
+    "Audience: " + (p3.targetAudience || p3.idealClient || "") + "\n" +
+    "Voice: " + (p1.brandVoice || p1.tone || "Warm, direct, professional") + "\n\n" +
+    "STORY:\n" +
+    (p2.originNarrative || p2.brandStory || "") + "\n\n" +
+    "OFFERS:\n" + (offers || "") + "\n\n" +
+    "COPY:\n" +
+    "Hero headline: " + ((p7.headlines || [])[0] || p7.headline || brandName) + "\n" +
+    "Subheadline: " + (niche || "") + "\n\n" +
+    "DESIGN SYSTEM:\n" +
+    "Background: #FFFFFF\n" +
+    "Text: #1D1D1F (headlines), #555555 (body)\n" +
+    "Accent: #C4703F (copper, use sparingly)\n" +
+    "Fonts: Outfit (headings, 700 weight), Inter (body, 400 weight)\n" +
+    "Cards: #FAFAFA fill, 1px #F0F0F0 border, 16px radius\n" +
+    "Buttons: #1D1D1F fill, white text, 50px radius pill\n" +
+    "Style: Minimal, Apple-inspired. No gradients. No shadows. Generous whitespace.\n\n" +
+    "SECTIONS: Hero, Story, Services (card grid), Testimonials, About, Contact\n\n" +
+    "Create responsive components for each section. Use Framer CMS for testimonials and offers so the client can update them later.";
+}
+
+function copyExportPrompt(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.select();
+  document.execCommand('copy');
+  var btn = el.nextElementSibling;
+  if (btn) {
+    var orig = btn.textContent;
+    btn.textContent = "Copied!";
+    btn.style.background = "#2D7A4F";
+    setTimeout(function() { btn.textContent = orig; btn.style.background = "#1D1D1F"; }, 2000);
+  }
+}
+
 
 
 function renderBlueprint(bp, strategistDebrief, isReturning) {
@@ -15102,8 +15255,8 @@ __name22(htmlHeaders, "htmlHeaders");
 __name222(htmlHeaders, "htmlHeaders");
 var src_default = {
   // Cron triggers:
-  //   Every 2 hours — abandonment check
-  //   Daily at 9am UTC — full system health check
+  //   Every 2 hours â abandonment check
+  //   Daily at 9am UTC â full system health check
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try {
