@@ -1,3 +1,22 @@
+// ================================================================
+// WARNING: TWO-LEVEL ESCAPING RULES — READ BEFORE EDITING
+// ================================================================
+// This file generates HTML pages with embedded <script> blocks.
+// String content inside those <script> blocks follows TWO levels of escaping:
+//
+// TEMPLATE LEVEL (this file)   →   BROWSER JS LEVEL (what browser receives)
+// \\n  (backslash + n)         →   \n   (valid JS newline escape)
+// \n   (actual newline char)   →   newline char = SyntaxError in JS string!
+// \\'  (backslash-apostrophe)  →   \'   (escaped apostrophe, string continues)
+// \'   (bare apostrophe)       →   '    (string delimiter = string closes!)
+//
+// RULE: Inside any single/double-quoted JS string within a <script> block:
+//   - Newlines: use \\n (not actual line breaks)
+//   - Apostrophes in single-quoted strings: use \\'
+//   - Double quotes in double-quoted strings: use \\"
+//
+// These rules caused a production SyntaxError that broke the entire app.
+// ================================================================
 export const getHTML = (config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
