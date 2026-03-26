@@ -1,6 +1,17 @@
 // src/routes/session.js
 // Session management route handlers
 
+import { json } from '../utils/helpers.js';
+import {
+  getJWTSecret, fetchAndSummarize, autoResearchCompetitors,
+  stripMetadata, callClaude, initSessionInD1, logEvent,
+  fireEventToDripWorker
+} from '../utils/internal.js';
+import { DEEP_WORK_SYSTEM_PROMPT, contextEnrichmentPrompt } from '../prompts.js';
+import {
+  verifySessionToken, createSessionToken, requireAuth, getUserById
+} from '../auth.js';
+
 export async function handleSessionStart(request, env) {
   const body = await request.json();
   const { sessionId, tier, existingWebsiteUrl, linkedinUrl, competitorUrls, testimonials, uploadedKeys, phone } = body;

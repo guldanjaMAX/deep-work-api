@@ -1,6 +1,11 @@
 // src/routes/upload.js
 // Upload and image generation route handlers
 
+import { json } from '../utils/helpers.js';
+import { CORS, extractDocumentText, getJWTSecret } from '../utils/internal.js';
+import { DEEP_WORK_SYSTEM_PROMPT, contextEnrichmentPrompt, imagePrompts } from '../prompts.js';
+import { verifySessionToken, requireAuth, extractToken } from '../auth.js';
+
 export async function handleUpload(request, env) {
   const formData = await request.formData();
   const file = formData.get("file");

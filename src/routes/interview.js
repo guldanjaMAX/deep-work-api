@@ -1,6 +1,17 @@
 // src/routes/interview.js
 // Interview and chat route handlers
 
+import { json } from '../utils/helpers.js';
+import {
+  CORS, isRateLimited, logEvent, pickChatModel, MODEL_OPUS,
+  trackTokenUsage, validateBlueprint, autoRepairBlueprint,
+  saveToRAG, generateStrategistDebrief, updateSessionPhaseInD1,
+  fireEventToDripWorker, getJWTSecret
+} from '../utils/internal.js';
+import { DEEP_WORK_SYSTEM_PROMPT } from '../prompts.js';
+import { logError, trackAPICall, trackFunnelEvent } from '../monitor.js';
+import { getUserById } from '../auth.js';
+
 export async function handleChat(request, env) {
   const body = await request.json();
   const { sessionId, message } = body;

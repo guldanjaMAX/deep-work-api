@@ -2,6 +2,13 @@
 // Static page handlers (HTML, legal, logout, health)
 // These wrap the template functions from src/html/ and src/legal.js
 
+import { json, htmlHeaders } from '../utils/helpers.js';
+import { getHTML } from '../html/templates.js';
+import {
+  getLoginHTML, getPrivacyPolicyHTML, getTermsOfServiceHTML, getLegalHTML
+} from '../html/server-pages.js';
+import { getAdminHTML } from '../html/admin.js';
+
 export function handleRoot(request, env) {
   return new Response(getLoginHTML(), { headers: htmlHeaders() });
 }

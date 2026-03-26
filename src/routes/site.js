@@ -1,6 +1,15 @@
 // src/routes/site.js
 // Site generation, deployment, and serving route handlers
 
+import { json } from '../utils/helpers.js';
+import {
+  CORS, logEvent, validateBlueprint, autoRepairBlueprint,
+  callClaudeSiteGen, getJWTSecret, injectSEO
+} from '../utils/internal.js';
+import { SITE_GENERATION_PROMPT, buildImagenPrompt } from '../prompts.js';
+import { logError } from '../monitor.js';
+import { verifySessionToken } from '../auth.js';
+
 export async function handleSaveSectionChoices(request, env) {
   let body;
   try {

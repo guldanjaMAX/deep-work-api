@@ -1,6 +1,8 @@
 // src/routes/feedback.js
 // Feedback and event logging route handlers
 
+import { json } from '../utils/helpers.js';
+
 export async function handleFeedback(request, env) {
   const body = await request.json();
   const { sessionId, rating, mostValuable, whatWasOff } = body;

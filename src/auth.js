@@ -143,7 +143,7 @@ export async function requireAdmin(request, env) {
   return user;
 }
 
-function extractToken(request) {
+export function extractToken(request) {
   // Check Authorization header
   const auth = request.headers.get('Authorization');
   if (auth?.startsWith('Bearer ')) return auth.slice(7);

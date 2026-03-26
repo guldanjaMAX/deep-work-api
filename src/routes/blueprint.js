@@ -1,6 +1,10 @@
 // src/routes/blueprint.js
 // Blueprint route handlers
 
+import { json } from '../utils/helpers.js';
+import { CORS } from '../utils/internal.js';
+import { buildBrandGuideHTML } from '../html/brand-guide.js';
+
 export async function handleBlueprintPDF(request, env) {
   const body = await request.json();
   const { sessionId } = body;

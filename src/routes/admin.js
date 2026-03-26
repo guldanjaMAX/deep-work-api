@@ -1,6 +1,21 @@
 // src/routes/admin.js
 // Admin API route handlers
 
+import { json } from '../utils/helpers.js';
+import {
+  generateStrategistDebrief, validateBlueprint, autoRepairBlueprint,
+  DEEP_WORK_SYSTEM_PROMPT, STRATEGIST_DEBRIEF_PROMPT,
+  generateSessionAccessToken, logEvent, runDailyHealthCheck
+} from '../utils/internal.js';
+import {
+  requireAdmin, getUserByEmail, getUserById, createUser,
+  hashPassword, updateUserPassword, generateMagicToken, storeMagicToken,
+  getAllSettings, setSetting
+} from '../auth.js';
+import {
+  logError, runFullHealthCheck, handleMonitoringDashboard, generateDailyDigest
+} from '../monitor.js';
+
 export async function handleAdminStats(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)

@@ -1,6 +1,19 @@
 // src/routes/auth.js
 // Auth, magic link, and payment success route handlers
 
+import { json } from '../utils/helpers.js';
+import {
+  getJWTSecret, authRateLimit, stripMetadata, logEvent,
+  generateSessionAccessToken, stripeGet, getMagicLinkEmail
+} from '../utils/internal.js';
+import {
+  getUserByEmail, getUserById, verifyPassword, hashPassword,
+  updateLastLogin, createSessionToken, generateMagicToken,
+  storeMagicToken, consumeMagicToken, createUser, updateUserPassword,
+  requireAuth
+} from '../auth.js';
+import { logError, trackFunnelEvent } from '../monitor.js';
+
 export async function handleAuthLogin(request, env) {
   try {
     const { email, password } = await request.json();
