@@ -6081,7 +6081,7 @@ function renderBlueprintV2(blueprint, userName) {
   if (nicheStmt) {
     html += '<div style="text-align:center;margin-bottom:40px;padding:0 24px;">' +
       '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">YOUR NICHE STATEMENT</p>' +
-      '<p style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:20px;color:#1D1D1F;max-width:560px;margin:0 auto;line-height:1.6;">' + nicheStmt + '</p>' +
+      '<p style="font-family:\\'Playfair Display\\',serif;font-style:italic;font-size:20px;color:#1D1D1F;max-width:560px;margin:0 auto;line-height:1.6;">' + nicheStmt + '</p>' +
       '</div>';
   }
   html += '<div style="text-align:center;margin-bottom:32px;padding:0 24px;">' +
@@ -6102,7 +6102,7 @@ function renderBlueprintV2(blueprint, userName) {
     '</div>';
   html += '<div style="background:#FAFAFA;border:1px solid #F0F0F0;border-radius:16px;padding:32px;display:flex;flex-direction:column;">' +
     '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 12px;">BUILD IT WITH JAMES</p>' +
-    '<h3 style="font-family:Outfit,sans-serif;font-weight:700;font-size:20px;color:#1D1D1F;margin:0 0 12px;letter-spacing:-0.01em;">Let's Make This Real Together</h3>' +
+    '<h3 style="font-family:Outfit,sans-serif;font-weight:700;font-size:20px;color:#1D1D1F;margin:0 0 12px;letter-spacing:-0.01em;">Let\\'s Make This Real Together</h3>' +
     '<p style="font-family:Inter,sans-serif;font-size:14px;color:#555;line-height:1.7;margin:0 0 20px;flex:1;">Book a 1:1 deep work session where we take your blueprint and turn it into a living brand. Strategy, visuals, messaging, and a clear launch plan.</p>' +
     '<ul style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;line-height:2;margin:0 0 24px;padding:0;list-style:none;">' +
     '<li>&#10003;&nbsp; 60 minute strategy session</li>' +
@@ -9107,8 +9107,7 @@ function pickerBuildFullPage() {
   // Section HTML wrapped with anchor IDs
   var sectionsHtml = sortedChosen.map(function(c) {
     return '<div id="section-' + c.sectionIndex + '">' + c.html + '</div>';
-  }).join('
-');
+  }).join('\\n');
 
   // Footer
   var year = new Date().getFullYear();
@@ -9118,31 +9117,17 @@ function pickerBuildFullPage() {
     '<p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0;">&copy; ' + year + ' ' + brandName + '. All rights reserved.</p>' +
     '</div></footer>';
 
-  return '<!DOCTYPE html>
-<html lang="en">
-<head>
-' +
-    '<meta charset="UTF-8">
-' +
-    '<meta name="viewport" content="width=device-width,initial-scale=1">
-' +
-    '<title>' + brandName + '</title>
-' +
-    '<link href="https://fonts.googleapis.com/css2?family=' + fontParam + '&display=swap" rel="stylesheet">
-' +
-    '<style>*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}body{font-family:\\' + bodyFont + \\',Outfit,sans-serif;background:' + bgColor + ';color:' + textColor + '}img{max-width:100%;height:auto}@media(max-width:768px){nav div:last-child{display:none}}</style>
-' +
-    '</head>
-<body>
-' +
-    nav + '
-' +
-    sectionsHtml + '
-' +
-    footer + '
-' +
-    '</body>
-</html>';
+  return '<!DOCTYPE html>\\n<html lang="en">\\n<head>\\n' +
+    '<meta charset="UTF-8">\\n' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">\\n' +
+    '<title>' + brandName + '</title>\\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=' + fontParam + '&display=swap" rel="stylesheet">\\n' +
+    '<style>*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}body{font-family:\\' + bodyFont + \\',Outfit,sans-serif;background:' + bgColor + ';color:' + textColor + '}img{max-width:100%;height:auto}@media(max-width:768px){nav div:last-child{display:none}}</style>\\n' +
+    '</head>\\n<body>\\n' +
+    nav + '\\n' +
+    sectionsHtml + '\\n' +
+    footer + '\\n' +
+    '</body>\\n</html>';
 }
 
 async function pickerAssemble() {
