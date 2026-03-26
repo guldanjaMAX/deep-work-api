@@ -6800,7 +6800,7 @@ function downloadBlueprintPDF() {
   }
 
   const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Deep Work Blueprint: ' + brandName + '</title><style>' +
-    '@import url(\'https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500&family=Playfair+Display:ital@0;1&display=swap\');' +
+    '@import url(https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500&family=Playfair+Display:ital@0;1&display=swap);' +
     '* { box-sizing: border-box; margin: 0; padding: 0; }' +
     'body { font-family: Inter, sans-serif; color: #1D1D1F; background: #fff; padding: 48px; max-width: 720px; margin: 0 auto; }' +
     '.pdf-cover { text-align: center; padding: 48px 0 56px; border-bottom: 2px solid #1D1D1F; margin-bottom: 48px; }' +
@@ -7034,19 +7034,19 @@ function showExportKit() {
   modal.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">' +
     '<div><p style="font-family:Outfit,sans-serif;font-weight:600;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#C4703F;margin:0 0 4px;">YOUR EXPORT KIT</p>' +
     '<h2 style="font-family:Outfit,sans-serif;font-weight:700;font-size:24px;color:#1D1D1F;margin:0;letter-spacing:-0.02em;">Take Your Blueprint and Build</h2></div>' +
-    '<button onclick="document.getElementById(\'export-kit-overlay\').style.display=\'none\'" style="background:none;border:none;font-size:24px;color:#86868B;cursor:pointer;padding:8px;">&times;</button>' +
+    '<button onclick="document.getElementById(\\'export-kit-overlay\\').style.display=\\'none\\'" style="background:none;border:none;font-size:24px;color:#86868B;cursor:pointer;padding:8px;">&times;</button>' +
     '</div>' +
     '<div style="margin-bottom:24px;">' +
     '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Lovable.dev Prompt</p>' +
     '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Lovable to generate your site.</p>' +
     '<textarea id="lovable-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +
-    '<button onclick="copyExportPrompt(\'lovable-prompt\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Lovable Prompt</button>' +
+    '<button onclick="copyExportPrompt(\\'lovable-prompt\\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Lovable Prompt</button>' +
     '</div>' +
     '<div style="margin-bottom:24px;">' +
     '<p style="font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;margin:0 0 8px;">Framer Prompt</p>' +
     '<p style="font-family:Inter,sans-serif;font-size:12px;color:#86868B;margin:0 0 8px;">Copy this prompt and paste it into Framer AI to generate your site.</p>' +
     '<textarea id="framer-prompt" readonly style="width:100%;height:200px;border:1px solid #E8E8E8;border-radius:10px;padding:16px;font-family:Inter,sans-serif;font-size:13px;color:#555;resize:vertical;background:#FAFAFA;"></textarea>' +
-    '<button onclick="copyExportPrompt(\'framer-prompt\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Framer Prompt</button>' +
+    '<button onclick="copyExportPrompt(\\'framer-prompt\\')" style="margin-top:8px;background:#1D1D1F;color:#fff;font-family:Outfit,sans-serif;font-weight:600;font-size:12px;padding:8px 20px;border-radius:50px;border:none;cursor:pointer;">Copy Framer Prompt</button>' +
     '</div>' +
     '<div style="border-top:1px solid #F0F0F0;padding-top:20px;">' +
     '<button onclick="downloadBlueprintPDF()" style="background:transparent;color:#1D1D1F;font-family:Outfit,sans-serif;font-weight:600;font-size:13px;padding:12px 24px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;">Download Full PDF</button>' +
