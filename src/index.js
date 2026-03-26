@@ -6933,9 +6933,36 @@ function renderBlueprintV2(blueprint, userName) {
   html += '<div class="bp-divider"></div>';
   html += `<div class="bp-next-steps"><div class="bp-eyebrow">What Happens Next</div><div class="bp-section-title">${safe(part8?.headline,'Make This Real')}</div>${part8?.personalizedMessage?`<div class="bp-body"><p>${part8.personalizedMessage}</p></div>`:''}<div class="bp-fork-grid"><div class="bp-fork-card"><div class="bp-fork-title">${safe(part8?.selfGuidedPath?.headline,'Build It Yourself')}</div><div class="bp-fork-body">${safe(part8?.selfGuidedPath?.description,'Download your full blueprint as a PDF and build your site on your own timeline.')}</div><button class="bp-btn-secondary" onclick="downloadBlueprintPDF()">${safe(part8?.selfGuidedPath?.cta,'Download Blueprint')}</button></div><div class="bp-fork-card primary"><div class="bp-fork-title">${safe(part8?.guidedPath?.headline,'Build It With James')}</div><div class="bp-fork-body">${safe(part8?.guidedPath?.description,'Book a strategy call to turn this blueprint into a live, high-converting website.')}</div><a class="bp-btn-primary" href="${safe(part8?.guidedPath?.calendlyUrl,'#')}" target="_blank">${safe(part8?.guidedPath?.cta,'Book Strategy Call')}</a></div></div></div>`;
   html += '</div></div>\n</div>\n';
-  html += `<script>(function(){const reveal=document.getElementById('bpReveal');const tabBar=document.getElementById('bpTabBar');if(reveal&&reveal.classList.contains('bp-reveal')){const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('bp-visible');if(e.target===reveal&&tabBar)tabBar.style.opacity='1';}});},{threshold:0.3});obs.observe(reveal);}})();function switchBlueprintTab(tabName){document.querySelectorAll('.bp-tab-btn').forEach(btn=>btn.classList.remove('active'));document.querySelectorAll('.bp-tab-content').forEach(c=>{c.classList.remove('active');c.style.opacity='0';});const tabMap={story:0,positioning:1,offers:2};document.querySelectorAll('.bp-tab-btn')[tabMap[tabName]].classList.add('active');const target=document.getElementById('bp-tab-'+tabName);target.classList.add('active');requestAnimationFrame(()=>{target.style.opacity='1';});window.scrollTo({top:document.querySelector('.bp-tab-bar').offsetTop,behavior:'smooth'});}<\/script>`;
+  
+  setTimeout(function() {
+    var reveal = document.getElementById('bpReveal');
+    var tabBar = document.getElementById('bpTabBar');
+    if (reveal && reveal.classList.contains('bp-reveal')) {
+      var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('bp-visible');
+            if (e.target === reveal && tabBar) tabBar.style.opacity = '1';
+          }
+        });
+      }, { threshold: 0.3 });
+      obs.observe(reveal);
+    }
+  }, 100);
   return html;
 }
+
+function switchBlueprintTab(tabName) {
+  document.querySelectorAll('.bp-tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+  document.querySelectorAll('.bp-tab-content').forEach(function(c) { c.classList.remove('active'); c.style.opacity = '0'; });
+  var tabMap = { story: 0, positioning: 1, offers: 2 };
+  document.querySelectorAll('.bp-tab-btn')[tabMap[tabName]].classList.add('active');
+  var target = document.getElementById('bp-tab-' + tabName);
+  target.classList.add('active');
+  requestAnimationFrame(function() { target.style.opacity = '1'; });
+  window.scrollTo({ top: document.querySelector('.bp-tab-bar').offsetTop, behavior: 'smooth' });
+}
+
 
 function renderBlueprint(bp, strategistDebrief, isReturning) {
   const b = bp.blueprint;
