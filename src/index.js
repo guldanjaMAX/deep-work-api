@@ -4970,6 +4970,7 @@ window.addEventListener('beforeunload', function(e) {
   }
 });
 window.addEventListener('DOMContentLoaded', async () => {
+  window._dwStep=1;
   const params = new URLSearchParams(window.location.search);
 
   // Handle magic link token \u2014 auto-login from email link
@@ -5035,7 +5036,8 @@ window.addEventListener('DOMContentLoaded', async () => {
     const storedJwt = localStorage.getItem('dw_session_jwt');
     if (storedJwt) STATE.sessionJwt = storedJwt;
 
-    // New auth flow: use preflight fast-resume (started before DOMContentLoaded)
+    window._dwStep=2;
+  // New auth flow: use preflight fast-resume (started before DOMContentLoaded)
     // Bulletproof token recovery: check _s param directly in case IIFE localStorage write failed
     var _domSParam = null;
     try { _domSParam = new URLSearchParams(window.location.search).get('_s'); } catch(_) {}
@@ -5060,6 +5062,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
         // Use preflight result if available, otherwise fall back to regular auth
         var fastData = _dwPreflight ? await _dwPreflight : null;
+          window._dwStep=3;window._dwFdOk=!!(fastData&&fastData.ok);
         if (!fastData) {
           // Fallback: regular auth/me
           const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -5067,6 +5070,7 @@ window.addEventListener('DOMContentLoaded', async () => {
           if (user && user.id) fastData = { ok: true, user: user, hasActiveSession: false };
         }
         if (fastData && (fastData.user || fastData.ok)) {
+            window._dwStep=4;
           var user = fastData.user || {};
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
           STATE.email = user.email || '';
@@ -5078,6 +5082,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
           // Fast-resume includes session data \u2014 use it directly instead of 2 more API calls
           if (fastData.hasActiveSession && fastData.messages) {
+              window._dwStep=5;
             try { sessionStorage.removeItem('_dw_fresh_login'); } catch(_) {}
             // Restore state directly from fast-resume data (no additional API calls)
             STATE.sessionId = fastData.sessionId;
