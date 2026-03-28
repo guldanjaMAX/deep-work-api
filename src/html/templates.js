@@ -2403,33 +2403,48 @@ window.addEventListener('DOMContentLoaded', async () => {
     const storedJwt = localStorage.getItem('dw_session_jwt');
     if (storedJwt) STATE.sessionJwt = storedJwt;
 
-    // New auth flow: check dw_session token
+    // New auth flow: fast-resume handles auth + session detection in one call
     const token = localStorage.getItem('dw_session');
     if (token) {
       try {
-        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
-        const user = await res.json();
-        if (user && user.id) {
-          STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
-          STATE.email = user.email || '';
-          showScreen('intake');
+        const frRes = await fetch('/api/auth/fast-resume', { headers: { 'Authorization': 'Bearer ' + token } });
+        const frData = await frRes.json();
+        if (frData.ok && frData.user) {
+          STATE.tier = frData.user.tier || frData.tier || (frData.user.role === 'admin' ? 'site' : 'blueprint');
+          STATE.email = frData.user.email || '';
 
-          // Check for active or completed session to resume
-          try {
-            const activeRes = await fetch('/api/user/active-session', {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const activeData = await activeRes.json();
-            if (activeData.hasActiveSession && activeData.session) {
-              // Always auto-resume \u2014 drop user right where they left off
-              pendingResumeSessionId = activeData.session.id;
-              localStorage.setItem('dw_active_session', activeData.session.id);
-              await resumeSession();
+          if (frData.blueprintComplete && frData.blueprint) {
+            // Blueprint is done =======drop user right into their results
+            STATE.sessionId = frData.sessionId;
+            STATE.blueprint = frData.blueprint;
+            STATE.strategistDebrief = frData.strategistDebrief || null;
+            STATE.phase = frData.phase || 8;
+            localStorage.setItem('dw_active_session', frData.sessionId);
+            updateLoadingStage('Your blueprint is ready.', 100);
+            await new Promise(r => setTimeout(r, 600));
+            hideLoadingOverlay();
+            const hasDebrief = showDebrief(frData.blueprint, true);
+            if (!hasDebrief) {
+              renderBlueprint(frData.blueprint, frData.strategistDebrief || null, true);
+              personalizeBlueprintHeader();
+              showScreen('blueprint-screen');
             }
-          } catch(_) {}
+          } else if (frData.hasActiveSession && frData.sessionId) {
+            // Active session in progress =======resume through normal flow
+            pendingResumeSessionId = frData.sessionId;
+            localStorage.setItem('dw_active_session', frData.sessionId);
+            await resumeSession();
+          } else {
+            // No session yet =======start fresh
+            await startSessionAuto();
+          }
+        } else {
+          // Not authenticated
+          hideLoadingOverlay();
         }
       } catch(e) {
         // Auth failed silently, show landing
+        hideLoadingOverlay();
       }
     }
   }
@@ -2997,7 +3012,13 @@ async function resumeSession() {
 
     const data = await res.json();
 
-    if (!data.ok || !data.messages || data.messages.length === 0) {
+    if (!data.ok) {
+      showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
+      if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
+      return;
+    }
+    // Allow empty messages when blueprint is already generated (session is complete)
+    if (!data.blueprintGenerated && (!data.messages || data.messages.length === 0)) {
       showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
       if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
