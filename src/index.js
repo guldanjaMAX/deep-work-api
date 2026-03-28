@@ -4163,13 +4163,11 @@ async function resumeSession() {
 
     const data = await res.json();
 
-    if (!data.ok || !data.messages || data.messages.length === 0) {
+    if (!data.ok) {
       showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
       if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
     }
-
-    updateLoadingStage('Almost there', 85);
 
     // Restore state
     STATE.sessionId = data.sessionId;
@@ -4177,18 +4175,7 @@ async function resumeSession() {
     STATE.phase = data.phase || 1;
     localStorage.setItem('dw_active_session', data.sessionId);
 
-    // Switch to app screen
-    showScreen('app');
-
-    // Replay messages into the chat
-    for (const msg of data.messages) {
-      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
-    }
-
-    // Update phase dots
-    updatePhase(data.phase);
-
-    // If blueprint was generated, show debrief first (or blueprint if no debrief)
+    // If blueprint was generated, show it directly (even if messages expired from KV)
     if (data.blueprintGenerated) {
       STATE.blueprint = data.blueprint;
       STATE.strategistDebrief = data.strategistDebrief || null;
@@ -4203,6 +4190,26 @@ async function resumeSession() {
       }
       return;
     }
+
+    // No blueprint — need messages to resume the interview
+    if (!data.messages || data.messages.length === 0) {
+      showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
+      if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
+      return;
+    }
+
+    updateLoadingStage('Almost there', 85);
+
+    // Switch to app screen
+    showScreen('app');
+
+    // Replay messages into the chat
+    for (const msg of data.messages) {
+      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+    }
+
+    // Update phase dots
+    updatePhase(data.phase);
 
     updateLoadingStage('Welcome back.', 100);
     await new Promise(r => setTimeout(r, 600));
