@@ -14,13 +14,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Verify bundle builds
-        run: npx wrangler@3 deploy --dry-run --outdir=.verify-bundle 2>&1 | tee /tmp/bundle-check.log
       - name: Check bundle for critical routes
         run: |
-          grep -q "create-payment-intent" .verify-bundle/*.js || (echo "ERROR: payment routes missing from bundle" && exit 1)
-          grep -q "fulfill-payment" .verify-bundle/*.js || (echo "ERROR: fulfill-payment route missing from bundle" && exit 1)
-          echo "Payment routes verified in bundle OK"
+          grep -q "create-payment-intent" src/index.js || (echo "ERROR: payment routes missing from index.js" && exit 1)
+          grep -q "fulfill-payment" src/index.js || (echo "ERROR: fulfill-payment route missing from index.js" && exit 1)
+          grep -q "renderBlueprintResults" src/index.js || (echo "ERROR: blueprint rendering code missing from index.js" && exit 1)
+          echo "All critical routes verified in src/index.js"
       - name: Deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

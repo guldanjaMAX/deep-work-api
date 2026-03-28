@@ -1,20 +1,15 @@
---4bdb2b4eefec7f360b3885291696ab18a4a4b71b0996d90e7b93edc5f2a1
-Content-Disposition: form-data; name="index.js"
-
 var __defProp = Object.defineProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-
-// index.js
-var __defProp2 = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
-var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
-var __esm = /* @__PURE__ */ __name((fn, res) => /* @__PURE__ */ __name(function __init() {
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-}, "__init"), "__esm");
-var __export = /* @__PURE__ */ __name((target, all) => {
+};
+var __export = (target, all) => {
   for (var name in all)
-    __defProp2(target, name, { get: all[name], enumerable: true });
-}, "__export");
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
+// src/services/resend.js
 var resend_exports = {};
 __export(resend_exports, {
   sendEmail: () => sendEmail,
@@ -37,19 +32,19 @@ async function sendEmail(env, { to, from, subject, html, replyTo, cc, bcc }) {
     body: JSON.stringify(payload)
   });
 }
-__name(sendEmail, "sendEmail");
 async function verifyDomain(env) {
   return fetch("https://api.resend.com/domains", {
     headers: { "Authorization": "Bearer " + env.RESEND_API_KEY }
   });
 }
-__name(verifyDomain, "verifyDomain");
 var init_resend = __esm({
   "src/services/resend.js"() {
-    __name2(sendEmail, "sendEmail");
-    __name2(verifyDomain, "verifyDomain");
+    __name(sendEmail, "sendEmail");
+    __name(verifyDomain, "verifyDomain");
   }
 });
+
+// src/utils/helpers.js
 var ALLOWED_ORIGINS = [
   "https://love.jamesguldan.com",
   "https://jamesguldan.com",
@@ -66,7 +61,6 @@ function getCORSHeaders(request) {
   };
 }
 __name(getCORSHeaders, "getCORSHeaders");
-__name2(getCORSHeaders, "getCORSHeaders");
 var SEC_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
@@ -89,7 +83,6 @@ function htmlHeaders(extra = {}) {
   return { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "no-store, no-cache, must-revalidate", "Content-Security-Policy": csp, ...SEC_HEADERS, ...extra };
 }
 __name(htmlHeaders, "htmlHeaders");
-__name2(htmlHeaders, "htmlHeaders");
 function json(data, status = 200, request = null) {
   return new Response(JSON.stringify(data), {
     status,
@@ -97,7 +90,8 @@ function json(data, status = 200, request = null) {
   });
 }
 __name(json, "json");
-__name2(json, "json");
+
+// src/monitor.js
 var ALERT_EMAIL = "james@jamesguldan.com";
 var ALERT_COOLDOWN_MINUTES = 60;
 async function logError(env, { endpoint, method, statusCode, errorType, errorMessage, stack, userId, sessionId, requestId }) {
@@ -121,7 +115,6 @@ async function logError(env, { endpoint, method, statusCode, errorType, errorMes
   }
 }
 __name(logError, "logError");
-__name2(logError, "logError");
 async function trackMetric(env, name, value, tags = null) {
   try {
     await env.DB.prepare(`
@@ -132,7 +125,6 @@ async function trackMetric(env, name, value, tags = null) {
   }
 }
 __name(trackMetric, "trackMetric");
-__name2(trackMetric, "trackMetric");
 async function runFullHealthCheck(env) {
   const results = {};
   results.d1 = await checkD1(env);
@@ -156,7 +148,6 @@ async function runFullHealthCheck(env) {
   return { status: overallStatus, checks: results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runFullHealthCheck, "runFullHealthCheck");
-__name2(runFullHealthCheck, "runFullHealthCheck");
 async function checkD1(env) {
   const start = Date.now();
   try {
@@ -167,7 +158,6 @@ async function checkD1(env) {
   }
 }
 __name(checkD1, "checkD1");
-__name2(checkD1, "checkD1");
 async function checkKV(env) {
   const start = Date.now();
   try {
@@ -181,7 +171,6 @@ async function checkKV(env) {
   }
 }
 __name(checkKV, "checkKV");
-__name2(checkKV, "checkKV");
 async function checkR2(env) {
   const start = Date.now();
   try {
@@ -192,7 +181,6 @@ async function checkR2(env) {
   }
 }
 __name(checkR2, "checkR2");
-__name2(checkR2, "checkR2");
 async function checkStripe(env) {
   if (!env.STRIPE_SECRET_KEY)
     return { status: "warning", error: "STRIPE_SECRET_KEY not configured" };
@@ -212,7 +200,6 @@ async function checkStripe(env) {
   }
 }
 __name(checkStripe, "checkStripe");
-__name2(checkStripe, "checkStripe");
 async function checkAnthropic(env) {
   if (!env.ANTHROPIC_API_KEY)
     return { status: "warning", error: "ANTHROPIC_API_KEY not configured" };
@@ -242,7 +229,6 @@ async function checkAnthropic(env) {
   }
 }
 __name(checkAnthropic, "checkAnthropic");
-__name2(checkAnthropic, "checkAnthropic");
 async function checkResend(env) {
   if (!env.RESEND_API_KEY)
     return { status: "warning", error: "RESEND_API_KEY not configured \u2014 emails disabled" };
@@ -264,7 +250,6 @@ async function checkResend(env) {
   }
 }
 __name(checkResend, "checkResend");
-__name2(checkResend, "checkResend");
 async function checkFunnelHealth(env) {
   try {
     const recentSessions = await env.DB.prepare(`
@@ -315,7 +300,6 @@ async function checkFunnelHealth(env) {
   }
 }
 __name(checkFunnelHealth, "checkFunnelHealth");
-__name2(checkFunnelHealth, "checkFunnelHealth");
 async function checkErrorRate(env) {
   try {
     const hourAgo = await env.DB.prepare(`
@@ -350,7 +334,6 @@ async function checkErrorRate(env) {
   }
 }
 __name(checkErrorRate, "checkErrorRate");
-__name2(checkErrorRate, "checkErrorRate");
 async function trackAPICall(env, provider, endpoint, statusCode, latencyMs, tokensUsed = null) {
   const tags = { provider, endpoint, statusCode: String(statusCode) };
   if (tokensUsed)
@@ -366,7 +349,6 @@ async function trackAPICall(env, provider, endpoint, statusCode, latencyMs, toke
   }
 }
 __name(trackAPICall, "trackAPICall");
-__name2(trackAPICall, "trackAPICall");
 async function createAlert(env, { alertType, severity, title, message }) {
   try {
     const recent = await env.DB.prepare(`
@@ -387,7 +369,6 @@ async function createAlert(env, { alertType, severity, title, message }) {
   }
 }
 __name(createAlert, "createAlert");
-__name2(createAlert, "createAlert");
 async function sendAlertEmail(env, { alertType, severity, title, message }) {
   try {
     const isCritical = severity === "critical";
@@ -413,7 +394,6 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   }
 }
 __name(sendAlertEmail, "sendAlertEmail");
-__name2(sendAlertEmail, "sendAlertEmail");
 async function trackFunnelEvent(env, eventName, data = {}) {
   try {
     await trackMetric(env, `funnel.${eventName}`, 1, data);
@@ -477,7 +457,6 @@ async function trackFunnelEvent(env, eventName, data = {}) {
   }
 }
 __name(trackFunnelEvent, "trackFunnelEvent");
-__name2(trackFunnelEvent, "trackFunnelEvent");
 async function generateDailyDigest(env) {
   try {
     const [sessions24h, errors24h, payments24h, completions24h, activeAlerts] = await Promise.all([
@@ -515,7 +494,6 @@ async function generateDailyDigest(env) {
   }
 }
 __name(generateDailyDigest, "generateDailyDigest");
-__name2(generateDailyDigest, "generateDailyDigest");
 async function sendDigestEmail(env, digest) {
   const html = getDigestEmailHTML(digest);
   try {
@@ -537,7 +515,6 @@ async function sendDigestEmail(env, digest) {
   }
 }
 __name(sendDigestEmail, "sendDigestEmail");
-__name2(sendDigestEmail, "sendDigestEmail");
 async function handleMonitoringDashboard(env) {
   const [healthResult, funnel, recentAlerts, recentErrors, apiMetrics] = await Promise.all([
     getLatestHealthChecks(env),
@@ -559,7 +536,6 @@ async function handleMonitoringDashboard(env) {
   };
 }
 __name(handleMonitoringDashboard, "handleMonitoringDashboard");
-__name2(handleMonitoringDashboard, "handleMonitoringDashboard");
 async function getLatestHealthChecks(env) {
   const checks = await env.DB.prepare(`
     SELECT check_type, status, latency_ms, details, created_at
@@ -570,7 +546,6 @@ async function getLatestHealthChecks(env) {
   return checks.results || [];
 }
 __name(getLatestHealthChecks, "getLatestHealthChecks");
-__name2(getLatestHealthChecks, "getLatestHealthChecks");
 function getAlertEmailHTML({ alertType, severity, title, message, isCritical }) {
   const bgColor = isCritical ? "#FEF2F2" : "#FFFBEB";
   const accentColor = isCritical ? "#DC2626" : "#D97706";
@@ -601,7 +576,6 @@ function getAlertEmailHTML({ alertType, severity, title, message, isCritical }) 
 </body></html>`;
 }
 __name(getAlertEmailHTML, "getAlertEmailHTML");
-__name2(getAlertEmailHTML, "getAlertEmailHTML");
 function getDigestEmailHTML(digest) {
   const hasWarnings = digest.funnelWarnings.length > 0 || digest.errorsLogged > 10;
   const headerBg = hasWarnings ? "#FFFBEB" : "#F0FDF4";
@@ -647,7 +621,6 @@ function getDigestEmailHTML(digest) {
 </body></html>`;
 }
 __name(getDigestEmailHTML, "getDigestEmailHTML");
-__name2(getDigestEmailHTML, "getDigestEmailHTML");
 function statCard(label, value) {
   return `<div style="flex:1;min-width:100px;background:#F9FAFB;border-radius:10px;padding:14px 16px;text-align:center;">
     <p style="margin:0;font-size:24px;font-weight:700;color:#1a1a1a;">${value}</p>
@@ -655,7 +628,6 @@ function statCard(label, value) {
   </div>`;
 }
 __name(statCard, "statCard");
-__name2(statCard, "statCard");
 function getErrorPageHTML(statusCode, title, message) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -699,7 +671,6 @@ function getErrorPageHTML(statusCode, title, message) {
 </html>`;
 }
 __name(getErrorPageHTML, "getErrorPageHTML");
-__name2(getErrorPageHTML, "getErrorPageHTML");
 var ERROR_PAGES = {
   400: { title: "That Request Made No Sense", message: "We stared at it. We asked it questions. It refused to explain itself. Try again, and maybe this time send something we can work with." },
   401: { title: "Who Goes There?", message: "This page requires you to be signed in. You are not signed in. These two facts are related. Sign in, then come back and we can be friends." },
@@ -710,7 +681,9 @@ var ERROR_PAGES = {
   502: { title: "One of Our Friends Is Not Home", message: "A service we depend on is temporarily not picking up the phone. Give it a minute and try again. It is probably just in the bathroom." },
   503: { title: "Back in Five", message: "We are doing a quick thing behind the scenes. The kind of thing that makes everything better. Check back in a few minutes and it will be worth it." }
 };
-var getHTML = /* @__PURE__ */ __name2((config) => `<!DOCTYPE html>
+
+// src/html/templates.js
+var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -3476,40 +3449,36 @@ window.addEventListener('DOMContentLoaded', async () => {
     const storedJwt = localStorage.getItem('dw_session_jwt');
     if (storedJwt) STATE.sessionJwt = storedJwt;
 
-    // New auth flow: fast-resume handles auth + session detection in one call
+    // New auth flow: check dw_session token
     const token = localStorage.getItem('dw_session');
     if (token) {
       try {
-        const frRes = await fetch('/api/auth/fast-resume', { headers: { 'Authorization': 'Bearer ' + token } });
-        const frData = await frRes.json();
-        if (frData.ok && frData.user) {
-          STATE.tier = frData.user.tier || frData.tier || (frData.user.role === 'admin' ? 'site' : 'blueprint');
-          STATE.email = frData.user.email || '';
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        const user = await res.json();
+        if (user && user.id) {
+          STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
+          STATE.email = user.email || '';
 
-          if (frData.blueprintComplete && frData.blueprint) {
-            // Blueprint done - render directly
-            STATE.sessionId = frData.sessionId;
-            STATE.blueprint = frData.blueprint;
-            STATE.strategistDebrief = frData.strategistDebrief || null;
-            STATE.phase = frData.phase || 8;
-            localStorage.setItem('dw_active_session', frData.sessionId);
-            updateLoadingStage('Your blueprint is ready.', 100);
-            await new Promise(r => setTimeout(r, 600));
-            hideLoadingOverlay();
-            renderBlueprint(frData.blueprint, frData.strategistDebrief || null, true);
-            showScreen('blueprint-screen');
-          } else if (frData.hasActiveSession && frData.sessionId) {
-            pendingResumeSessionId = frData.sessionId;
-            localStorage.setItem('dw_active_session', frData.sessionId);
-            await resumeSession();
-          } else {
+          // Check for active or completed session to resume; if none, auto-start
+          try {
+            const activeRes = await fetch('/api/user/active-session', {
+              headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const activeData = await activeRes.json();
+            if (activeData.hasActiveSession && activeData.session) {
+              // Auto-resume \u2014 drop user right where they left off
+              pendingResumeSessionId = activeData.session.id;
+              localStorage.setItem('dw_active_session', activeData.session.id);
+              await resumeSession();
+            } else {
+              await startSessionAuto();
+            }
+          } catch(_) {
             await startSessionAuto();
           }
-        } else {
-          hideLoadingOverlay();
         }
       } catch(e) {
-        hideLoadingOverlay();
+        // Auth failed silently, show landing
       }
     }
   }
@@ -4194,12 +4163,7 @@ async function resumeSession() {
 
     const data = await res.json();
 
-    if (!data.ok) {
-      showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
-      if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
-      return;
-    }
-    if (!data.blueprintGenerated && (!data.messages || data.messages.length === 0)) {
+    if (!data.ok || !data.messages || data.messages.length === 0) {
       showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
       if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
@@ -5425,7 +5389,7 @@ function initAskBarVisibility() {
 
     const showObs = new IntersectionObserver(function(entries) {
       if (!entries[0].isIntersecting && entries[0].boundingClientRect.top < 0) {
-        // Debrief letter scrolled past \u2014 show bar
+        // Debrief letter scrolled past — show bar
         bar.style.display = 'flex';
         if (footer) {
           const hideObs = new IntersectionObserver(function(fe) {
@@ -6474,6 +6438,8 @@ function setDeployStep(n, s) {
 </html>
 
 `, "getHTML");
+
+// src/html/server-pages.js
 function getLoginHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -6995,7 +6961,6 @@ function setBtnLoading(id, loading, label) {
 </html>`;
 }
 __name(getLoginHTML, "getLoginHTML");
-__name2(getLoginHTML, "getLoginHTML");
 function legalPageShell(title, content) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -7076,7 +7041,6 @@ function legalPageShell(title, content) {
 </html>`;
 }
 __name(legalPageShell, "legalPageShell");
-__name2(legalPageShell, "legalPageShell");
 function getPrivacyPolicyHTML() {
   return legalPageShell("Privacy Policy", `
   <h1>Privacy Policy</h1>
@@ -7146,7 +7110,6 @@ function getPrivacyPolicyHTML() {
   `);
 }
 __name(getPrivacyPolicyHTML, "getPrivacyPolicyHTML");
-__name2(getPrivacyPolicyHTML, "getPrivacyPolicyHTML");
 function getTermsOfServiceHTML() {
   return legalPageShell("Terms of Service", `
   <h1>Terms of Service</h1>
@@ -7212,7 +7175,6 @@ function getTermsOfServiceHTML() {
   `);
 }
 __name(getTermsOfServiceHTML, "getTermsOfServiceHTML");
-__name2(getTermsOfServiceHTML, "getTermsOfServiceHTML");
 function getLegalHTML(title, content) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -7256,8 +7218,9 @@ function getLegalHTML(title, content) {
 </html>`;
 }
 __name(getLegalHTML, "getLegalHTML");
-__name2(getLegalHTML, "getLegalHTML");
-var getAdminHTML = /* @__PURE__ */ __name2(() => `<!DOCTYPE html>
+
+// src/html/admin.js
+var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -9250,11 +9213,12 @@ async function runTestTrigger() {
 </body>
 </html>
 `, "getAdminHTML");
+
+// src/routes/pages.js
 function handleRoot(request, env) {
   return new Response(getLoginHTML(), { headers: htmlHeaders() });
 }
 __name(handleRoot, "handleRoot");
-__name2(handleRoot, "handleRoot");
 function handleApp(request, env) {
   const isTest = env.STRIPE_MODE === "test";
   const html = getHTML({
@@ -9266,12 +9230,10 @@ function handleApp(request, env) {
   return new Response(html, { headers: htmlHeaders() });
 }
 __name(handleApp, "handleApp");
-__name2(handleApp, "handleApp");
 function handleAdmin(request, env) {
   return new Response(getAdminHTML(), { headers: htmlHeaders() });
 }
 __name(handleAdmin, "handleAdmin");
-__name2(handleAdmin, "handleAdmin");
 function handleLogout(request, env) {
   return new Response(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Signing out...</title>
@@ -9291,17 +9253,14 @@ window.location.replace('/');
   });
 }
 __name(handleLogout, "handleLogout");
-__name2(handleLogout, "handleLogout");
 function handlePrivacy(request, env) {
   return new Response(getPrivacyPolicyHTML(), { headers: htmlHeaders() });
 }
 __name(handlePrivacy, "handlePrivacy");
-__name2(handlePrivacy, "handlePrivacy");
 function handleTerms(request, env) {
   return new Response(getTermsOfServiceHTML(), { headers: htmlHeaders() });
 }
 __name(handleTerms, "handleTerms");
-__name2(handleTerms, "handleTerms");
 function handleLegalTerms(request, env) {
   return new Response(getLegalHTML("Terms of Service", `
     <p>Last updated: March 2025</p>
@@ -9320,7 +9279,6 @@ function handleLegalTerms(request, env) {
   `), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
 }
 __name(handleLegalTerms, "handleLegalTerms");
-__name2(handleLegalTerms, "handleLegalTerms");
 function handleLegalPrivacy(request, env) {
   return new Response(getLegalHTML("Privacy Policy", `
     <p>Last updated: March 2025</p>
@@ -9341,12 +9299,12 @@ function handleLegalPrivacy(request, env) {
   `), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
 }
 __name(handleLegalPrivacy, "handleLegalPrivacy");
-__name2(handleLegalPrivacy, "handleLegalPrivacy");
 function handleHealth(request, env) {
   return json({ ok: true, ts: Date.now() });
 }
 __name(handleHealth, "handleHealth");
-__name2(handleHealth, "handleHealth");
+
+// src/auth.js
 async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const keyMaterial = await crypto.subtle.importKey(
@@ -9366,7 +9324,6 @@ async function hashPassword(password) {
   return `pbkdf2:${saltHex}:${hashHex}`;
 }
 __name(hashPassword, "hashPassword");
-__name2(hashPassword, "hashPassword");
 async function verifyPassword(password, stored) {
   try {
     const [, saltHex, hashHex] = stored.split(":");
@@ -9389,7 +9346,6 @@ async function verifyPassword(password, stored) {
   }
 }
 __name(verifyPassword, "verifyPassword");
-__name2(verifyPassword, "verifyPassword");
 async function createSessionToken(userId, role, secret) {
   const payload = {
     userId,
@@ -9403,7 +9359,6 @@ async function createSessionToken(userId, role, secret) {
   return `${data}.${sig}`;
 }
 __name(createSessionToken, "createSessionToken");
-__name2(createSessionToken, "createSessionToken");
 async function verifySessionToken(token, secret) {
   try {
     const lastDot = token.lastIndexOf(".");
@@ -9423,13 +9378,11 @@ async function verifySessionToken(token, secret) {
   }
 }
 __name(verifySessionToken, "verifySessionToken");
-__name2(verifySessionToken, "verifySessionToken");
 function generateMagicToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return toHex(bytes);
 }
 __name(generateMagicToken, "generateMagicToken");
-__name2(generateMagicToken, "generateMagicToken");
 async function storeMagicToken(env, token, userId, type = "magic_login", ttlHours = 24) {
   const expires = new Date(Date.now() + ttlHours * 60 * 60 * 1e3).toISOString();
   await env.DB.prepare(`
@@ -9438,7 +9391,6 @@ async function storeMagicToken(env, token, userId, type = "magic_login", ttlHour
   `).bind(token, userId, type, expires).run();
 }
 __name(storeMagicToken, "storeMagicToken");
-__name2(storeMagicToken, "storeMagicToken");
 async function consumeMagicToken(env, token) {
   const row = await env.DB.prepare(`
     SELECT * FROM auth_tokens WHERE token = ? AND used = 0 AND expires_at > datetime('now')
@@ -9449,17 +9401,14 @@ async function consumeMagicToken(env, token) {
   return row;
 }
 __name(consumeMagicToken, "consumeMagicToken");
-__name2(consumeMagicToken, "consumeMagicToken");
 async function getUserByEmail(env, email) {
   return env.DB.prepare(`SELECT * FROM users WHERE email = ?`).bind(email.toLowerCase().trim()).first();
 }
 __name(getUserByEmail, "getUserByEmail");
-__name2(getUserByEmail, "getUserByEmail");
 async function getUserById(env, userId) {
   return env.DB.prepare(`SELECT * FROM users WHERE id = ?`).bind(userId).first();
 }
 __name(getUserById, "getUserById");
-__name2(getUserById, "getUserById");
 async function createUser(env, { email, name, role = "user", tier = null, stripeCustomerId = null }) {
   const id = `usr_${Date.now()}_${crypto.getRandomValues(new Uint8Array(4)).reduce((s, b) => s + b.toString(16).padStart(2, "0"), "")}`;
   await env.DB.prepare(`
@@ -9469,17 +9418,14 @@ async function createUser(env, { email, name, role = "user", tier = null, stripe
   return getUserById(env, id);
 }
 __name(createUser, "createUser");
-__name2(createUser, "createUser");
 async function updateUserPassword(env, userId, passwordHash) {
   await env.DB.prepare(`UPDATE users SET password_hash = ? WHERE id = ?`).bind(passwordHash, userId).run();
 }
 __name(updateUserPassword, "updateUserPassword");
-__name2(updateUserPassword, "updateUserPassword");
 async function updateLastLogin(env, userId) {
   await env.DB.prepare(`UPDATE users SET last_login = datetime('now') WHERE id = ?`).bind(userId).run();
 }
 __name(updateLastLogin, "updateLastLogin");
-__name2(updateLastLogin, "updateLastLogin");
 async function requireAuth(request, env) {
   const token = extractToken(request);
   if (!token)
@@ -9491,7 +9437,6 @@ async function requireAuth(request, env) {
   return user || null;
 }
 __name(requireAuth, "requireAuth");
-__name2(requireAuth, "requireAuth");
 async function requireAdmin(request, env) {
   const user = await requireAuth(request, env);
   if (!user || user.role !== "admin")
@@ -9499,7 +9444,6 @@ async function requireAdmin(request, env) {
   return user;
 }
 __name(requireAdmin, "requireAdmin");
-__name2(requireAdmin, "requireAdmin");
 function extractToken(request) {
   const auth = request.headers.get("Authorization");
   if (auth?.startsWith("Bearer "))
@@ -9512,7 +9456,6 @@ function extractToken(request) {
   return url.searchParams.get("token") || null;
 }
 __name(extractToken, "extractToken");
-__name2(extractToken, "extractToken");
 async function setSetting(env, key, value) {
   await env.DB.prepare(`
     INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now'))
@@ -9520,13 +9463,11 @@ async function setSetting(env, key, value) {
   `).bind(key, value).run();
 }
 __name(setSetting, "setSetting");
-__name2(setSetting, "setSetting");
 async function getAllSettings(env) {
   const { results } = await env.DB.prepare(`SELECT key, value FROM settings ORDER BY key`).all();
   return Object.fromEntries(results.map((r) => [r.key, r.value]));
 }
 __name(getAllSettings, "getAllSettings");
-__name2(getAllSettings, "getAllSettings");
 async function hmacSign(data, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -9539,7 +9480,6 @@ async function hmacSign(data, secret) {
   return toHex(new Uint8Array(sig));
 }
 __name(hmacSign, "hmacSign");
-__name2(hmacSign, "hmacSign");
 async function hmacVerify(data, sigHex, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -9552,24 +9492,22 @@ async function hmacVerify(data, sigHex, secret) {
   return crypto.subtle.verify("HMAC", key, sig, new TextEncoder().encode(data));
 }
 __name(hmacVerify, "hmacVerify");
-__name2(hmacVerify, "hmacVerify");
 function toHex(bytes) {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 __name(toHex, "toHex");
-__name2(toHex, "toHex");
 function fromHex(hex) {
   return new Uint8Array(hex.match(/.{2}/g).map((b) => parseInt(b, 16)));
 }
 __name(fromHex, "fromHex");
-__name2(fromHex, "fromHex");
+
+// src/html/brand-guide.js
 function esc(s) {
   if (!s)
     return "";
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 __name(esc, "esc");
-__name2(esc, "esc");
 var KNOWN_FONTS = /* @__PURE__ */ new Set(["Inter", "Playfair Display", "Lora", "Merriweather", "Roboto", "Open Sans", "Montserrat", "Raleway", "Poppins", "Oswald", "Source Sans Pro", "Nunito", "PT Serif", "Libre Baskerville", "Cormorant Garamond", "DM Sans", "Work Sans", "Space Grotesk", "Bitter", "Crimson Text", "Georgia", "Arial", "Helvetica", "Times New Roman"]);
 function safeFont(f, fallback) {
   if (!f)
@@ -9580,7 +9518,6 @@ function safeFont(f, fallback) {
   return close || fallback;
 }
 __name(safeFont, "safeFont");
-__name2(safeFont, "safeFont");
 function buildBrandGuideHTML(blueprint, session) {
   const b = blueprint?.blueprint;
   if (!b)
@@ -10869,7 +10806,8 @@ document.querySelectorAll('.page.content-page').forEach(function(page) {
 </html>`;
 }
 __name(buildBrandGuideHTML, "buildBrandGuideHTML");
-__name2(buildBrandGuideHTML, "buildBrandGuideHTML");
+
+// src/prompts.js
 var DEEP_WORK_SYSTEM_PROMPT = `You are a world class brand strategist, offer architect, positioning expert, and market researcher. But before any of that, you are someone who sees people. Really sees them. You speak like a really smart friend who happens to have deep expertise in all of these areas but also happens to have the emotional intelligence of a great therapist and the timing of a good comedian. You never talk like a consultant. You never use corporate language. You are direct, warm, genuinely funny, and always honest. You have a gift for reflecting back to people what they cannot find the words to say themselves. You also know that humor is one of the fastest ways to get someone to drop their guard and tell you the truth.
 
 ## How You Begin Every Session
@@ -11271,7 +11209,6 @@ function getAestheticOverrides(aesthetic) {
   .section-header h2 { font-size: clamp(1.9rem, 3.2vw, 2.8rem); }`;
 }
 __name(getAestheticOverrides, "getAestheticOverrides");
-__name2(getAestheticOverrides, "getAestheticOverrides");
 function buildImagenPrompt(p1, p3) {
   const aesthetic = (p1.visualDirection?.aesthetic || "").toLowerCase();
   const colors = p1.visualDirection?.colors || [];
@@ -11294,8 +11231,7 @@ function buildImagenPrompt(p1, p3) {
   return `${styleWords}. Color palette: ${primaryColorName} and ${secondaryColorName} tones. Abstract conceptual representation of: ${mechanism}. No people, no faces, no text, no logos. Ultra high quality, 16:9 aspect ratio. This image represents: ${brandPromise}`;
 }
 __name(buildImagenPrompt, "buildImagenPrompt");
-__name2(buildImagenPrompt, "buildImagenPrompt");
-var SITE_CSS_FOUNDATION = /* @__PURE__ */ __name2((colors, fonts, fontImport) => `
+var SITE_CSS_FOUNDATION = /* @__PURE__ */ __name((colors, fonts, fontImport) => `
   ${fontImport}
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
@@ -11508,8 +11444,7 @@ The mechanism is "${mechanism}" \u2014 it has a name and a reason. Use it once, 
 This person's story is not a liability or a detour. It IS the product. Let it take up space.`;
 }
 __name(buildDesignBrief, "buildDesignBrief");
-__name2(buildDesignBrief, "buildDesignBrief");
-var SITE_GENERATION_PROMPT = /* @__PURE__ */ __name2((blueprint) => {
+var SITE_GENERATION_PROMPT = /* @__PURE__ */ __name((blueprint) => {
   const b = blueprint;
   const p1 = b.part1 || {};
   const p2 = b.part2 || {};
@@ -11688,7 +11623,7 @@ var imagePrompts = {
     return moods[index % moods.length];
   }
 };
-var contextEnrichmentPrompt = /* @__PURE__ */ __name2((userData) => {
+var contextEnrichmentPrompt = /* @__PURE__ */ __name((userData) => {
   let context = "";
   if (userData.existingWebsiteAnalysis) {
     context += `
@@ -11803,6 +11738,8 @@ Return ONLY valid JSON, no markdown code fences:
   "motivation": "Your encouragement here...",
   "quotedMoment": "The single most powerful thing they said during the interview, verbatim or near-verbatim, that captures who they are"
 }`;
+
+// src/utils/internal.js
 var CORS = getCORSHeaders(null);
 var MODEL_OPUS = "claude-opus-4-6";
 var MODEL_SONNET = "claude-sonnet-4-6";
@@ -11820,37 +11757,38 @@ function pickChatModel(session) {
   return MODEL_SONNET;
 }
 __name(pickChatModel, "pickChatModel");
-__name2(pickChatModel, "pickChatModel");
+
 function getMaxTokensForPhase(phase) {
   const p = Number(phase) || 1;
-  if (p >= 6)
-    return 16384;
-  if (p >= 4)
-    return 2048;
-  return 1024;
+  if (p >= 6) return 16384;   // blueprint generation — needs full output
+  if (p >= 4) return 2048;    // deep interview — nuanced responses
+  return 1024;                 // early phases — quick conversational exchanges
 }
 __name(getMaxTokensForPhase, "getMaxTokensForPhase");
-__name2(getMaxTokensForPhase, "getMaxTokensForPhase");
+
 function smartTrimMessages(messages, phase) {
   const p = Number(phase) || 1;
   const keepFull = p >= 6 ? 40 : p >= 4 ? 30 : 20;
-  if (messages.length <= keepFull)
-    return messages;
+  if (messages.length <= keepFull) return messages;
+  // Keep the last `keepFull` messages in full
   const tail = messages.slice(-keepFull);
+  // For older messages, include but truncate content to save tokens
   const head = messages.slice(0, -keepFull).map(function(m) {
     const c = m.content || "";
-    return c.length > 300 ? Object.assign({}, m, { content: c.slice(0, 300) + " [\u2026]" }) : m;
+    return c.length > 300
+      ? Object.assign({}, m, { content: c.slice(0, 300) + " […]" })
+      : m;
   });
+  // Include up to 10 truncated early messages for context continuity
   return head.slice(-10).concat(tail);
 }
 __name(smartTrimMessages, "smartTrimMessages");
-__name2(smartTrimMessages, "smartTrimMessages");
+
 function calcCostCents(model, inputTokens, outputTokens, cacheRead, cacheWrite) {
   const r = MODEL_COSTS[model] || MODEL_COSTS[MODEL_SONNET];
   return (inputTokens * r.input + outputTokens * r.output + (cacheRead || 0) * r.cacheRead + (cacheWrite || 0) * r.cacheWrite) / 1e6;
 }
 __name(calcCostCents, "calcCostCents");
-__name2(calcCostCents, "calcCostCents");
 async function trackTokenUsage(env, { sessionId, userId, model, endpoint, inputTokens, outputTokens, cacheRead, cacheWrite, phase }) {
   try {
     const cost = calcCostCents(model, inputTokens || 0, outputTokens || 0, cacheRead || 0, cacheWrite || 0);
@@ -11859,7 +11797,6 @@ async function trackTokenUsage(env, { sessionId, userId, model, endpoint, inputT
   }
 }
 __name(trackTokenUsage, "trackTokenUsage");
-__name2(trackTokenUsage, "trackTokenUsage");
 async function generateStrategistDebrief(env, session, blueprint, sessionId) {
   try {
     const interviewMessages = (session.messages || []).filter((m) => m.role === "user" || m.role === "assistant").map((m) => {
@@ -11932,14 +11869,12 @@ Now write the strategist debrief as a personal letter to this person. Return ONL
   }
 }
 __name(generateStrategistDebrief, "generateStrategistDebrief");
-__name2(generateStrategistDebrief, "generateStrategistDebrief");
 function getJWTSecret(env) {
   if (!env.JWT_SECRET)
     throw new Error("JWT_SECRET environment variable is required");
   return env.JWT_SECRET;
 }
 __name(getJWTSecret, "getJWTSecret");
-__name2(getJWTSecret, "getJWTSecret");
 async function isRateLimited(env, userId, sessionId) {
   const key = `rl:${userId || sessionId}`;
   const windowMs = 60 * 60 * 1e3;
@@ -11962,7 +11897,6 @@ async function isRateLimited(env, userId, sessionId) {
   }
 }
 __name(isRateLimited, "isRateLimited");
-__name2(isRateLimited, "isRateLimited");
 async function authRateLimit(env, identifier) {
   const key = `auth_rl:${identifier.toLowerCase().trim().substring(0, 100)}`;
   const windowMs = 15 * 60 * 1e3;
@@ -11985,7 +11919,6 @@ async function authRateLimit(env, identifier) {
   }
 }
 __name(authRateLimit, "authRateLimit");
-__name2(authRateLimit, "authRateLimit");
 function getStripeKeys(request, env) {
   const isTest = env.STRIPE_MODE === "test" || env.ENVIRONMENT === "development";
   return {
@@ -11995,7 +11928,6 @@ function getStripeKeys(request, env) {
   };
 }
 __name(getStripeKeys, "getStripeKeys");
-__name2(getStripeKeys, "getStripeKeys");
 async function stripePost(env, path, params, extraHeaders = {}) {
   const { secretKey } = getStripeKeys(null, env);
   return fetch(`https://api.stripe.com${path}`, {
@@ -12009,7 +11941,6 @@ async function stripePost(env, path, params, extraHeaders = {}) {
   });
 }
 __name(stripePost, "stripePost");
-__name2(stripePost, "stripePost");
 async function stripeGet(env, path) {
   const { secretKey } = getStripeKeys(null, env);
   return fetch(`https://api.stripe.com${path}`, {
@@ -12017,14 +11948,12 @@ async function stripeGet(env, path) {
   });
 }
 __name(stripeGet, "stripeGet");
-__name2(stripeGet, "stripeGet");
 async function generateSessionAccessToken(env, sessionId) {
   const token = Array.from(crypto.getRandomValues(new Uint8Array(24))).map((b) => b.toString(16).padStart(2, "0")).join("");
   await env.SESSIONS.put(`session_access:${token}`, JSON.stringify({ sessionId, createdAt: Date.now() }), { expirationTtl: 60 * 60 * 4 });
   return token;
 }
 __name(generateSessionAccessToken, "generateSessionAccessToken");
-__name2(generateSessionAccessToken, "generateSessionAccessToken");
 function validateBlueprint(blueprint) {
   const issues = [];
   const warnings = [];
@@ -12137,7 +12066,6 @@ function validateBlueprint(blueprint) {
   };
 }
 __name(validateBlueprint, "validateBlueprint");
-__name2(validateBlueprint, "validateBlueprint");
 function autoRepairBlueprint(blueprint) {
   const bp = blueprint?.blueprint || blueprint || {};
   const repairs = [];
@@ -12276,7 +12204,6 @@ function autoRepairBlueprint(blueprint) {
   return { blueprint, repairs, repairCount: repairs.length };
 }
 __name(autoRepairBlueprint, "autoRepairBlueprint");
-__name2(autoRepairBlueprint, "autoRepairBlueprint");
 async function callClaude(env, systemPrompt, messages, streaming = false, maxTokens = 1024) {
   const MAX_RETRIES = 2;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -12319,7 +12246,6 @@ async function callClaude(env, systemPrompt, messages, streaming = false, maxTok
   return "";
 }
 __name(callClaude, "callClaude");
-__name2(callClaude, "callClaude");
 async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6e3) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -12343,12 +12269,10 @@ async function callClaudeSiteGen(env, systemPrompt, maxTokens = 6e3) {
   return data.content?.[0]?.text || "";
 }
 __name(callClaudeSiteGen, "callClaudeSiteGen");
-__name2(callClaudeSiteGen, "callClaudeSiteGen");
 function stripMetadata(text) {
   return text.replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim();
 }
 __name(stripMetadata, "stripMetadata");
-__name2(stripMetadata, "stripMetadata");
 function jsonCORS(data, status, req) {
   return new Response(JSON.stringify(data), {
     status: status || 200,
@@ -12356,7 +12280,6 @@ function jsonCORS(data, status, req) {
   });
 }
 __name(jsonCORS, "jsonCORS");
-__name2(jsonCORS, "jsonCORS");
 async function fetchAndSummarize(env, url, instruction) {
   try {
     const res = await fetch(url, {
@@ -12389,7 +12312,6 @@ ${text}` }]
   }
 }
 __name(fetchAndSummarize, "fetchAndSummarize");
-__name2(fetchAndSummarize, "fetchAndSummarize");
 async function autoResearchCompetitors(env, websiteAnalysis, linkedinData) {
   if (!websiteAnalysis && !linkedinData)
     return "";
@@ -12423,7 +12345,6 @@ ${context}`
   }
 }
 __name(autoResearchCompetitors, "autoResearchCompetitors");
-__name2(autoResearchCompetitors, "autoResearchCompetitors");
 async function extractDocumentText(env, r2Key) {
   try {
     const obj = await env.UPLOADS.get(r2Key);
@@ -12472,7 +12393,6 @@ async function extractDocumentText(env, r2Key) {
   }
 }
 __name(extractDocumentText, "extractDocumentText");
-__name2(extractDocumentText, "extractDocumentText");
 function sanitizeDocumentText(text) {
   if (!text)
     return "";
@@ -12480,7 +12400,6 @@ function sanitizeDocumentText(text) {
   return clean.slice(0, 5e3);
 }
 __name(sanitizeDocumentText, "sanitizeDocumentText");
-__name2(sanitizeDocumentText, "sanitizeDocumentText");
 async function initSessionInD1(env, session) {
   try {
     const migrations = [
@@ -12528,7 +12447,6 @@ async function initSessionInD1(env, session) {
   }
 }
 __name(initSessionInD1, "initSessionInD1");
-__name2(initSessionInD1, "initSessionInD1");
 async function updateSessionPhaseInD1(env, sessionId, phase, messageCount, blueprintDone = false) {
   try {
     const now = (/* @__PURE__ */ new Date()).toISOString();
@@ -12544,7 +12462,6 @@ async function updateSessionPhaseInD1(env, sessionId, phase, messageCount, bluep
   }
 }
 __name(updateSessionPhaseInD1, "updateSessionPhaseInD1");
-__name2(updateSessionPhaseInD1, "updateSessionPhaseInD1");
 async function logEvent(env, sessionId, eventType, data) {
   try {
     await env.DB.prepare(`
@@ -12566,7 +12483,6 @@ async function logEvent(env, sessionId, eventType, data) {
   }
 }
 __name(logEvent, "logEvent");
-__name2(logEvent, "logEvent");
 async function saveToRAG(env, session, blueprint) {
   try {
     const b = blueprint.blueprint;
@@ -12596,7 +12512,6 @@ Headlines: ${b.part7?.heroHeadlineOptions?.slice(0, 3).join(" | ")}
   }
 }
 __name(saveToRAG, "saveToRAG");
-__name2(saveToRAG, "saveToRAG");
 var DRIP_WORKER_URL = "https://email-drip-worker.james-d13.workers.dev";
 var APOLLO_CREDIT_WARN_THRESHOLD = 15;
 async function enrichWithApollo(env, email, sessionId = null) {
@@ -12652,85 +12567,66 @@ async function enrichWithApollo(env, email, sessionId = null) {
   }
 }
 __name(enrichWithApollo, "enrichWithApollo");
-__name2(enrichWithApollo, "enrichWithApollo");
 async function enrichFromDomain(email) {
   try {
     var domain = (email || "").split("@")[1];
-    if (!domain)
-      return null;
+    if (!domain) return null;
     var freeProviders = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "me.com", "live.com", "msn.com", "aol.com", "protonmail.com", "ymail.com"];
-    if (freeProviders.indexOf(domain.toLowerCase()) !== -1)
-      return null;
+    if (freeProviders.indexOf(domain.toLowerCase()) !== -1) return null;
     var ctrl = new AbortController();
-    var timer = setTimeout(function() {
-      ctrl.abort();
-    }, 5e3);
+    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
     var res = await fetch("https://" + domain, { headers: { "User-Agent": "Mozilla/5.0" }, signal: ctrl.signal });
     clearTimeout(timer);
-    if (!res.ok)
-      return null;
+    if (!res.ok) return null;
     var html = await res.text();
     var titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     var title = titleMatch ? titleMatch[1].trim().slice(0, 120) : null;
     var descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
     var description = descMatch ? descMatch[1].trim().slice(0, 300) : null;
-    if (!title && !description)
-      return null;
-    return { domain, title, description, scraped_at: (/* @__PURE__ */ new Date()).toISOString() };
+    if (!title && !description) return null;
+    return { domain: domain, title: title, description: description, scraped_at: (/* @__PURE__ */ new Date()).toISOString() };
   } catch (_) {
     return null;
   }
 }
 __name(enrichFromDomain, "enrichFromDomain");
-__name2(enrichFromDomain, "enrichFromDomain");
 async function checkCalendlyHistory(email, env) {
-  if (!env.CALENDLY_API_KEY || !env.CALENDLY_ORG_URI)
-    return null;
+  if (!env.CALENDLY_API_KEY || !env.CALENDLY_ORG_URI) return null;
   try {
     var ctrl = new AbortController();
-    var timer = setTimeout(function() {
-      ctrl.abort();
-    }, 5e3);
+    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
     var url = "https://api.calendly.com/scheduled_events?organization=" + encodeURIComponent(env.CALENDLY_ORG_URI) + "&invitee_email=" + encodeURIComponent(email) + "&count=5&status=active";
     var res = await fetch(url, { headers: { "Authorization": "Bearer " + env.CALENDLY_API_KEY, "Content-Type": "application/json" }, signal: ctrl.signal });
     clearTimeout(timer);
-    if (!res.ok)
-      return null;
+    if (!res.ok) return null;
     var data = await res.json();
     var events = data.collection || [];
-    if (events.length === 0)
-      return null;
-    return { meeting_count: events.length, last_meeting: events[0] ? events[0].start_time || null : null, checked_at: (/* @__PURE__ */ new Date()).toISOString() };
+    if (events.length === 0) return null;
+    return { meeting_count: events.length, last_meeting: events[0] ? (events[0].start_time || null) : null, checked_at: (/* @__PURE__ */ new Date()).toISOString() };
   } catch (_) {
     return null;
   }
 }
 __name(checkCalendlyHistory, "checkCalendlyHistory");
-__name2(checkCalendlyHistory, "checkCalendlyHistory");
 async function checkStripeHistory(email, env) {
-  if (!env.STRIPE_SECRET_KEY)
-    return null;
+  if (!env.STRIPE_SECRET_KEY) return null;
   try {
     var ctrl = new AbortController();
-    var timer = setTimeout(function() {
-      ctrl.abort();
-    }, 5e3);
+    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
     var res = await fetch("https://api.stripe.com/v1/customers/search?query=" + encodeURIComponent('email:"' + email + '"') + "&limit=3", {
       headers: { "Authorization": "Bearer " + env.STRIPE_SECRET_KEY },
       signal: ctrl.signal
     });
     clearTimeout(timer);
-    if (!res.ok)
-      return null;
+    if (!res.ok) return null;
     var data = await res.json();
     var customers = data.data || [];
-    if (customers.length === 0)
-      return null;
+    if (customers.length === 0) return null;
     var customer = customers[0];
     return {
       is_existing_customer: true,
       customer_id: customer.id,
-      created: customer.created ? new Date(customer.created * 1e3).toISOString() : null,
+      created: customer.created ? new Date(customer.created * 1000).toISOString() : null,
       checked_at: (/* @__PURE__ */ new Date()).toISOString()
     };
   } catch (_) {
@@ -12738,7 +12634,6 @@ async function checkStripeHistory(email, env) {
   }
 }
 __name(checkStripeHistory, "checkStripeHistory");
-__name2(checkStripeHistory, "checkStripeHistory");
 async function enrichNewSession(email, sessionId2, env) {
   try {
     var results = await Promise.allSettled([
@@ -12747,7 +12642,7 @@ async function enrichNewSession(email, sessionId2, env) {
       checkStripeHistory(email, env)
     ]);
     var enrichment = {
-      email,
+      email: email,
       domain: results[0].status === "fulfilled" ? results[0].value : null,
       calendly: results[1].status === "fulfilled" ? results[1].value : null,
       stripe: results[2].status === "fulfilled" ? results[2].value : null,
@@ -12763,14 +12658,10 @@ async function enrichNewSession(email, sessionId2, env) {
       hasStripe: !!enrichment.stripe
     });
   } catch (e) {
-    try {
-      await logEvent(env, sessionId2, "enrichment_failed", { error: e.message });
-    } catch (_) {
-    }
+    try { await logEvent(env, sessionId2, "enrichment_failed", { error: e.message }); } catch (_) {}
   }
 }
 __name(enrichNewSession, "enrichNewSession");
-__name2(enrichNewSession, "enrichNewSession");
 async function fireEventToDripWorker(env, email, eventType, data = {}) {
   try {
     const res = await fetch(`${DRIP_WORKER_URL}/event`, {
@@ -12788,7 +12679,6 @@ async function fireEventToDripWorker(env, email, eventType, data = {}) {
   }
 }
 __name(fireEventToDripWorker, "fireEventToDripWorker");
-__name2(fireEventToDripWorker, "fireEventToDripWorker");
 var ABANDONMENT_SCHEDULE = [
   { count: 0, eventType: "interview_abandoned_1", minHours: 2, maxHours: 23 },
   { count: 1, eventType: "interview_abandoned_2", minHours: 24, maxHours: 71 },
@@ -12842,7 +12732,6 @@ async function runAbandonmentCheck(env) {
   }
 }
 __name(runAbandonmentCheck, "runAbandonmentCheck");
-__name2(runAbandonmentCheck, "runAbandonmentCheck");
 async function runDailyHealthCheck(env) {
   const results = {};
   const checks = [
@@ -12877,83 +12766,103 @@ async function runDailyHealthCheck(env) {
   return { allOk, results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runDailyHealthCheck, "runDailyHealthCheck");
-__name2(runDailyHealthCheck, "runDailyHealthCheck");
+
 async function runWeeklySnapshot(env) {
   try {
-    var now = /* @__PURE__ */ new Date();
+    var now = new Date();
     var weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay() + 1);
-    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(now.getDate() - now.getDay() + 1); // Monday
+    weekStart.setHours(0,0,0,0);
     var weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-    var ws = weekStart.toISOString().slice(0, 10);
-    var we = weekEnd.toISOString().slice(0, 10);
+    var ws = weekStart.toISOString().slice(0,10);
+    var we = weekEnd.toISOString().slice(0,10);
+
     var [newSessions, completions, costRow, avgMsgRow] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE created_at > datetime('now','-7 days')").first(),
       env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE blueprint_generated=1 AND updated_at > datetime('now','-7 days')").first(),
-      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE called_at > datetime('now','-7 days')").first().catch(() => ({ total: 0 })),
-      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE created_at > datetime('now','-7 days')").first().catch(() => ({ avg: 0 }))
+      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE called_at > datetime('now','-7 days')").first().catch(()=>({total:0})),
+      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE created_at > datetime('now','-7 days')").first().catch(()=>({avg:0}))
     ]);
-    var phaseRows = await env.DB.prepare("SELECT phase, COUNT(*) as cnt FROM sessions WHERE created_at > datetime('now','-7 days') GROUP BY phase").all().catch(() => ({ results: [] }));
+    var phaseRows = await env.DB.prepare("SELECT phase, COUNT(*) as cnt FROM sessions WHERE created_at > datetime('now','-7 days') GROUP BY phase").all().catch(()=>({results:[]}));
     var phaseDist = {};
-    (phaseRows?.results || []).forEach(function(r) {
-      phaseDist[r.phase] = r.cnt;
-    });
+    (phaseRows?.results||[]).forEach(function(r){ phaseDist[r.phase]=r.cnt; });
+
     var data = {
       week_start: ws,
       week_end: we,
       new_sessions: newSessions?.cnt || 0,
       completions: completions?.cnt || 0,
-      api_cost_usd: parseFloat(costRow?.total || 0).toFixed(4),
+      api_cost_usd: parseFloat(costRow?.total||0).toFixed(4),
       avg_messages: avgMsgRow?.avg ? Math.round(avgMsgRow.avg) : 0,
       phase_distribution: phaseDist,
       generated_at: now.toISOString()
     };
-    var snapshotId = "ws_" + ws.replace(/-/g, "") + "_" + Date.now();
+    var snapshotId = "ws_" + ws.replace(/-/g,"") + "_" + Date.now();
     await env.DB.prepare(
       "INSERT OR REPLACE INTO weekly_snapshots (id, week_start, week_end, snapshot_data) VALUES (?,?,?,?)"
     ).bind(snapshotId, ws, we, JSON.stringify(data)).run().catch(async function() {
-      await env.DB.prepare("DELETE FROM weekly_snapshots WHERE week_start=?").bind(ws).run().catch(() => {
-      });
+      await env.DB.prepare("DELETE FROM weekly_snapshots WHERE week_start=?").bind(ws).run().catch(()=>{});
       await env.DB.prepare("INSERT INTO weekly_snapshots (id, week_start, week_end, snapshot_data) VALUES (?,?,?,?)").bind(snapshotId, ws, we, JSON.stringify(data)).run();
     });
+
+    // Send weekly report email
     try {
-      var emailBody = "<h2 style='font-family:sans-serif'>DWI Weekly Report \u2014 " + ws + "</h2><table style='font-family:sans-serif;font-size:14px;border-collapse:collapse'><tr><td style='padding:6px 16px 6px 0;color:#666'>New sessions</td><td><strong>" + data.new_sessions + "</strong></td></tr><tr><td style='padding:6px 16px 6px 0;color:#666'>Blueprints generated</td><td><strong>" + data.completions + "</strong></td></tr><tr><td style='padding:6px 16px 6px 0;color:#666'>API spend</td><td><strong>$" + data.api_cost_usd + "</strong></td></tr><tr><td style='padding:6px 16px 6px 0;color:#666'>Avg messages</td><td><strong>" + data.avg_messages + "</strong></td></tr></table><p style='font-family:sans-serif;font-size:13px;color:#666;margin-top:16px'>Phase distribution this week: " + JSON.stringify(phaseDist) + "</p><p style='font-family:sans-serif;font-size:12px;color:#999;margin-top:8px'><a href='https://love.jamesguldan.com/admin'>View Admin Dashboard</a></p>";
+      var emailBody = "<h2 style='font-family:sans-serif'>DWI Weekly Report — " + ws + "</h2>" +
+        "<table style='font-family:sans-serif;font-size:14px;border-collapse:collapse'>" +
+        "<tr><td style='padding:6px 16px 6px 0;color:#666'>New sessions</td><td><strong>" + data.new_sessions + "</strong></td></tr>" +
+        "<tr><td style='padding:6px 16px 6px 0;color:#666'>Blueprints generated</td><td><strong>" + data.completions + "</strong></td></tr>" +
+        "<tr><td style='padding:6px 16px 6px 0;color:#666'>API spend</td><td><strong>$" + data.api_cost_usd + "</strong></td></tr>" +
+        "<tr><td style='padding:6px 16px 6px 0;color:#666'>Avg messages</td><td><strong>" + data.avg_messages + "</strong></td></tr>" +
+        "</table>" +
+        "<p style='font-family:sans-serif;font-size:13px;color:#666;margin-top:16px'>Phase distribution this week: " + JSON.stringify(phaseDist) + "</p>" +
+        "<p style='font-family:sans-serif;font-size:12px;color:#999;margin-top:8px'><a href='https://love.jamesguldan.com/admin'>View Admin Dashboard</a></p>";
       await sendEmail(env, {
         to: "james@jamesguldan.com",
         from: "DWI Reports <reports@jamesguldan.com>",
-        subject: "DWI Weekly: " + data.new_sessions + " sessions, " + data.completions + " blueprints \u2014 " + ws,
+        subject: "DWI Weekly: " + data.new_sessions + " sessions, " + data.completions + " blueprints — " + ws,
         html: emailBody
       });
-    } catch (emailErr) {
+    } catch(emailErr) {
       console.error("[WeeklySnapshot] Email failed:", emailErr.message);
     }
+
     console.log("[WeeklySnapshot] Saved snapshot for week " + ws);
     return data;
-  } catch (e) {
+  } catch(e) {
     console.error("[WeeklySnapshot] Failed:", e.message);
     return null;
   }
 }
 __name(runWeeklySnapshot, "runWeeklySnapshot");
-__name2(runWeeklySnapshot, "runWeeklySnapshot");
+
 async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session) {
   var buyingTemp = (leadIntel?.buyingTemperature || "").toLowerCase();
-  if (buyingTemp !== "warm" && buyingTemp !== "hot")
-    return;
+  if (buyingTemp !== "warm" && buyingTemp !== "hot") return;
   try {
-    var existing = await env.DB.prepare("SELECT id FROM sales_briefs WHERE session_id=? LIMIT 1").bind(sessionId).first().catch(() => null);
-    if (existing)
-      return;
-    var messages = (session?.messages || []).filter(function(m, i) {
-      return !(i === 0 && m.role === "user" && m.content === "Start the interview.");
+    var existing = await env.DB.prepare("SELECT id FROM sales_briefs WHERE session_id=? LIMIT 1").bind(sessionId).first().catch(()=>null);
+    if (existing) return; // Already have one
+
+    var messages = (session?.messages || []).filter(function(m,i){
+      return !(i===0 && m.role==="user" && m.content==="Start the interview.");
     });
-    var transcript = messages.slice(-30).map(function(m) {
-      return (m.role === "user" ? "GUEST" : "INTERVIEWER") + ": " + (m.content || "").substring(0, 600);
+    var transcript = messages.slice(-30).map(function(m){
+      return (m.role==="user"?"GUEST":"INTERVIEWER")+": "+(m.content||"").substring(0,600);
     }).join("\n\n");
+
     var userName = session?.userName || session?.userEmail || "Unknown";
     var userEmail = session?.email || session?.userEmail || "Unknown";
-    var prompt = "Based on this brand interview, write a concise sales prep brief for James Guldan.\n\nPerson: " + userName + " (" + userEmail + ")\nBuying Temperature: " + buyingTemp + "\nIndustry: " + (leadIntel.industry || "Unknown") + "\nBiggest Pain: " + (leadIntel.biggestPainPoint || "Unknown") + "\nBest Fit Service: " + (leadIntel.bestFitService || "Unknown") + "\nNotable Quotes: " + JSON.stringify(leadIntel.notableQuotes || []) + "\n\nTRANSCRIPT (last 30 messages):\n" + transcript + "\n\n---\n\nWrite:\n1. Who this person is (2 sentences)\n2. Their biggest pain point\n3. Recommended service and why\n4. Suggested opening message for follow-up\n5. Top 3 key quotes showing buying intent";
+
+    var prompt = "Based on this brand interview, write a concise sales prep brief for James Guldan.\n\n" +
+      "Person: " + userName + " (" + userEmail + ")\n" +
+      "Buying Temperature: " + buyingTemp + "\n" +
+      "Industry: " + (leadIntel.industry||"Unknown") + "\n" +
+      "Biggest Pain: " + (leadIntel.biggestPainPoint||"Unknown") + "\n" +
+      "Best Fit Service: " + (leadIntel.bestFitService||"Unknown") + "\n" +
+      "Notable Quotes: " + JSON.stringify(leadIntel.notableQuotes||[]) + "\n\n" +
+      "TRANSCRIPT (last 30 messages):\n" + transcript + "\n\n---\n\n" +
+      "Write:\n1. Who this person is (2 sentences)\n2. Their biggest pain point\n3. Recommended service and why\n4. Suggested opening message for follow-up\n5. Top 3 key quotes showing buying intent";
+
     var res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -12964,34 +12873,27 @@ async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session
         messages: [{ role: "user", content: prompt }]
       })
     });
-    if (!res.ok) {
-      console.error("[AutoBrief] Haiku error:", res.status);
-      return;
-    }
+    if (!res.ok) { console.error("[AutoBrief] Haiku error:", res.status); return; }
     var data = await res.json();
-    if (data.usage)
-      logApiCost(env, { sessionId, userEmail, model: MODEL_HAIKU, callType: "auto_sales_brief", usage: data.usage }).catch(() => {
-      });
+    if (data.usage) logApiCost(env, { sessionId, userEmail, model: MODEL_HAIKU, callType: "auto_sales_brief", usage: data.usage }).catch(()=>{});
     var briefContent = data.content?.[0]?.text || "";
-    if (!briefContent)
-      return;
+    if (!briefContent) return;
     var briefId = "sb_auto_" + sessionId + "_" + Date.now();
     await env.DB.prepare(
       "INSERT INTO sales_briefs (id, session_id, brief_content, model_used) VALUES (?,?,?,?)"
-    ).bind(briefId, sessionId, briefContent, MODEL_HAIKU).run().catch(() => {
-    });
+    ).bind(briefId, sessionId, briefContent, MODEL_HAIKU).run().catch(()=>{});
     console.log("[AutoBrief] Generated sales brief for session " + sessionId + " (buying_temperature=" + buyingTemp + ")");
-  } catch (e) {
+  } catch(e) {
     console.error("[AutoBrief] Failed:", e.message);
   }
 }
 __name(autoGenerateSalesBrief, "autoGenerateSalesBrief");
-__name2(autoGenerateSalesBrief, "autoGenerateSalesBrief");
+
 async function handleAdminBackfill(request, env) {
   var admin = await requireAdmin(request, env);
-  if (!admin)
-    return json({ error: "Forbidden" }, 403);
+  if (!admin) return json({ error: "Forbidden" }, 403);
   try {
+    // Get all completed sessions that have blueprints
     var rows = await env.DB.prepare(
       "SELECT s.id, s.user_id, s.phase, u.email, u.name FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.blueprint_generated=1 ORDER BY s.created_at DESC LIMIT 50"
     ).all();
@@ -12999,45 +12901,55 @@ async function handleAdminBackfill(request, env) {
     var processed = 0;
     var errors = 0;
     var results = [];
+
     for (var i = 0; i < sessions.length; i++) {
       var s = sessions[i];
       try {
+        // Load session from KV
         var sessRaw = await env.SESSIONS.get(s.id);
         if (!sessRaw) {
           results.push({ id: s.id, status: "skipped", reason: "not in KV" });
           continue;
         }
         var session = JSON.parse(sessRaw);
-        var existingInsights = await env.DB.prepare("SELECT COUNT(*) as cnt FROM session_insights WHERE session_id=?").bind(s.id).first().catch(() => ({ cnt: 0 }));
+
+        // Re-run session_insights extraction if needed
+        var existingInsights = await env.DB.prepare("SELECT COUNT(*) as cnt FROM session_insights WHERE session_id=?").bind(s.id).first().catch(()=>({cnt:0}));
         if (!existingInsights?.cnt) {
-          await extractSessionInsights(env, s.id, session).catch(() => {
-          });
+          await extractSessionInsights(env, s.id, session).catch(()=>{});
         }
+
+        // Re-run lead_intel if blueprint has leadIntel
         var bp = session.blueprint?.blueprint || session.blueprint;
         var li = bp?.leadIntel;
         if (li) {
-          var existingLI = await env.DB.prepare("SELECT COUNT(*) as cnt FROM lead_intel WHERE session_id=?").bind(s.id).first().catch(() => ({ cnt: 0 }));
+          var existingLI = await env.DB.prepare("SELECT COUNT(*) as cnt FROM lead_intel WHERE session_id=?").bind(s.id).first().catch(()=>({cnt:0}));
           if (!existingLI?.cnt) {
-            await env.DB.prepare(`INSERT OR REPLACE INTO lead_intel (session_id, user_id, email, phone, estimated_revenue, industry, years_in_business, team_size, has_existing_brand, has_existing_website, has_internal_team, brand_maturity, buying_temperature, biggest_pain_point, budget_signals, best_fit_service, best_fit_reason, notable_quotes, follow_up_angle, recommendation, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`).bind(s.id, s.user_id || null, s.email || null, null, li.estimatedRevenue || "Unknown", li.industry || "Unknown", li.yearsInBusiness || "Unknown", li.teamSize || "Unknown", li.hasExistingBrand ? 1 : 0, li.hasExistingWebsite ? 1 : 0, li.hasInternalTeam ? 1 : 0, li.brandMaturity || "Unknown", li.buyingTemperature || "Unknown", li.biggestPainPoint || "", li.budgetSignals || "", li.bestFitService || "", li.bestFitReason || "", JSON.stringify(li.notableQuotes || []), li.followUpAngle || "", bp?.part8?.recommendation || "").run().catch(() => {
-            });
-            await autoGenerateSalesBrief(env, s.id, s.user_id, li, session).catch(() => {
-            });
+            await env.DB.prepare(`INSERT OR REPLACE INTO lead_intel (session_id, user_id, email, phone, estimated_revenue, industry, years_in_business, team_size, has_existing_brand, has_existing_website, has_internal_team, brand_maturity, buying_temperature, biggest_pain_point, budget_signals, best_fit_service, best_fit_reason, notable_quotes, follow_up_angle, recommendation, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`)
+              .bind(s.id, s.user_id||null, s.email||null, null, li.estimatedRevenue||"Unknown", li.industry||"Unknown", li.yearsInBusiness||"Unknown", li.teamSize||"Unknown", li.hasExistingBrand?1:0, li.hasExistingWebsite?1:0, li.hasInternalTeam?1:0, li.brandMaturity||"Unknown", li.buyingTemperature||"Unknown", li.biggestPainPoint||"", li.budgetSignals||"", li.bestFitService||"", li.bestFitReason||"", JSON.stringify(li.notableQuotes||[]), li.followUpAngle||"", bp?.part8?.recommendation||"")
+              .run().catch(()=>{});
+            // Auto-generate sales brief if warm/hot
+            await autoGenerateSalesBrief(env, s.id, s.user_id, li, session).catch(()=>{});
           }
         }
+
         processed++;
-        results.push({ id: s.id, email: s.email || "anon", status: "processed" });
-      } catch (err) {
+        results.push({ id: s.id, email: s.email||"anon", status: "processed" });
+      } catch(err) {
         errors++;
         results.push({ id: s.id, status: "error", reason: err.message });
       }
+
+      // No delay needed — backfill only hits D1/KV, no external API rate limits
     }
+
     return json({ ok: true, total: sessions.length, processed, errors, results });
-  } catch (e) {
+  } catch(e) {
     return json({ error: e.message }, 500);
   }
 }
 __name(handleAdminBackfill, "handleAdminBackfill");
-__name2(handleAdminBackfill, "handleAdminBackfill");
+
 function injectSEO(html, blueprint, liveUrl, slug) {
   const p1 = blueprint.part1 || {};
   const p2 = blueprint.part2 || {};
@@ -13104,7 +13016,6 @@ function injectSEO(html, blueprint, liveUrl, slug) {
   return cleaned;
 }
 __name(injectSEO, "injectSEO");
-__name2(injectSEO, "injectSEO");
 async function scoreEmotionalDepth(env, session) {
   const messages = session.messages || [];
   if (messages.length < 6)
@@ -13146,7 +13057,6 @@ async function scoreEmotionalDepth(env, session) {
   }
 }
 __name(scoreEmotionalDepth, "scoreEmotionalDepth");
-__name2(scoreEmotionalDepth, "scoreEmotionalDepth");
 async function scorePhaseIntelligence(env, sessionId, phaseNumber, messages) {
   if (!messages || messages.length < 4)
     return null;
@@ -13228,7 +13138,6 @@ ${transcript}`;
   }
 }
 __name(scorePhaseIntelligence, "scorePhaseIntelligence");
-__name2(scorePhaseIntelligence, "scorePhaseIntelligence");
 async function checkHeuristicFlags(env, sessionId, session, phaseNumber) {
   const messages = session.messages || [];
   const userMessages = messages.filter(function(m) {
@@ -13311,7 +13220,6 @@ async function checkHeuristicFlags(env, sessionId, session, phaseNumber) {
   return flags;
 }
 __name(checkHeuristicFlags, "checkHeuristicFlags");
-__name2(checkHeuristicFlags, "checkHeuristicFlags");
 async function extractSessionInsights(env, sessionId, session) {
   const messages = session.messages || [];
   if (messages.length < 10)
@@ -13409,7 +13317,6 @@ ${transcript}`;
   }
 }
 __name(extractSessionInsights, "extractSessionInsights");
-__name2(extractSessionInsights, "extractSessionInsights");
 var API_RATES = {
   [MODEL_HAIKU]: { input: 0.8, output: 4 },
   "claude-haiku-4-5": { input: 0.8, output: 4 },
@@ -13446,7 +13353,6 @@ async function logApiCost(env, { sessionId, userEmail, model, callType, usage })
   }
 }
 __name(logApiCost, "logApiCost");
-__name2(logApiCost, "logApiCost");
 function getMagicLinkEmail(magicUrl, email) {
   const year = (/* @__PURE__ */ new Date()).getFullYear();
   return `<!DOCTYPE html>
@@ -13490,7 +13396,8 @@ function getMagicLinkEmail(magicUrl, email) {
 </html>`;
 }
 __name(getMagicLinkEmail, "getMagicLinkEmail");
-__name2(getMagicLinkEmail, "getMagicLinkEmail");
+
+// src/routes/auth.js
 async function handleAuthLogin(request, env) {
   try {
     const { email, password } = await request.json();
@@ -13523,7 +13430,6 @@ async function handleAuthLogin(request, env) {
   }
 }
 __name(handleAuthLogin, "handleAuthLogin");
-__name2(handleAuthLogin, "handleAuthLogin");
 async function handleAuthRegister(request, env) {
   try {
     const { email, name, password } = await request.json();
@@ -13554,7 +13460,6 @@ async function handleAuthRegister(request, env) {
   }
 }
 __name(handleAuthRegister, "handleAuthRegister");
-__name2(handleAuthRegister, "handleAuthRegister");
 async function handleAuthMagic(request, env) {
   try {
     const { token } = await request.json();
@@ -13586,7 +13491,6 @@ async function handleAuthMagic(request, env) {
   }
 }
 __name(handleAuthMagic, "handleAuthMagic");
-__name2(handleAuthMagic, "handleAuthMagic");
 async function handleRequestMagic(request, env) {
   try {
     const { email } = await request.json();
@@ -13637,7 +13541,6 @@ async function handleRequestMagic(request, env) {
   }
 }
 __name(handleRequestMagic, "handleRequestMagic");
-__name2(handleRequestMagic, "handleRequestMagic");
 async function handleAuthMe(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -13645,7 +13548,6 @@ async function handleAuthMe(request, env) {
   return json({ id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier });
 }
 __name(handleAuthMe, "handleAuthMe");
-__name2(handleAuthMe, "handleAuthMe");
 async function handleFastResume(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -13715,7 +13617,6 @@ async function handleFastResume(request, env) {
   }
 }
 __name(handleFastResume, "handleFastResume");
-__name2(handleFastResume, "handleFastResume");
 async function handleSetPassword(request, env) {
   try {
     const user = await requireAuth(request, env);
@@ -13732,7 +13633,6 @@ async function handleSetPassword(request, env) {
   }
 }
 __name(handleSetPassword, "handleSetPassword");
-__name2(handleSetPassword, "handleSetPassword");
 async function handleMagicLink(request, env, url) {
   const token = url.searchParams.get("token");
   if (!token) {
@@ -13798,7 +13698,6 @@ a{display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;paddin
   return Response.redirect(dest, 302);
 }
 __name(handleMagicLink, "handleMagicLink");
-__name2(handleMagicLink, "handleMagicLink");
 async function handlePaymentSuccess(request, env, url) {
   const checkoutSessionId = url.searchParams.get("session_id");
   const tier = url.searchParams.get("tier") || "blueprint";
@@ -13879,10 +13778,12 @@ async function handlePaymentSuccess(request, env, url) {
   return Response.redirect(`${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`, 302);
 }
 __name(handlePaymentSuccess, "handlePaymentSuccess");
-__name2(handlePaymentSuccess, "handlePaymentSuccess");
+
+// src/routes/session.js
 async function handleSessionStart(request, env, ctx) {
   const body = await request.json();
   const { sessionId, tier, existingWebsiteUrl, linkedinUrl, competitorUrls, testimonials, uploadedKeys, phone, utmSource, utmMedium, utmCampaign } = body;
+  // Server-side device detection from User-Agent as fallback
   const uaHeader = request.headers.get("User-Agent") || "";
   const deviceType = body.deviceType || (/Mobi|Android|iPhone|iPad|tablet/i.test(uaHeader) ? "mobile" : "desktop");
   let userId = null;
@@ -14002,13 +13903,11 @@ async function handleSessionStart(request, env, ctx) {
       }
     }).catch(() => {
     });
-    if (ctx && ctx.waitUntil)
-      ctx.waitUntil(bgWork);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(bgWork);
   }
   return json({ ok: true, sessionId: session.id, firstMessage: cleanFirst });
 }
 __name(handleSessionStart, "handleSessionStart");
-__name2(handleSessionStart, "handleSessionStart");
 async function handleSessionClaim(request, env) {
   try {
     const { accessToken, sessionId } = await request.json();
@@ -14029,7 +13928,6 @@ async function handleSessionClaim(request, env) {
   }
 }
 __name(handleSessionClaim, "handleSessionClaim");
-__name2(handleSessionClaim, "handleSessionClaim");
 async function handleSessionResume(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -14072,7 +13970,6 @@ async function handleSessionResume(request, env) {
   }
 }
 __name(handleSessionResume, "handleSessionResume");
-__name2(handleSessionResume, "handleSessionResume");
 async function handleSessionRestart(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -14108,7 +14005,6 @@ async function handleSessionRestart(request, env) {
   }
 }
 __name(handleSessionRestart, "handleSessionRestart");
-__name2(handleSessionRestart, "handleSessionRestart");
 async function handleGetSession(request, env, path) {
   const sessionId = path.split("/").pop();
   const raw = await env.SESSIONS.get(sessionId);
@@ -14126,7 +14022,6 @@ async function handleGetSession(request, env, path) {
   });
 }
 __name(handleGetSession, "handleGetSession");
-__name2(handleGetSession, "handleGetSession");
 async function handleUserActiveSession(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -14191,7 +14086,8 @@ async function handleUserActiveSession(request, env) {
   }
 }
 __name(handleUserActiveSession, "handleUserActiveSession");
-__name2(handleUserActiveSession, "handleUserActiveSession");
+
+// src/utils/research.js
 var GEMINI_PROXY_URL = "https://gemini-proxy.james-d13.workers.dev";
 var GEMINI_PROXY_TOKEN = "U$X2eQQST$mz4$vu";
 var FETCH_TIMEOUT_MS = 8e3;
@@ -14209,7 +14105,6 @@ function normalizeUrl(url) {
   }
 }
 __name(normalizeUrl, "normalizeUrl");
-__name2(normalizeUrl, "normalizeUrl");
 async function fetchWithTimeout(url, opts = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeout || FETCH_TIMEOUT_MS);
@@ -14223,19 +14118,16 @@ async function fetchWithTimeout(url, opts = {}) {
   }
 }
 __name(fetchWithTimeout, "fetchWithTimeout");
-__name2(fetchWithTimeout, "fetchWithTimeout");
 function extractText(html) {
   return html.replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().substring(0, 4e3);
 }
 __name(extractText, "extractText");
-__name2(extractText, "extractText");
 function extractMeta(html) {
   const desc = (html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)/i) || [])[1] || "";
   const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || "";
   return { title: title.trim(), description: desc.trim() };
 }
 __name(extractMeta, "extractMeta");
-__name2(extractMeta, "extractMeta");
 function extractColors(html) {
   const hexSet = /* @__PURE__ */ new Set();
   const matches = html.match(/#([0-9a-fA-F]{6})\b/g) || [];
@@ -14248,7 +14140,6 @@ function extractColors(html) {
   return Array.from(hexSet).slice(0, 8);
 }
 __name(extractColors, "extractColors");
-__name2(extractColors, "extractColors");
 function extractTestimonials(html) {
   const testimonialPatterns = [
     /<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi,
@@ -14267,7 +14158,6 @@ function extractTestimonials(html) {
   return found;
 }
 __name(extractTestimonials, "extractTestimonials");
-__name2(extractTestimonials, "extractTestimonials");
 async function searchWithGemini(query) {
   try {
     const res = await fetchWithTimeout(`${GEMINI_PROXY_URL}/v1beta/models/gemini-2.0-flash-001:generateContent`, {
@@ -14293,7 +14183,6 @@ async function searchWithGemini(query) {
   }
 }
 __name(searchWithGemini, "searchWithGemini");
-__name2(searchWithGemini, "searchWithGemini");
 async function fetchWebsiteData(rawUrl) {
   const url = normalizeUrl(rawUrl);
   if (!url)
@@ -14314,7 +14203,6 @@ async function fetchWebsiteData(rawUrl) {
   }
 }
 __name(fetchWebsiteData, "fetchWebsiteData");
-__name2(fetchWebsiteData, "fetchWebsiteData");
 async function fetchLinkedInData(rawUrl) {
   const url = normalizeUrl(rawUrl);
   if (!url)
@@ -14335,7 +14223,6 @@ async function fetchLinkedInData(rawUrl) {
   }
 }
 __name(fetchLinkedInData, "fetchLinkedInData");
-__name2(fetchLinkedInData, "fetchLinkedInData");
 async function researchCompetitors(name, niche) {
   if (!niche)
     return [];
@@ -14346,7 +14233,6 @@ async function researchCompetitors(name, niche) {
   return [{ raw: result, scrapedAt: (/* @__PURE__ */ new Date()).toISOString() }];
 }
 __name(researchCompetitors, "researchCompetitors");
-__name2(researchCompetitors, "researchCompetitors");
 async function researchAudiencePainPoints(niche, idealClient) {
   if (!niche)
     return [];
@@ -14358,7 +14244,6 @@ async function researchAudiencePainPoints(niche, idealClient) {
   return [{ raw: result, scrapedAt: (/* @__PURE__ */ new Date()).toISOString() }];
 }
 __name(researchAudiencePainPoints, "researchAudiencePainPoints");
-__name2(researchAudiencePainPoints, "researchAudiencePainPoints");
 async function researchUser(env, urls, context) {
   const { websiteUrl, linkedinUrl, name, niche, idealClient } = context || {};
   const result = {
@@ -14384,7 +14269,6 @@ async function researchUser(env, urls, context) {
   return result;
 }
 __name(researchUser, "researchUser");
-__name2(researchUser, "researchUser");
 function formatResearchForPrompt(research) {
   if (!research)
     return "";
@@ -14431,7 +14315,8 @@ function formatResearchForPrompt(research) {
   return lines.join("\n");
 }
 __name(formatResearchForPrompt, "formatResearchForPrompt");
-__name2(formatResearchForPrompt, "formatResearchForPrompt");
+
+// src/routes/interview.js
 async function handleChat(request, env, ctx) {
   const body = await request.json();
   const { sessionId, message } = body;
@@ -14475,14 +14360,12 @@ async function handleChat(request, env, ctx) {
   let enrichmentData = null;
   try {
     const enrichRaw = await env.SESSIONS.get("enrichment:" + sessionId);
-    if (enrichRaw)
-      enrichmentData = JSON.parse(enrichRaw);
-  } catch (_) {
-  }
+    if (enrichRaw) enrichmentData = JSON.parse(enrichRaw);
+  } catch (_) {}
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
-  const sendEvent = /* @__PURE__ */ __name2(async (data) => {
+  const sendEvent = /* @__PURE__ */ __name(async (data) => {
     await writer.write(encoder.encode(`data: ${JSON.stringify(data)}
 
 `));
@@ -14708,13 +14591,13 @@ Use this to skip surface-level questions. Go deeper faster.` });
           session.blueprint = blueprint;
           session.blueprintGenerated = true;
           await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
+          // Cache blueprint metadata separately for fast subsequent renders
           env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
             blueprint,
             name: blueprint.name || session.userName || "",
             apolloData: session.apolloData || null,
             messageCount: session.messages.length
-          }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {
-          });
+          }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(()=>{});
           await saveToRAG(env, session, blueprint);
           const li2 = blueprint?.leadIntel;
           if (li2) {
@@ -14771,10 +14654,8 @@ Use this to skip surface-level questions. Go deeper faster.` });
               })
             ]));
           } else {
-            extractSessionInsights(env, sessionId, session).catch(function() {
-            });
-            autoGenerateSalesBrief(env, sessionId, session.userId, li2, session).catch(function() {
-            });
+            extractSessionInsights(env, sessionId, session).catch(function() {});
+            autoGenerateSalesBrief(env, sessionId, session.userId, li2, session).catch(function() {});
           }
         } catch (_) {
         }
@@ -14868,7 +14749,6 @@ Use this to skip surface-level questions. Go deeper faster.` });
   });
 }
 __name(handleChat, "handleChat");
-__name2(handleChat, "handleChat");
 async function handleIntakeChat(request, env) {
   const body = await request.json();
   const { sessionId, fieldKey, messages } = body;
@@ -14988,7 +14868,6 @@ Rules: One client story = one testimonial. Make each one feel like a real person
   }
 }
 __name(handleIntakeChat, "handleIntakeChat");
-__name2(handleIntakeChat, "handleIntakeChat");
 async function handleTestBlueprint(request, env) {
   const fakeMessages = [
     { role: "assistant", content: `Before we dive in, let\u2019s take a breath. Seriously. This work goes a lot deeper when you\u2019re not still half-distracted by whatever was happening 10 minutes ago. Take three slow breaths with me. In through the nose, hold for a beat, out through the mouth. I\u2019ll be here.
@@ -15090,7 +14969,7 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
-  const sendEvent = /* @__PURE__ */ __name2(async (data) => {
+  const sendEvent = /* @__PURE__ */ __name(async (data) => {
     await writer.write(encoder.encode(`data: ${JSON.stringify(data)}
 
 `));
@@ -15306,7 +15185,8 @@ Use this to skip surface-level questions. Go deeper faster.` });
   });
 }
 __name(handleTestBlueprint, "handleTestBlueprint");
-__name2(handleTestBlueprint, "handleTestBlueprint");
+
+// src/routes/upload.js
 async function handleUpload(request, env) {
   const formData = await request.formData();
   const file = formData.get("file");
@@ -15375,7 +15255,6 @@ ${extractedText}`);
   });
 }
 __name(handleUpload, "handleUpload");
-__name2(handleUpload, "handleUpload");
 async function handlePhotoProcess(request, env) {
   const token = extractToken(request);
   if (!token)
@@ -15490,7 +15369,6 @@ async function handlePhotoProcess(request, env) {
   return json({ ok: true, originalUrl, cutoutUrl, sessionId });
 }
 __name(handlePhotoProcess, "handlePhotoProcess");
-__name2(handlePhotoProcess, "handlePhotoProcess");
 async function handleGenerateImages(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -15538,7 +15416,6 @@ async function handleGenerateImages(request, env) {
   return json({ ok: true, images: generatedImages });
 }
 __name(handleGenerateImages, "handleGenerateImages");
-__name2(handleGenerateImages, "handleGenerateImages");
 async function handleGenerateSectionImage(request, env) {
   const body = await request.json().catch(() => ({}));
   const { sessionId, sectionIndex, imageTheme } = body;
@@ -15622,7 +15499,6 @@ async function handleGenerateSectionImage(request, env) {
   }
 }
 __name(handleGenerateSectionImage, "handleGenerateSectionImage");
-__name2(handleGenerateSectionImage, "handleGenerateSectionImage");
 async function handleGenerateSectionVariants(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
@@ -15692,7 +15568,6 @@ async function handleGenerateSectionVariants(request, env) {
     return "generic";
   }
   __name(getSectionType, "getSectionType");
-  __name2(getSectionType, "getSectionType");
   const SECTION_TYPE_LAYOUTS = {
     hero: ["H", "A", "G"],
     about: ["G", "F", "A"],
@@ -15758,7 +15633,8 @@ ${exampleJson}`;
   }
 }
 __name(handleGenerateSectionVariants, "handleGenerateSectionVariants");
-__name2(handleGenerateSectionVariants, "handleGenerateSectionVariants");
+
+// src/routes/site.js
 async function handleSaveSectionChoices(request, env) {
   let body;
   try {
@@ -15781,7 +15657,6 @@ async function handleSaveSectionChoices(request, env) {
   return new Response(JSON.stringify({ ok: true }), { headers: { ...CORS, "Content-Type": "application/json" } });
 }
 __name(handleSaveSectionChoices, "handleSaveSectionChoices");
-__name2(handleSaveSectionChoices, "handleSaveSectionChoices");
 async function handleDeployPickerSite(request, env) {
   const body = await request.json();
   const { sessionId, html, chosen, segment } = body;
@@ -15847,7 +15722,6 @@ async function handleDeployPickerSite(request, env) {
   return json({ ok: true, url: liveUrl, slug });
 }
 __name(handleDeployPickerSite, "handleDeployPickerSite");
-__name2(handleDeployPickerSite, "handleDeployPickerSite");
 async function handleGenerateSite(request, env) {
   const body = await request.json();
   const { sessionId, testimonialPref, customTestimonials, segmentIntake, segment, userPhotoUrl } = body;
@@ -16121,7 +15995,6 @@ ${finalBodyHtml}
   return json({ ok: true, html: cleanHtml, quality: { score: finalValidation.score, passed: finalValidation.passed, issues: finalValidation.issues, repairs: repairResult.repairs } });
 }
 __name(handleGenerateSite, "handleGenerateSite");
-__name2(handleGenerateSite, "handleGenerateSite");
 async function handleServeSite(path, env) {
   const parts = path.replace(/^\/s\//, "").split("/");
   const slug = parts[0];
@@ -16166,7 +16039,6 @@ h1{font-size:1.4rem;}code{background:#eee;padding:2px 8px;border-radius:4px;}</s
   return new Response(obj.body, { headers });
 }
 __name(handleServeSite, "handleServeSite");
-__name2(handleServeSite, "handleServeSite");
 async function handleDeploy(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -16221,7 +16093,6 @@ async function handleDeploy(request, env) {
   }
 }
 __name(handleDeploy, "handleDeploy");
-__name2(handleDeploy, "handleDeploy");
 async function handleRefineSite(request, env) {
   const body = await request.json();
   const { sessionId, category, option, customText } = body;
@@ -16259,7 +16130,6 @@ ${cleanBody}
   return json({ ok: true, refinementCount: session.refinements.length });
 }
 __name(handleRefineSite, "handleRefineSite");
-__name2(handleRefineSite, "handleRefineSite");
 async function handleExport(request, env) {
   const body = await request.json();
   const { sessionId } = body;
@@ -16279,7 +16149,6 @@ async function handleExport(request, env) {
   });
 }
 __name(handleExport, "handleExport");
-__name2(handleExport, "handleExport");
 async function handleExportSite(request, env) {
   const url = new URL(request.url);
   const sessionId = url.searchParams.get("sessionId");
@@ -16314,7 +16183,8 @@ async function handleExportSite(request, env) {
   });
 }
 __name(handleExportSite, "handleExportSite");
-__name2(handleExportSite, "handleExportSite");
+
+// src/services/stripe.js
 async function verifyStripeSignature(payload, sigHeader, secret) {
   try {
     const parts = Object.fromEntries(sigHeader.split(",").map((p) => p.split("=")));
@@ -16335,7 +16205,8 @@ async function verifyStripeSignature(payload, sigHeader, secret) {
   }
 }
 __name(verifyStripeSignature, "verifyStripeSignature");
-__name2(verifyStripeSignature, "verifyStripeSignature");
+
+// src/routes/payment.js
 async function handleCreatePaymentIntent(request, env) {
   try {
     const body = await request.json();
@@ -16374,7 +16245,6 @@ async function handleCreatePaymentIntent(request, env) {
   }
 }
 __name(handleCreatePaymentIntent, "handleCreatePaymentIntent");
-__name2(handleCreatePaymentIntent, "handleCreatePaymentIntent");
 async function handleFulfillPayment(request, env) {
   try {
     const { paymentIntentId, email, tiers, name, phone } = await request.json();
@@ -16428,7 +16298,6 @@ async function handleFulfillPayment(request, env) {
   }
 }
 __name(handleFulfillPayment, "handleFulfillPayment");
-__name2(handleFulfillPayment, "handleFulfillPayment");
 async function handlePaymentStatus(request, env, url) {
   const piId = url.searchParams.get("pi");
   if (!piId)
@@ -16445,7 +16314,6 @@ async function handlePaymentStatus(request, env, url) {
   }
 }
 __name(handlePaymentStatus, "handlePaymentStatus");
-__name2(handlePaymentStatus, "handlePaymentStatus");
 async function handleCheckout(request, env) {
   const body = await request.json();
   const { tier, sessionId: existingSessionId } = body;
@@ -16491,7 +16359,6 @@ async function handleCheckout(request, env) {
   return json({ error: "Failed to create checkout session", detail: session.error }, 500);
 }
 __name(handleCheckout, "handleCheckout");
-__name2(handleCheckout, "handleCheckout");
 async function handleWebhook(request, env) {
   const body = await request.text();
   if (!env.STRIPE_WEBHOOK_SECRET) {
@@ -16511,6 +16378,8 @@ async function handleWebhook(request, env) {
       const email = s.customer_details?.email || s.metadata?.email || null;
       const tier = s.metadata?.tier || "blueprint";
       const amountCents = s.amount_total || 0;
+
+      // Insert into payments table
       try {
         await env.DB.prepare(
           `INSERT OR IGNORE INTO payments (id, email, amount, currency, status, stripe_payment_intent_id, stripe_customer_id, tier, created_at)
@@ -16527,27 +16396,30 @@ async function handleWebhook(request, env) {
       } catch (dbErr) {
         console.error("[Webhook] Payment insert failed:", dbErr.message);
       }
+
+      // Create/update user and generate access link
       if (email) {
         try {
           let user = await getUserByEmail(env, email);
           if (!user) {
             user = await createUser(env, { email, name: s.customer_details?.name || "", tier });
           } else if (user.tier !== tier) {
-            await env.DB.prepare("UPDATE users SET tier=? WHERE id=?").bind(tier, user.id).run().catch(() => {
-            });
+            await env.DB.prepare("UPDATE users SET tier=? WHERE id=?").bind(tier, user.id).run().catch(()=>{});
           }
-        } catch (userErr) {
+        } catch(userErr) {
           console.error("[Webhook] User upsert failed:", userErr.message);
         }
+
+        // Forward to external GHL webhook worker if configured
         if (env.GHL_WEBHOOK_URL) {
           fetch(env.GHL_WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, tier, amount: amountCents / 100, checkoutId: s.id, name: s.customer_details?.name || "" })
-          }).catch(() => {
-          });
+          }).catch(()=>{});
         }
       }
+
       await logEvent(env, null, "stripe_payment_completed", {
         checkoutId: s.id,
         tier,
@@ -16555,12 +16427,12 @@ async function handleWebhook(request, env) {
         email
       });
     }
+
     if (event.type === "charge.refunded") {
       const c = event.data.object;
       await env.DB.prepare(
         "UPDATE payments SET status='refunded' WHERE stripe_payment_intent_id=?"
-      ).bind(c.payment_intent || c.id).run().catch(() => {
-      });
+      ).bind(c.payment_intent || c.id).run().catch(()=>{});
       await logEvent(env, null, "stripe_refund", { chargeId: c.id, amount: c.amount_refunded / 100 });
     }
   } catch (e) {
@@ -16571,14 +16443,14 @@ async function handleWebhook(request, env) {
   return json({ received: true });
 }
 __name(handleWebhook, "handleWebhook");
-__name2(handleWebhook, "handleWebhook");
+
+// src/html/blueprint-tabs.js
 function escHtml(str) {
   if (!str)
     return "";
   return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 __name(escHtml, "escHtml");
-__name2(escHtml, "escHtml");
 function formatProse(prose, keyInsight) {
   if (!prose)
     return "";
@@ -16591,11 +16463,10 @@ function formatProse(prose, keyInsight) {
     }
   }
   escaped = escaped.replace(/\n\n+/g, '</p><p style="margin-top:16px;">');
-  escaped = escaped.replace(/\n/g, "<br>");
-  return "<p>" + escaped + "</p>";
+  escaped = escaped.replace(/\n/g, '<br>');
+  return '<p>' + escaped + '</p>';
 }
 __name(formatProse, "formatProse");
-__name2(formatProse, "formatProse");
 function getBlueprintCSS() {
   return `
 /* === RESET & VARIABLES === */
@@ -16996,7 +16867,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-size: 22px; color: var(--text); line-height: 1.65;
   max-width: 600px; margin: 80px auto 48px; text-align: center;
 }
-/* \u2500\u2500 The Gap CTA \u2500\u2500 */
+/* ── The Gap CTA ── */
 .bp-gap-cta { margin-top: 56px; border-radius: 16px; overflow: hidden; border: 1px solid #F0F0F0; }
 .bp-gap-top { background: #FAFAFA; padding: 48px 48px 40px; text-align: center; border-bottom: 1px solid #F0F0F0; }
 .bp-gap-eyebrow { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #C4703F; margin-bottom: 16px; }
@@ -17022,13 +16893,13 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 .bp-gap-book-btn:hover { opacity: 0.85; }
 .bp-gap-guarantee { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 14px; }
 .bp-gap-reply { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; text-decoration: none; border-bottom: 1px solid #E8E8E8; padding-bottom: 1px; }
-/* \u2500\u2500 Build With AI \u2500\u2500 */
+/* ── Build With AI ── */
 .bp-ai-builder { margin-top: 40px; padding: 40px; background: #FAFAFA; border-radius: 16px; border: 1px solid #F0F0F0; text-align: center; }
 .bp-ai-builder-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px; color: #1D1D1F; margin-bottom: 8px; }
 .bp-ai-builder-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; line-height: 1.7; max-width: 460px; margin: 0 auto 20px; }
 .bp-ai-builder-tools { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 12px; }
 .bp-ai-copy-success { display: none; font-family: 'Inter', sans-serif; font-size: 12px; color: #2D7A4F; margin-top: 8px; }
-/* \u2500\u2500 PDF Download \u2500\u2500 */
+/* ── PDF Download ── */
 .bp-pdf-section { margin-top: 32px; padding: 32px; text-align: center; border-top: 1px solid #F0F0F0; }
 .bp-pdf-section-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; line-height: 1.7; margin-bottom: 16px; }
 .bp-pdf-footer-note { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 16px; }
@@ -17334,7 +17205,6 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 `;
 }
 __name(getBlueprintCSS, "getBlueprintCSS");
-__name2(getBlueprintCSS, "getBlueprintCSS");
 function getBlueprintJS(sessionId, firstName) {
   var sid = (sessionId || "").replace(/\'/g, "\\'");
   var fnSafe = (firstName || "brand").replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, "-").toLowerCase() || "brand";
@@ -17481,8 +17351,7 @@ function copyBlueprintForAI() {
   }
   var colors = '';
   if (Array.isArray(p1.visualDirection && p1.visualDirection.colors)) {
-    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('
-');
+    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\n');
   }
   var fonts = (p1.visualDirection && Array.isArray(p1.visualDirection.fonts)) ? p1.visualDirection.fonts : ['Outfit', 'Inter'];
   var aesthetic = (p1.visualDirection && p1.visualDirection.aesthetic) || 'Premium minimal. Clean white backgrounds. No gradients.';
@@ -17497,8 +17366,7 @@ function copyBlueprintForAI() {
   var nicheStatement = p3.nicheStatement || p3.uniqueMechanism || '';
   var headlines = '';
   if (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions.length) {
-    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('
-');
+    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\n');
   }
   var offerLines = [];
   if (p4.entryOffer) offerLines.push((p4.entryOffer.name || 'Entry') + ' (' + (p4.entryOffer.price || 'TBD') + '): ' + (p4.entryOffer.description || ''));
@@ -17511,93 +17379,37 @@ function copyBlueprintForAI() {
   var heroCTA = p5.heroCTA || 'Get Started';
   var sections = '';
   if (Array.isArray(p5.sections) && p5.sections.length) {
-    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('
-');
+    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\n');
   }
-  var handoff = '## Design System
-
-' +
-    'Brand: ' + (brandName || 'My Brand') + '
-' +
-    'Niche: ' + nicheStatement + '
-
-' +
-    'Colors:
-' + (colors || '  Primary: #1D1D1F
-  Accent: #C4703F
-  Background: #FFFFFF') + '
-
-' +
-    'Typography:
-' +
-    '  Headlines: ' + (fonts[0] || 'Outfit') + ' 700
-' +
-    '  Body: ' + (fonts[1] || 'Inter') + ' 400
-' +
-    '  Emotional: Playfair Display Italic (quotes and taglines only)
-
-' +
-    'Aesthetic: ' + aesthetic + '
-' +
-    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.
-
-' +
-    '## Brand Foundation
-
-' +
-    (tagline ? 'Tagline: ' + tagline + '
-' : '') +
-    (brandVoice ? 'Brand Voice: ' + brandVoice + '
-' : '') +
-    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '
-' : '') +
-    '
-## Ideal Client
-
-' +
-    (wantToAchieve ? 'What they want: ' + wantToAchieve + '
-' : '') +
-    (whatStops ? 'What stops them: ' + whatStops + '
-' : '') +
-    (exactWords ? 'Their exact words: ' + exactWords + '
-' : '') +
-    '
-## Positioning
-
-' +
-    'Niche: ' + nicheStatement + '
-
-' +
-    'Headline Options:
-' + (headlines || 'None generated') + '
-
-' +
-    '## Offers
-
-' + (offerLines.join('
-') || 'None generated') + '
-
-' +
-    '## Website Blueprint
-
-' +
-    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '
-' : '') +
-    (heroSub ? 'Hero Subheadline: ' + heroSub + '
-' : '') +
-    'Hero CTA: ' + heroCTA + '
-
-' +
-    (sections ? 'Page Sections:
-' + sections + '
-
-' : '') +
-    '## Instructions
-
-' +
-    'Build a complete personal brand website using this blueprint. Follow the design tokens exactly. Start with the hero section using the headline and CTA above, then build each page section in order. Use clean white (#FFFFFF) backgrounds, the specified fonts from Google Fonts, and the color palette above. No emojis. No gradients. No dark mode. No dashes in copy (use periods, commas, or em dashes instead). Buttons should be dark pill shapes, never copper/accent colored.
-
-' +
+  var handoff = '## Design System\n\n' +
+    'Brand: ' + (brandName || 'My Brand') + '\n' +
+    'Niche: ' + nicheStatement + '\n\n' +
+    'Colors:\n' + (colors || '  Primary: #1D1D1F\n  Accent: #C4703F\n  Background: #FFFFFF') + '\n\n' +
+    'Typography:\n' +
+    '  Headlines: ' + (fonts[0] || 'Outfit') + ' 700\n' +
+    '  Body: ' + (fonts[1] || 'Inter') + ' 400\n' +
+    '  Emotional: Playfair Display Italic (quotes and taglines only)\n\n' +
+    'Aesthetic: ' + aesthetic + '\n' +
+    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\n\n' +
+    '## Brand Foundation\n\n' +
+    (tagline ? 'Tagline: ' + tagline + '\n' : '') +
+    (brandVoice ? 'Brand Voice: ' + brandVoice + '\n' : '') +
+    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\n' : '') +
+    '\n## Ideal Client\n\n' +
+    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\n' : '') +
+    (whatStops ? 'What stops them: ' + whatStops + '\n' : '') +
+    (exactWords ? 'Their exact words: ' + exactWords + '\n' : '') +
+    '\n## Positioning\n\n' +
+    'Niche: ' + nicheStatement + '\n\n' +
+    'Headline Options:\n' + (headlines || 'None generated') + '\n\n' +
+    '## Offers\n\n' + (offerLines.join('\n') || 'None generated') + '\n\n' +
+    '## Website Blueprint\n\n' +
+    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\n' : '') +
+    (heroSub ? 'Hero Subheadline: ' + heroSub + '\n' : '') +
+    'Hero CTA: ' + heroCTA + '\n\n' +
+    (sections ? 'Page Sections:\n' + sections + '\n\n' : '') +
+    '## Instructions\n\n' +
+    'Build a complete personal brand website using this blueprint. Follow the design tokens exactly. Start with the hero section using the headline and CTA above, then build each page section in order. Use clean white (#FFFFFF) backgrounds, the specified fonts from Google Fonts, and the color palette above. No emojis. No gradients. No dark mode. No dashes in copy (use periods, commas, or em dashes instead). Buttons should be dark pill shapes, never copper/accent colored.\n\n' +
     'Learn more about Deep Work Interview: jamesguldan.com/deep-work';
   function showCopySuccess() {
     var toast = document.getElementById('bpAiCopySuccess');
@@ -17623,7 +17435,6 @@ function copyBlueprintForAI() {
 `;
 }
 __name(getBlueprintJS, "getBlueprintJS");
-__name2(getBlueprintJS, "getBlueprintJS");
 function gradeClass(g) {
   if (!g)
     return "grade-c";
@@ -17635,36 +17446,30 @@ function gradeClass(g) {
   return "grade-df";
 }
 __name(gradeClass, "gradeClass");
-__name2(gradeClass, "gradeClass");
 function extractNicheLabel(bp) {
-  var mech = bp.part3 ? bp.part3.uniqueMechanism || "" : "";
+  var mech = bp.part3 ? (bp.part3.uniqueMechanism || "") : "";
   if (mech) {
     var afterDash = mech.indexOf(" \u2014 ");
     var afterHyphen = mech.indexOf(" - ");
-    var start = afterDash > 0 ? afterDash + 3 : afterHyphen > 0 ? afterHyphen + 3 : -1;
+    var start = afterDash > 0 ? afterDash + 3 : (afterHyphen > 0 ? afterHyphen + 3 : -1);
     if (start > 0) {
       var phrase = mech.substring(start);
       var stopPatterns = [" that ", " which ", " who ", " for ", " with ", " when ", " and ", ".", ","];
       var endIdx = phrase.length;
       for (var si = 0; si < stopPatterns.length; si++) {
         var sidx = phrase.toLowerCase().indexOf(stopPatterns[si]);
-        if (sidx > 2 && sidx < endIdx)
-          endIdx = sidx;
+        if (sidx > 2 && sidx < endIdx) endIdx = sidx;
       }
       phrase = phrase.substring(0, endIdx).trim();
       var words = phrase.split(" ").slice(0, 4);
-      return words.map(function(w) {
-        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-      }).join(" ");
+      return words.map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }).join(" ");
     }
   }
-  var industry = bp.leadIntel ? bp.leadIntel.industry || "" : "";
-  if (industry)
-    return industry;
+  var industry = bp.leadIntel ? (bp.leadIntel.industry || "") : "";
+  if (industry) return industry;
   return "";
 }
 __name(extractNicheLabel, "extractNicheLabel");
-__name2(extractNicheLabel, "extractNicheLabel");
 function renderChapter1(bp, firstName, messageCount) {
   var letter = bp.personalLetter || {};
   var salutation = letter.salutation || firstName + ",";
@@ -17684,26 +17489,32 @@ function renderChapter1(bp, firstName, messageCount) {
     var avatarName = bp.part2 ? bp.part2.name || "" : "";
     var avatarSituation = bp.part2 ? bp.part2.lifeSituation || "" : "";
     var firstMove = bp.part6 ? bp.part6.firstMove || "" : "";
-    if (promise)
-      parts.push("After everything you shared, one thing is unmistakably clear: " + promise + ". That is not a tagline someone wrote for you. That came directly from who you are and how you show up.");
-    if (niche)
-      parts.push(niche + (avatarName ? " " + avatarName + (avatarSituation ? ", " + avatarSituation.charAt(0).toLowerCase() + avatarSituation.slice(1) : "") + ", is out there right now looking for exactly what you offer." : "."));
-    if (bp.part6 && Array.isArray(bp.part6.credibilityGaps) && bp.part6.credibilityGaps.length > 0)
-      parts.push("There are a few gaps to close, and the blueprint below maps them out honestly. But the foundation you are building on is real.");
-    if (firstMove)
-      parts.push("Your first move: " + firstMove);
+    if (promise) parts.push("After everything you shared, one thing is unmistakably clear: " + promise + ". That is not a tagline someone wrote for you. That came directly from who you are and how you show up.");
+    if (niche) parts.push(niche + (avatarName ? " " + avatarName + (avatarSituation ? ", " + avatarSituation.charAt(0).toLowerCase() + avatarSituation.slice(1) : "") + ", is out there right now looking for exactly what you offer." : "."));
+    if (bp.part6 && Array.isArray(bp.part6.credibilityGaps) && bp.part6.credibilityGaps.length > 0) parts.push("There are a few gaps to close, and the blueprint below maps them out honestly. But the foundation you are building on is real.");
+    if (firstMove) parts.push("Your first move: " + firstMove);
     proseBody = parts.join("\n\n");
   }
   var keyInsight = letter.keyInsight || "";
   var nicheLabel = extractNicheLabel(bp);
-  var pillContent = nicheLabel ? escHtml(firstName) + " \xB7 " + escHtml(nicheLabel) : escHtml(firstName);
+  var pillContent = nicheLabel ? escHtml(firstName) + " \u00B7 " + escHtml(nicheLabel) : escHtml(firstName);
   var hasCount = typeof messageCount === "number" && messageCount > 0;
-  var heroHTML = '<section class="bp-hero-reveal"><div class="bp-hero-top-border"></div><div class="bp-hero-inner"><div class="bp-hero-badge fade-up fade-up-d1">' + pillContent + '</div><div class="bp-hero-name fade-up fade-up-d1">' + escHtml(firstName) + "</div>" + (nicheLabel ? '<div class="bp-hero-niche fade-up fade-up-d2">' + escHtml(nicheLabel) + "</div>" : "") + '<div class="bp-hero-divider fade-up fade-up-d2"></div><div class="bp-hero-hook fade-up fade-up-d3">Here is what the world needs to hear from you.</div>' + (hasCount ? '<div class="bp-hero-proof"><strong class="bp-hero-count">' + messageCount + "</strong> messages. Every word below was built from yours.</div>" : "") + '</div><div class="bp-hero-begin"><span class="bp-hero-begin-text">Begin Reading</span><div class="bp-hero-begin-line"></div></div></section>';
+  var heroHTML = '<section class="bp-hero-reveal">' +
+    '<div class="bp-hero-top-border"></div>' +
+    '<div class="bp-hero-inner">' +
+    '<div class="bp-hero-badge fade-up fade-up-d1">' + pillContent + '</div>' +
+    '<div class="bp-hero-name fade-up fade-up-d1">' + escHtml(firstName) + '</div>' +
+    (nicheLabel ? '<div class="bp-hero-niche fade-up fade-up-d2">' + escHtml(nicheLabel) + '</div>' : '') +
+    '<div class="bp-hero-divider fade-up fade-up-d2"></div>' +
+    '<div class="bp-hero-hook fade-up fade-up-d3">Here is what the world needs to hear from you.</div>' +
+    (hasCount ? '<div class="bp-hero-proof"><strong class="bp-hero-count">' + messageCount + '</strong> messages. Every word below was built from yours.</div>' : '') +
+    '</div>' +
+    '<div class="bp-hero-begin"><span class="bp-hero-begin-text">Begin Reading</span><div class="bp-hero-begin-line"></div></div>' +
+    '</section>';
   var letterHTML = '<section class="bp-section" style="padding-top: 48px;" id="bp-debrief-letter"><div class="bp-letter-card"><div class="bp-letter-salutation">' + escHtml(salutation) + "</div>" + (italicOpening ? '<div class="bp-letter-italic">' + escHtml(italicOpening) + "</div>" : "") + '<div style="height:24px;"></div><div class="bp-letter-body">' + formatProse(proseBody, keyInsight) + '</div><div class="bp-letter-signoff"><div class="bp-letter-signoff-name">James Guldan</div><div class="bp-letter-signoff-studio">Deep Work Studio</div></div></div></section>';
-  return '<div data-chapter="1">' + heroHTML + letterHTML + "</div>";
+  return '<div data-chapter="1">' + heroHTML + letterHTML + '</div>';
 }
 __name(renderChapter1, "renderChapter1");
-__name2(renderChapter1, "renderChapter1");
 function renderChapter2(bp) {
   var cs = bp.credibilityScore || {};
   var rawCs = bp.credibilityScore;
@@ -17721,7 +17532,7 @@ function renderChapter2(bp) {
       reframeLine: "Every gap below is a specific opportunity with a clear fix.",
       categories: bp.part6.credibilityGaps.map(function(gap, i) {
         var label = gap.length > 60 ? gap.substring(0, gap.indexOf(" ", 40)) || gap.substring(0, 60) : gap;
-        return { name: "Gap " + (i + 1), grade: "D+", explanation: gap, nextStep: bp.part6.marketingOpportunities && bp.part6.marketingOpportunities[i] || "" };
+        return { name: "Gap " + (i + 1), grade: "D+", explanation: gap, nextStep: (bp.part6.marketingOpportunities && bp.part6.marketingOpportunities[i]) || "" };
       })
     };
   }
@@ -17750,7 +17561,6 @@ function renderChapter2(bp) {
   return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + "</div></section>" : "") + "</div>";
 }
 __name(renderChapter2, "renderChapter2");
-__name2(renderChapter2, "renderChapter2");
 function renderChapter3(bp) {
   var ic = bp.idealClient || {};
   if (!ic.portrait && bp.part2) {
@@ -17812,7 +17622,6 @@ function renderChapter3(bp) {
   }).join("") + "</div></div></div>" : "") + (bf.positioningStatement ? '<div class="bp-positioning-hero">' + escHtml(bf.positioningStatement) + "</div>" : "") + "</div></section></div>";
 }
 __name(renderChapter3, "renderChapter3");
-__name2(renderChapter3, "renderChapter3");
 function renderChapter4(bp, sessionId, firstName) {
   var moves = Array.isArray(bp.firstThreeMoves) ? bp.firstThreeMoves : [];
   if (!moves.length && bp.firstMoves) {
@@ -17832,12 +17641,9 @@ function renderChapter4(bp, sessionId, firstName) {
       bp.part6.marketingOpportunities.slice(0, 2).forEach(function(opp, i) {
         var shortTitle = opp.length > 80 ? opp.substring(0, opp.indexOf(" ", 40) || 80) : opp;
         var firstSentenceEnd = shortTitle.indexOf(".");
-        if (firstSentenceEnd > 10 && firstSentenceEnd < 80)
-          shortTitle = shortTitle.substring(0, firstSentenceEnd);
-        else if (shortTitle.indexOf(" \u2014 ") > 0)
-          shortTitle = shortTitle.substring(0, shortTitle.indexOf(" \u2014 "));
-        else if (shortTitle.indexOf(" - ") > 0)
-          shortTitle = shortTitle.substring(0, shortTitle.indexOf(" - "));
+        if (firstSentenceEnd > 10 && firstSentenceEnd < 80) shortTitle = shortTitle.substring(0, firstSentenceEnd);
+        else if (shortTitle.indexOf(" \u2014 ") > 0) shortTitle = shortTitle.substring(0, shortTitle.indexOf(" \u2014 "));
+        else if (shortTitle.indexOf(" - ") > 0) shortTitle = shortTitle.substring(0, shortTitle.indexOf(" - "));
         moves.push({ title: shortTitle, instruction: opp });
       });
     }
@@ -17848,104 +17654,191 @@ function renderChapter4(bp, sessionId, firstName) {
   var moveCards = moves.map(function(move, i) {
     return '<div class="bp-move-card"><div class="bp-move-num">0' + (i + 1) + "</div>" + (move.addressesGap ? '<div class="bp-move-gap-tag">Addresses: ' + escHtml(move.addressesGap) + "</div>" : "") + (move.title ? '<div class="bp-move-title">' + escHtml(move.title) + "</div>" : "") + (move.instruction ? '<div class="bp-move-instruction">' + escHtml(move.instruction) + "</div>" : "") + (move.copyContent ? '<div class="bp-copy-block" id="copy-block-' + i + '">' + escHtml(move.copyContent) + `</div><button class="btn-copy" onclick="copyBlock(this, document.getElementById('copy-block-` + i + `').textContent)">Copy</button>` : "") + (move.deadline ? '<div class="bp-move-deadline">' + escHtml(move.deadline) + "</div>" : "") + "</div>";
   }).join("");
-  var calendlyBase = bp.part8 && bp.part8.guidedPath && bp.part8.guidedPath.calendlyUrl || "https://calendly.com/james-jamesguldan/deep-work-review-consult";
+  var calendlyBase = (bp.part8 && bp.part8.guidedPath && bp.part8.guidedPath.calendlyUrl) || "https://calendly.com/james-jamesguldan/deep-work-review-consult";
   var calendlyParams = "utm_source=blueprint&utm_medium=footer&utm_campaign=dwi";
-  if (firstName && firstName !== "Friend")
-    calendlyParams += "&name=" + encodeURIComponent(firstName);
+  if (firstName && firstName !== "Friend") calendlyParams += "&name=" + encodeURIComponent(firstName);
   var calendlyUrl = calendlyBase + (calendlyBase.indexOf("?") >= 0 ? "&" : "?") + calendlyParams;
-  var footerHTML = `<div class="bp-blueprint-footer"><div class="bp-footer-copper-divider"></div><div class="bp-footer-content"><div class="bp-gap-cta"><div class="bp-gap-top"><div class="bp-gap-eyebrow">YOUR BLUEPRINT IS READY. YOUR STRATEGY ISN'T.</div><div class="bp-gap-headline">You have the map.<br>Let's build the route.</div><div class="bp-gap-sub">Your blueprint shows you what to build. A strategy call shows you what to build first, what to skip, and what will actually move the needle in the next 30 days.</div></div><div class="bp-gap-columns"><div class="bp-gap-col"><div class="bp-gap-col-label">WHAT YOUR BLUEPRINT GIVES YOU</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Brand positioning and voice</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Ideal client profile</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Offer suite and pricing</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Website structure and headlines</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Credibility gaps identified</div></div><div class="bp-gap-col"><div class="bp-gap-col-label">WHAT THE STRATEGY CALL ADDS</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Prioritized 90-day action plan</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Which offer to launch first (and why)</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Content strategy for your first 10 posts</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Tech stack recommendations for your budget</div><div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Live review of your biggest credibility gap</div></div></div><div class="bp-gap-bottom"><div class="bp-gap-prep">Before we talk, I will read through your complete blueprint. Your narrative brief, your positioning, your offer structure, your gap analysis. All of it.</div><div class="bp-gap-prep">On the call we spend about an hour on three things: what I see from the outside that is hard to spot from inside your own brand, the specific gap between where you are and where you are headed, and the most impactful next move given what came up in your session.</div><div class="bp-gap-prep">Some people leave with a clear plan they execute on their own. Some want ongoing support. Both are good outcomes.</div><div class="bp-gap-pull-quote">This is not a sales call. It is a working session. Come ready to think.</div><div class="bp-gap-price">$197</div><div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div><a class="bp-gap-book-btn" href="` + escHtml(calendlyUrl) + `" target="_blank" rel="noopener" onclick="fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'` + escHtml(sessionId) + `',eventType:'cta_book_call'})}).catch(function(){})">Book Your Strategy Call</a><div class="bp-gap-guarantee">100% satisfaction guaranteed. If the call doesn't give you a clear next step, you pay nothing.</div><div style="margin-top:16px;"><a class="bp-gap-reply" href="mailto:james@jamesguldan.com?subject=Deep Work Interview - Blueprint Question">or reply to James directly</a></div></div></div><div class="bp-ai-builder"><div class="bp-ai-builder-title">Build Your Site With AI</div><div class="bp-ai-builder-desc">Copy your brand blueprint as a design spec and paste it into any AI website builder. Your colors, typography, voice, positioning, and headlines are all included.</div><button style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:white;background:#1D1D1F;padding:12px 28px;border-radius:50px;border:none;cursor:pointer;" onclick="copyBlueprintForAI()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="8" height="10" rx="1.5" stroke="white" stroke-width="1.2"/><path d="M5 3V2a1 1 0 011-1h6a1 1 0 011 1v8a1 1 0 01-1 1h-1" stroke="white" stroke-width="1.2"/></svg>Copy Blueprint for AI Builder</button><div class="bp-ai-copy-success" id="bpAiCopySuccess">Copied. Paste into Lovable, Bolt, v0, or Cursor.</div><div class="bp-ai-builder-tools">Works with Lovable, Bolt, v0, Cursor, Replit, and more</div></div><div class="bp-pdf-section"><div class="bp-pdf-section-desc">Want to keep a copy? Download your full blueprint as a PDF to reference anytime.</div><button style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;" onclick="downloadBlueprintPDF()" id="bpPdfBtn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download Blueprint PDF</button><div class="bp-pdf-footer-note">Your Deep Work Interview blueprint &mdash; <a href="https://jamesguldan.com/deep-work" target="_blank">jamesguldan.com/deep-work</a></div></div><div class="bp-footer-signature"><div class="bp-footer-sig-copper"></div><div class="bp-footer-sig-desc">Built from your words during a Deep Work Interview. Every insight was scored for depth and structured for you to build on.</div><div class="bp-footer-sig-name">James Guldan</div><div class="bp-footer-sig-role">Deep Work Studio &mdash; <a href="https://jamesguldan.com/deep-work" style="color:#C4703F;text-decoration:none;">jamesguldan.com/deep-work</a></div></div></div></div>`;
-  return '<div id="chapter4" data-chapter="4"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 4: The Action</span><div class="chapter-divider-sub">Three things to do this week that change everything.</div></div><section class="bp-section"><div class="bp-inner-wide">' + (moveCards ? '<div class="bp-moves-grid">' + moveCards + "</div>" : "") + (proj.current && proj.projected ? '<div class="bp-score-projection">Complete all 3 moves and your Credibility Score jumps from <span class="bp-projection-num">' + Number(proj.current) + '</span> to an estimated <span class="bp-projection-num">' + Number(proj.projected) + '</span> (<span class="bp-projection-num">' + escHtml(proj.projectedGrade || "") + "</span>).</div>" : "") + '</div></section><section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="bp-closing-line">' + escHtml(closingLine) + "</div>" + footerHTML + '<div class="bp-feedback"><div class="bp-feedback-label">One last thing.</div><div class="bp-feedback-question">Did this feel like it really understood you?</div><div class="bp-feedback-pills">' + ["Deeply", "Somewhat", "Not quite"].map(function(label) {
+  var footerHTML = '<div class="bp-blueprint-footer">' +
+    '<div class="bp-footer-copper-divider"></div>' +
+    '<div class="bp-footer-content">' +
+    /* ── The Gap CTA ── */
+    '<div class="bp-gap-cta">' +
+    '<div class="bp-gap-top">' +
+    '<div class="bp-gap-eyebrow">YOUR BLUEPRINT IS READY. YOUR STRATEGY ISN\'T.</div>' +
+    '<div class="bp-gap-headline">You have the map.<br>Let\'s build the route.</div>' +
+    '<div class="bp-gap-sub">Your blueprint shows you what to build. A strategy call shows you what to build first, what to skip, and what will actually move the needle in the next 30 days.</div>' +
+    '</div>' +
+    '<div class="bp-gap-columns">' +
+    '<div class="bp-gap-col">' +
+    '<div class="bp-gap-col-label">WHAT YOUR BLUEPRINT GIVES YOU</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Brand positioning and voice</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Ideal client profile</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Offer suite and pricing</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Website structure and headlines</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Credibility gaps identified</div>' +
+    '</div>' +
+    '<div class="bp-gap-col">' +
+    '<div class="bp-gap-col-label">WHAT THE STRATEGY CALL ADDS</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Prioritized 90-day action plan</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Which offer to launch first (and why)</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Content strategy for your first 10 posts</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Tech stack recommendations for your budget</div>' +
+    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Live review of your biggest credibility gap</div>' +
+    '</div>' +
+    '</div>' +
+    '<div class="bp-gap-bottom">' +
+    '<div class="bp-gap-prep">Before we talk, I will read through your complete blueprint. Your narrative brief, your positioning, your offer structure, your gap analysis. All of it.</div>' +
+    '<div class="bp-gap-prep">On the call we spend about an hour on three things: what I see from the outside that is hard to spot from inside your own brand, the specific gap between where you are and where you are headed, and the most impactful next move given what came up in your session.</div>' +
+    '<div class="bp-gap-prep">Some people leave with a clear plan they execute on their own. Some want ongoing support. Both are good outcomes.</div>' +
+    '<div class="bp-gap-pull-quote">This is not a sales call. It is a working session. Come ready to think.</div>' +
+    '<div class="bp-gap-price">$197</div>' +
+    '<div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div>' +
+    '<a class="bp-gap-book-btn" href="' + escHtml(calendlyUrl) + '" target="_blank" rel="noopener" onclick="fetch(\'/api/track\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({sessionId:\'' + escHtml(sessionId) + '\',eventType:\'cta_book_call\'})}).catch(function(){})">Book Your Strategy Call</a>' +
+    '<div class="bp-gap-guarantee">100% satisfaction guaranteed. If the call doesn\'t give you a clear next step, you pay nothing.</div>' +
+    '<div style="margin-top:16px;"><a class="bp-gap-reply" href="mailto:james@jamesguldan.com?subject=Deep Work Interview - Blueprint Question">or reply to James directly</a></div>' +
+    '</div>' +
+    '</div>' +
+    /* ── Build With AI ── */
+    '<div class="bp-ai-builder">' +
+    '<div class="bp-ai-builder-title">Build Your Site With AI</div>' +
+    '<div class="bp-ai-builder-desc">Copy your brand blueprint as a design spec and paste it into any AI website builder. Your colors, typography, voice, positioning, and headlines are all included.</div>' +
+    '<button style="display:inline-flex;align-items:center;gap:8px;font-family:\'Outfit\',sans-serif;font-weight:600;font-size:13px;color:white;background:#1D1D1F;padding:12px 28px;border-radius:50px;border:none;cursor:pointer;" onclick="copyBlueprintForAI()">' +
+    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="8" height="10" rx="1.5" stroke="white" stroke-width="1.2"/><path d="M5 3V2a1 1 0 011-1h6a1 1 0 011 1v8a1 1 0 01-1 1h-1" stroke="white" stroke-width="1.2"/></svg>' +
+    'Copy Blueprint for AI Builder</button>' +
+    '<div class="bp-ai-copy-success" id="bpAiCopySuccess">Copied. Paste into Lovable, Bolt, v0, or Cursor.</div>' +
+    '<div class="bp-ai-builder-tools">Works with Lovable, Bolt, v0, Cursor, Replit, and more</div>' +
+    '</div>' +
+    /* ── PDF Download ── */
+    '<div class="bp-pdf-section">' +
+    '<div class="bp-pdf-section-desc">Want to keep a copy? Download your full blueprint as a PDF to reference anytime.</div>' +
+    '<button style="display:inline-flex;align-items:center;gap:8px;font-family:\'Outfit\',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;" onclick="downloadBlueprintPDF()" id="bpPdfBtn">' +
+    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+    'Download Blueprint PDF</button>' +
+    '<div class="bp-pdf-footer-note">Your Deep Work Interview blueprint &mdash; <a href="https://jamesguldan.com/deep-work" target="_blank">jamesguldan.com/deep-work</a></div>' +
+    '</div>' +
+    /* ── Signature ── */
+    '<div class="bp-footer-signature">' +
+    '<div class="bp-footer-sig-copper"></div>' +
+    '<div class="bp-footer-sig-desc">Built from your words during a Deep Work Interview. Every insight was scored for depth and structured for you to build on.</div>' +
+    '<div class="bp-footer-sig-name">James Guldan</div>' +
+    '<div class="bp-footer-sig-role">Deep Work Studio &mdash; <a href="https://jamesguldan.com/deep-work" style="color:#C4703F;text-decoration:none;">jamesguldan.com/deep-work</a></div>' +
+    '</div>' +
+    '</div>' +
+    '</div>';
+  return '<div id="chapter4" data-chapter="4"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 4: The Action</span><div class="chapter-divider-sub">Three things to do this week that change everything.</div></div><section class="bp-section"><div class="bp-inner-wide">' + (moveCards ? '<div class="bp-moves-grid">' + moveCards + "</div>" : "") + (proj.current && proj.projected ? '<div class="bp-score-projection">Complete all 3 moves and your Credibility Score jumps from <span class="bp-projection-num">' + Number(proj.current) + '</span> to an estimated <span class="bp-projection-num">' + Number(proj.projected) + '</span> (<span class="bp-projection-num">' + escHtml(proj.projectedGrade || "") + "</span>).</div>" : "") + '</div></section><section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="bp-closing-line">' + escHtml(closingLine) + '</div>' + footerHTML + '<div class="bp-feedback"><div class="bp-feedback-label">One last thing.</div><div class="bp-feedback-question">Did this feel like it really understood you?</div><div class="bp-feedback-pills">' + ["Deeply", "Somewhat", "Not quite"].map(function(label) {
     return `<button class="bp-feedback-pill" onclick="submitFeedback('` + escHtml(label) + `')">` + escHtml(label) + "</button>";
   }).join("") + '</div><div class="bp-feedback-response"></div></div></div></section></div>';
 }
 __name(renderChapter4, "renderChapter4");
-__name2(renderChapter4, "renderChapter4");
 function renderNicheSection(bp) {
   var p3 = bp.part3;
-  if (!p3)
-    return "";
+  if (!p3) return "";
   var hasContent = p3.whoTheyServe || p3.whoTheyDoNotServe || p3.uniqueMechanism || p3.competitorGap;
-  if (!hasContent)
-    return "";
-  return '<section class="bp-section" style="border-top:1px solid var(--border); padding-top: 48px;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Niche Positioning</div>' + (p3.uniqueMechanism ? `<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1.6;margin-bottom:32px;text-align:center;">` + escHtml(p3.uniqueMechanism) + "</div>" : "") + (p3.whoTheyServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Serve</span><div class="bp-client-text">' + escHtml(p3.whoTheyServe) + "</div></div>" : "") + (p3.whoTheyDoNotServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Do Not Serve</span><div class="bp-client-text" style="color:var(--text2);">' + escHtml(p3.whoTheyDoNotServe) + "</div></div>" : "") + (p3.competitorGap ? '<div class="bp-niche-block" style="margin-top:24px;padding:24px;background:var(--bg2);border-radius:var(--radius-sm);"><span class="bp-client-label">Your Competitive Gap</span><div class="bp-client-text">' + escHtml(p3.competitorGap) + "</div></div>" : "") + "</div></section>";
+  if (!hasContent) return "";
+  return '<section class="bp-section" style="border-top:1px solid var(--border); padding-top: 48px;"><div class="bp-inner">' +
+    '<div class="eyebrow" style="margin-bottom:24px;">Niche Positioning</div>' +
+    (p3.uniqueMechanism ? '<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1.6;margin-bottom:32px;text-align:center;">' + escHtml(p3.uniqueMechanism) + '</div>' : '') +
+    (p3.whoTheyServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Serve</span><div class="bp-client-text">' + escHtml(p3.whoTheyServe) + '</div></div>' : '') +
+    (p3.whoTheyDoNotServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Do Not Serve</span><div class="bp-client-text" style="color:var(--text2);">' + escHtml(p3.whoTheyDoNotServe) + '</div></div>' : '') +
+    (p3.competitorGap ? '<div class="bp-niche-block" style="margin-top:24px;padding:24px;background:var(--bg2);border-radius:var(--radius-sm);"><span class="bp-client-label">Your Competitive Gap</span><div class="bp-client-text">' + escHtml(p3.competitorGap) + '</div></div>' : '') +
+    '</div></section>';
 }
 __name(renderNicheSection, "renderNicheSection");
-__name2(renderNicheSection, "renderNicheSection");
 function renderOfferSuite(bp) {
   var p4 = bp.part4;
-  if (!p4)
-    return "";
+  if (!p4) return "";
   var offers = [];
-  if (p4.entryOffer)
-    offers.push(p4.entryOffer);
-  if (p4.coreOffer)
-    offers.push(p4.coreOffer);
-  if (p4.coreOffer2)
-    offers.push(p4.coreOffer2);
-  if (p4.premiumOffer)
-    offers.push(p4.premiumOffer);
-  if (!offers.length)
-    return "";
+  if (p4.entryOffer) offers.push(p4.entryOffer);
+  if (p4.coreOffer) offers.push(p4.coreOffer);
+  if (p4.coreOffer2) offers.push(p4.coreOffer2);
+  if (p4.premiumOffer) offers.push(p4.premiumOffer);
+  if (!offers.length) return "";
   var tierLabels = ["Entry", "Core", "Core+", "Premium"];
   var offerCards = offers.map(function(o, i) {
     var isPremium = i === offers.length - 1 && offers.length > 1;
-    return '<div class="bp-offer-card' + (isPremium ? " bp-offer-premium" : "") + '"><div class="bp-offer-tier">' + escHtml(tierLabels[i] || "") + '</div><div class="bp-offer-name">' + escHtml(o.name || "") + "</div>" + (o.price ? '<div class="bp-offer-price">' + escHtml(o.price) + "</div>" : "") + (o.description ? '<div class="bp-offer-desc">' + escHtml(o.description) + "</div>" : "") + (o.delivery ? '<div class="bp-offer-delivery">' + escHtml(o.delivery) + "</div>" : "") + "</div>";
+    return '<div class="bp-offer-card' + (isPremium ? ' bp-offer-premium' : '') + '">' +
+      '<div class="bp-offer-tier">' + escHtml(tierLabels[i] || '') + '</div>' +
+      '<div class="bp-offer-name">' + escHtml(o.name || '') + '</div>' +
+      (o.price ? '<div class="bp-offer-price">' + escHtml(o.price) + '</div>' : '') +
+      (o.description ? '<div class="bp-offer-desc">' + escHtml(o.description) + '</div>' : '') +
+      (o.delivery ? '<div class="bp-offer-delivery">' + escHtml(o.delivery) + '</div>' : '') +
+      '</div>';
   }).join("");
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Offer Suite</span><div class="chapter-divider-sub">Four doors. Each one built for a different version of your ideal client.</div></div><section class="bp-section"><div class="bp-inner-wide"><div class="bp-offers-grid">' + offerCards + "</div>" + (p4.ascensionLogic ? '<div class="bp-ascension"><div class="eyebrow" style="margin-bottom:12px;">The Ascension Logic</div><div class="bp-client-text" style="font-style:italic;color:var(--text2);">' + escHtml(p4.ascensionLogic) + "</div></div>" : "") + "</div></section>";
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Offer Suite</span><div class="chapter-divider-sub">Four doors. Each one built for a different version of your ideal client.</div></div>' +
+    '<section class="bp-section"><div class="bp-inner-wide"><div class="bp-offers-grid">' + offerCards + '</div>' +
+    (p4.ascensionLogic ? '<div class="bp-ascension"><div class="eyebrow" style="margin-bottom:12px;">The Ascension Logic</div><div class="bp-client-text" style="font-style:italic;color:var(--text2);">' + escHtml(p4.ascensionLogic) + '</div></div>' : '') +
+    '</div></section>';
 }
 __name(renderOfferSuite, "renderOfferSuite");
-__name2(renderOfferSuite, "renderOfferSuite");
 function renderHeadlines(bp) {
   var p7 = bp.part7;
-  if (!p7)
-    return "";
+  if (!p7) return "";
   var headlines = Array.isArray(p7.heroHeadlineOptions) ? p7.heroHeadlineOptions : [];
   var taglines = Array.isArray(p7.taglineOptions) ? p7.taglineOptions : [];
   var pos = p7.positioningStatements || {};
-  if (!headlines.length && !taglines.length && !pos.website)
-    return "";
-  var headlineHTML = headlines.length ? '<div class="eyebrow" style="margin-bottom:16px;">Hero Headline Options</div><div class="bp-headlines-list">' + headlines.map(function(h, i) {
-    return '<div class="bp-headline-option' + (i === 0 ? " bp-headline-featured" : "") + '"><span class="bp-headline-num">0' + (i + 1) + '</span><span class="bp-headline-text">' + escHtml(h) + "</span></div>";
-  }).join("") + "</div>" : "";
-  var taglineHTML = taglines.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:32px;">Tagline Options</div><div class="bp-taglines-list">' + taglines.map(function(t) {
-    return '<div class="bp-tagline-item">' + escHtml(t) + "</div>";
-  }).join("") + "</div>" : "";
-  var posHTML = "";
+  if (!headlines.length && !taglines.length && !pos.website) return "";
+  var headlineHTML = headlines.length ? '<div class="eyebrow" style="margin-bottom:16px;">Hero Headline Options</div><div class="bp-headlines-list">' +
+    headlines.map(function(h, i) {
+      return '<div class="bp-headline-option' + (i === 0 ? ' bp-headline-featured' : '') + '">' +
+        '<span class="bp-headline-num">0' + (i + 1) + '</span>' +
+        '<span class="bp-headline-text">' + escHtml(h) + '</span>' +
+        '</div>';
+    }).join("") + '</div>' : '';
+  var taglineHTML = taglines.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:32px;">Tagline Options</div><div class="bp-taglines-list">' +
+    taglines.map(function(t) {
+      return '<div class="bp-tagline-item">' + escHtml(t) + '</div>';
+    }).join("") + '</div>' : '';
+  var posHTML = '';
   if (pos.website || pos.social || pos.inPerson) {
-    posHTML = '<div style="margin-top:40px;"><div class="eyebrow" style="margin-bottom:16px;">Positioning Statements</div><div class="bp-positioning-grid">' + (pos.website ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Website</div><div class="bp-positioning-text">' + escHtml(pos.website) + "</div></div>" : "") + (pos.social ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Social Media</div><div class="bp-positioning-text">' + escHtml(pos.social) + "</div></div>" : "") + (pos.inPerson ? '<div class="bp-positioning-card"><div class="bp-positioning-context">In Person</div><div class="bp-positioning-text">' + escHtml(pos.inPerson) + "</div></div>" : "") + "</div></div>";
+    posHTML = '<div style="margin-top:40px;"><div class="eyebrow" style="margin-bottom:16px;">Positioning Statements</div><div class="bp-positioning-grid">' +
+      (pos.website ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Website</div><div class="bp-positioning-text">' + escHtml(pos.website) + '</div></div>' : '') +
+      (pos.social ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Social Media</div><div class="bp-positioning-text">' + escHtml(pos.social) + '</div></div>' : '') +
+      (pos.inPerson ? '<div class="bp-positioning-card"><div class="bp-positioning-context">In Person</div><div class="bp-positioning-text">' + escHtml(pos.inPerson) + '</div></div>' : '') +
+      '</div></div>';
   }
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Headlines &amp; Positioning</span><div class="chapter-divider-sub">The exact words that make the right person stop scrolling.</div></div><section class="bp-section"><div class="bp-inner">' + headlineHTML + taglineHTML + posHTML + "</div></section>";
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Headlines &amp; Positioning</span><div class="chapter-divider-sub">The exact words that make the right person stop scrolling.</div></div>' +
+    '<section class="bp-section"><div class="bp-inner">' + headlineHTML + taglineHTML + posHTML + '</div></section>';
 }
 __name(renderHeadlines, "renderHeadlines");
-__name2(renderHeadlines, "renderHeadlines");
 function renderWebsiteBlueprint(bp) {
   var p5 = bp.part5;
-  if (!p5)
-    return "";
+  if (!p5) return "";
   var sections = Array.isArray(p5.sections) ? p5.sections : [];
   var heroHeadlines = Array.isArray(p5.heroHeadlines) ? p5.heroHeadlines : [];
   var proofNumbers = Array.isArray(p5.proofNumbers) ? p5.proofNumbers : [];
-  if (!sections.length && !heroHeadlines.length && !p5.pageNarrative)
-    return "";
-  var narrativeHTML = p5.pageNarrative ? `<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--text);line-height:1.7;margin-bottom:40px;padding:24px 32px;border-left:3px solid var(--gold);">` + escHtml(p5.pageNarrative) + "</div>" : "";
-  var heroHTML = "";
+  if (!sections.length && !heroHeadlines.length && !p5.pageNarrative) return "";
+  var narrativeHTML = p5.pageNarrative ? '<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:18px;color:var(--text);line-height:1.7;margin-bottom:40px;padding:24px 32px;border-left:3px solid var(--gold);">' + escHtml(p5.pageNarrative) + '</div>' : '';
+  var heroHTML = '';
   if (heroHeadlines.length || p5.heroSubheadline || p5.heroCTA) {
-    heroHTML = '<div class="bp-website-hero-preview"><div class="eyebrow" style="margin-bottom:12px;">Hero Section</div>' + (heroHeadlines.length ? '<div class="bp-website-hero-headline">' + escHtml(heroHeadlines[0]) + "</div>" : "") + (p5.heroSubheadline ? '<div class="bp-website-hero-sub">' + escHtml(p5.heroSubheadline) + "</div>" : "") + (p5.heroCTA ? '<div class="bp-website-hero-cta">' + escHtml(p5.heroCTA) + "</div>" : "") + (heroHeadlines.length > 1 ? '<div class="bp-alt-headlines"><span class="bp-client-label">Alternate Headlines</span>' + heroHeadlines.slice(1).map(function(h) {
-      return '<div class="bp-alt-headline">' + escHtml(h) + "</div>";
-    }).join("") + "</div>" : "") + "</div>";
+    heroHTML = '<div class="bp-website-hero-preview"><div class="eyebrow" style="margin-bottom:12px;">Hero Section</div>' +
+      (heroHeadlines.length ? '<div class="bp-website-hero-headline">' + escHtml(heroHeadlines[0]) + '</div>' : '') +
+      (p5.heroSubheadline ? '<div class="bp-website-hero-sub">' + escHtml(p5.heroSubheadline) + '</div>' : '') +
+      (p5.heroCTA ? '<div class="bp-website-hero-cta">' + escHtml(p5.heroCTA) + '</div>' : '') +
+      (heroHeadlines.length > 1 ? '<div class="bp-alt-headlines"><span class="bp-client-label">Alternate Headlines</span>' + heroHeadlines.slice(1).map(function(h) { return '<div class="bp-alt-headline">' + escHtml(h) + '</div>'; }).join('') + '</div>' : '') +
+      '</div>';
   }
-  var sectionsHTML = sections.length ? '<div class="eyebrow" style="margin-bottom:20px;margin-top:40px;">Page Sections</div><div class="bp-website-sections">' + sections.map(function(s, i) {
-    return '<div class="bp-website-section-card ' + (s.visualMood === "dark" ? "bp-section-dark" : s.visualMood === "accent" ? "bp-section-accent" : "") + '"><div class="bp-website-section-num">0' + (i + 1) + '</div><div class="bp-website-section-name">' + escHtml(s.name || "") + "</div>" + (s.purpose ? '<div class="bp-website-section-purpose">' + escHtml(s.purpose) + "</div>" : "") + (s.content ? '<div class="bp-website-section-content">' + escHtml(s.content) + "</div>" : "") + (s.confidence ? '<div class="bp-website-section-conf">Confidence: ' + s.confidence + "%</div>" : "") + "</div>";
-  }).join("") + "</div>" : "";
-  var proofHTML = proofNumbers.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:40px;">Proof Numbers</div><div class="bp-proof-strip">' + proofNumbers.map(function(p) {
-    return '<div class="bp-proof-item"><div class="bp-proof-stat">' + escHtml(p.stat) + '</div><div class="bp-proof-label">' + escHtml(p.label) + "</div>" + (p.context ? '<div class="bp-proof-context">' + escHtml(p.context) + "</div>" : "") + "</div>";
-  }).join("") + "</div>" : "";
-  var testimonialHTML = p5.bestTestimonial && p5.bestTestimonial.quote ? '<div class="bp-best-testimonial"><div class="bp-testimonial-mark">\u201C</div><div class="bp-testimonial-quote">' + escHtml(p5.bestTestimonial.quote) + "</div>" + (p5.bestTestimonial.attribution ? '<div class="bp-testimonial-attr">' + escHtml(p5.bestTestimonial.attribution) + "</div>" : "") + "</div>" : "";
-  var contraryHTML = p5.contraryBelief ? '<div style="margin-top:40px;padding:28px;background:var(--bg2);border-radius:var(--radius-sm);"><div class="eyebrow" style="margin-bottom:12px;">Your Contrary Belief</div><div class="bp-client-text" style="font-style:italic;">' + escHtml(p5.contraryBelief) + "</div></div>" : "";
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Website Blueprint</span><div class="chapter-divider-sub">The page that turns a stranger into someone who says &ldquo;how did she know.&rdquo;</div></div><section class="bp-section"><div class="bp-inner">' + narrativeHTML + heroHTML + sectionsHTML + proofHTML + testimonialHTML + contraryHTML + "</div></section>";
+  var sectionsHTML = sections.length ? '<div class="eyebrow" style="margin-bottom:20px;margin-top:40px;">Page Sections</div><div class="bp-website-sections">' +
+    sections.map(function(s, i) {
+      return '<div class="bp-website-section-card ' + (s.visualMood === 'dark' ? 'bp-section-dark' : s.visualMood === 'accent' ? 'bp-section-accent' : '') + '">' +
+        '<div class="bp-website-section-num">0' + (i + 1) + '</div>' +
+        '<div class="bp-website-section-name">' + escHtml(s.name || '') + '</div>' +
+        (s.purpose ? '<div class="bp-website-section-purpose">' + escHtml(s.purpose) + '</div>' : '') +
+        (s.content ? '<div class="bp-website-section-content">' + escHtml(s.content) + '</div>' : '') +
+        (s.confidence ? '<div class="bp-website-section-conf">Confidence: ' + s.confidence + '%</div>' : '') +
+        '</div>';
+    }).join("") + '</div>' : '';
+  var proofHTML = proofNumbers.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:40px;">Proof Numbers</div><div class="bp-proof-strip">' +
+    proofNumbers.map(function(p) {
+      return '<div class="bp-proof-item"><div class="bp-proof-stat">' + escHtml(p.stat) + '</div><div class="bp-proof-label">' + escHtml(p.label) + '</div>' +
+        (p.context ? '<div class="bp-proof-context">' + escHtml(p.context) + '</div>' : '') + '</div>';
+    }).join("") + '</div>' : '';
+  var testimonialHTML = p5.bestTestimonial && p5.bestTestimonial.quote ? '<div class="bp-best-testimonial"><div class="bp-testimonial-mark">\u201C</div><div class="bp-testimonial-quote">' + escHtml(p5.bestTestimonial.quote) + '</div>' +
+    (p5.bestTestimonial.attribution ? '<div class="bp-testimonial-attr">' + escHtml(p5.bestTestimonial.attribution) + '</div>' : '') + '</div>' : '';
+  var contraryHTML = p5.contraryBelief ? '<div style="margin-top:40px;padding:28px;background:var(--bg2);border-radius:var(--radius-sm);"><div class="eyebrow" style="margin-bottom:12px;">Your Contrary Belief</div><div class="bp-client-text" style="font-style:italic;">' + escHtml(p5.contraryBelief) + '</div></div>' : '';
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Website Blueprint</span><div class="chapter-divider-sub">The page that turns a stranger into someone who says &ldquo;how did she know.&rdquo;</div></div>' +
+    '<section class="bp-section"><div class="bp-inner">' + narrativeHTML + heroHTML + sectionsHTML + proofHTML + testimonialHTML + contraryHTML + '</div></section>';
 }
 __name(renderWebsiteBlueprint, "renderWebsiteBlueprint");
-__name2(renderWebsiteBlueprint, "renderWebsiteBlueprint");
 function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   var firstName = (userName || "Friend").split(" ")[0];
   var sessionId = bp.sessionId || "";
@@ -17955,25 +17848,24 @@ function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   }).join("") + '</div><div class="bp-page">' + renderChapter1(bp, firstName, messageCount) + '<div style="text-align:center; padding: 8px 0 16px; font-size: 12px; color: #86868B; font-family: Inter, sans-serif; letter-spacing: 0.01em;">This blueprint was crafted by AI from your interview. Every insight is drawn from what you shared.</div>' + renderChapter2(bp) + renderChapter3(bp) + renderNicheSection(bp) + renderOfferSuite(bp) + renderHeadlines(bp) + renderWebsiteBlueprint(bp) + renderChapter4(bp, sessionId, firstName) + "</div><script>window.__blueprintData=" + bpDataJson + ";<\/script><script>" + getBlueprintJS(sessionId, firstName) + "<\/script></body></html>";
 }
 __name(renderBlueprintResults, "renderBlueprintResults");
-__name2(renderBlueprintResults, "renderBlueprintResults");
+
+// src/routes/blueprint.js
 init_resend();
 async function loadBlueprintForSession(env, sessionId) {
+  // Try fast cache first (bp_meta:sessionId), fall back to full session
   try {
     const metaRaw = await env.SESSIONS.get("bp_meta:" + sessionId);
     if (metaRaw) {
       const meta = JSON.parse(metaRaw);
-      if (meta.blueprint)
-        return meta;
+      if (meta.blueprint) return meta;
     }
-  } catch (_) {
-  }
+  } catch(_) {}
+  // Fallback: load full session
   const raw = await env.SESSIONS.get(sessionId);
-  if (!raw)
-    return null;
+  if (!raw) return null;
   const session = JSON.parse(raw);
   const bp = session.blueprint?.blueprint || session.blueprint;
-  if (!bp)
-    return null;
+  if (!bp) return null;
   return {
     blueprint: bp,
     name: bp.name || bp.debrief?.recipientName || session.name || session.userName || "",
@@ -17982,7 +17874,7 @@ async function loadBlueprintForSession(env, sessionId) {
   };
 }
 __name(loadBlueprintForSession, "loadBlueprintForSession");
-__name2(loadBlueprintForSession, "loadBlueprintForSession");
+
 async function handleBlueprintRender(request, env) {
   const { sessionId } = await request.json();
   if (!sessionId)
@@ -17996,7 +17888,6 @@ async function handleBlueprintRender(request, env) {
   });
 }
 __name(handleBlueprintRender, "handleBlueprintRender");
-__name2(handleBlueprintRender, "handleBlueprintRender");
 async function handleBlueprintPDF(request, env) {
   const { sessionId } = await request.json();
   if (!sessionId)
@@ -18010,7 +17901,6 @@ async function handleBlueprintPDF(request, env) {
   });
 }
 __name(handleBlueprintPDF, "handleBlueprintPDF");
-__name2(handleBlueprintPDF, "handleBlueprintPDF");
 async function handleBlueprintQA(request, env) {
   const { sessionId, question } = await request.json();
   if (!sessionId || !question)
@@ -18047,7 +17937,6 @@ IMPORTANT: You can ONLY answer questions about the blueprint content shown on th
   }
 }
 __name(handleBlueprintQA, "handleBlueprintQA");
-__name2(handleBlueprintQA, "handleBlueprintQA");
 async function handleBuildWithJames(request, env) {
   const { sessionId, phone } = await request.json();
   if (!sessionId)
@@ -18093,7 +17982,6 @@ async function handleBuildWithJames(request, env) {
   return json({ calendlyUrl });
 }
 __name(handleBuildWithJames, "handleBuildWithJames");
-__name2(handleBuildWithJames, "handleBuildWithJames");
 async function handleTestimonialCapture(request, env) {
   try {
     const { sessionId, quote } = await request.json();
@@ -18219,7 +18107,6 @@ async function handleTestimonialCapture(request, env) {
   }
 }
 __name(handleTestimonialCapture, "handleTestimonialCapture");
-__name2(handleTestimonialCapture, "handleTestimonialCapture");
 async function handleResonanceScore(request, env) {
   try {
     const { sessionId, score, label } = await request.json();
@@ -18236,7 +18123,8 @@ async function handleResonanceScore(request, env) {
   }
 }
 __name(handleResonanceScore, "handleResonanceScore");
-__name2(handleResonanceScore, "handleResonanceScore");
+
+// src/routes/feedback.js
 async function handleFeedback(request, env) {
   const body = await request.json();
   const { sessionId, rating, mostValuable, whatWasOff } = body;
@@ -18252,7 +18140,6 @@ async function handleFeedback(request, env) {
   return json({ ok: true });
 }
 __name(handleFeedback, "handleFeedback");
-__name2(handleFeedback, "handleFeedback");
 async function handleLogEvent(request, env) {
   try {
     const body = await request.json();
@@ -18277,26 +18164,18 @@ async function handleLogEvent(request, env) {
   return json({ ok: true });
 }
 __name(handleLogEvent, "handleLogEvent");
-__name2(handleLogEvent, "handleLogEvent");
+
 async function handleTrack(request, env) {
+  // Client-side event tracking endpoint — never fails the caller
   try {
     const body = await request.json();
     const { sessionId, eventType, phase, data } = body;
-    const ALLOWED = /* @__PURE__ */ new Set([
-      "blueprint_viewed",
-      "blueprint_generated",
-      "pdf_downloaded",
-      "cta_clicked",
-      "ai_builder_copied",
-      "tab_switched",
-      "phase_completed",
-      "cta_book_call",
-      "blueprint_tab_viewed",
-      "cta_upgrade",
-      "blueprint_scrolled"
+    const ALLOWED = new Set([
+      'blueprint_viewed', 'blueprint_generated', 'pdf_downloaded',
+      'cta_clicked', 'ai_builder_copied', 'tab_switched', 'phase_completed',
+      'cta_book_call', 'blueprint_tab_viewed', 'cta_upgrade', 'blueprint_scrolled'
     ]);
-    if (!sessionId || !ALLOWED.has(eventType))
-      return json({ ok: true });
+    if (!sessionId || !ALLOWED.has(eventType)) return json({ ok: true });
     const d = data || {};
     await logEvent(env, sessionId, eventType, {
       phase: phase || d.phase || null,
@@ -18306,12 +18185,12 @@ async function handleTrack(request, env) {
       label: d.label || null,
       value: d.value || null
     });
-  } catch (_) {
-  }
+  } catch (_) {}
   return json({ ok: true });
 }
 __name(handleTrack, "handleTrack");
-__name2(handleTrack, "handleTrack");
+
+// src/routes/admin.js
 async function handleAdminStats(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18344,7 +18223,6 @@ async function handleAdminStats(request, env) {
   }
 }
 __name(handleAdminStats, "handleAdminStats");
-__name2(handleAdminStats, "handleAdminStats");
 async function handleAdminListUsers(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18370,7 +18248,6 @@ async function handleAdminListUsers(request, env) {
   }
 }
 __name(handleAdminListUsers, "handleAdminListUsers");
-__name2(handleAdminListUsers, "handleAdminListUsers");
 async function handleAdminCreateUser(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18398,7 +18275,6 @@ async function handleAdminCreateUser(request, env) {
   }
 }
 __name(handleAdminCreateUser, "handleAdminCreateUser");
-__name2(handleAdminCreateUser, "handleAdminCreateUser");
 async function handleAdminGetSession(request, env, path) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18427,7 +18303,6 @@ async function handleAdminGetSession(request, env, path) {
   }
 }
 __name(handleAdminGetSession, "handleAdminGetSession");
-__name2(handleAdminGetSession, "handleAdminGetSession");
 async function handleAdminMagicLink(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18456,7 +18331,6 @@ async function handleAdminMagicLink(request, env) {
   }
 }
 __name(handleAdminMagicLink, "handleAdminMagicLink");
-__name2(handleAdminMagicLink, "handleAdminMagicLink");
 async function handleAdminInjectDebrief(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18477,7 +18351,6 @@ async function handleAdminInjectDebrief(request, env) {
   }
 }
 __name(handleAdminInjectDebrief, "handleAdminInjectDebrief");
-__name2(handleAdminInjectDebrief, "handleAdminInjectDebrief");
 async function handleAdminGenerateDebrief(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18503,7 +18376,6 @@ async function handleAdminGenerateDebrief(request, env) {
   }
 }
 __name(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
-__name2(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18634,7 +18506,6 @@ Now write the strategist debrief as a personal letter to this person. Return ONL
   }
 }
 __name(handleAdminTestBlueprint, "handleAdminTestBlueprint");
-__name2(handleAdminTestBlueprint, "handleAdminTestBlueprint");
 async function handleAdminQuickTestSession(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18739,7 +18610,6 @@ async function handleAdminQuickTestSession(request, env) {
   }
 }
 __name(handleAdminQuickTestSession, "handleAdminQuickTestSession");
-__name2(handleAdminQuickTestSession, "handleAdminQuickTestSession");
 async function handleAdminGetSettings(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18752,7 +18622,6 @@ async function handleAdminGetSettings(request, env) {
   }
 }
 __name(handleAdminGetSettings, "handleAdminGetSettings");
-__name2(handleAdminGetSettings, "handleAdminGetSettings");
 async function handleAdminSaveSettings(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18771,7 +18640,6 @@ async function handleAdminSaveSettings(request, env) {
   }
 }
 __name(handleAdminSaveSettings, "handleAdminSaveSettings");
-__name2(handleAdminSaveSettings, "handleAdminSaveSettings");
 async function handleAdminGetPrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18789,7 +18657,6 @@ async function handleAdminGetPrompt(request, env) {
   }
 }
 __name(handleAdminGetPrompt, "handleAdminGetPrompt");
-__name2(handleAdminGetPrompt, "handleAdminGetPrompt");
 async function handleAdminSavePrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18811,7 +18678,6 @@ async function handleAdminSavePrompt(request, env) {
   }
 }
 __name(handleAdminSavePrompt, "handleAdminSavePrompt");
-__name2(handleAdminSavePrompt, "handleAdminSavePrompt");
 async function handleHealthCheck(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18820,7 +18686,6 @@ async function handleHealthCheck(request, env) {
   return json(result);
 }
 __name(handleHealthCheck, "handleHealthCheck");
-__name2(handleHealthCheck, "handleHealthCheck");
 async function handleMonitoring(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18829,7 +18694,6 @@ async function handleMonitoring(request, env) {
   return json(data);
 }
 __name(handleMonitoring, "handleMonitoring");
-__name2(handleMonitoring, "handleMonitoring");
 async function handleDigest(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18838,7 +18702,6 @@ async function handleDigest(request, env) {
   return json(digest);
 }
 __name(handleDigest, "handleDigest");
-__name2(handleDigest, "handleDigest");
 async function handleAdminErrors(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18849,7 +18712,6 @@ async function handleAdminErrors(request, env) {
   return json({ errors: errors.results || [] });
 }
 __name(handleAdminErrors, "handleAdminErrors");
-__name2(handleAdminErrors, "handleAdminErrors");
 async function handleAPIUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18891,7 +18753,6 @@ async function handleAPIUsage(request, env) {
   });
 }
 __name(handleAPIUsage, "handleAPIUsage");
-__name2(handleAPIUsage, "handleAPIUsage");
 async function handleResolveAlert(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18901,7 +18762,6 @@ async function handleResolveAlert(request, env) {
   return json({ ok: true });
 }
 __name(handleResolveAlert, "handleResolveAlert");
-__name2(handleResolveAlert, "handleResolveAlert");
 async function handleAdminTestTrigger(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18909,7 +18769,6 @@ async function handleAdminTestTrigger(request, env) {
   return json({ ok: true, message: "Test trigger acknowledged" });
 }
 __name(handleAdminTestTrigger, "handleAdminTestTrigger");
-__name2(handleAdminTestTrigger, "handleAdminTestTrigger");
 async function handleSystemHealthCheck(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18918,7 +18777,6 @@ async function handleSystemHealthCheck(request, env) {
   return json(result);
 }
 __name(handleSystemHealthCheck, "handleSystemHealthCheck");
-__name2(handleSystemHealthCheck, "handleSystemHealthCheck");
 async function handleAdminUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18945,7 +18803,6 @@ async function handleAdminUsage(request, env) {
   });
 }
 __name(handleAdminUsage, "handleAdminUsage");
-__name2(handleAdminUsage, "handleAdminUsage");
 async function handleAdminUserUsage(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18967,7 +18824,6 @@ async function handleAdminUserUsage(request, env) {
   return json({ error: "Provide userId or sessionId query param" }, 400);
 }
 __name(handleAdminUserUsage, "handleAdminUserUsage");
-__name2(handleAdminUserUsage, "handleAdminUserUsage");
 async function handleAdminDepthScores(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19003,7 +18859,6 @@ async function handleAdminDepthScores(request, env) {
   }
 }
 __name(handleAdminDepthScores, "handleAdminDepthScores");
-__name2(handleAdminDepthScores, "handleAdminDepthScores");
 async function handleAdminPurgeKV(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19034,7 +18889,6 @@ async function handleAdminPurgeKV(request, env) {
   }
 }
 __name(handleAdminPurgeKV, "handleAdminPurgeKV");
-__name2(handleAdminPurgeKV, "handleAdminPurgeKV");
 async function handleAdminSalesBrief(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19188,7 +19042,6 @@ Produce this brief:
   }
 }
 __name(handleAdminSalesBrief, "handleAdminSalesBrief");
-__name2(handleAdminSalesBrief, "handleAdminSalesBrief");
 async function handleAdminCosts(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19266,7 +19119,6 @@ async function handleAdminCosts(request, env) {
   }
 }
 __name(handleAdminCosts, "handleAdminCosts");
-__name2(handleAdminCosts, "handleAdminCosts");
 async function handleAdminUserCosts(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19320,7 +19172,6 @@ async function handleAdminUserCosts(request, env) {
   }
 }
 __name(handleAdminUserCosts, "handleAdminUserCosts");
-__name2(handleAdminUserCosts, "handleAdminUserCosts");
 async function handleAdminSessionsList(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19406,7 +19257,6 @@ async function handleAdminSessionsList(request, env) {
   }
 }
 __name(handleAdminSessionsList, "handleAdminSessionsList");
-__name2(handleAdminSessionsList, "handleAdminSessionsList");
 async function handleAdminWeeklySnapshots(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19442,7 +19292,6 @@ async function handleAdminWeeklySnapshots(request, env) {
   }
 }
 __name(handleAdminWeeklySnapshots, "handleAdminWeeklySnapshots");
-__name2(handleAdminWeeklySnapshots, "handleAdminWeeklySnapshots");
 async function handleAdminCreateWeeklySnapshot(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19475,18 +19324,20 @@ async function handleAdminCreateWeeklySnapshot(request, env) {
   }
 }
 __name(handleAdminCreateWeeklySnapshot, "handleAdminCreateWeeklySnapshot");
-__name2(handleAdminCreateWeeklySnapshot, "handleAdminCreateWeeklySnapshot");
+
+// ── Server-rendered admin dashboard ──
+
 function escA(s) {
-  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-__name(escA, "escA");
+
 function adminLayout(title, content, navExtra) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escA(title)} \u2014 DWI Admin</title>
+<title>${escA(title)} — DWI Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -19579,246 +19430,299 @@ ${content}
 </div>
 <script>
 if(window.location.pathname==='/admin'){setTimeout(function(){location.reload()},30000);}
-<\/script>
+</script>
 </body>
 </html>`;
 }
-__name(adminLayout, "adminLayout");
+
 function timeSince(dateStr) {
-  if (!dateStr)
-    return "never";
-  var d = new Date(dateStr.includes("T") ? dateStr : dateStr + "Z");
-  var sec = Math.floor((Date.now() - d.getTime()) / 1e3);
-  if (sec < 60)
-    return sec + "s ago";
-  if (sec < 3600)
-    return Math.floor(sec / 60) + "m ago";
-  if (sec < 86400)
-    return Math.floor(sec / 3600) + "h ago";
-  return Math.floor(sec / 86400) + "d ago";
+  if (!dateStr) return 'never';
+  var d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'Z');
+  var sec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec/60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec/3600) + 'h ago';
+  return Math.floor(sec/86400) + 'd ago';
 }
-__name(timeSince, "timeSince");
+
 function liveColor(dateStr) {
-  if (!dateStr)
-    return "adm-live-dot-red";
-  var sec = Math.floor((Date.now() - new Date(dateStr.includes("T") ? dateStr : dateStr + "Z").getTime()) / 1e3);
-  if (sec < 300)
-    return "adm-live-dot-green";
-  if (sec < 900)
-    return "adm-live-dot-yellow";
-  return "adm-live-dot-red";
+  if (!dateStr) return 'adm-live-dot-red';
+  var sec = Math.floor((Date.now() - new Date(dateStr.includes('T') ? dateStr : dateStr + 'Z').getTime()) / 1000);
+  if (sec < 300) return 'adm-live-dot-green';
+  if (sec < 900) return 'adm-live-dot-yellow';
+  return 'adm-live-dot-red';
 }
-__name(liveColor, "liveColor");
+
 function phaseBar(phase) {
-  var pct = Math.round(Math.min(phase || 0, 8) / 8 * 100);
+  var pct = Math.round((Math.min(phase || 0, 8) / 8) * 100);
   return '<div class="adm-progress"><div class="adm-progress-fill" style="width:' + pct + '%"></div></div>';
 }
-__name(phaseBar, "phaseBar");
+
 async function handleAdminDashboard(request, env) {
   var admin = await requireAdmin(request, env);
-  if (!admin)
-    return Response.redirect("/app", 302);
+  if (!admin) return Response.redirect('/app', 302);
   try {
     var [statsRow, completedRow, costRow, avgMsgRow] = await Promise.all([
-      env.DB.prepare("SELECT COUNT(*) as total FROM sessions").first(),
+      env.DB.prepare('SELECT COUNT(*) as total FROM sessions').first(),
       env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE blueprint_generated=1").first(),
-      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total, COUNT(*) as calls FROM api_costs").first().catch(() => ({ total: 0, calls: 0 })),
-      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE blueprint_generated=1").first().catch(() => ({ avg: 0 }))
+      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total, COUNT(*) as calls FROM api_costs").first().catch(()=>({total:0,calls:0})),
+      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE blueprint_generated=1").first().catch(()=>({avg:0}))
     ]);
     var total = statsRow?.total || 0;
     var completed = completedRow?.cnt || 0;
-    var completionRate = total > 0 ? Math.round(completed / total * 100) : 0;
+    var completionRate = total > 0 ? Math.round((completed/total)*100) : 0;
     var totalCost = parseFloat(costRow?.total || 0).toFixed(2);
-    var avgCostPerSession = total > 0 ? (parseFloat(costRow?.total || 0) / total).toFixed(3) : "0.000";
+    var avgCostPerSession = total > 0 ? (parseFloat(costRow?.total || 0) / total).toFixed(3) : '0.000';
     var avgMsgs = avgMsgRow?.avg ? Math.round(avgMsgRow.avg) : 0;
-    var phase1Row = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE phase <= 1").first().catch(() => ({ cnt: 0 }));
-    var phase1Pct = total > 0 ? Math.round(phase1Row.cnt / total * 100) : 0;
+
+    // Phase 1 dropoff
+    var phase1Row = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE phase <= 1").first().catch(()=>({cnt:0}));
+    var phase1Pct = total > 0 ? Math.round((phase1Row.cnt/total)*100) : 0;
+
+    // Live sessions (last 30 min)
     var liveRows = await env.DB.prepare(`
       SELECT s.id, s.phase, s.message_count, s.last_active_at, s.industry, s.niche, s.status,
              u.name, u.email, u.apollo_data
       FROM sessions s LEFT JOIN users u ON s.user_id=u.id
       WHERE s.status='active' AND s.last_active_at > datetime('now','-30 minutes')
       ORDER BY s.last_active_at DESC LIMIT 20
-    `).all().catch(() => ({ results: [] }));
+    `).all().catch(()=>({results:[]}));
     var liveList = (liveRows?.results || []).map(function(s) {
       var apollo = null;
-      try {
-        if (s.apollo_data)
-          apollo = JSON.parse(s.apollo_data);
-      } catch (_) {
-      }
-      var apolloLine = "";
+      try { if (s.apollo_data) apollo = JSON.parse(s.apollo_data); } catch(_){}
+      var apolloLine = '';
       if (apollo?.person?.employment_history?.[0]) {
         var job = apollo.person.employment_history[0];
-        apolloLine = (job.title || "") + (job.organization_name ? " @ " + job.organization_name : "");
+        apolloLine = (job.title||'') + (job.organization_name ? ' @ '+job.organization_name : '');
       }
       var dotCls = liveColor(s.last_active_at);
-      return '<div class="adm-live-card"><div class="adm-live-dot ' + dotCls + '"></div><div style="flex:1;min-width:0"><div class="adm-live-name">' + escA(s.name || s.email || "Anonymous") + '</div><div class="adm-live-sub">' + escA(s.email || "") + (apolloLine ? " &middot; " + escA(apolloLine) : "") + '</div><div class="adm-live-meta"><span class="badge bg-gray">Phase ' + (s.phase || 1) + '/8</span><span class="badge bg-gray">' + (s.message_count || 0) + " msgs</span>" + (s.industry ? '<span class="badge bg-copper">' + escA(s.industry) + "</span>" : "") + '<span style="font-size:11px;color:#86868B;margin-left:2px">' + timeSince(s.last_active_at) + "</span></div>" + phaseBar(s.phase) + '<div style="margin-top:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + s.id + '">View</a></div></div></div>';
-    }).join("");
-    var funnelRows = await env.DB.prepare("SELECT phase, COUNT(*) as cnt FROM sessions GROUP BY phase ORDER BY phase").all().catch(() => ({ results: [] }));
+      return '<div class="adm-live-card">' +
+        '<div class="adm-live-dot ' + dotCls + '"></div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="adm-live-name">' + escA(s.name || s.email || 'Anonymous') + '</div>' +
+          '<div class="adm-live-sub">' + escA(s.email || '') + (apolloLine ? ' &middot; ' + escA(apolloLine) : '') + '</div>' +
+          '<div class="adm-live-meta">' +
+            '<span class="badge bg-gray">Phase ' + (s.phase||1) + '/8</span>' +
+            '<span class="badge bg-gray">' + (s.message_count||0) + ' msgs</span>' +
+            (s.industry ? '<span class="badge bg-copper">' + escA(s.industry) + '</span>' : '') +
+            '<span style="font-size:11px;color:#86868B;margin-left:2px">' + timeSince(s.last_active_at) + '</span>' +
+          '</div>' +
+          phaseBar(s.phase) +
+          '<div style="margin-top:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + s.id + '">View</a></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // Funnel chart data
+    var funnelRows = await env.DB.prepare('SELECT phase, COUNT(*) as cnt FROM sessions GROUP BY phase ORDER BY phase').all().catch(()=>({results:[]}));
     var funnelMap = {};
-    (funnelRows?.results || []).forEach(function(r) {
-      funnelMap[r.phase] = r.cnt;
-    });
+    (funnelRows?.results||[]).forEach(function(r){funnelMap[r.phase]=r.cnt;});
     var maxFunnel = Math.max(...Object.values(funnelMap), 1);
-    var funnelHTML = "";
-    for (var ph = 1; ph <= 8; ph++) {
+    var funnelHTML = '';
+    for (var ph=1; ph<=8; ph++) {
       var cnt = funnelMap[ph] || 0;
-      var pct = Math.round(cnt / maxFunnel * 100);
-      var prob = ph === 1 ? " adm-funnel-bar-prob" : "";
-      funnelHTML += '<div class="adm-funnel-row"><div class="adm-funnel-label">Phase ' + ph + '</div><div class="adm-funnel-bar-wrap"><div class="adm-funnel-bar' + prob + '" style="width:' + pct + '%"></div></div><div class="adm-funnel-count">' + cnt + "</div></div>";
+      var pct = Math.round((cnt/maxFunnel)*100);
+      var prob = ph === 1 ? ' adm-funnel-bar-prob' : '';
+      funnelHTML += '<div class="adm-funnel-row">' +
+        '<div class="adm-funnel-label">Phase ' + ph + '</div>' +
+        '<div class="adm-funnel-bar-wrap"><div class="adm-funnel-bar' + prob + '" style="width:' + pct + '%"></div></div>' +
+        '<div class="adm-funnel-count">' + cnt + '</div>' +
+      '</div>';
     }
-    var costRows = await env.DB.prepare("SELECT model, COUNT(*) as calls, SUM(cost_usd) as total FROM api_costs GROUP BY model ORDER BY total DESC").all().catch(() => ({ results: [] }));
-    var costTableRows = (costRows?.results || []).map(function(r) {
-      return "<tr><td>" + escA(r.model || "unknown") + "</td><td>" + (r.calls || 0) + "</td><td>$" + parseFloat(r.total || 0).toFixed(3) + "</td><td>$" + (r.calls > 0 ? (parseFloat(r.total || 0) / r.calls).toFixed(4) : "0") + "</td></tr>";
-    }).join("");
+
+    // Cost by model
+    var costRows = await env.DB.prepare("SELECT model, COUNT(*) as calls, SUM(cost_usd) as total FROM api_costs GROUP BY model ORDER BY total DESC").all().catch(()=>({results:[]}));
+    var costTableRows = (costRows?.results||[]).map(function(r) {
+      return '<tr><td>' + escA(r.model||'unknown') + '</td><td>' + (r.calls||0) + '</td><td>$' + parseFloat(r.total||0).toFixed(3) + '</td><td>$' + (r.calls>0 ? (parseFloat(r.total||0)/r.calls).toFixed(4) : '0') + '</td></tr>';
+    }).join('');
+
+    // Recent 20 sessions
     var recentRows = await env.DB.prepare(`
       SELECT s.id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
              u.name, u.email
       FROM sessions s LEFT JOIN users u ON s.user_id=u.id
       ORDER BY s.created_at DESC LIMIT 20
-    `).all().catch(() => ({ results: [] }));
-    var recentTableRows = (recentRows?.results || []).map(function(r) {
-      var statusBadge = r.status === "active" ? "bg-green" : r.status === "completed" || r.blueprint_generated ? "bg-copper" : "bg-gray";
-      var bpBadge = r.blueprint_generated ? '<span class="badge bg-copper">Blueprint</span>' : "";
-      var grade = r.depth_grade ? '<span class="badge bg-gray">' + escA(r.depth_grade) + "</span>" : "";
-      return '<tr><td><a href="/admin/session/' + r.id + '">' + escA(r.name || r.email || "Anon") + '</a><div style="font-size:11px;color:#86868B">' + escA(r.email || r.id.slice(0, 8)) + '</div></td><td><span class="badge ' + statusBadge + '">' + escA(r.status || "?") + "</span></td><td>" + (r.phase || 1) + "/8</td><td>" + (r.message_count || 0) + "</td><td>" + bpBadge + " " + grade + '</td><td style="color:#86868B">' + timeSince(r.created_at) + '</td><td><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + r.id + '">View</a> <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export/' + r.id + '">Export</a></td></tr>';
-    }).join("");
-    var html = '<h1 class="adm-page-title">Dashboard</h1><div class="adm-stats"><div class="adm-stat"><div class="adm-stat-label">Total Sessions</div><div class="adm-stat-value">' + total + '</div></div><div class="adm-stat"><div class="adm-stat-label">Blueprints</div><div class="adm-stat-value">' + completed + '</div><div class="adm-stat-sub">' + completionRate + '% completion</div></div><div class="adm-stat adm-stat-warn"><div class="adm-stat-label">Phase 1 Dropoff</div><div class="adm-stat-value">' + phase1Pct + '%</div><div class="adm-stat-sub">' + phase1Row.cnt + ' stuck at phase 1</div></div><div class="adm-stat adm-stat-warn"><div class="adm-stat-label">API Spend</div><div class="adm-stat-value">$' + totalCost + '</div><div class="adm-stat-sub">$' + avgCostPerSession + '/session avg</div></div><div class="adm-stat"><div class="adm-stat-label">Avg Msgs</div><div class="adm-stat-value">' + avgMsgs + '</div><div class="adm-stat-sub">per completed session</div></div><div class="adm-stat"><div class="adm-stat-label">Live Now</div><div class="adm-stat-value">' + (liveRows?.results?.length || 0) + '</div><div class="adm-stat-sub">last 30 min</div></div></div><div class="adm-section"><div class="adm-section-hd"><span class="adm-live-dot adm-live-dot-green" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span> Live Sessions</div>' + (liveList ? '<div class="adm-live-cards">' + liveList + "</div>" : '<div class="adm-empty">No active sessions in the last 30 minutes</div>') + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px"><div class="adm-section" style="margin:0"><div class="adm-section-hd">Funnel (Phase Dropoff)</div><div class="adm-funnel">' + funnelHTML + '<div style="font-size:11px;color:#C4703F;margin-top:8px">Phase 1 (copper) is the biggest leak point</div></div></div><div class="adm-section" style="margin:0"><div class="adm-section-hd">Cost by Model</div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Model</th><th>Calls</th><th>Total</th><th>Per Call</th></tr></thead><tbody>' + (costTableRows || '<tr><td colspan="4" class="adm-empty">No data</td></tr>') + '</tbody></table></div></div></div><div class="adm-section"><div class="adm-section-hd">Recent Sessions <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>User</th><th>Status</th><th>Phase</th><th>Msgs</th><th>Blueprint</th><th>Created</th><th>Actions</th></tr></thead><tbody>' + (recentTableRows || '<tr><td colspan="7" class="adm-empty">No sessions</td></tr>') + "</tbody></table></div></div>";
-    return new Response(adminLayout("Dashboard", html), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
-  } catch (e) {
-    return new Response("Admin error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
+    `).all().catch(()=>({results:[]}));
+    var recentTableRows = (recentRows?.results||[]).map(function(r) {
+      var statusBadge = r.status==='active' ? 'bg-green' : r.status==='completed'||r.blueprint_generated ? 'bg-copper' : 'bg-gray';
+      var bpBadge = r.blueprint_generated ? '<span class="badge bg-copper">Blueprint</span>' : '';
+      var grade = r.depth_grade ? '<span class="badge bg-gray">' + escA(r.depth_grade) + '</span>' : '';
+      return '<tr>' +
+        '<td><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><div style="font-size:11px;color:#86868B">' + escA(r.email||r.id.slice(0,8)) + '</div></td>' +
+        '<td><span class="badge ' + statusBadge + '">' + escA(r.status||'?') + '</span></td>' +
+        '<td>' + (r.phase||1) + '/8</td>' +
+        '<td>' + (r.message_count||0) + '</td>' +
+        '<td>' + bpBadge + ' ' + grade + '</td>' +
+        '<td style="color:#86868B">' + timeSince(r.created_at) + '</td>' +
+        '<td><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + r.id + '">View</a> <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export/' + r.id + '">Export</a></td>' +
+      '</tr>';
+    }).join('');
+
+    var html = '<h1 class="adm-page-title">Dashboard</h1>' +
+
+      '<div class="adm-stats">' +
+        '<div class="adm-stat"><div class="adm-stat-label">Total Sessions</div><div class="adm-stat-value">' + total + '</div></div>' +
+        '<div class="adm-stat"><div class="adm-stat-label">Blueprints</div><div class="adm-stat-value">' + completed + '</div><div class="adm-stat-sub">' + completionRate + '% completion</div></div>' +
+        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">Phase 1 Dropoff</div><div class="adm-stat-value">' + phase1Pct + '%</div><div class="adm-stat-sub">' + phase1Row.cnt + ' stuck at phase 1</div></div>' +
+        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">API Spend</div><div class="adm-stat-value">$' + totalCost + '</div><div class="adm-stat-sub">$' + avgCostPerSession + '/session avg</div></div>' +
+        '<div class="adm-stat"><div class="adm-stat-label">Avg Msgs</div><div class="adm-stat-value">' + avgMsgs + '</div><div class="adm-stat-sub">per completed session</div></div>' +
+        '<div class="adm-stat"><div class="adm-stat-label">Live Now</div><div class="adm-stat-value">' + (liveRows?.results?.length||0) + '</div><div class="adm-stat-sub">last 30 min</div></div>' +
+      '</div>' +
+
+      '<div class="adm-section">' +
+        '<div class="adm-section-hd"><span class="adm-live-dot adm-live-dot-green" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span> Live Sessions</div>' +
+        (liveList ? '<div class="adm-live-cards">' + liveList + '</div>' : '<div class="adm-empty">No active sessions in the last 30 minutes</div>') +
+      '</div>' +
+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px">' +
+        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Funnel (Phase Dropoff)</div><div class="adm-funnel">' + funnelHTML + '<div style="font-size:11px;color:#C4703F;margin-top:8px">Phase 1 (copper) is the biggest leak point</div></div></div>' +
+        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Cost by Model</div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Model</th><th>Calls</th><th>Total</th><th>Per Call</th></tr></thead><tbody>' + (costTableRows||'<tr><td colspan="4" class="adm-empty">No data</td></tr>') + '</tbody></table></div></div>' +
+      '</div>' +
+
+      '<div class="adm-section">' +
+        '<div class="adm-section-hd">Recent Sessions <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div>' +
+        '<div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>User</th><th>Status</th><th>Phase</th><th>Msgs</th><th>Blueprint</th><th>Created</th><th>Actions</th></tr></thead><tbody>' +
+        (recentTableRows||'<tr><td colspan="7" class="adm-empty">No sessions</td></tr>') +
+        '</tbody></table></div>' +
+      '</div>';
+
+    return new Response(adminLayout('Dashboard', html), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+  } catch(e) {
+    return new Response('Admin error: ' + e.message, { status:500, headers:{'Content-Type':'text/plain'} });
   }
 }
-__name(handleAdminDashboard, "handleAdminDashboard");
+
 async function handleAdminSessionDetail(request, env, path) {
   var admin = await requireAdmin(request, env);
-  if (!admin)
-    return Response.redirect("/app", 302);
-  var sessionId = path.split("/")[3];
-  if (!sessionId)
-    return new Response("Missing session ID", { status: 400 });
+  if (!admin) return Response.redirect('/app', 302);
+  var sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status:400 });
   try {
     var [sessionRow, eventsRes, costsRow] = await Promise.all([
       env.DB.prepare(`
         SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier, u.role, u.created_at as user_created_at
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?
       `).bind(sessionId).first(),
-      env.DB.prepare("SELECT * FROM session_events WHERE session_id=? ORDER BY created_at ASC LIMIT 500").bind(sessionId).all(),
-      env.DB.prepare("SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?").bind(sessionId).first().catch(() => ({ total: 0, calls: 0 }))
+      env.DB.prepare('SELECT * FROM session_events WHERE session_id=? ORDER BY created_at ASC LIMIT 500').bind(sessionId).all(),
+      env.DB.prepare('SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?').bind(sessionId).first().catch(()=>({total:0,calls:0}))
     ]);
-    if (!sessionRow)
-      return new Response("Session not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+    if (!sessionRow) return new Response('Session not found', {status:404, headers:{'Content-Type':'text/plain'}});
+
     var events = eventsRes?.results || [];
-    var messages = events.filter(function(e) {
-      return e.event_type === "message_sent" || e.event_type === "message_received";
-    });
+    var messages = events.filter(function(e){ return e.event_type==='message_sent'||e.event_type==='message_received'; });
+
     var apollo = null;
-    try {
-      if (sessionRow.apollo_data)
-        apollo = JSON.parse(sessionRow.apollo_data);
-    } catch (_) {
-    }
+    try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
+
+    // Blueprint from KV
     var bp = null;
     try {
-      var bpRaw = await env.SESSIONS.get("blueprint:" + sessionId);
-      if (bpRaw)
-        bp = JSON.parse(bpRaw);
-    } catch (_) {
-    }
+      var bpRaw = await env.SESSIONS.get('blueprint:' + sessionId);
+      if (bpRaw) bp = JSON.parse(bpRaw);
+    } catch(_){}
     if (!bp && sessionRow.blueprint_generated) {
+      // try session KV key
       try {
-        var sessRaw = await env.SESSIONS.get("sess_" + sessionId);
-        if (sessRaw) {
-          var sess = JSON.parse(sessRaw);
-          bp = sess.blueprint?.blueprint || sess.blueprint;
-        }
-      } catch (_) {
-      }
+        var sessRaw = await env.SESSIONS.get('sess_' + sessionId);
+        if (sessRaw) { var sess = JSON.parse(sessRaw); bp = sess.blueprint?.blueprint || sess.blueprint; }
+      } catch(_){}
     }
-    var userBlock = '<div class="adm-panel"><div class="adm-panel-title">User Profile</div><div class="adm-field"><div class="adm-field-label">Name</div><div class="adm-field-value">' + escA(sessionRow.name || "\u2014") + '</div></div><div class="adm-field"><div class="adm-field-label">Email</div><div class="adm-field-value">' + escA(sessionRow.email || "\u2014") + '</div></div><div class="adm-field"><div class="adm-field-label">Phone</div><div class="adm-field-value">' + escA(sessionRow.phone || sessionRow.user_phone || "\u2014") + '</div></div><div class="adm-field"><div class="adm-field-label">Tier</div><div class="adm-field-value">' + escA(sessionRow.tier || "free") + '</div></div><div class="adm-field"><div class="adm-field-label">Member Since</div><div class="adm-field-value">' + escA(sessionRow.user_created_at || "\u2014") + "</div></div>" + (apollo?.person?.employment_history?.[0] ? '<div class="adm-field"><div class="adm-field-label">Current Role</div><div class="adm-field-value">' + escA((apollo.person.employment_history[0].title || "") + " @ " + (apollo.person.employment_history[0].organization_name || "")) + "</div></div>" : "") + '<div style="margin-top:12px"><a class="adm-btn adm-btn-sm" href="/admin/export/' + sessionId + '">Export JSON</a></div></div>';
-    var sessionBlock = '<div class="adm-panel"><div class="adm-panel-title">Session</div><div class="adm-field"><div class="adm-field-label">Session ID</div><div class="adm-field-value" style="font-family:monospace;font-size:11px">' + escA(sessionRow.id) + '</div></div><div class="adm-field"><div class="adm-field-label">Phase</div><div class="adm-field-value">' + (sessionRow.phase || 1) + "/8 " + phaseBar(sessionRow.phase) + '</div></div><div class="adm-field"><div class="adm-field-label">Messages</div><div class="adm-field-value">' + (sessionRow.message_count || 0) + '</div></div><div class="adm-field"><div class="adm-field-label">Status</div><div class="adm-field-value"><span class="badge ' + (sessionRow.status === "active" ? "bg-green" : "bg-gray") + '">' + escA(sessionRow.status || "?") + '</span></div></div><div class="adm-field"><div class="adm-field-label">Blueprint</div><div class="adm-field-value">' + (sessionRow.blueprint_generated ? '<span class="badge bg-copper">Generated</span>' : '<span class="badge bg-gray">None</span>') + '</div></div><div class="adm-field"><div class="adm-field-label">Depth Grade</div><div class="adm-field-value">' + escA(sessionRow.depth_grade || "\u2014") + '</div></div><div class="adm-field"><div class="adm-field-label">Resonance Score</div><div class="adm-field-value">' + (sessionRow.resonance_score || "\u2014") + '</div></div><div class="adm-field"><div class="adm-field-label">API Cost</div><div class="adm-field-value">$' + parseFloat(costsRow?.total || 0).toFixed(4) + " (" + (costsRow?.calls || 0) + ' calls)</div></div><div class="adm-field"><div class="adm-field-label">Created</div><div class="adm-field-value">' + escA(sessionRow.created_at || "\u2014") + "</div></div></div>";
-    var timelineHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Event Timeline (' + events.length + ' events)</div><ul class="adm-timeline">' + events.slice(0, 100).map(function(e) {
-      var dataStr = "";
-      try {
-        if (e.data) {
-          var d = JSON.parse(e.data);
-          dataStr = d.phase ? "phase " + d.phase : d.event_type || JSON.stringify(d).slice(0, 60);
-        }
-      } catch (_) {
-      }
-      return '<li class="adm-tl-row"><span class="adm-tl-type">' + escA(e.event_type || "?") + '</span><span class="adm-tl-data">' + escA(dataStr) + '</span><span class="adm-tl-time">' + (e.created_at ? e.created_at.slice(11, 19) : "") + "</span></li>";
-    }).join("") + (events.length > 100 ? '<li class="adm-tl-row" style="color:#86868B">+ ' + (events.length - 100) + " more events...</li>" : "") + "</ul></div>";
-    var transcriptHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Conversation (' + messages.length + ' messages)</div><div class="adm-msg-wrap">' + messages.map(function(e) {
-      var content = "";
-      try {
-        var d = JSON.parse(e.data || "{}");
-        content = d.content || d.message || d.text || "";
-      } catch (_) {
-        content = e.data || "";
-      }
-      var isUser = e.event_type === "message_sent";
-      return '<div class="adm-msg ' + (isUser ? "adm-msg-user" : "adm-msg-ai") + '"><div class="adm-msg-label">' + (isUser ? "User" : "Claude") + (e.created_at ? " \xB7 " + e.created_at.slice(11, 16) : "") + "</div>" + escA(String(content).slice(0, 500)) + (String(content).length > 500 ? "\u2026" : "") + "</div>";
-    }).join("") + "</div></div>";
-    var bpBlock = "";
+
+    var userBlock = '<div class="adm-panel"><div class="adm-panel-title">User Profile</div>' +
+      '<div class="adm-field"><div class="adm-field-label">Name</div><div class="adm-field-value">' + escA(sessionRow.name||'—') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Email</div><div class="adm-field-value">' + escA(sessionRow.email||'—') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Phone</div><div class="adm-field-value">' + escA(sessionRow.phone||sessionRow.user_phone||'—') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Tier</div><div class="adm-field-value">' + escA(sessionRow.tier||'free') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Member Since</div><div class="adm-field-value">' + escA(sessionRow.user_created_at||'—') + '</div></div>' +
+      (apollo?.person?.employment_history?.[0] ? '<div class="adm-field"><div class="adm-field-label">Current Role</div><div class="adm-field-value">' + escA((apollo.person.employment_history[0].title||'') + ' @ ' + (apollo.person.employment_history[0].organization_name||'')) + '</div></div>' : '') +
+      '<div style="margin-top:12px"><a class="adm-btn adm-btn-sm" href="/admin/export/' + sessionId + '">Export JSON</a></div>' +
+    '</div>';
+
+    var sessionBlock = '<div class="adm-panel"><div class="adm-panel-title">Session</div>' +
+      '<div class="adm-field"><div class="adm-field-label">Session ID</div><div class="adm-field-value" style="font-family:monospace;font-size:11px">' + escA(sessionRow.id) + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Phase</div><div class="adm-field-value">' + (sessionRow.phase||1) + '/8 ' + phaseBar(sessionRow.phase) + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Messages</div><div class="adm-field-value">' + (sessionRow.message_count||0) + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Status</div><div class="adm-field-value"><span class="badge ' + (sessionRow.status==='active'?'bg-green':'bg-gray') + '">' + escA(sessionRow.status||'?') + '</span></div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Blueprint</div><div class="adm-field-value">' + (sessionRow.blueprint_generated ? '<span class="badge bg-copper">Generated</span>' : '<span class="badge bg-gray">None</span>') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Depth Grade</div><div class="adm-field-value">' + escA(sessionRow.depth_grade||'—') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Resonance Score</div><div class="adm-field-value">' + (sessionRow.resonance_score||'—') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">API Cost</div><div class="adm-field-value">$' + parseFloat(costsRow?.total||0).toFixed(4) + ' (' + (costsRow?.calls||0) + ' calls)</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Created</div><div class="adm-field-value">' + escA(sessionRow.created_at||'—') + '</div></div>' +
+    '</div>';
+
+    var timelineHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Event Timeline (' + events.length + ' events)</div>' +
+      '<ul class="adm-timeline">' +
+      events.slice(0,100).map(function(e) {
+        var dataStr = '';
+        try { if(e.data) { var d=JSON.parse(e.data); dataStr = d.phase?'phase '+d.phase:d.event_type||JSON.stringify(d).slice(0,60); } } catch(_){}
+        return '<li class="adm-tl-row"><span class="adm-tl-type">' + escA(e.event_type||'?') + '</span><span class="adm-tl-data">' + escA(dataStr) + '</span><span class="adm-tl-time">' + (e.created_at?e.created_at.slice(11,19):'') + '</span></li>';
+      }).join('') +
+      (events.length>100?'<li class="adm-tl-row" style="color:#86868B">+ '+(events.length-100)+' more events...</li>':'') +
+      '</ul></div>';
+
+    var transcriptHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Conversation (' + messages.length + ' messages)</div><div class="adm-msg-wrap">' +
+      messages.map(function(e) {
+        var content = '';
+        try { var d=JSON.parse(e.data||'{}'); content = d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
+        var isUser = e.event_type==='message_sent';
+        return '<div class="adm-msg ' + (isUser?'adm-msg-user':'adm-msg-ai') + '"><div class="adm-msg-label">' + (isUser?'User':'Claude') + (e.created_at?' · '+e.created_at.slice(11,16):'') + '</div>' + escA(String(content).slice(0,500)) + (String(content).length>500?'…':'') + '</div>';
+      }).join('') +
+      '</div></div>';
+
+    var bpBlock = '';
     if (bp) {
       var bpKeys = Object.keys(bp);
-      bpBlock = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Blueprint (' + bpKeys.length + ' parts)</div><pre style="font-size:11px;overflow:auto;max-height:400px;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap">' + escA(JSON.stringify(bp, null, 2).slice(0, 8e3)) + (JSON.stringify(bp).length > 8e3 ? "\n... (truncated)" : "") + "</pre></div>";
+      bpBlock = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Blueprint (' + bpKeys.length + ' parts)</div>' +
+        '<pre style="font-size:11px;overflow:auto;max-height:400px;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap">' + escA(JSON.stringify(bp, null, 2).slice(0,8000)) + (JSON.stringify(bp).length>8000?'\n... (truncated)':'') + '</pre></div>';
     }
-    var html = '<a class="adm-back" href="/admin">&larr; Dashboard</a><h1 class="adm-page-title">' + escA(sessionRow.name || sessionRow.email || "Anonymous") + '</h1><div class="adm-2col" style="margin-bottom:16px">' + userBlock + sessionBlock + '</div><div class="adm-2col">' + timelineHTML + transcriptHTML + bpBlock + "</div>";
-    return new Response(adminLayout("Session: " + (sessionRow.name || sessionRow.email || sessionId), html), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
-  } catch (e) {
-    return new Response("Error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
+
+    var html = '<a class="adm-back" href="/admin">&larr; Dashboard</a>' +
+      '<h1 class="adm-page-title">' + escA(sessionRow.name||sessionRow.email||'Anonymous') + '</h1>' +
+      '<div class="adm-2col" style="margin-bottom:16px">' + userBlock + sessionBlock + '</div>' +
+      '<div class="adm-2col">' + timelineHTML + transcriptHTML + bpBlock + '</div>';
+
+    return new Response(adminLayout('Session: ' + (sessionRow.name||sessionRow.email||sessionId), html), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+  } catch(e) {
+    return new Response('Error: ' + e.message, {status:500, headers:{'Content-Type':'text/plain'}});
   }
 }
-__name(handleAdminSessionDetail, "handleAdminSessionDetail");
+
 async function handleAdminExportSession(request, env, path) {
   var admin = await requireAdmin(request, env);
-  if (!admin)
-    return new Response("Forbidden", { status: 403 });
-  var sessionId = path.split("/")[3];
-  if (!sessionId)
-    return new Response("Missing ID", { status: 400 });
+  if (!admin) return new Response('Forbidden', {status:403});
+  var sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing ID', {status:400});
   try {
     var [sessionRow, eventsRes, costsRow] = await Promise.all([
-      env.DB.prepare("SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?").bind(sessionId).first(),
+      env.DB.prepare('SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?').bind(sessionId).first(),
       env.DB.prepare("SELECT * FROM session_events WHERE session_id=? AND event_type IN ('message_sent','message_received') ORDER BY created_at ASC").bind(sessionId).all(),
-      env.DB.prepare("SELECT SUM(cost_usd) as total FROM api_costs WHERE session_id=?").bind(sessionId).first().catch(() => ({ total: 0 }))
+      env.DB.prepare('SELECT SUM(cost_usd) as total FROM api_costs WHERE session_id=?').bind(sessionId).first().catch(()=>({total:0}))
     ]);
-    if (!sessionRow)
-      return new Response("Not found", { status: 404 });
+    if (!sessionRow) return new Response('Not found', {status:404});
+
     var bp = null;
     try {
-      var sessRaw = await env.SESSIONS.get("sess_" + sessionId);
-      if (sessRaw) {
-        var sess = JSON.parse(sessRaw);
-        bp = sess.blueprint?.blueprint || sess.blueprint;
-      }
-    } catch (_) {
-    }
-    var conversation = (eventsRes?.results || []).map(function(e) {
-      var content = "";
-      try {
-        var d = JSON.parse(e.data || "{}");
-        content = d.content || d.message || d.text || "";
-      } catch (_) {
-        content = e.data || "";
-      }
-      return { role: e.event_type === "message_sent" ? "user" : "assistant", content: String(content), timestamp: e.created_at };
+      var sessRaw = await env.SESSIONS.get('sess_' + sessionId);
+      if (sessRaw) { var sess = JSON.parse(sessRaw); bp = sess.blueprint?.blueprint || sess.blueprint; }
+    } catch(_){}
+
+    var conversation = (eventsRes?.results||[]).map(function(e) {
+      var content = '';
+      try { var d=JSON.parse(e.data||'{}'); content=d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
+      return { role: e.event_type==='message_sent'?'user':'assistant', content: String(content), timestamp: e.created_at };
     });
+
     var apollo = null;
-    try {
-      if (sessionRow.apollo_data)
-        apollo = JSON.parse(sessionRow.apollo_data);
-    } catch (_) {
-    }
-    var exportName = (sessionRow.name || sessionRow.email || "session").replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
+
+    var exportName = (sessionRow.name||sessionRow.email||'session').replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+
     var output = {
-      export_date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
+      export_date: new Date().toISOString().slice(0,10),
       user: {
         name: sessionRow.name,
         email: sessionRow.email,
-        phone: sessionRow.phone || sessionRow.user_phone,
+        phone: sessionRow.phone||sessionRow.user_phone,
         tier: sessionRow.tier,
         user_id: sessionRow.user_id
       },
@@ -19834,35 +19738,35 @@ async function handleAdminExportSession(request, env, path) {
         niche: sessionRow.niche,
         created_at: sessionRow.created_at,
         updated_at: sessionRow.updated_at,
-        api_cost_usd: parseFloat(costsRow?.total || 0).toFixed(4)
+        api_cost_usd: parseFloat(costsRow?.total||0).toFixed(4)
       },
       blueprint: bp,
-      conversation,
+      conversation: conversation,
       enrichment: apollo,
       design_tokens: {
-        background: "#FFFFFF",
-        text_primary: "#1D1D1F",
-        text_secondary: "#86868B",
-        accent: "#C4703F",
-        fonts: { headlines: "Outfit, sans-serif", body: "Inter, sans-serif", emotional: "Playfair Display, serif" }
+        background: '#FFFFFF',
+        text_primary: '#1D1D1F',
+        text_secondary: '#86868B',
+        accent: '#C4703F',
+        fonts: { headlines: 'Outfit, sans-serif', body: 'Inter, sans-serif', emotional: 'Playfair Display, serif' }
       },
-      ai_builder_handoff: bp ? "# Brand Blueprint for " + (sessionRow.name || "Client") + "\n\nBuild a personal brand website using these specifications. Follow design tokens exactly.\n\nIndustry: " + (sessionRow.industry || "N/A") + "\nNiche: " + (sessionRow.niche || "N/A") + "\n\nBlueprint data included in this export." : null
+      ai_builder_handoff: bp ? '# Brand Blueprint for ' + (sessionRow.name||'Client') + '\n\nBuild a personal brand website using these specifications. Follow design tokens exactly.\n\nIndustry: ' + (sessionRow.industry||'N/A') + '\nNiche: ' + (sessionRow.niche||'N/A') + '\n\nBlueprint data included in this export.' : null
     };
+
     return new Response(JSON.stringify(output, null, 2), {
       headers: {
-        "Content-Type": "application/json",
-        "Content-Disposition": 'attachment; filename="' + exportName + '-blueprint-export.json"'
+        'Content-Type': 'application/json',
+        'Content-Disposition': 'attachment; filename="' + exportName + '-blueprint-export.json"'
       }
     });
-  } catch (e) {
-    return new Response("Export error: " + e.message, { status: 500 });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, {status:500});
   }
 }
-__name(handleAdminExportSession, "handleAdminExportSession");
+
 async function handleAdminExportAll(request, env) {
   var admin = await requireAdmin(request, env);
-  if (!admin)
-    return new Response("Forbidden", { status: 403 });
+  if (!admin) return new Response('Forbidden', {status:403});
   try {
     var rows = await env.DB.prepare(`
       SELECT u.email, u.name, u.tier, u.created_at as user_created_at, u.last_login,
@@ -19878,97 +19782,77 @@ async function handleAdminExportAll(request, env) {
       ORDER BY u.created_at DESC
     `).all();
     var data = rows?.results || [];
-    var header = ["email", "name", "tier", "sessions_count", "last_status", "max_phase", "max_messages", "has_blueprint", "industry", "niche", "best_resonance", "user_created_at", "last_login"];
-    var csv = header.join(",") + "\n" + data.map(function(r) {
+    var header = ['email','name','tier','sessions_count','last_status','max_phase','max_messages','has_blueprint','industry','niche','best_resonance','user_created_at','last_login'];
+    var csv = header.join(',') + '\n' + data.map(function(r) {
       return header.map(function(k) {
         var v = r[k];
-        if (v === null || v === void 0)
-          return "";
-        return '"' + String(v).replace(/"/g, '""') + '"';
-      }).join(",");
-    }).join("\n");
+        if (v === null || v === undefined) return '';
+        return '"' + String(v).replace(/"/g,'""') + '"';
+      }).join(',');
+    }).join('\n');
     return new Response(csv, {
       headers: {
-        "Content-Type": "text/csv",
-        "Content-Disposition": 'attachment; filename="dwi-users-' + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) + '.csv"'
+        'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename="dwi-users-' + new Date().toISOString().slice(0,10) + '.csv"'
       }
     });
-  } catch (e) {
-    return new Response("CSV error: " + e.message, { status: 500 });
+  } catch(e) {
+    return new Response('CSV error: ' + e.message, {status:500});
   }
 }
-__name(handleAdminExportAll, "handleAdminExportAll");
+
 async function handleAdminDeleteUser(request, env, path, url) {
   var admin = await requireAdmin(request, env);
-  if (!admin)
-    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { "Content-Type": "application/json" } });
-  if (request.method !== "POST")
-    return new Response(JSON.stringify({ error: "POST required" }), { status: 405, headers: { "Content-Type": "application/json" } });
-  var confirm = url.searchParams.get("confirm");
-  if (confirm !== "DELETE")
-    return new Response(JSON.stringify({ error: "Must pass ?confirm=DELETE" }), { status: 400, headers: { "Content-Type": "application/json" } });
-  var userId = path.split("/")[3];
-  if (!userId)
-    return new Response(JSON.stringify({ error: "Missing userId" }), { status: 400, headers: { "Content-Type": "application/json" } });
+  if (!admin) return new Response(JSON.stringify({error:'Forbidden'}), {status:403, headers:{'Content-Type':'application/json'}});
+  if (request.method !== 'POST') return new Response(JSON.stringify({error:'POST required'}), {status:405, headers:{'Content-Type':'application/json'}});
+  var confirm = url.searchParams.get('confirm');
+  if (confirm !== 'DELETE') return new Response(JSON.stringify({error:'Must pass ?confirm=DELETE'}), {status:400, headers:{'Content-Type':'application/json'}});
+  var userId = path.split('/')[3];
+  if (!userId) return new Response(JSON.stringify({error:'Missing userId'}), {status:400, headers:{'Content-Type':'application/json'}});
   try {
-    var userRow = await env.DB.prepare("SELECT id, email FROM users WHERE id=?").bind(userId).first();
-    if (!userRow)
-      return new Response(JSON.stringify({ error: "User not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
-    if (userRow.email === admin.email)
-      return new Response(JSON.stringify({ error: "Cannot delete your own account" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    var userRow = await env.DB.prepare('SELECT id, email FROM users WHERE id=?').bind(userId).first();
+    if (!userRow) return new Response(JSON.stringify({error:'User not found'}), {status:404, headers:{'Content-Type':'application/json'}});
+    if (userRow.email === admin.email) return new Response(JSON.stringify({error:'Cannot delete your own account'}), {status:400, headers:{'Content-Type':'application/json'}});
+
+    // Log the deletion first
     try {
-      await env.DB.prepare("INSERT INTO event_log (id, type, action, email, detail, created_at) VALUES (?, 'gdpr_deletion', 'user_deleted', ?, ?, datetime('now'))").bind(crypto.randomUUID(), userRow.email, "All user data removed per GDPR request").run();
-    } catch (_) {
+      await env.DB.prepare("INSERT INTO event_log (id, type, action, email, detail, created_at) VALUES (?, 'gdpr_deletion', 'user_deleted', ?, ?, datetime('now'))").bind(crypto.randomUUID(), userRow.email, 'All user data removed per GDPR request').run();
+    } catch(_){}
+
+    // Get all sessions for KV cleanup
+    var sessRows = await env.DB.prepare('SELECT id FROM sessions WHERE user_id=?').bind(userId).all().catch(()=>({results:[]}));
+    for (var sr of (sessRows?.results||[])) {
+      try { await env.SESSIONS.delete('sess_' + sr.id); } catch(_){}
+      try { await env.SESSIONS.delete('blueprint:' + sr.id); } catch(_){}
+      try { await env.SESSIONS.delete('enrichment:' + sr.id); } catch(_){}
     }
-    var sessRows = await env.DB.prepare("SELECT id FROM sessions WHERE user_id=?").bind(userId).all().catch(() => ({ results: [] }));
-    for (var sr of sessRows?.results || []) {
-      try {
-        await env.SESSIONS.delete("sess_" + sr.id);
-      } catch (_) {
-      }
-      try {
-        await env.SESSIONS.delete("blueprint:" + sr.id);
-      } catch (_) {
-      }
-      try {
-        await env.SESSIONS.delete("enrichment:" + sr.id);
-      } catch (_) {
-      }
-    }
-    var tables = ["session_events", "auth_tokens", "api_costs", "token_usage"];
+
+    // Delete from all tables
+    var tables = ['session_events','auth_tokens','api_costs','token_usage'];
     for (var tbl of tables) {
       try {
-        if (tbl === "session_events" || tbl === "api_costs") {
-          var sids = (sessRows?.results || []).map(function(r) {
-            return r.id;
-          });
+        if (tbl === 'session_events' || tbl === 'api_costs') {
+          var sids = (sessRows?.results||[]).map(function(r){return r.id;});
           if (sids.length > 0) {
-            var placeholders = sids.map(function() {
-              return "?";
-            }).join(",");
-            await env.DB.prepare("DELETE FROM " + tbl + " WHERE session_id IN (" + placeholders + ")").bind(...sids).run();
+            var placeholders = sids.map(function(){return '?';}).join(',');
+            await env.DB.prepare('DELETE FROM ' + tbl + ' WHERE session_id IN (' + placeholders + ')').bind(...sids).run();
           }
         } else {
-          await env.DB.prepare("DELETE FROM " + tbl + " WHERE user_id=?").bind(userId).run();
+          await env.DB.prepare('DELETE FROM ' + tbl + ' WHERE user_id=?').bind(userId).run();
         }
-      } catch (_) {
-      }
+      } catch(_){}
     }
-    try {
-      await env.DB.prepare("DELETE FROM sessions WHERE user_id=?").bind(userId).run();
-    } catch (_) {
-    }
-    try {
-      await env.DB.prepare("DELETE FROM event_log WHERE email=? AND action != 'user_deleted'").bind(userRow.email).run();
-    } catch (_) {
-    }
-    await env.DB.prepare("DELETE FROM users WHERE id=?").bind(userId).run();
-    return new Response(JSON.stringify({ ok: true, deleted: userRow.email }), { headers: { "Content-Type": "application/json" } });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+    try { await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(userId).run(); } catch(_){}
+    try { await env.DB.prepare("DELETE FROM event_log WHERE email=? AND action != 'user_deleted'").bind(userRow.email).run(); } catch(_){}
+    await env.DB.prepare('DELETE FROM users WHERE id=?').bind(userId).run();
+
+    return new Response(JSON.stringify({ok:true, deleted: userRow.email}), {headers:{'Content-Type':'application/json'}});
+  } catch(e) {
+    return new Response(JSON.stringify({error:e.message}), {status:500, headers:{'Content-Type':'application/json'}});
   }
 }
-__name(handleAdminDeleteUser, "handleAdminDeleteUser");
+
+// src/router.js
 async function routeRequest(request, env, ctx) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -19984,7 +19868,7 @@ async function routeRequest(request, env, ctx) {
       return handleAdminDashboard(request, env);
     if (path.startsWith("/admin/session/") && request.method === "GET")
       return handleAdminSessionDetail(request, env, path);
-    if (path.startsWith("/admin/export/") && !path.includes("export-all") && request.method === "GET")
+    if (path.startsWith("/admin/export/") && !path.includes('export-all') && request.method === "GET")
       return handleAdminExportSession(request, env, path);
     if (path === "/admin/export-all" && request.method === "GET")
       return handleAdminExportAll(request, env);
@@ -20218,7 +20102,8 @@ async function routeRequest(request, env, ctx) {
   }
 }
 __name(routeRequest, "routeRequest");
-__name2(routeRequest, "routeRequest");
+
+// src/index.js
 var src_default = {
   // Cron triggers:
   //   Every 2 hours — abandonment check
@@ -20246,6 +20131,3 @@ var src_default = {
 export {
   src_default as default
 };
-//# sourceMappingURL=index.js.map
-
---4bdb2b4eefec7f360b3885291696ab18a4a4b71b0996d90e7b93edc5f2a1--
