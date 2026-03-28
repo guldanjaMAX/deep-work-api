@@ -703,7 +703,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <\/script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -2635,7 +2634,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 })(window,document,"clarity","script","w22t78gnya");
 <\/script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <script>
@@ -17447,164 +17445,6 @@ function submitFeedback(rating) {
   }, 600);
 })();
 
-function downloadBlueprintPDF() {
-  var btn = event && event.target;
-  var originalHTML = btn ? btn.innerHTML : '';
-  try {
-    var element = document.querySelector('.bp-page');
-    if (!element) {
-      alert('Blueprint content not found. Please refresh and try again.');
-      return;
-    }
-    if (btn) { btn.innerHTML = 'Generating\u2026'; btn.disabled = true; }
-    var clone = element.cloneNode(true);
-    clone.querySelectorAll('.bp-feedback, button, .no-print').forEach(function(el) { el.remove(); });
-    var footer = document.createElement('div');
-    footer.style.cssText = 'margin-top:40px;padding-top:20px;border-top:1px solid #F0F0F0;text-align:center;font-size:11px;color:#86868B;font-family:Inter,sans-serif;';
-    footer.textContent = 'Powered by Deep Work Interview \u2014 jamesguldan.com/deep-work';
-    clone.appendChild(footer);
-    // Wrap clone in a container with blueprint styles so html2canvas can resolve them
-    var wrapper = document.createElement('div');
-    wrapper.style.cssText = 'position:fixed;top:-99999px;left:-99999px;width:816px;';
-    // Copy blueprint style tag into wrapper so styles apply to the clone
-    var bpBody = document.getElementById('blueprint-body');
-    if (bpBody) {
-      var styleTags = bpBody.querySelectorAll('style');
-      styleTags.forEach(function(st) { wrapper.appendChild(st.cloneNode(true)); });
-    }
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-    var opt = {
-      margin: [0.5, 0.5, 0.75, 0.5],
-      filename: '` + fnSafe + `-blueprint.pdf',
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-    if (typeof html2pdf === 'undefined') {
-      document.body.removeChild(wrapper);
-      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-      alert('PDF library not loaded. Please save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
-      return;
-    }
-    html2pdf().set(opt).from(clone).save().then(function() {
-      document.body.removeChild(wrapper);
-      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-      fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: '` + sid + `', eventType: 'pdf_downloaded' }) }).catch(function(){});
-    }).catch(function(err) {
-      document.body.removeChild(wrapper);
-      console.error('PDF generation failed:', err);
-      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-      alert('PDF generation failed. You can save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
-    });
-  } catch(e) {
-    if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-    alert('PDF generation failed. You can save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
-  }
-}
-
-function copyBlueprintForAI() {
-  var bp = window.__blueprintData;
-  if (!bp) {
-    alert('Blueprint data not available. Please refresh the page.');
-    return;
-  }
-  var p1 = bp.part1 || {};
-  var p2 = bp.part2 || {};
-  var p3 = bp.part3 || {};
-  var p4 = bp.part4 || {};
-  var p5 = bp.part5 || {};
-  var p7 = bp.part7 || {};
-  var brandName = (Array.isArray(p1.brandNames) && p1.brandNames[0]) || '';
-  var tagline = '';
-  if (Array.isArray(p1.taglines) && p1.taglines.length) {
-    var t0 = p1.taglines[0];
-    tagline = typeof t0 === 'string' ? t0 : (t0.text || t0.tagline || '');
-  }
-  var colors = '';
-  if (Array.isArray(p1.visualDirection && p1.visualDirection.colors)) {
-    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\\n');
-  }
-  var fonts = (p1.visualDirection && Array.isArray(p1.visualDirection.fonts)) ? p1.visualDirection.fonts : ['Outfit', 'Inter'];
-  var aesthetic = (p1.visualDirection && p1.visualDirection.aesthetic) || 'Premium minimal. Clean white backgrounds. No gradients.';
-  var brandVoice = Array.isArray(p1.brandVoice) ? p1.brandVoice.join(', ') : (p1.brandVoice || '');
-  var coreBrandPromise = p1.coreBrandPromise || '';
-  var wantToAchieve = p2.tryingToAchieve || p2.goalStatement || '';
-  var whatStops = p2.whatIsStoppingThem || p2.barriers || '';
-  var exactWords = '';
-  if (Array.isArray(p2.exactWords) && p2.exactWords.length) {
-    exactWords = p2.exactWords.map(function(w) { return typeof w === 'string' ? w : (w.text || w.quote || ''); }).filter(Boolean).join(' | ');
-  }
-  var nicheStatement = p3.nicheStatement || p3.uniqueMechanism || '';
-  var headlines = '';
-  if (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions.length) {
-    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\\n');
-  }
-  var offerLines = [];
-  if (p4.entryOffer) offerLines.push((p4.entryOffer.name || 'Entry') + ' (' + (p4.entryOffer.price || 'TBD') + '): ' + (p4.entryOffer.description || ''));
-  if (p4.coreOffer) offerLines.push((p4.coreOffer.name || 'Core') + ' (' + (p4.coreOffer.price || 'TBD') + '): ' + (p4.coreOffer.description || ''));
-  if (p4.coreOffer2) offerLines.push((p4.coreOffer2.name || 'Core+') + ' (' + (p4.coreOffer2.price || 'TBD') + '): ' + (p4.coreOffer2.description || ''));
-  if (p4.premiumOffer) offerLines.push((p4.premiumOffer.name || 'Premium') + ' (' + (p4.premiumOffer.price || 'TBD') + '): ' + (p4.premiumOffer.description || ''));
-  var heroHeadline = (Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) || (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions[0]) || '';
-  if (typeof heroHeadline !== 'string') heroHeadline = heroHeadline.text || heroHeadline.headline || '';
-  var heroSub = p5.heroSubheadline || '';
-  var heroCTA = p5.heroCTA || 'Get Started';
-  var sections = '';
-  if (Array.isArray(p5.sections) && p5.sections.length) {
-    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\\n');
-  }
-  var handoff = '## Design System\\n\\n' +
-    'Brand: ' + (brandName || 'My Brand') + '\\n' +
-    'Niche: ' + nicheStatement + '\\n\\n' +
-    'Colors:\\n' + (colors || '  Primary: #1D1D1F\\n  Accent: #C4703F\\n  Background: #FFFFFF') + '\\n\\n' +
-    'Typography:\\n' +
-    '  Headlines: ' + (fonts[0] || 'Outfit') + ' 700\\n' +
-    '  Body: ' + (fonts[1] || 'Inter') + ' 400\\n' +
-    '  Emotional: Playfair Display Italic (quotes and taglines only)\\n\\n' +
-    'Aesthetic: ' + aesthetic + '\\n' +
-    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\\n\\n' +
-    '## Brand Foundation\\n\\n' +
-    (tagline ? 'Tagline: ' + tagline + '\\n' : '') +
-    (brandVoice ? 'Brand Voice: ' + brandVoice + '\\n' : '') +
-    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\\n' : '') +
-    '\\n## Ideal Client\\n\\n' +
-    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\\n' : '') +
-    (whatStops ? 'What stops them: ' + whatStops + '\\n' : '') +
-    (exactWords ? 'Their exact words: ' + exactWords + '\\n' : '') +
-    '\\n## Positioning\\n\\n' +
-    'Niche: ' + nicheStatement + '\\n\\n' +
-    'Headline Options:\\n' + (headlines || 'None generated') + '\\n\\n' +
-    '## Offers\\n\\n' + (offerLines.join('\\n') || 'None generated') + '\\n\\n' +
-    '## Website Blueprint\\n\\n' +
-    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\\n' : '') +
-    (heroSub ? 'Hero Subheadline: ' + heroSub + '\\n' : '') +
-    'Hero CTA: ' + heroCTA + '\\n\\n' +
-    (sections ? 'Page Sections:\\n' + sections + '\\n\\n' : '') +
-    '## Instructions\\n\\n' +
-    'Build a complete personal brand website using this blueprint. Follow the design tokens exactly. Start with the hero section using the headline and CTA above, then build each page section in order. Use clean white (#FFFFFF) backgrounds, the specified fonts from Google Fonts, and the color palette above. No emojis. No gradients. No dark mode. No dashes in copy (use periods, commas, or em dashes instead). Buttons should be dark pill shapes, never copper/accent colored.\\n\\n' +
-    'Learn more about Deep Work Interview: jamesguldan.com/deep-work';
-  function showCopySuccess() {
-    var toast = document.getElementById('bpAiCopySuccess');
-    if (toast) {
-      toast.style.display = 'block';
-      setTimeout(function() { toast.style.display = ''; }, 3000);
-    }
-    fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: '` + sid + `', eventType: 'ai_builder_copied' }) }).catch(function(){});
-  }
-  navigator.clipboard.writeText(handoff).then(function() {
-    showCopySuccess();
-  }).catch(function() {
-    var ta = document.createElement('textarea');
-    ta.value = handoff;
-    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch(_) {}
-    document.body.removeChild(ta);
-    showCopySuccess();
-  });
-}
 `;
 }
 __name(getBlueprintJS, "getBlueprintJS");
@@ -18015,7 +17855,7 @@ function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   var firstName = (userName || "Friend").split(" ")[0];
   var sessionId = bp.sessionId || "";
   var bpDataJson = JSON.stringify(bp).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/\//g, "\\u002f");
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + escHtml(firstName || 'Your') + '&#39;s Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + escHtml(firstName || 'Your') + '&#39;s Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
     return '<div class="bp-dot"><span class="bp-dot-label">' + escHtml(label) + "</span></div>";
   }).join("") + '</div><div class="bp-page">' + renderChapter1(bp, firstName, messageCount) + '<div style="text-align:center; padding: 8px 0 16px; font-size: 12px; color: #86868B; font-family: Inter, sans-serif; letter-spacing: 0.01em;">This blueprint was crafted by AI from your interview. Every insight is drawn from what you shared.</div>' + renderChapter2(bp) + renderChapter3(bp) + renderNicheSection(bp) + renderOfferSuite(bp) + renderHeadlines(bp) + renderWebsiteBlueprint(bp) + renderChapter4(bp, sessionId, firstName) + "</div><script>window.__blueprintData=" + bpDataJson + ";<\/script><script>" + getBlueprintJS(sessionId, firstName) + "<\/script></body></html>";
 }
