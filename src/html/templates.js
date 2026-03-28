@@ -2414,7 +2414,7 @@ window.addEventListener('DOMContentLoaded', async () => {
           STATE.email = frData.user.email || '';
 
           if (frData.blueprintComplete && frData.blueprint) {
-            // Blueprint is done =======drop user right into their results
+            // Blueprint is done — drop user right into their results
             STATE.sessionId = frData.sessionId;
             STATE.blueprint = frData.blueprint;
             STATE.strategistDebrief = frData.strategistDebrief || null;
@@ -2423,12 +2423,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             updateLoadingStage('Your blueprint is ready.', 100);
             await new Promise(r => setTimeout(r, 600));
             hideLoadingOverlay();
-            const hasDebrief = showDebrief(frData.blueprint, true);
-            if (!hasDebrief) {
-              renderBlueprint(frData.blueprint, frData.strategistDebrief || null, true);
-              personalizeBlueprintHeader();
-              showScreen('blueprint-screen');
-            }
+            renderBlueprint(frData.blueprint, frData.strategistDebrief || null, true);
+            showScreen('blueprint-screen');
           } else if (frData.hasActiveSession && frData.sessionId) {
             // Active session in progress =======resume through normal flow
             pendingResumeSessionId = frData.sessionId;
