@@ -17855,7 +17855,7 @@ function renderChapter4(bp, sessionId, firstName) {
     '<div class="bp-share-headline">Share Your Blueprint</div>' +
     '<div class="bp-share-desc">Send this PDF to a friend, colleague, or anyone building something real. Every blueprint is unique to the person who took the interview.</div>' +
     '<div class="bp-share-cta-row">' +
-    '<a href="https://jamesguldan.com/deep-work" class="bp-share-get-own">Get Your Own Blueprint</a>' +
+    '<a href="https://love.jamesguldan.com" class="bp-share-get-own">Get Your Own Blueprint</a>' +
     '</div>' +
     '<div class="bp-share-url">jamesguldan.com/deep-work</div>' +
     '</div>' +
