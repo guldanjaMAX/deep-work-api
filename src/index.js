@@ -2635,6 +2635,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 })(window,document,"clarity","script","w22t78gnya");
 <\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <script>
@@ -17702,7 +17703,7 @@ function renderChapter4(bp, sessionId, firstName) {
     '<div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div>' +
     '<a class="bp-gap-book-btn" href="' + escHtml(calendlyUrl) + '" target="_blank" rel="noopener" onclick="fetch(\'/api/track\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({sessionId:\'' + escHtml(sessionId) + '\',eventType:\'cta_book_call\'})}).catch(function(){})">Book Your Strategy Call</a>' +
     '<div class="bp-gap-guarantee">100% satisfaction guaranteed. If the call doesn\'t give you a clear next step, you pay nothing.</div>' +
-    '<div style="margin-top:16px;"><a class="bp-gap-reply" href="mailto:james@jamesguldan.com?subject=Deep Work Interview - Blueprint Question">or reply to James directly</a></div>' +
+    '' +
     '</div>' +
     '</div>' +
     /* ── Build With AI ── */
@@ -17721,7 +17722,7 @@ function renderChapter4(bp, sessionId, firstName) {
     '<button style="display:inline-flex;align-items:center;gap:8px;font-family:\'Outfit\',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;" onclick="downloadBlueprintPDF()" id="bpPdfBtn">' +
     '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
     'Download Blueprint PDF</button>' +
-    '<div class="bp-pdf-footer-note">Your Deep Work Interview blueprint &mdash; <a href="https://jamesguldan.com/deep-work" target="_blank">jamesguldan.com/deep-work</a></div>' +
+    '' +
     '</div>' +
     /* ── Signature ── */
     '<div class="bp-footer-signature">' +
