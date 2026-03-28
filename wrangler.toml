@@ -22,3 +22,14 @@ STRIPE_MODE = "test"
 
 [triggers]
 crons = ["0 13 * * 1"]
+
+[observability]
+enabled = true
+
+[observability.traces]
+enabled = true
+destinations = ["sentry-traces"]
+
+[observability.logs]
+enabled = true
+destinations = ["sentry-logs"]
