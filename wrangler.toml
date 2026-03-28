@@ -1,5 +1,6 @@
 name = "deep-work-api"
 main = "src/index.js"
+no_bundle = true
 compatibility_date = "2024-12-01"
 
 [[kv_namespaces]]
@@ -14,3 +15,10 @@ bucket_name = "deep-work-uploads"
 binding = "DB"
 database_name = "deep-work-db"
 database_id = "92121f3b-dcfb-4fa8-8482-b827224b611d"
+
+[vars]
+APP_ORIGIN = "https://love.jamesguldan.com"
+STRIPE_MODE = "test"
+
+[triggers]
+crons = ["0 13 * * 1"]
