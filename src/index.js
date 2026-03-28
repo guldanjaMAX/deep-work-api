@@ -2965,17 +2965,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   </div>
 </div>
 
-<!-- QA MESSAGES PANEL (slides up above bar) -->
-<div id="qa-messages-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid #F0F0F0;max-height:40vh;overflow-y:auto;z-index:99;padding:16px 20px;display:none;flex-direction:column;gap:10px;">
-  <div id="qa-messages" style="display:flex;flex-direction:column;gap:10px;"></div>
-</div>
-
-<!-- COMPACT ASK BAR (56px) -->
-<div id="ask-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #F0F0F0;padding:10px 20px;display:none;align-items:center;gap:12px;z-index:100;box-sizing:border-box;">
-  <input id="qa-input" type="text" placeholder="Ask about your blueprint results..." onkeydown="if(event.key==='Enter')sendQA()" style="flex:1;height:36px;border:1px solid #E8E8E8;border-radius:50px;padding:0 16px;font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#FAFAFA;outline:none;">
-  <button id="qa-send" onclick="sendQA()" style="width:32px;height:32px;background:#1D1D1F;color:#fff;border:none;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;opacity:1;transition:opacity 0.2s;" title="Send"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 13L13 7L1 1V6L9 7L1 8V13Z" fill="white"/></svg></button>
-  <span id="qa-counter" style="font-family:'Inter',sans-serif;font-size:11px;color:#C0C0C0;white-space:nowrap;flex-shrink:0;">20 left</span>
-</div>
 
 <!-- \u2550\u2550 BUILD SITE POPUP \u2550\u2550 -->
 <div id="build-site-popup" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn 0.3s ease;">
@@ -3347,7 +3336,8 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
-  if (id !== 'blueprint-screen') closeBlueprintQA();
+  if (id !== 'blueprint-screen') {
+  }
 }
 
 function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
@@ -5253,8 +5243,6 @@ async function renderBlueprint(bp, strategistDebrief, isReturning) {
       s.textContent = old.textContent;
       old.parentNode.replaceChild(s, old);
     });
-    // Wire up ask bar visibility after blueprint content is loaded
-    initAskBarVisibility();
   } catch (e) {
     body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#C4703F;font-family:Outfit,sans-serif;font-size:14px;">Unable to load blueprint. Please refresh the page.</div>';
   }
@@ -5369,91 +5357,266 @@ async function submitBuildWithJames() {
 }
 
 // \u2500\u2500 POST-BLUEPRINT Q&A \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-let QA_QUESTION_COUNT = 0;
 
-function openBlueprintQA() {
-  // no-op: ask bar is always visible once triggered by scroll
+// Blueprint button handlers (defined in SPA to avoid innerHTML script re-execution issues)
+function copyBlock(btn, text) {
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(function() {
+    btn.textContent = 'Copy'; btn.classList.remove('copied');
+  });
 }
 
-function closeBlueprintQA() {
-  const bar = document.getElementById('ask-bar');
-  const panel = document.getElementById('qa-messages-panel');
-  if (bar) bar.style.display = 'none';
-  if (panel) panel.style.display = 'none';
+function downloadBlueprintPDF() {
+  if (!STATE.sessionId) { alert('No session found. Please reload and try again.'); return; }
+  var btn = event && event.target;
+  if (btn) { btn.innerHTML = 'Generating PDF\\u2026'; btn.disabled = true; }
+  fetch('/api/blueprint/pdf-download', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: STATE.sessionId })
+  }).then(function(res) {
+    if (!res.ok) throw new Error('PDF generation failed');
+    return res.blob();
+  }).then(function(blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = (STATE.sessionId || 'blueprint').replace(/[^a-zA-Z0-9-]/g, '').substring(0, 30) + '-blueprint.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: STATE.sessionId, eventType: 'pdf_downloaded' }) }).catch(function(){});
+  }).catch(function(err) {
+    console.error('PDF download failed:', err);
+    alert('PDF generation failed. Please try again.');
+  }).finally(function() {
+    if (btn) { btn.innerHTML = '\\u2193 Download PDF'; btn.disabled = false; }
+  });
 }
 
-function initAskBarVisibility() {
-  // Always show ask bar fixed at bottom when blueprint screen is active
-  const bar = document.getElementById('ask-bar');
-  if (!bar) return;
-
-  // Position fixed at bottom of viewport
-  bar.style.position = 'fixed';
-  bar.style.bottom = '0';
-  bar.style.left = '0';
-  bar.style.right = '0';
-  bar.style.width = '100%';
-  bar.style.zIndex = '100';
-  bar.style.background = '#fff';
-  bar.style.borderTop = '1px solid rgba(0,0,0,0.08)';
-  bar.style.boxShadow = '0 -2px 12px rgba(0,0,0,0.06)';
-  bar.style.display = 'flex';
-}
-
-async function sendQA() {
-  const input = document.getElementById('qa-input');
-  const msgs = document.getElementById('qa-messages');
-  const panel = document.getElementById('qa-messages-panel');
-  const question = (input?.value || '').trim();
-  if (!question || !STATE.sessionId) return;
-
-  if (QA_QUESTION_COUNT >= 20) {
-    // Replace bar with upsell content
-    const bar = document.getElementById('ask-bar');
-    if (bar) bar.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;">Want to go deeper?</span><a href="https://calendly.com/james-jamesguldan/deep-work-review-consult?utm_source=blueprint&utm_medium=askbar&utm_campaign=dwi" target="_blank" rel="noopener" style="flex-shrink:0;font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#C4703F;border:1px solid rgba(196,112,63,0.3);border-radius:50px;padding:8px 20px;text-decoration:none;">Book Strategy Call</a>';
-    return;
+function copyBlueprintForAI() {
+  var bp = window.__blueprintData;
+  if (!bp) { alert('Blueprint data not available. Please refresh the page.'); return; }
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p5 = bp.part5 || {};
+  var p7 = bp.part7 || {};
+  var brandName = (Array.isArray(p1.brandNames) && p1.brandNames[0]) || '';
+  var tagline = '';
+  if (Array.isArray(p1.taglines) && p1.taglines.length) {
+    var t0 = p1.taglines[0];
+    tagline = typeof t0 === 'string' ? t0 : (t0.text || t0.tagline || '');
   }
-  QA_QUESTION_COUNT++;
-  const remaining = 20 - QA_QUESTION_COUNT;
-  const counter = document.getElementById('qa-counter');
-  if (counter) counter.textContent = remaining + ' left';
-  if (input) input.value = '';
-
-  // Show messages panel
-  if (panel) { panel.style.display = 'flex'; }
-
-  // User bubble
-  const userBubble = document.createElement('div');
-  userBubble.style.cssText = 'align-self:flex-end;background:#ECEAE6;padding:10px 14px;border-radius:14px 14px 4px 14px;font-family:Inter,sans-serif;font-size:13px;color:#111;max-width:80%;line-height:1.5;';
-  userBubble.textContent = question;
-  if (msgs) msgs.appendChild(userBubble);
-
-  // AI typing bubble
-  const aiBubble = document.createElement('div');
-  aiBubble.style.cssText = 'align-self:flex-start;background:#fff;border:1px solid #E8E5E1;padding:10px 14px;border-radius:14px 14px 14px 4px;font-family:Inter,sans-serif;font-size:13px;color:#111;max-width:80%;line-height:1.5;';
-  aiBubble.textContent = '...';
-  if (msgs) { msgs.appendChild(aiBubble); msgs.scrollTop = msgs.scrollHeight; }
-
-  const btn = document.getElementById('qa-send');
-  if (btn) btn.style.opacity = '0.3';
-  track('dw_qa_question_sent', { session_id: STATE.sessionId });
-
-  try {
-    const authToken = localStorage.getItem('dw_session') || '';
-    const res = await fetch('/api/blueprint/qa', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ sessionId: STATE.sessionId, question })
-    });
-    const data = await res.json();
-    aiBubble.textContent = data.answer || 'I could not generate a response. Please try again.';
-  } catch (_) {
-    aiBubble.textContent = 'Something went wrong. Please try again.';
-  } finally {
-    if (btn) btn.style.opacity = '1';
-    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  var colors = '';
+  if (Array.isArray(p1.visualDirection && p1.visualDirection.colors)) {
+    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\\n');
   }
+  var fonts = (p1.visualDirection && p1.visualDirection.fonts) || {};
+  var fontHeading = fonts.heading || (Array.isArray(fonts) ? fonts[0] : 'Outfit');
+  var fontBody = fonts.body || (Array.isArray(fonts) ? fonts[1] : 'Inter');
+  var aesthetic = (p1.visualDirection && p1.visualDirection.aesthetic) || 'Premium minimal. Clean white backgrounds. No gradients.';
+  var bv = p1.brandVoice || {};
+  var descriptors = Array.isArray(bv.descriptors) ? bv.descriptors : (Array.isArray(bv) ? bv : (typeof bv === 'string' ? bv.split(', ') : []));
+  var brandVoice = descriptors.join(', ');
+  var coreBrandPromise = p1.coreBrandPromise || '';
+  var wantToAchieve = p2.tryingToAchieve || p2.goalStatement || '';
+  var whatStops = p2.whatIsStoppingThem || p2.barriers || '';
+  var exactWords = '';
+  if (Array.isArray(p2.exactWords) && p2.exactWords.length) {
+    exactWords = p2.exactWords.map(function(w) { return typeof w === 'string' ? w : (w.text || w.quote || ''); }).filter(Boolean);
+  }
+  var alreadyTried = '';
+  if (Array.isArray(p2.alreadyTried) && p2.alreadyTried.length) {
+    alreadyTried = p2.alreadyTried.join(', ');
+  }
+  var avatarName = p2.name || '';
+  var avatarAge = p2.ageRange || '';
+  var avatarSituation = p2.lifeSituation || '';
+  var whyDidntWork = p2.whyItDidNotWork || '';
+  var nicheStatement = p3.nicheStatement || p3.uniqueMechanism || '';
+  var whoServe = p3.whoTheyServe || '';
+  var whoNotServe = p3.whoTheyDoNotServe || '';
+  var uniqueMechanism = p3.uniqueMechanism || '';
+  var competitorGap = p3.competitorGap || '';
+  var ascensionLogic = p4.ascensionLogic || '';
+  var pageNarrative = p5.pageNarrative || '';
+  var heroImageTheme = p5.heroImageTheme || '';
+  var testimonialFraming = p5.testimonialFraming || '';
+  var posStatements = (p7.positioningStatements && typeof p7.positioningStatements === 'object') ? p7.positioningStatements : {};
+  var headlines = '';
+  if (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions.length) {
+    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\\n');
+  }
+  var offerLines = [];
+  if (p4.entryOffer) offerLines.push((p4.entryOffer.name || 'Entry') + ' (' + (p4.entryOffer.price || 'TBD') + '): ' + (p4.entryOffer.description || '') + (p4.entryOffer.delivery ? ' [Delivery: ' + p4.entryOffer.delivery + ']' : ''));
+  if (p4.coreOffer) offerLines.push((p4.coreOffer.name || 'Core') + ' (' + (p4.coreOffer.price || 'TBD') + '): ' + (p4.coreOffer.description || '') + (p4.coreOffer.delivery ? ' [Delivery: ' + p4.coreOffer.delivery + ']' : ''));
+  if (p4.coreOffer2) offerLines.push((p4.coreOffer2.name || 'Core 2') + ' (' + (p4.coreOffer2.price || 'TBD') + '): ' + (p4.coreOffer2.description || '') + (p4.coreOffer2.delivery ? ' [Delivery: ' + p4.coreOffer2.delivery + ']' : ''));
+  if (p4.premiumOffer) offerLines.push((p4.premiumOffer.name || 'Premium') + ' (' + (p4.premiumOffer.price || 'TBD') + '): ' + (p4.premiumOffer.description || '') + (p4.premiumOffer.delivery ? ' [Delivery: ' + p4.premiumOffer.delivery + ']' : ''));
+  var heroHeadline = (Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) || (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions[0]) || '';
+  if (typeof heroHeadline !== 'string') heroHeadline = heroHeadline.text || heroHeadline.headline || '';
+  var heroSub = p5.heroSubheadline || '';
+  var heroCTA = p5.heroCTA || 'Get Started';
+  var sections = '';
+  if (Array.isArray(p5.sections) && p5.sections.length) {
+    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\\n');
+  }
+  // Build voice contrast pairs from descriptors
+  var contrastMap = {
+    'Strategic': 'Strategic, not academic',
+    'Direct': 'Direct, not blunt',
+    'Clarifying': 'Clarifying, not condescending',
+    'Confident': 'Confident, not arrogant',
+    'Uncompromising': 'Uncompromising, not rigid',
+    'Bold': 'Bold, not reckless',
+    'Warm': 'Warm, not soft',
+    'Witty': 'Witty, not sarcastic',
+    'Professional': 'Professional, not corporate',
+    'Authentic': 'Authentic, not unpolished',
+    'Inspiring': 'Inspiring, not preachy',
+    'Empathetic': 'Empathetic, not patronizing',
+    'Playful': 'Playful, not childish',
+    'Edgy': 'Edgy, not offensive',
+    'Approachable': 'Approachable, not casual',
+    'Premium': 'Premium, not pretentious',
+    'Conversational': 'Conversational, not sloppy',
+    'Authoritative': 'Authoritative, not bossy'
+  };
+  var voiceContrasts = descriptors.map(function(d) { return contrastMap[d] || d; }).join('\\n  ');
+  // doSay / neverSay from blueprint data
+  var doSay = (Array.isArray(bv.doSay) && bv.doSay.length) ? bv.doSay : [];
+  var neverSay = (Array.isArray(bv.neverSay) && bv.neverSay.length) ? bv.neverSay : [];
+  // Build golden paragraph samples from taglines + hero headlines + section content
+  var voiceSamples = [];
+  if (Array.isArray(p1.taglines) && p1.taglines.length) {
+    var tSample = p1.taglines.slice(0, 3).map(function(t) { return typeof t === 'string' ? t : (t.text || t.tagline || ''); }).filter(Boolean);
+    if (tSample.length) voiceSamples.push('Tagline examples: ' + tSample.join(' | '));
+  }
+  if (doSay.length) {
+    voiceSamples.push('On-brand phrases: ' + doSay.join(' | '));
+  }
+  if (p5.heroSubheadline) {
+    voiceSamples.push('Hero subheadline: ' + p5.heroSubheadline);
+  }
+  if (Array.isArray(p5.sections) && p5.sections.length) {
+    var problemSection = p5.sections.find(function(s) { return (s.name || '').toLowerCase().indexOf('problem') > -1 || (s.name || '').toLowerCase().indexOf('root') > -1; });
+    if (problemSection && problemSection.content) {
+      voiceSamples.push('Sample body copy: ' + problemSection.content);
+    }
+  }
+  if (posStatements.website) voiceSamples.push('Website positioning statement: ' + posStatements.website);
+  if (posStatements.social) voiceSamples.push('Social bio: ' + posStatements.social);
+  if (posStatements.inPerson) voiceSamples.push('In-person intro: ' + posStatements.inPerson);
+  var handoff = '# ' + (brandName || 'Brand') + ' \\u2014 AI Brand Brief\\n\\n' +
+    'Use this document as your complete reference for writing copy, building pages, and creating content for this brand. Follow the voice rules and design tokens exactly.\\n\\n' +
+    '---\\n\\n' +
+    '## 1. Brand Identity\\n\\n' +
+    'Brand: ' + (brandName || 'My Brand') + '\\n' +
+    (tagline ? 'Tagline: ' + tagline + '\\n' : '') +
+    'Niche: ' + nicheStatement + '\\n' +
+    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\\n' : '') +
+    (uniqueMechanism ? 'Unique Mechanism: ' + uniqueMechanism + '\\n' : '') +
+    '\\n## 2. Voice & Tone\\n\\n' +
+    'Voice attributes (with boundaries):\\n  ' + voiceContrasts + '\\n\\n' +
+    (doSay.length ? 'Things we DO say:\\n' + doSay.map(function(s) { return '  \\u2713 "' + s + '"'; }).join('\\n') + '\\n\\n' : '') +
+    (neverSay.length ? 'Things we NEVER say:\\n' + neverSay.map(function(s) { return '  \\u2717 "' + s + '"'; }).join('\\n') + '\\n\\n' : '') +
+    '## 3. Writing Rules\\n\\n' +
+    'DO:\\n' +
+    '  \\u2713 Use contractions (you\\'ll, we\\'re, that\\'s)\\n' +
+    '  \\u2713 Lead with the benefit, then explain the feature\\n' +
+    '  \\u2713 Use second person ("you") to speak directly to the reader\\n' +
+    '  \\u2713 Keep paragraphs to 2\\u20133 sentences max\\n' +
+    '  \\u2713 Use periods and commas for rhythm. Em dashes for emphasis.\\n' +
+    '  \\u2713 Open with a bold statement or provocative reframe, not a question\\n' +
+    '  \\u2713 Vary sentence length. Short punches. Then longer explanations that build the case.\\n' +
+    '\\nDO NOT:\\n' +
+    '  \\u2717 Use emojis anywhere\\n' +
+    '  \\u2717 Use hyphens/dashes to start list items (use periods, commas, or em dashes)\\n' +
+    '  \\u2717 Use passive voice ("was created" \\u2192 "we created")\\n' +
+    '  \\u2717 Use corporate jargon or filler phrases\\n' +
+    '  \\u2717 Start with "In today\\'s..." or "Are you tired of..."\\n' +
+    '  \\u2717 Use rhetorical questions as openers\\n' +
+    '\\nBANNED WORDS (never use these):\\n' +
+    '  delve, leverage, unlock, harness, seamless, cutting-edge, game-changer,\\n' +
+    '  comprehensive, robust, innovative, synergy, elevate, empower, journey,\\n' +
+    '  landscape, paradigm, revolutionize, transformative, world-class, holistic,\\n' +
+    '  deep dive, next-level, thought leader, disrupt, ecosystem, scalable\\n\\n' +
+    '## 4. Audience\\n\\n' +
+    (avatarName ? 'Ideal client avatar: ' + avatarName + (avatarAge ? ' (age ' + avatarAge + ')' : '') + '\\n' : '') +
+    (avatarSituation ? 'Their situation: ' + avatarSituation + '\\n' : '') +
+    (whoServe ? 'Who we serve: ' + whoServe + '\\n' : '') +
+    (whoNotServe ? 'Who we do NOT serve: ' + whoNotServe + '\\n' : '') +
+    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\\n' : '') +
+    (whatStops ? 'What stops them: ' + whatStops + '\\n' : '') +
+    (alreadyTried ? 'What they\\'ve already tried: ' + alreadyTried + '\\n' : '') +
+    (whyDidntWork ? 'Why it didn\\'t work: ' + whyDidntWork + '\\n' : '') +
+    (Array.isArray(exactWords) && exactWords.length ? '\\nTheir exact words (use this language in copy):\\n' + exactWords.map(function(w) { return '  "' + w + '"'; }).join('\\n') + '\\n' : '') +
+    '\\n## 5. Voice Examples\\n\\n' +
+    'These samples show the brand voice in action. Match this tone, rhythm, and energy:\\n\\n' +
+    voiceSamples.map(function(s) { return '  ' + s; }).join('\\n\\n') + '\\n\\n' +
+    '## 6. Positioning & Headlines\\n\\n' +
+    'Niche: ' + nicheStatement + '\\n' +
+    (competitorGap ? 'How we\\'re different: ' + competitorGap + '\\n' : '') +
+    '\\nHeadline Options:\\n' + (headlines || 'None generated') + '\\n\\n' +
+    '## 7. Offer Suite\\n\\n' + (offerLines.join('\\n') || 'None generated') + '\\n' +
+    (ascensionLogic ? '\\nAscension logic: ' + ascensionLogic + '\\n' : '') +
+    '\\n' +
+    '## 8. Website Blueprint\\n\\n' +
+    (pageNarrative ? 'Site strategy: ' + pageNarrative + '\\n\\n' : '') +
+    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\\n' : '') +
+    (heroSub ? 'Hero Subheadline: ' + heroSub + '\\n' : '') +
+    'Hero CTA: ' + heroCTA + '\\n' +
+    (heroImageTheme ? 'Hero image direction: ' + heroImageTheme + '\\n' : '') +
+    '\\n' +
+    (sections ? 'Page Sections:\\n' + sections + '\\n\\n' : '') +
+    (testimonialFraming ? 'Testimonial strategy: ' + testimonialFraming + '\\n\\n' : '') +
+    '## 9. Design Tokens\\n\\n' +
+    'Colors:\\n' + (colors || '  Primary: #1D1D1F\\n  Accent: #C4703F\\n  Background: #FFFFFF') + '\\n\\n' +
+    'Typography:\\n' +
+    '  Headlines: ' + fontHeading + ' 700\\n' +
+    '  Body: ' + fontBody + ' 400\\n' +
+    '  Emotional: Playfair Display Italic (quotes and taglines only)\\n\\n' +
+    'Aesthetic: ' + aesthetic + '\\n' +
+    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\\n\\n' +
+    '## 10. Build Instructions\\n\\n' +
+    'Build a complete personal brand website using this blueprint.\\n\\n' +
+    'Structure:\\n' +
+    '  1. Start with the hero section using the headline, subheadline, and CTA above\\n' +
+    '  2. Build each page section in the order listed\\n' +
+    '  3. End with a clear CTA section that mirrors the hero\\n\\n' +
+    'Design rules:\\n' +
+    '  Use clean backgrounds (' + ((Array.isArray(p1.visualDirection && p1.visualDirection.colors) && p1.visualDirection.colors.find(function(c) { return c.name === "Background"; })) || {}).hex || '#FFFFFF' + ')\\n' +
+    '  Load ' + fontHeading + ' and ' + fontBody + ' from Google Fonts\\n' +
+    '  No emojis. No gradients. No dark mode.\\n' +
+    '  Buttons: dark pill shapes, never copper/accent colored\\n\\n' +
+    'Copy rules:\\n' +
+    '  Follow the voice rules in Section 3 exactly\\n' +
+    '  Use the audience\\'s exact words from Section 4 in headlines and subheads\\n' +
+    '  Reference the voice examples in Section 5 for tone calibration\\n' +
+    '  No dashes in copy (use periods, commas, or em dashes instead)\\n\\n' +
+    'Generated by Deep Work Interview \\u2014 jamesguldan.com/deep-work';
+  navigator.clipboard.writeText(handoff).then(function() {
+    var toast = document.getElementById('bpAiCopySuccess');
+    if (toast) { toast.style.display = 'block'; setTimeout(function() { toast.style.display = ''; }, 3000); }
+    fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: STATE.sessionId, eventType: 'ai_builder_copied' }) }).catch(function(){});
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = handoff;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(_) {}
+    document.body.removeChild(ta);
+    var toast = document.getElementById('bpAiCopySuccess');
+    if (toast) { toast.style.display = 'block'; setTimeout(function() { toast.style.display = ''; }, 3000); }
+  });
 }
+
 
 async function downloadPDF() {
   if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }
@@ -17299,6 +17462,17 @@ function downloadBlueprintPDF() {
     footer.style.cssText = 'margin-top:40px;padding-top:20px;border-top:1px solid #F0F0F0;text-align:center;font-size:11px;color:#86868B;font-family:Inter,sans-serif;';
     footer.textContent = 'Powered by Deep Work Interview \u2014 jamesguldan.com/deep-work';
     clone.appendChild(footer);
+    // Wrap clone in a container with blueprint styles so html2canvas can resolve them
+    var wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:fixed;top:-99999px;left:-99999px;width:816px;';
+    // Copy blueprint style tag into wrapper so styles apply to the clone
+    var bpBody = document.getElementById('blueprint-body');
+    if (bpBody) {
+      var styleTags = bpBody.querySelectorAll('style');
+      styleTags.forEach(function(st) { wrapper.appendChild(st.cloneNode(true)); });
+    }
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
     var opt = {
       margin: [0.5, 0.5, 0.75, 0.5],
       filename: '` + fnSafe + `-blueprint.pdf',
@@ -17308,14 +17482,17 @@ function downloadBlueprintPDF() {
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
     if (typeof html2pdf === 'undefined') {
+      document.body.removeChild(wrapper);
       if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
       alert('PDF library not loaded. Please save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
       return;
     }
     html2pdf().set(opt).from(clone).save().then(function() {
+      document.body.removeChild(wrapper);
       if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
       fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: '` + sid + `', eventType: 'pdf_downloaded' }) }).catch(function(){});
     }).catch(function(err) {
+      document.body.removeChild(wrapper);
       console.error('PDF generation failed:', err);
       if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
       alert('PDF generation failed. You can save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
@@ -17690,7 +17867,6 @@ function renderChapter4(bp, sessionId, firstName) {
     '<div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div>' +
     '<a class="bp-gap-book-btn" href="' + escHtml(calendlyUrl) + '" target="_blank" rel="noopener" onclick="fetch(\'/api/track\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({sessionId:\'' + escHtml(sessionId) + '\',eventType:\'cta_book_call\'})}).catch(function(){})">Book Your Strategy Call</a>' +
     '<div class="bp-gap-guarantee">100% satisfaction guaranteed. If the call doesn\'t give you a clear next step, you pay nothing.</div>' +
-    '<div style="margin-top:16px;"><a class="bp-gap-reply" href="mailto:james@jamesguldan.com?subject=Deep Work Interview - Blueprint Question">or reply to James directly</a></div>' +
     '</div>' +
     '</div>' +
     /* ── Build With AI ── */
@@ -17838,7 +18014,7 @@ function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   var firstName = (userName || "Friend").split(" ")[0];
   var sessionId = bp.sessionId || "";
   var bpDataJson = JSON.stringify(bp).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/\//g, "\\u002f");
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Deep Work Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + escHtml(firstName || 'Your') + '&#39;s Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
     return '<div class="bp-dot"><span class="bp-dot-label">' + escHtml(label) + "</span></div>";
   }).join("") + '</div><div class="bp-page">' + renderChapter1(bp, firstName, messageCount) + '<div style="text-align:center; padding: 8px 0 16px; font-size: 12px; color: #86868B; font-family: Inter, sans-serif; letter-spacing: 0.01em;">This blueprint was crafted by AI from your interview. Every insight is drawn from what you shared.</div>' + renderChapter2(bp) + renderChapter3(bp) + renderNicheSection(bp) + renderOfferSuite(bp) + renderHeadlines(bp) + renderWebsiteBlueprint(bp) + renderChapter4(bp, sessionId, firstName) + "</div><script>window.__blueprintData=" + bpDataJson + ";<\/script><script>" + getBlueprintJS(sessionId, firstName) + "<\/script></body></html>";
 }
@@ -17896,6 +18072,69 @@ async function handleBlueprintPDF(request, env) {
   });
 }
 __name(handleBlueprintPDF, "handleBlueprintPDF");
+async function handleBlueprintPDFDownload(request, env) {
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId)
+      return json({ error: "Missing sessionId" }, 400);
+    const meta = await loadBlueprintForSession(env, sessionId);
+    if (!meta)
+      return json({ error: "Blueprint not found" }, 404);
+    const blueprintHtml = renderBlueprintResults(meta.blueprint, meta.name, meta.apolloData, meta.messageCount);
+    // Strip scripts and interactive elements for clean PDF
+    const cleanHtml = blueprintHtml
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<button[\s\S]*?<\/button>/gi, "")
+      .replace(/<div[^>]*class="[^"]*bp-feedback[^"]*"[\s\S]*?<\/div>/gi, "");
+    // Add print-optimized styles
+    const printStyles = `<style>
+      @page { margin: 0.5in; }
+      .bp-cta-block, .no-print, .bp-feedback { display: none !important; }
+      .bp-page { max-width: 100% !important; padding: 0 !important; }
+    </style>`;
+    const pdfHtml = cleanHtml.replace("</head>", printStyles + "</head>");
+    // Call Cloudflare Browser Rendering REST API
+    const brToken = env.BROWSER_RENDERING_TOKEN;
+    if (!brToken)
+      return json({ error: "PDF service not configured" }, 500);
+    const pdfResponse = await fetch(
+      "https://api.cloudflare.com/client/v4/accounts/bd13f1dff62d4ccbea47440e45b48ec2/browser-rendering/pdf",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + brToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          html: pdfHtml,
+          pdfOptions: {
+            printBackground: true,
+            format: "letter",
+            margin: { top: "0.5in", bottom: "0.75in", left: "0.5in", right: "0.5in" }
+          },
+          gotoOptions: { waitUntil: "networkidle0", timeout: 30000 }
+        })
+      }
+    );
+    if (!pdfResponse.ok) {
+      const errText = await pdfResponse.text();
+      console.error("Browser Rendering error:", errText);
+      return json({ error: "PDF generation failed" }, 500);
+    }
+    const firstName = (meta.name || "blueprint").split(" ")[0].toLowerCase().replace(/[^a-z0-9]/g, "") || "blueprint";
+    return new Response(pdfResponse.body, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${firstName}-deep-work-blueprint.pdf"`,
+        ...CORS
+      }
+    });
+  } catch (err) {
+    console.error("PDF download error:", err);
+    return json({ error: "PDF generation failed" }, 500);
+  }
+}
+__name(handleBlueprintPDFDownload, "handleBlueprintPDFDownload");
 async function handleBlueprintQA(request, env) {
   const { sessionId, question } = await request.json();
   if (!sessionId || !question)
@@ -19970,6 +20209,8 @@ async function routeRequest(request, env, ctx) {
       return handleExportSite(request, env);
     if (path === "/api/blueprint/pdf" && request.method === "POST")
       return handleBlueprintPDF(request, env);
+    if (path === "/api/blueprint/pdf-download" && request.method === "POST")
+      return handleBlueprintPDFDownload(request, env);
     if (path === "/api/blueprint/render" && request.method === "POST")
       return handleBlueprintRender(request, env);
     if (path === "/api/blueprint/qa" && request.method === "POST")
