@@ -44,8 +44,7 @@ import {
 } from './routes/payment.js';
 
 // Blueprint
-import { handleBlueprintPDF } from './routes/blueprint.js';
-  import { handleBlueprintRender } from './html/blueprint-render.js';
+import { handleBlueprintPDF, handleBlueprintRender } from './routes/blueprint.js';
 
 // Feedback
 import { handleFeedback, handleLogEvent } from './routes/feedback.js';
