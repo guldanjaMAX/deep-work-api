@@ -45,6 +45,7 @@ import {
 
 // Blueprint
 import { handleBlueprintPDF } from './routes/blueprint.js';
+  import { handleBlueprintRender } from './html/blueprint-render.js';
 
 // Feedback
 import { handleFeedback, handleLogEvent } from './routes/feedback.js';
@@ -156,6 +157,7 @@ export async function routeRequest(request, env, ctx) {
 
     // Blueprint
     if (path === '/api/blueprint/pdf' && request.method === 'POST') return handleBlueprintPDF(request, env);
+  if (path === '/api/blueprint/render' && request.method === 'POST') return handleBlueprintRender(request, env);
 
     // Feedback
     if (path === '/api/feedback' && request.method === 'POST') return handleFeedback(request, env);

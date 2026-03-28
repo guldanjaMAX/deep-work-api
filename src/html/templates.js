@@ -1988,16 +1988,21 @@ export const getHTML = (config) => `<!DOCTYPE html>
     <p>Your complete brand foundation, ready to build on.</p>
   </div>
   <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
-  <div class="blueprint-actions" style="flex-direction:column;align-items:center;gap:16px;padding:28px 40px;">
-    <button class="btn btn-gold" id="build-site-btn" onclick="handleBuildSite()" style="width:auto;padding:18px 40px;font-size:17px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);letter-spacing:0.02em;">Make This Real</button>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn btn-outline" onclick="downloadPDF()" style="width:auto;padding:12px 22px;font-size:14px;">Download PDF</button>
-      <button class="btn btn-outline" onclick="exportPackage()" style="width:auto;padding:12px 22px;font-size:14px;">Take It With You</button>
-    </div>
-  </div>
   <div class="blueprint-body" id="blueprint-body">
     <!-- populated by JS -->
   </div>
+</div>
+
+<!-- QA MESSAGES PANEL (slides up above bar) -->
+<div id="qa-messages-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid #F0F0F0;max-height:40vh;overflow-y:auto;z-index:99;padding:16px 20px;display:none;flex-direction:column;gap:10px;">
+  <div id="qa-messages" style="display:flex;flex-direction:column;gap:10px;"></div>
+</div>
+
+<!-- COMPACT ASK BAR (56px) -->
+<div id="ask-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #F0F0F0;padding:10px 20px;display:none;align-items:center;gap:12px;z-index:100;box-sizing:border-box;">
+  <input id="qa-input" type="text" placeholder="Ask about your blueprint results..." onkeydown="if(event.key==='Enter')sendQA()" style="flex:1;height:36px;border:1px solid #E8E8E8;border-radius:50px;padding:0 16px;font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#FAFAFA;outline:none;">
+  <button id="qa-send" onclick="sendQA()" style="width:32px;height:32px;background:#1D1D1F;color:#fff;border:none;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;opacity:1;transition:opacity 0.2s;" title="Send"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 13L13 7L1 1V6L9 7L1 8V13Z" fill="white"/></svg></button>
+  <span id="qa-counter" style="font-family:'Inter',sans-serif;font-size:11px;color:#C0C0C0;white-space:nowrap;flex-shrink:0;">20 left</span>
 </div>
 
 <!-- \u2550\u2550 BUILD SITE POPUP \u2550\u2550 -->
@@ -3771,250 +3776,29 @@ function handleBlueprintReady(blueprint) {
   }, 3000);
 }
 
-function renderBlueprint(bp, strategistDebrief, isReturning) {
-  const b = bp.blueprint;
-  document.getElementById('bp-name').textContent = b.name + "'s Brand Blueprint";
-
-  // \u2500\u2500 Strategist Debrief \u2500\u2500
-  const debriefEl = document.getElementById('strategist-debrief');
-  if (debriefEl) {
-    const d = strategistDebrief;
-    const p8 = b.part8 || {};
-
-    if (d && d.reflection) {
-      // Opus-generated debrief exists \u2014 render the real thing
-      const returningNote = isReturning
-        ? \`<div style="font-size:13px;color:#C4703F;font-style:italic;margin-bottom:16px;">You came back. That tells me this matters to you. Everything below is exactly where you left it.</div>\`
-        : '';
-
-      debriefEl.innerHTML = \`
-        <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:32px 36px;box-shadow:0 2px 16px rgba(0,0,0,0.05);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;">\u2726</div>
-            <div>
-              <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;">A Note From Your Strategist</div>
-              <div style="font-size:12px;color:#999;margin-top:2px;">Written after getting to know you</div>
-            </div>
-          </div>
-
-          \${returningNote}
-
-          \${d.quotedMoment ? \`<div style="font-size:16px;font-style:italic;color:#555;line-height:1.7;padding:16px 20px;border-left:3px solid #C4703F;background:rgba(196,112,63,0.04);border-radius:0 8px 8px 0;margin-bottom:20px;">"\${d.quotedMoment}"</div>\` : ''}
-
-          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:16px;">
-            \${d.reflection}
-          </div>
-
-          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:16px;">
-            \${d.insight}
-          </div>
-
-          <div style="font-size:15px;line-height:1.85;color:#333;margin-bottom:20px;">
-            \${d.bridge}
-          </div>
-
-          <div style="padding:20px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.08), rgba(196,112,63,0.02));border:1.5px solid rgba(196,112,63,0.25);border-radius:12px;margin-bottom:20px;">
-            <div style="font-size:15px;line-height:1.85;color:#333;font-weight:500;">
-              \${d.motivation}
-            </div>
-          </div>
-
-          <div style="text-align:center;">
-            <button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:16px 36px;font-size:16px;font-weight:700;box-shadow:0 4px 20px rgba(196,112,63,0.35);">Get Your Vision Live</button>
-            <div style="font-size:12px;color:#999;margin-top:8px;">Everything you need is already in this blueprint. Let's bring it to life.</div>
-          </div>
-        </div>
-      \`;
-      debriefEl.style.display = '';
-    } else {
-      // No Opus debrief yet \u2014 use smart fallback from blueprint data
-      const promise = b.part1 ? b.part1.coreBrandPromise : '';
-      const avatarName = b.part2 ? b.part2.name : '';
-      const niche = b.part3 ? b.part3.nicheStatement : '';
-      const firstMove = b.part6 ? b.part6.firstMove : '';
-
-      let bridgeText = '';
-      if (p8.personalizedMessage) {
-        bridgeText = p8.personalizedMessage;
-      } else if (firstMove) {
-        bridgeText = firstMove;
-      } else if (promise) {
-        bridgeText = 'Your brand promise is clear: ' + promise + '. The next step is turning that clarity into something your audience can experience.';
-      }
-
-      const contextParts = [];
-      if (niche) contextParts.push(niche);
-      else if (promise) contextParts.push(promise);
-      if (avatarName) contextParts.push('Your ideal client, ' + avatarName + ', is out there looking for exactly what you offer.');
-
-      debriefEl.innerHTML = \`
-        <div style="background:#fff;border:1px solid #e8e4df;border-radius:16px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,0.04);">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#C4703F,#d4945f);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;">\u2726</div>
-            <div style="font-size:18px;font-weight:700;font-family:'Outfit',sans-serif;">Your Strategist's Take</div>
-          </div>
-          <div style="font-size:15px;line-height:1.8;color:#333;">
-            After getting to know you, here is what stands out. \${contextParts.join(' ')} Below is your complete brand blueprint with everything we uncovered together. Scroll through each section, and when you are ready to bring this to life, the button below will get you there.
-          </div>
-          \${bridgeText ? \`
-            <div style="margin-top:20px;padding:20px 24px;background:linear-gradient(135deg, rgba(196,112,63,0.08), rgba(196,112,63,0.02));border:1.5px solid rgba(196,112,63,0.25);border-radius:12px;">
-              <div style="font-size:13px;text-transform:uppercase;letter-spacing:0.08em;color:#C4703F;font-weight:600;margin-bottom:8px;">Your Next Move</div>
-              <div style="font-size:14px;line-height:1.7;color:#444;">\${bridgeText}</div>
-            </div>
-          \` : ''}
-        </div>
-      \`;
-      debriefEl.style.display = '';
-    }
-  }
-
+async function renderBlueprint(bp, strategistDebrief, isReturning) {
   const body = document.getElementById('blueprint-body');
-  body.innerHTML = \`
-    \${renderPart(1, b.part1.title, \`
-      <div class="bp-grid">
-        <div class="bp-item">
-          <div class="bp-item-label">Brand Names</div>
-          <div class="bp-item-value">\${b.part1.brandNames.map((n,i) => \`\${i+1}. \${n}\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Taglines</div>
-          <div class="bp-item-value">\${b.part1.taglines.map((t,i) => \`\${i+1}. \${t}\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Color Palette</div>
-          <div class="bp-item-value">\${b.part1.visualDirection.colors.map(c => \`<span class="color-swatch" style="background:\${c.hex}"></span>\${c.name} \${c.hex}\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Core Brand Promise</div>
-          <div class="bp-item-value">\${b.part1.coreBrandPromise}</div>
-        </div>
-      </div>
-    \`)}
-    \${renderPart(2, b.part2.title, \`
-      <div class="bp-grid">
-        <div class="bp-item">
-          <div class="bp-item-label">Avatar</div>
-          <div class="bp-item-value"><strong>\${b.part2.name}</strong>, \${b.part2.ageRange}<br>\${b.part2.lifeSituation}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">What Stops Them</div>
-          <div class="bp-item-value">\${b.part2.whatIsStoppingThem}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Their Exact Words</div>
-          <div class="bp-item-value">\${b.part2.exactWords.map((w,i) => \`\${i+1}. "\${w}"\`).join('<br>')}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Why Past Solutions Failed</div>
-          <div class="bp-item-value">\${b.part2.whyItDidNotWork}</div>
-        </div>
-      </div>
-    \`)}
-    \${renderPart(3, b.part3.title, \`
-      <div class="bp-item" style="margin-bottom:12px">
-        <div class="bp-item-label">Niche Statement</div>
-        <div class="bp-item-value" style="font-size:16px;font-weight:500">\${b.part3.nicheStatement}</div>
-      </div>
-      <div class="bp-grid">
-        <div class="bp-item">
-          <div class="bp-item-label">Unique Mechanism</div>
-          <div class="bp-item-value">\${b.part3.uniqueMechanism}</div>
-        </div>
-        <div class="bp-item">
-          <div class="bp-item-label">Competitive Edge</div>
-          <div class="bp-item-value">\${b.part3.competitorGap}</div>
-        </div>
-      </div>
-    \`)}
-    \${renderPart(4, b.part4.title, \`
-      <div class="bp-grid">
-        \${renderOffer('Entry Offer', b.part4.entryOffer)}
-        \${renderOffer('Core Offer', b.part4.coreOffer)}
-        \${renderOffer('Premium Offer', b.part4.premiumOffer)}
-        <div class="bp-item">
-          <div class="bp-item-label">Ascension Logic</div>
-          <div class="bp-item-value">\${b.part4.ascensionLogic}</div>
-        </div>
-      </div>
-    \`)}
-    \${b.part5 ? renderPart(5, b.part5.title, \`
-      <div class="bp-item">
-        <div class="bp-item-label">Hero Headlines</div>
-        <div class="bp-item-value">\${b.part5.heroHeadlines.map((h,i) => \`\${i+1}. \${h}\`).join('<br><br>')}</div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Hero Subheadline</div>
-        <div class="bp-item-value">\${b.part5.heroSubheadline}</div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Primary CTA</div>
-        <div class="bp-item-value" style="font-weight:600;color:var(--gold)">\${b.part5.heroCTA}</div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Page Sections (in order)</div>
-        <div class="bp-item-value">
-          \${b.part5.sections.map((s,i) => \`
-            <div style="margin-bottom:14px">
-              <strong>\${i+1}. \${s.name}</strong><br>
-              <span style="color:var(--text2);font-size:13px">\${s.purpose}</span><br>
-              <span style="font-size:13px">\${s.content || ''}</span>
-            </div>
-          \`).join('')}
-        </div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Testimonial Framing</div>
-        <div class="bp-item-value">\${b.part5.testimonialFraming}</div>
-      </div>
-    \`) : ''}
-    \${b.part6 ? renderPart(6, b.part6.title, \`
-      <div class="bp-item">
-        <div class="bp-item-label">Credibility Gaps to Close</div>
-        <div class="bp-item-value">
-          \${b.part6.credibilityGaps.map((g,i) => \`<div style="margin-bottom:12px"><strong>\${i+1}.</strong> \${g}</div>\`).join('')}
-        </div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Marketing Opportunities</div>
-        <div class="bp-item-value">
-          \${b.part6.marketingOpportunities.map((m,i) => \`<div style="margin-bottom:12px"><strong>\${i+1}.</strong> \${m}</div>\`).join('')}
-        </div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Your First Move</div>
-        <div class="bp-item-value" style="font-style:italic;font-size:15px;line-height:1.7">\${b.part6.firstMove}</div>
-      </div>
-    \`) : ''}
-    \${renderPart(7, b.part7.title, \`
-      <div class="bp-item">
-        <div class="bp-item-label">Top 10 Headlines</div>
-        <div class="bp-item-value">\${b.part7.heroHeadlineOptions.map((h,i) => \`\${i+1}. \${h}\`).join('<br><br>')}</div>
-      </div>
-      <div class="bp-item">
-        <div class="bp-item-label">Positioning Statements</div>
-        <div class="bp-item-value">
-          \${b.part7.positioningStatements ? \`
-            <strong>Website:</strong> \${b.part7.positioningStatements.website || ''}<br><br>
-            <strong>Social / Bio:</strong> \${b.part7.positioningStatements.social || ''}<br><br>
-            <strong>In Person:</strong> \${b.part7.positioningStatements.inPerson || ''}
-          \` : ''}
-        </div>
-      </div>
-    \`)}
-    \${b.part8 && b.part8.personalizedMessage ? renderPart(8, 'Your Recommended Next Step', \`
-      <div class="bp-item" style="background:linear-gradient(135deg, rgba(196,112,63,0.08), transparent);border:1.5px solid var(--gold);border-radius:12px;padding:24px;">
-        <div style="font-size:20px;font-weight:700;font-family:'Outfit',sans-serif;color:var(--text);margin-bottom:12px;">\${b.part8.headline || 'Your Next Move'}</div>
-        <div style="font-size:15px;line-height:1.8;color:var(--text);margin-bottom:16px;">\${b.part8.personalizedMessage}</div>
-        \${b.part8.whyNow ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:16px;padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">Why now:</strong> \${b.part8.whyNow}</div>\` : ''}
-        \${b.part8.specificBenefit ? \`<div style="font-size:13px;line-height:1.7;color:var(--text2);padding:12px 16px;background:rgba(0,0,0,0.03);border-radius:8px;"><strong style="color:var(--gold);">What you get:</strong> \${b.part8.specificBenefit}</div>\` : ''}
-        <div style="margin-top:20px;text-align:center;">
-          \${b.part8.recommendation === 'site_in_sixty' ? \`<button class="btn btn-gold" onclick="handleBuildSite()" style="width:auto;padding:14px 32px;font-size:15px;">Get Your Vision Live</button>\` : b.part8.recommendation === 'coaching' ? \`<a href="https://jamesguldan.com" target="_blank" class="btn btn-gold" style="width:auto;padding:14px 32px;font-size:15px;text-decoration:none;">Book a Strategy Call</a>\` : ''}
-        </div>
-      </div>
-    \`) : ''}
-  \`;
+  if (!body) return;
+  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div style="font-family:Outfit,sans-serif;font-size:14px;color:#86868B;letter-spacing:0.05em;">Loading your blueprint...</div></div>';
+  try {
+    const res = await fetch('/api/blueprint/render', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: STATE.sessionId })
+    });
+    if (!res.ok) throw new Error('Failed to load blueprint');
+    const html = await res.text();
+    body.innerHTML = html;
+    body.querySelectorAll('script').forEach(function(old) {
+      var s = document.createElement('script');
+      s.textContent = old.textContent;
+      old.parentNode.replaceChild(s, old);
+    });
+    if (typeof initAskBarVisibility === 'function') initAskBarVisibility();
+  } catch (e) {
+    body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#C4703F;font-family:Outfit,sans-serif;font-size:14px;">Unable to load blueprint. Please refresh the page.</div>';
+  }
 }
-
 function renderPart(num, title, content) {
   return \`
     <div class="bp-part">
