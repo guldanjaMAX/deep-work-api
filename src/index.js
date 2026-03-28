@@ -19467,7 +19467,7 @@ function phaseBar(phase) {
 
 async function handleAdminDashboard(request, env) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return Response.redirect('/app', 302);
+  if (!admin) return Response.redirect(new URL('/app', request.url).href, 302);
   try {
     var [statsRow, completedRow, costRow, avgMsgRow] = await Promise.all([
       env.DB.prepare('SELECT COUNT(*) as total FROM sessions').first(),
@@ -19601,7 +19601,7 @@ async function handleAdminDashboard(request, env) {
 
 async function handleAdminSessionDetail(request, env, path) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return Response.redirect('/app', 302);
+  if (!admin) return Response.redirect(new URL('/app', request.url).href, 302);
   var sessionId = path.split('/')[3];
   if (!sessionId) return new Response('Missing session ID', { status:400 });
   try {
