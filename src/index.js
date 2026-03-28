@@ -17403,15 +17403,25 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 
 /* === PRINT / PDF OPTIMIZATION === */
 @media print {
-  .bp-hero-reveal { min-height: auto !important; page-break-after: always; padding: 120px 24px 80px !important; }
-  .chapter-divider { page-break-before: always; page-break-after: avoid; }
-  .bp-section { page-break-inside: avoid; }
-  .bp-card, .bp-offer-card, .bp-move-card, .bp-website-section-card { page-break-inside: avoid; }
+  /* Fix invisible content — animations leave opacity:0 in static PDF render */
+  .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3 { opacity: 1 !important; animation: none !important; transform: none !important; }
+  /* Hero: full cover page, then natural flow */
+  .bp-hero-reveal { min-height: 90vh !important; page-break-after: always; padding: 80px 24px 60px !important; }
   .bp-hero-begin { display: none !important; }
-  .bp-hero-url { position: static !important; margin-top: 40px; }
+  .bp-hero-url { position: static !important; margin-top: 32px; }
   .bp-scroll-indicator { display: none !important; }
+  /* Chapter dividers: no forced page break, compact, stay attached to following content */
+  .chapter-divider { page-break-before: auto !important; page-break-after: avoid !important; page-break-inside: avoid !important; padding: 20px 24px !important; }
+  /* Sections: let content flow naturally, no forced breaks */
+  .bp-section { page-break-inside: auto !important; padding: 32px 24px !important; }
+  /* Individual cards: keep together */
+  .bp-card, .bp-offer-card, .bp-move-card, .bp-website-section-card, .bp-letter-card, .bp-gap-cta { page-break-inside: avoid; }
+  /* Hide interactive/irrelevant elements */
   .bp-feedback, .bp-cta-block, .no-print { display: none !important; }
+  .bp-pdf-section { display: none !important; }
+  .bp-ai-builder { display: none !important; }
   #bp-progress-bar { display: none !important; }
+  /* Layout */
   .bp-offers-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .bp-share-get-own { background: #1D1D1F !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
@@ -18052,14 +18062,29 @@ async function handleBlueprintPDFDownload(request, env) {
     // Add print-optimized styles
     const printStyles = `<style>
       @page { margin: 0.6in 0.5in 0.85in 0.5in; }
-      .bp-cta-block, .no-print, .bp-feedback { display: none !important; }
-      .bp-page { max-width: 100% !important; padding: 0 !important; }
+      /* Fix invisible content: animations leave opacity:0 in static PDF render */
+      .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3 { opacity: 1 !important; animation: none !important; transform: none !important; }
+      /* Hero cover page */
+      .bp-hero-reveal { min-height: 90vh !important; padding: 80px 24px 60px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-hero-reveal { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 30%, #FFFFFF 70%) !important; }
       .bp-hero-begin { display: none !important; }
-      .bp-hero-url { position: static !important; margin-top: 40px; }
-      .bp-hero-reveal { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 30%, #FFFFFF 70%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .chapter-divider { background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-hero-url { position: static !important; margin-top: 32px; }
+      /* Chapter dividers: compact, no forced page break, stay with following content */
+      .chapter-divider { page-break-before: auto !important; page-break-after: avoid !important; page-break-inside: avoid !important; padding: 20px 24px !important; background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      /* Sections: reduce padding, let flow naturally */
+      .bp-section { padding: 32px 24px !important; page-break-inside: auto !important; }
+      /* Keep cards together */
+      .bp-card, .bp-offer-card, .bp-move-card, .bp-website-section-card, .bp-letter-card, .bp-gap-cta { page-break-inside: avoid; }
+      /* Hide interactive/PDF-irrelevant elements */
+      .bp-cta-block, .no-print, .bp-feedback { display: none !important; }
+      .bp-pdf-section { display: none !important; }
+      .bp-ai-builder { display: none !important; }
+      #bp-progress-bar { display: none !important; }
+      .bp-page { max-width: 100% !important; padding: 0 !important; }
+      /* Color accuracy for dark/colored elements */
       .bp-share-section { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .bp-share-get-own, .bp-offer-premium, .bp-headline-featured, .bp-gap-book-btn, .bp-footer-primary-btn { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-share-get-own, .bp-offer-premium, .bp-headline-featured, .bp-gap-book-btn, .bp-footer-primary-btn, .bp-gap-col:last-child .bp-gap-check { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-offers-grid { grid-template-columns: repeat(2, 1fr) !important; }
     </style>`;
     const pdfHtml = cleanHtml.replace("</head>", printStyles + "</head>");
     // Call Cloudflare Browser Rendering REST API
