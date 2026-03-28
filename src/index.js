@@ -17062,8 +17062,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 /* ── PDF Download ── */
 .bp-pdf-section { margin-top: 32px; padding: 32px; text-align: center; border-top: 1px solid #F0F0F0; }
 .bp-pdf-section-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; line-height: 1.7; margin-bottom: 16px; }
-.bp-pdf-footer-note { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 16px; }
-.bp-pdf-footer-note a { color: #C0C0C0; text-decoration: underline; }
+
 
 /* === CHAPTER 4: FEEDBACK === */
 .bp-feedback {
@@ -17984,10 +17983,10 @@ function renderWebsiteBlueprint(bp) {
 }
 __name(renderWebsiteBlueprint, "renderWebsiteBlueprint");
 function renderBlueprintResults(bp, userName, apolloData, messageCount) {
-  var firstName = (userName || "Friend").split(" ")[0];
+  var firstName = (userName && userName !== "undefined" && userName !== "null" ? userName : "").split(" ")[0] || "";
   var sessionId = bp.sessionId || "";
   var bpDataJson = JSON.stringify(bp).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/\//g, "\\u002f");
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + escHtml(firstName || 'Your') + '&#39;s Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + (firstName ? escHtml(firstName) + '&#39;s Blueprint' : 'Your Blueprint') + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
     return '<div class="bp-dot"><span class="bp-dot-label">' + escHtml(label) + "</span></div>";
   }).join("") + '</div><div class="bp-page">' + renderChapter1(bp, firstName, messageCount) + '<div style="text-align:center; padding: 8px 0 16px; font-size: 12px; color: #86868B; font-family: Inter, sans-serif; letter-spacing: 0.01em;">This blueprint was crafted by AI from your interview. Every insight is drawn from what you shared.</div>' + renderChapter2(bp) + renderChapter3(bp) + renderNicheSection(bp) + renderOfferSuite(bp) + renderHeadlines(bp) + renderWebsiteBlueprint(bp) + renderChapter4(bp, sessionId, firstName) + "</div><script>window.__blueprintData=" + bpDataJson + ";<\/script><script>" + getBlueprintJS(sessionId, firstName) + "<\/script></body></html>";
 }
@@ -18012,7 +18011,7 @@ async function loadBlueprintForSession(env, sessionId) {
   if (!bp) return null;
   return {
     blueprint: bp,
-    name: bp.name || bp.debrief?.recipientName || session.name || session.userName || "",
+    name: [bp.name, bp.debrief?.recipientName, session.name, session.userName].find(function(n) { return n && typeof n === "string" && n.trim() && n !== "undefined" && n !== "null"; }) || "",
     apolloData: session.apolloData || null,
     messageCount: Array.isArray(session.messages) ? session.messages.length : 0
   };
