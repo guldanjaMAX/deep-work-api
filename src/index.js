@@ -17346,7 +17346,7 @@ function copyBlueprintForAI() {
   }
   var colors = '';
   if (Array.isArray(p1.visualDirection && p1.visualDirection.colors)) {
-    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\n');
+    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\\n');
   }
   var fonts = (p1.visualDirection && Array.isArray(p1.visualDirection.fonts)) ? p1.visualDirection.fonts : ['Outfit', 'Inter'];
   var aesthetic = (p1.visualDirection && p1.visualDirection.aesthetic) || 'Premium minimal. Clean white backgrounds. No gradients.';
@@ -17361,7 +17361,7 @@ function copyBlueprintForAI() {
   var nicheStatement = p3.nicheStatement || p3.uniqueMechanism || '';
   var headlines = '';
   if (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions.length) {
-    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\n');
+    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\\n');
   }
   var offerLines = [];
   if (p4.entryOffer) offerLines.push((p4.entryOffer.name || 'Entry') + ' (' + (p4.entryOffer.price || 'TBD') + '): ' + (p4.entryOffer.description || ''));
@@ -17374,37 +17374,37 @@ function copyBlueprintForAI() {
   var heroCTA = p5.heroCTA || 'Get Started';
   var sections = '';
   if (Array.isArray(p5.sections) && p5.sections.length) {
-    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\n');
+    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\\n');
   }
-  var handoff = '## Design System\n\n' +
-    'Brand: ' + (brandName || 'My Brand') + '\n' +
-    'Niche: ' + nicheStatement + '\n\n' +
-    'Colors:\n' + (colors || '  Primary: #1D1D1F\n  Accent: #C4703F\n  Background: #FFFFFF') + '\n\n' +
-    'Typography:\n' +
-    '  Headlines: ' + (fonts[0] || 'Outfit') + ' 700\n' +
-    '  Body: ' + (fonts[1] || 'Inter') + ' 400\n' +
-    '  Emotional: Playfair Display Italic (quotes and taglines only)\n\n' +
-    'Aesthetic: ' + aesthetic + '\n' +
-    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\n\n' +
-    '## Brand Foundation\n\n' +
-    (tagline ? 'Tagline: ' + tagline + '\n' : '') +
-    (brandVoice ? 'Brand Voice: ' + brandVoice + '\n' : '') +
-    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\n' : '') +
-    '\n## Ideal Client\n\n' +
-    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\n' : '') +
-    (whatStops ? 'What stops them: ' + whatStops + '\n' : '') +
-    (exactWords ? 'Their exact words: ' + exactWords + '\n' : '') +
-    '\n## Positioning\n\n' +
-    'Niche: ' + nicheStatement + '\n\n' +
-    'Headline Options:\n' + (headlines || 'None generated') + '\n\n' +
-    '## Offers\n\n' + (offerLines.join('\n') || 'None generated') + '\n\n' +
-    '## Website Blueprint\n\n' +
-    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\n' : '') +
-    (heroSub ? 'Hero Subheadline: ' + heroSub + '\n' : '') +
-    'Hero CTA: ' + heroCTA + '\n\n' +
-    (sections ? 'Page Sections:\n' + sections + '\n\n' : '') +
-    '## Instructions\n\n' +
-    'Build a complete personal brand website using this blueprint. Follow the design tokens exactly. Start with the hero section using the headline and CTA above, then build each page section in order. Use clean white (#FFFFFF) backgrounds, the specified fonts from Google Fonts, and the color palette above. No emojis. No gradients. No dark mode. No dashes in copy (use periods, commas, or em dashes instead). Buttons should be dark pill shapes, never copper/accent colored.\n\n' +
+  var handoff = '## Design System\\n\\n' +
+    'Brand: ' + (brandName || 'My Brand') + '\\n' +
+    'Niche: ' + nicheStatement + '\\n\\n' +
+    'Colors:\\n' + (colors || '  Primary: #1D1D1F\\n  Accent: #C4703F\\n  Background: #FFFFFF') + '\\n\\n' +
+    'Typography:\\n' +
+    '  Headlines: ' + (fonts[0] || 'Outfit') + ' 700\\n' +
+    '  Body: ' + (fonts[1] || 'Inter') + ' 400\\n' +
+    '  Emotional: Playfair Display Italic (quotes and taglines only)\\n\\n' +
+    'Aesthetic: ' + aesthetic + '\\n' +
+    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\\n\\n' +
+    '## Brand Foundation\\n\\n' +
+    (tagline ? 'Tagline: ' + tagline + '\\n' : '') +
+    (brandVoice ? 'Brand Voice: ' + brandVoice + '\\n' : '') +
+    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\\n' : '') +
+    '\\n## Ideal Client\\n\\n' +
+    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\\n' : '') +
+    (whatStops ? 'What stops them: ' + whatStops + '\\n' : '') +
+    (exactWords ? 'Their exact words: ' + exactWords + '\\n' : '') +
+    '\\n## Positioning\\n\\n' +
+    'Niche: ' + nicheStatement + '\\n\\n' +
+    'Headline Options:\\n' + (headlines || 'None generated') + '\\n\\n' +
+    '## Offers\\n\\n' + (offerLines.join('\\n') || 'None generated') + '\\n\\n' +
+    '## Website Blueprint\\n\\n' +
+    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\\n' : '') +
+    (heroSub ? 'Hero Subheadline: ' + heroSub + '\\n' : '') +
+    'Hero CTA: ' + heroCTA + '\\n\\n' +
+    (sections ? 'Page Sections:\\n' + sections + '\\n\\n' : '') +
+    '## Instructions\\n\\n' +
+    'Build a complete personal brand website using this blueprint. Follow the design tokens exactly. Start with the hero section using the headline and CTA above, then build each page section in order. Use clean white (#FFFFFF) backgrounds, the specified fonts from Google Fonts, and the color palette above. No emojis. No gradients. No dark mode. No dashes in copy (use periods, commas, or em dashes instead). Buttons should be dark pill shapes, never copper/accent colored.\\n\\n' +
     'Learn more about Deep Work Interview: jamesguldan.com/deep-work';
   function showCopySuccess() {
     var toast = document.getElementById('bpAiCopySuccess');
