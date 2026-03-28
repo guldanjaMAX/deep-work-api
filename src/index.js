@@ -5383,33 +5383,21 @@ function closeBlueprintQA() {
 }
 
 function initAskBarVisibility() {
-  // Show ask bar after user scrolls past the debrief letter
-  // Hide it when the blueprint footer section is visible
+  // Always show ask bar fixed at bottom when blueprint screen is active
   const bar = document.getElementById('ask-bar');
   if (!bar) return;
 
-  // Observe debrief letter (inside injected blueprint HTML)
-  const tryObserve = function() {
-    const letter = document.getElementById('bp-debrief-letter');
-    const footer = document.querySelector('.bp-blueprint-footer');
-    if (!letter) { setTimeout(tryObserve, 500); return; }
-
-    const showObs = new IntersectionObserver(function(entries) {
-      if (!entries[0].isIntersecting && entries[0].boundingClientRect.top < 0) {
-        // Debrief letter scrolled past — show bar
-        bar.style.display = 'flex';
-        if (footer) {
-          const hideObs = new IntersectionObserver(function(fe) {
-            bar.style.display = fe[0].isIntersecting ? 'none' : 'flex';
-          }, { threshold: 0.3 });
-          hideObs.observe(footer);
-        }
-        showObs.disconnect();
-      }
-    }, { threshold: 0 });
-    showObs.observe(letter);
-  };
-  tryObserve();
+  // Position fixed at bottom of viewport
+  bar.style.position = 'fixed';
+  bar.style.bottom = '0';
+  bar.style.left = '0';
+  bar.style.right = '0';
+  bar.style.width = '100%';
+  bar.style.zIndex = '100';
+  bar.style.background = '#fff';
+  bar.style.borderTop = '1px solid rgba(0,0,0,0.08)';
+  bar.style.boxShadow = '0 -2px 12px rgba(0,0,0,0.06)';
+  bar.style.display = 'flex';
 }
 
 async function sendQA() {
