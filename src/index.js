@@ -5378,12 +5378,15 @@ function downloadBlueprintPDF() {
     body: JSON.stringify({ sessionId: STATE.sessionId })
   }).then(function(res) {
     if (!res.ok) throw new Error('PDF generation failed');
-    return res.blob();
-  }).then(function(blob) {
-    var url = URL.createObjectURL(blob);
+    var cd = res.headers.get('Content-Disposition') || '';
+    var nameMatch = cd.match(/filename="?([^"]+)"?/);
+    var pdfName = nameMatch ? nameMatch[1] : 'deep-work-blueprint.pdf';
+    return res.blob().then(function(b) { return { blob: b, filename: pdfName }; });
+  }).then(function(result) {
+    var url = URL.createObjectURL(result.blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = (STATE.sessionId || 'blueprint').replace(/[^a-zA-Z0-9-]/g, '').substring(0, 30) + '-blueprint.pdf';
+    a.download = result.filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -17313,6 +17316,106 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-family: 'Inter', sans-serif; font-size: 11px; color: #86868B;
 }
 
+/* === HERO BRAND MARK & COVER === */
+.bp-hero-reveal {
+  background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 30%, #FFFFFF 70%) !important;
+}
+.bp-hero-brand-mark {
+  position: absolute; top: 28px; left: 0; right: 0;
+  font-family: 'Outfit', sans-serif; font-weight: 700;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: #C4703F; text-align: center;
+}
+.bp-hero-subtitle {
+  font-family: 'Outfit', sans-serif; font-weight: 600;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: #86868B; margin-bottom: 20px;
+}
+.bp-hero-url {
+  position: absolute; bottom: 92px; left: 0; right: 0;
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: #C0C0C0; text-align: center; letter-spacing: 0.02em;
+}
+
+/* === VISUAL DEPTH: CARD SHADOWS === */
+.bp-card, .bp-offer-card, .bp-website-section-card, .bp-website-hero-preview {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.02);
+}
+.bp-letter-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.03);
+}
+
+/* === CHAPTER DIVIDERS: VISUAL PUNCH === */
+.chapter-divider {
+  background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%) !important;
+  padding: 64px 24px !important;
+  position: relative;
+}
+.chapter-divider::before {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2px; background: linear-gradient(90deg, transparent, #C4703F, transparent);
+}
+
+/* === SHARE SECTION === */
+.bp-share-section {
+  margin-top: 48px; padding: 56px 40px;
+  background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 100%);
+  border-radius: 20px; border: 1px solid rgba(196,112,63,0.12);
+  text-align: center;
+}
+.bp-share-inner { max-width: 460px; margin: 0 auto; }
+.bp-share-eyebrow {
+  font-family: 'Outfit', sans-serif; font-weight: 600;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: #C4703F; margin-bottom: 16px;
+}
+.bp-share-headline {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 28px; color: #1D1D1F; line-height: 1.3; margin-bottom: 16px;
+}
+.bp-share-desc {
+  font-family: 'Inter', sans-serif; font-size: 14px; color: #86868B;
+  line-height: 1.7; margin-bottom: 28px;
+}
+.bp-share-cta-row { margin-bottom: 20px; }
+.bp-share-get-own {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #1D1D1F; color: #fff; text-decoration: none;
+  font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 14px;
+  padding: 14px 32px; border-radius: 50px; transition: opacity 0.2s;
+}
+.bp-share-get-own:hover { opacity: 0.85; }
+.bp-share-url {
+  font-family: 'Inter', sans-serif; font-size: 12px; color: #C4703F;
+  letter-spacing: 0.02em;
+}
+
+/* === SECTION ACCENTS === */
+.bp-score-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.03);
+}
+.bp-gap-cta {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 8px 40px rgba(0,0,0,0.04);
+}
+.bp-move-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02);
+}
+
+/* === PRINT / PDF OPTIMIZATION === */
+@media print {
+  .bp-hero-reveal { min-height: auto !important; page-break-after: always; padding: 120px 24px 80px !important; }
+  .chapter-divider { page-break-before: always; page-break-after: avoid; }
+  .bp-section { page-break-inside: avoid; }
+  .bp-card, .bp-offer-card, .bp-move-card, .bp-website-section-card { page-break-inside: avoid; }
+  .bp-hero-begin { display: none !important; }
+  .bp-hero-url { position: static !important; margin-top: 40px; }
+  .bp-scroll-indicator { display: none !important; }
+  .bp-feedback, .bp-cta-block, .no-print { display: none !important; }
+  #bp-progress-bar { display: none !important; }
+  .bp-offers-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .bp-share-get-own { background: #1D1D1F !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
 /* === MOBILE === */
 @media (max-width: 768px) {
   #bp-progress-bar { display: flex; }
@@ -17358,6 +17461,11 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   .bp-footer-headline { font-size: 26px; }
   .bp-footer-secondary-btns { flex-direction: column; align-items: center; }
   .bp-footer-copper-divider { margin: 0 24px; }
+  .bp-hero-brand-mark { font-size: 9px; top: 20px; }
+  .bp-hero-subtitle { font-size: 10px; }
+  .bp-hero-url { bottom: 72px; font-size: 10px; }
+  .bp-share-section { padding: 40px 24px; }
+  .bp-share-headline { font-size: 22px; }
 }
 `;
 }
@@ -17514,8 +17622,9 @@ function renderChapter1(bp, firstName, messageCount) {
   var hasCount = typeof messageCount === "number" && messageCount > 0;
   var heroHTML = '<section class="bp-hero-reveal">' +
     '<div class="bp-hero-top-border"></div>' +
+    '<div class="bp-hero-brand-mark fade-up">Deep Work Interview</div>' +
     '<div class="bp-hero-inner">' +
-    '<div class="bp-hero-badge fade-up fade-up-d1">' + pillContent + '</div>' +
+    '<div class="bp-hero-subtitle fade-up fade-up-d1">Your Brand Blueprint</div>' +
     '<div class="bp-hero-name fade-up fade-up-d1">' + escHtml(firstName) + '</div>' +
     (nicheLabel ? '<div class="bp-hero-niche fade-up fade-up-d2">' + escHtml(nicheLabel) + '</div>' : '') +
     '<div class="bp-hero-divider fade-up fade-up-d2"></div>' +
@@ -17523,6 +17632,7 @@ function renderChapter1(bp, firstName, messageCount) {
     (hasCount ? '<div class="bp-hero-proof"><strong class="bp-hero-count">' + messageCount + '</strong> messages. Every word below was built from yours.</div>' : '') +
     '</div>' +
     '<div class="bp-hero-begin"><span class="bp-hero-begin-text">Begin Reading</span><div class="bp-hero-begin-line"></div></div>' +
+    '<div class="bp-hero-url">jamesguldan.com/deep-work</div>' +
     '</section>';
   var letterHTML = '<section class="bp-section" style="padding-top: 48px;" id="bp-debrief-letter"><div class="bp-letter-card"><div class="bp-letter-salutation">' + escHtml(salutation) + "</div>" + (italicOpening ? '<div class="bp-letter-italic">' + escHtml(italicOpening) + "</div>" : "") + '<div style="height:24px;"></div><div class="bp-letter-body">' + formatProse(proseBody, keyInsight) + '</div><div class="bp-letter-signoff"><div class="bp-letter-signoff-name">James Guldan</div><div class="bp-letter-signoff-studio">Deep Work Studio</div></div></div></section>';
   return '<div data-chapter="1">' + heroHTML + letterHTML + '</div>';
@@ -17728,6 +17838,18 @@ function renderChapter4(bp, sessionId, firstName) {
     'Download Blueprint PDF</button>' +
     '' +
     '</div>' +
+    /* ── Share Section ── */
+    '<div class="bp-share-section">' +
+    '<div class="bp-share-inner">' +
+    '<div class="bp-share-eyebrow">Know someone who needs this?</div>' +
+    '<div class="bp-share-headline">Share Your Blueprint</div>' +
+    '<div class="bp-share-desc">Send this PDF to a friend, colleague, or anyone building something real. Every blueprint is unique to the person who took the interview.</div>' +
+    '<div class="bp-share-cta-row">' +
+    '<a href="https://jamesguldan.com/deep-work" class="bp-share-get-own">Get Your Own Blueprint</a>' +
+    '</div>' +
+    '<div class="bp-share-url">jamesguldan.com/deep-work</div>' +
+    '</div>' +
+    '</div>' +
     /* ── Signature ── */
     '<div class="bp-footer-signature">' +
     '<div class="bp-footer-sig-copper"></div>' +
@@ -17929,9 +18051,15 @@ async function handleBlueprintPDFDownload(request, env) {
       .replace(/<div[^>]*class="[^"]*bp-feedback[^"]*"[\s\S]*?<\/div>/gi, "");
     // Add print-optimized styles
     const printStyles = `<style>
-      @page { margin: 0.5in; }
+      @page { margin: 0.6in 0.5in 0.85in 0.5in; }
       .bp-cta-block, .no-print, .bp-feedback { display: none !important; }
       .bp-page { max-width: 100% !important; padding: 0 !important; }
+      .bp-hero-begin { display: none !important; }
+      .bp-hero-url { position: static !important; margin-top: 40px; }
+      .bp-hero-reveal { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 30%, #FFFFFF 70%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .chapter-divider { background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-share-section { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-share-get-own, .bp-offer-premium, .bp-headline-featured, .bp-gap-book-btn, .bp-footer-primary-btn { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     </style>`;
     const pdfHtml = cleanHtml.replace("</head>", printStyles + "</head>");
     // Call Cloudflare Browser Rendering REST API
@@ -17951,7 +18079,10 @@ async function handleBlueprintPDFDownload(request, env) {
           pdfOptions: {
             printBackground: true,
             format: "letter",
-            margin: { top: "0.5in", bottom: "0.75in", left: "0.5in", right: "0.5in" }
+            margin: { top: "0.6in", bottom: "0.85in", left: "0.5in", right: "0.5in" },
+            displayHeaderFooter: true,
+            headerTemplate: '<div style="width:100%;text-align:center;font-size:7px;font-family:Helvetica,Arial,sans-serif;color:#C4703F;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;padding-top:4px;">DEEP WORK INTERVIEW</div>',
+            footerTemplate: '<div style="width:100%;font-size:8px;font-family:Helvetica,Arial,sans-serif;color:#999;display:flex;justify-content:space-between;align-items:center;padding:0 0.5in;"><span style="color:#C4703F;font-weight:600;font-size:7px;letter-spacing:0.08em;">jamesguldan.com/deep-work</span><span><span class="pageNumber"></span> of <span class="totalPages"></span></span></div>'
           },
           gotoOptions: { waitUntil: "networkidle0", timeout: 30000 }
         })
