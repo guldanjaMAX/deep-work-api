@@ -1755,6 +1755,7 @@ export const getHTML = (config) => `<!DOCTYPE html>
     #doc-upload-status { font-size: 12px; padding: 6px 12px; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
