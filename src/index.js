@@ -2885,7 +2885,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </button>
-        <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Tap to speak">
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice(event)" title="Tap to speak">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -3475,8 +3475,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   setupFileUpload();
   setupDocUpload();
 
-  // Voice input setup
+  // Voice input setup (only init, never auto-start)
   initVoiceInput();
+  window._voiceIsRecording = false;
+  setVoiceStatus('');
 
   // Auto-resize textarea
   const ta = document.getElementById('msg-input');
@@ -4287,7 +4289,9 @@ function initVoiceInput() {
   console.log('Voice input initialized successfully');
 }
 
-function toggleVoice() {
+function toggleVoice(e) {
+  // Only respond to genuine user taps (not programmatic or phantom events)
+  if (e && !e.isTrusted) return;
   // Lazy init if recognition was not set up
   if (!window._voiceRecognition) {
     initVoiceInput();
