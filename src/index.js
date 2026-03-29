@@ -13842,9 +13842,10 @@ a{display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;paddin
 <div class="card">
   <div class="wordmark">James Guldan</div>
   <div class="rule"></div>
-  <h2>This link has expired</h2>
-  <p>Magic links can only be used once and expire after 24 hours. Request a new one to sign in.</p>
-  <a href="/">Request a new link</a>
+  <h2>This link is one-and-done.</h2>
+  <p>Magic links work exactly once, then they vanish into the void. Very dramatic, but very secure.</p>
+  <p style="font-size:14px;color:#999;margin-bottom:28px;">Just enter your email on the next page and a fresh one will land in your inbox in seconds. If someone sent you a free link that expired, same deal &mdash; just put your email in and you are good to go.</p>
+  <a href="/">Get a fresh link &rarr;</a>
 </div>
 </body></html>`, { status: 410, headers: { "Content-Type": "text/html;charset=UTF-8" } });
   }
