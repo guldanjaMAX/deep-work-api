@@ -17983,7 +17983,7 @@ function renderWebsiteBlueprint(bp) {
 }
 __name(renderWebsiteBlueprint, "renderWebsiteBlueprint");
 function renderBlueprintResults(bp, userName, apolloData, messageCount) {
-  var firstName = (userName && userName !== "undefined" && userName !== "null" ? userName : "").split(" ")[0] || "";
+  var firstName = (userName && userName.toLowerCase() !== "undefined" && userName.toLowerCase() !== "null" ? userName : "").split(" ")[0] || "";
   var sessionId = bp.sessionId || "";
   var bpDataJson = JSON.stringify(bp).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/\//g, "\\u002f");
   return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + (firstName ? escHtml(firstName) + '&#39;s Blueprint' : 'Your Blueprint') + '</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
@@ -18011,7 +18011,7 @@ async function loadBlueprintForSession(env, sessionId) {
   if (!bp) return null;
   return {
     blueprint: bp,
-    name: [bp.name, bp.debrief?.recipientName, session.name, session.userName].find(function(n) { return n && typeof n === "string" && n.trim() && n !== "undefined" && n !== "null"; }) || "",
+    name: [bp.name, bp.debrief?.recipientName, session.name, session.userName].find(function(n) { return n && typeof n === "string" && n.trim() && n.toLowerCase() !== "undefined" && n.toLowerCase() !== "null"; }) || "",
     apolloData: session.apolloData || null,
     messageCount: Array.isArray(session.messages) ? session.messages.length : 0
   };
