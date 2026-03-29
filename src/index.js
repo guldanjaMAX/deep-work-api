@@ -17451,20 +17451,23 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 /* === MOBILE === */
 @media (max-width: 768px) {
   #bp-progress-bar { display: flex; }
+  /* Hero: 70vh instead of 100vh — dramatic but not a full screen burn */
+  .bp-hero-reveal { min-height: 70vh; padding: 48px 20px 0; }
   .bp-hero-name { font-size: 48px; }
   .bp-hero-hook { font-size: 22px; }
   .bp-hero-niche { font-size: 16px; }
-  .bp-letter-card { padding: 28px 20px; }
+  /* Cards: tighter side and vertical padding */
+  .bp-letter-card { padding: 20px 16px; }
   .bp-letter-italic { font-size: 16px; color: #555; }
-  .bp-letter-pullquote { padding: 14px 18px; font-size: 16px; }
+  .bp-letter-pullquote { padding: 12px 16px; font-size: 16px; }
   .bp-moves-grid { grid-template-columns: 1fr; }
   .bp-gap-columns { grid-template-columns: 1fr; }
   .bp-gap-col:first-child { border-right: none; border-bottom: 1px solid #F0F0F0; }
-  .bp-gap-top { padding: 32px 24px 28px; }
+  .bp-gap-top { padding: 24px 20px 20px; }
   .bp-gap-headline { font-size: 24px; }
-  .bp-gap-bottom { padding: 28px 24px; }
+  .bp-gap-bottom { padding: 20px; }
   .bp-gap-prep { font-size: 13px; }
-  .bp-ai-builder { padding: 28px 20px; }
+  .bp-ai-builder { padding: 24px 16px; }
   .bp-color-strip {
     overflow-x: auto; scroll-snap-type: x mandatory;
     flex-wrap: nowrap; padding-bottom: 12px; -webkit-overflow-scrolling: touch;
@@ -17472,16 +17475,18 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   .bp-color-swatch-wrap { scroll-snap-align: center; }
   .bp-color-swatch { width: 60px; height: 60px; }
   .bp-voice-grid { grid-template-columns: 1fr; }
-  .bp-section { padding: 48px 20px; }
+  /* Sections: 28px instead of 48px — removes ~40% of vertical scroll */
+  .bp-section { padding: 28px 16px; }
   .bp-client-text { font-size: 14px; line-height: 1.6; color: #555; }
   .bp-connection { font-size: 16px; color: var(--gold); }
-  .chapter-divider { min-height: 40vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  /* Chapter dividers: kill the 40vh min-height entirely */
+  .chapter-divider { min-height: 0; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .chapter-divider-label { font-size: 11px; }
   .bp-advantage-hero { font-size: 18px; }
   .bp-competitor-row { flex-wrap: wrap; }
   .bp-competitor-gap { text-align: left; min-width: auto; }
   .bp-positioning-hero { font-size: 20px; }
-  .bp-closing-line { font-size: 18px; margin: 48px auto 32px; }
+  .bp-closing-line { font-size: 18px; margin: 32px auto 24px; }
   .bp-offers-grid { grid-template-columns: 1fr; }
   .bp-offer-name { font-size: 16px; }
   .bp-headline-text { font-size: 14px; }
@@ -17489,14 +17494,16 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   .bp-proof-strip { grid-template-columns: 1fr; }
   .bp-proof-stat { font-size: 28px; }
   .bp-testimonial-quote { font-size: 17px; }
-  .bp-footer-content { padding: 48px 28px; }
+  /* Footer: 32px instead of 48px */
+  .bp-footer-content { padding: 32px 20px; }
   .bp-footer-headline { font-size: 26px; }
   .bp-footer-secondary-btns { flex-direction: column; align-items: center; }
-  .bp-footer-copper-divider { margin: 0 24px; }
+  .bp-footer-copper-divider { margin: 0 20px; }
   .bp-hero-brand-mark { font-size: 9px; top: 20px; }
   .bp-hero-subtitle { font-size: 10px; }
-  .bp-hero-url { bottom: 72px; font-size: 10px; }
-  .bp-share-section { padding: 40px 24px; }
+  .bp-hero-url { bottom: 56px; font-size: 10px; }
+  /* Share section tighter */
+  .bp-share-section { padding: 28px 20px; margin-top: 28px; }
   .bp-share-headline { font-size: 22px; }
 }
 `;
