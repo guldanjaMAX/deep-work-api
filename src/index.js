@@ -1713,25 +1713,24 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     display: flex;
     align-items: center;
     gap: 4px;
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 4px 6px 4px 14px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background: var(--gold);
+    border: none;
+    border-radius: 28px;
+    padding: 5px 6px 5px 16px;
+    box-shadow: none;
+    transition: box-shadow 0.2s;
   }
 
   .input-pill:focus-within {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.08);
+    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.15);
   }
 
   .input-pill textarea {
     flex: 1;
     background: transparent;
     border: none;
-    padding: 7px 0;
-    color: var(--text);
+    padding: 8px 0;
+    color: #ffffff;
     font-size: 16px;
     font-family: 'Inter', sans-serif;
     resize: none;
@@ -1743,13 +1742,13 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     -webkit-appearance: none;
   }
 
-  .input-pill textarea::placeholder { color: var(--text3); }
+  .input-pill textarea::placeholder { color: rgba(255,255,255,0.55); }
 
   .send-btn {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: var(--gold);
+    background: #ffffff;
     border: none;
     cursor: pointer;
     display: none;
@@ -1757,20 +1756,20 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.15s;
-    color: #fff;
+    color: var(--gold);
   }
 
   .send-btn.visible { display: flex; }
-  .send-btn:hover { background: var(--gold2, #b5632e); transform: scale(1.05); }
+  .send-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.05); }
   .send-btn:active { transform: scale(0.97); }
   .send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
   /* Icon buttons inside the pill */
   .voice-btn, .attach-btn {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: transparent;
+    background: rgba(255,255,255,0.15);
     border: none;
     cursor: pointer;
     display: flex;
@@ -1778,23 +1777,23 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.15s;
-    color: var(--text3);
+    color: #ffffff;
     padding: 0;
   }
 
-  .voice-btn:hover, .attach-btn:hover { color: var(--text2); background: var(--bg2); }
+  .voice-btn:hover, .attach-btn:hover { background: rgba(255,255,255,0.25); color: #ffffff; }
 
   .voice-btn.recording {
-    color: var(--gold);
-    background: rgba(196,112,63,0.1);
+    color: #ffffff;
+    background: rgba(255,255,255,0.3);
     animation: voicePulse 1.5s ease-in-out infinite;
   }
 
   .voice-btn.unsupported { display: none; }
 
   @keyframes voicePulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(196,112,63,0.3); }
-    50% { box-shadow: 0 0 0 8px rgba(196,112,63,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
   }
 
   .voice-status {
