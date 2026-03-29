@@ -2873,7 +2873,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   <div class="input-area">
     <div class="input-row">
       <div class="input-pill">
-        <textarea id="msg-input" placeholder="Type or tap the mic..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); updateInputToggle()"></textarea>
+        <textarea id="msg-input" placeholder="Type or tap the mic..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); updateInputToggle()" onkeyup="updateInputToggle()"></textarea>
         <button class="attach-btn" onclick="openUploadModal()" title="Attach file">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
@@ -4256,6 +4256,7 @@ function initVoiceInput() {
     if (input) {
       input.value = window._voiceFinalTranscript + interimTranscript;
       autoResize(input);
+      updateInputToggle();
     }
 
     setVoiceStatus('Listening... (tap mic again to stop)');
@@ -4358,6 +4359,9 @@ function stopVoice() {
   setTimeout(() => {
     if (!window._voiceIsRecording) setVoiceStatus('');
   }, 4000);
+
+  // Re-evaluate send button state now that voice has stopped
+  updateInputToggle();
 }
 
 function setVoiceStatus(text) {
