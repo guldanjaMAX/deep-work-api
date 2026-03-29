@@ -13861,23 +13861,23 @@ __name(handleMagicLink, "handleMagicLink");
 async function handlePaymentSuccess(request, env, url) {
   const checkoutSessionId = url.searchParams.get("session_id");
   const tier = url.searchParams.get("tier") || "blueprint";
+  const origin = new URL(request.url).origin;
   if (!checkoutSessionId) {
-    const origin2 = new URL(request.url).origin;
-    return Response.redirect(`${origin2}/`, 302);
+    return Response.redirect(origin + "/", 302);
   }
   let verified = false;
+  let checkoutDetails = {};
   if (!env.STRIPE_SECRET_KEY) {
-    const origin2 = new URL(request.url).origin;
-    const isLocal = origin2.includes("localhost") || origin2.includes("127.0.0.1") || origin2.includes(".dev");
+    const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1") || origin.includes(".dev");
     if (!isLocal) {
       return new Response("Payment processing is not configured. Please contact support.", { status: 503 });
     }
     verified = true;
   } else {
     try {
-      const res = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`);
-      const session = await res.json();
-      verified = session.payment_status === "paid";
+      const res = await stripeGet(env, "/v1/checkout/sessions/" + checkoutSessionId);
+      checkoutDetails = await res.json();
+      verified = checkoutDetails.payment_status === "paid";
     } catch (e) {
       await logError(env, { endpoint: "/payment-success", method: "GET", statusCode: 500, errorType: "stripe_verify_error", errorMessage: e.message });
     }
@@ -13885,8 +13885,8 @@ async function handlePaymentSuccess(request, env, url) {
   if (!verified) {
     return new Response("Payment not verified. Please contact support.", { status: 402 });
   }
-  const origin = new URL(request.url).origin;
   const existingSessionId = url.searchParams.get("existing_session");
+  let appUrl;
   if (existingSessionId) {
     const raw = await env.SESSIONS.get(existingSessionId);
     if (raw) {
@@ -13897,45 +13897,47 @@ async function handlePaymentSuccess(request, env, url) {
       await env.SESSIONS.put(existingSessionId, JSON.stringify(existingSession), { expirationTtl: 60 * 60 * 24 * 30 });
       await logEvent(env, existingSessionId, "tier_upgraded", { from: existingSession.tier, to: tier });
       const upgradeAccess = await generateSessionAccessToken(env, existingSessionId);
-      return Response.redirect(`${origin}/app?session=${existingSessionId}&tier=${tier}&upgraded=true&access=${upgradeAccess}`, 302);
+      appUrl = origin + "/app?session=" + existingSessionId + "&tier=" + tier + "&upgraded=true&access=" + upgradeAccess;
     }
   }
-  const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-  await env.SESSIONS.put(sessionId, JSON.stringify({
-    id: sessionId,
-    tier: "site",
-    // always grant site tier -- blueprint + deploy included in any purchase
-    blueprintTier: tier,
-    // preserve original tier for analytics
-    stripeCheckoutId: checkoutSessionId,
-    phase: 1,
-    messages: [],
-    userData: {},
-    blueprintGenerated: false,
-    siteGenerated: false,
-    createdAt: (/* @__PURE__ */ new Date()).toISOString()
-  }), { expirationTtl: 60 * 60 * 24 * 30 });
-  const accessToken = await generateSessionAccessToken(env, sessionId);
-  if (env.RESEND_API_KEY) {
-    const checkoutDetails = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`).then((r) => r.json()).catch(() => ({}));
-    const customerEmail = checkoutDetails.customer_details?.email || checkoutDetails.customer_email || null;
-    const tierLabel = tier === "site" ? "Site In Sixty ($130)" : "Blueprint Session ($67)";
-    const startUrl = `${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`;
-    if (customerEmail) {
-      fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-          to: [customerEmail],
-          subject: "You're in \u2014 your Deep Work session is ready",
-          html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">You're in.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Payment confirmed. Your Deep Work Interview is ready. Eight conversations. One complete brand blueprint built around who you actually are.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:36px 40px 40px;"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border:1px solid #f0f0f0;border-radius:12px;overflow:hidden;"><tr><td style="padding:20px 24px;"><p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">What to expect</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.7;">About 60-90 minutes total. Pause and come back any time - your session saves automatically.</p></td></tr></table><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${startUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Begin My Session &rarr;</a></td></tr></table><p style="margin:0 0 24px;font-size:13px;color:#86868b;line-height:1.7;">This link is your direct access. Bookmark it or save this email.</p><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Questions? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`
-        })
-      }).catch(() => {
-      });
+  if (!appUrl) {
+    const sessionId = "sess_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+    await env.SESSIONS.put(sessionId, JSON.stringify({
+      id: sessionId,
+      tier: "site",
+      blueprintTier: tier,
+      stripeCheckoutId: checkoutSessionId,
+      phase: 1,
+      messages: [],
+      userData: {},
+      blueprintGenerated: false,
+      siteGenerated: false,
+      createdAt: new Date().toISOString()
+    }), { expirationTtl: 60 * 60 * 24 * 30 });
+    const accessToken = await generateSessionAccessToken(env, sessionId);
+    appUrl = origin + "/app?session=" + sessionId + "&tier=" + tier + "&access=" + accessToken;
+    if (env.RESEND_API_KEY) {
+      const customerEmail = checkoutDetails.customer_details?.email || checkoutDetails.customer_email || null;
+      const tierLabel = tier === "site" ? "Site In Sixty ($130)" : "Blueprint Session ($67)";
+      if (customerEmail) {
+        fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+            to: [customerEmail],
+            subject: "You\u2019re in \u2014 your Deep Work session is ready",
+            html: '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,\'Inter\',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">You\u2019re in.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Payment confirmed. Your Deep Work Interview is ready. Eight conversations. One complete brand blueprint built around who you actually are.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:36px 40px 40px;"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border:1px solid #f0f0f0;border-radius:12px;overflow:hidden;"><tr><td style="padding:20px 24px;"><p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">What to expect</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.7;">About 60\u201390 minutes total. Pause and come back any time \u2014 your session saves automatically.</p></td></tr></table><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="' + appUrl + '" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Begin My Session &rarr;</a></td></tr></table><p style="margin:0 0 24px;font-size:13px;color:#86868b;line-height:1.7;">This link is your direct access. Bookmark it or save this email.</p><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Questions? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ' + new Date().getFullYear() + ' Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>'
+          })
+        }).catch(function() {});
+      }
     }
   }
-  return Response.redirect(`${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`, 302);
+  var year = new Date().getFullYear();
+  var successHTML = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>You\u2019re in</title><meta http-equiv="refresh" content="2;url=' + appUrl + '"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#1d1d1f;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:40px 24px;overflow:hidden}.card{max-width:400px;width:100%}.wordmark{font-family:Outfit,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:32px}.rule{width:40px;height:2px;background:#c4703f;margin:0 auto 36px}h1{font-family:Outfit,sans-serif;font-size:32px;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:-.02em}p{font-size:15px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:32px}.loader{display:flex;gap:6px;justify-content:center;margin-bottom:32px}.loader span{width:6px;height:6px;background:#c4703f;border-radius:50%;animation:pulse 1.2s ease-in-out infinite}.loader span:nth-child(2){animation-delay:.2s}.loader span:nth-child(3){animation-delay:.4s}@keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}a.btn{display:inline-block;background:#fff;color:#1d1d1f;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:14px;font-weight:600;transition:opacity .2s}a.btn:hover{opacity:.85}.footer{margin-top:48px;font-size:12px;color:rgba(255,255,255,.2)}</style></head><body><div class="card"><div class="wordmark">James Guldan</div><div class="rule"></div><h1>You\u2019re in.</h1><p>Payment confirmed. Setting up your session now.</p><div class="loader"><span></span><span></span><span></span></div><a class="btn" href="' + appUrl + '">Go to My Session \u2192</a><div class="footer">\u00a9 ' + year + ' Align Consulting LLC</div></div><script>setTimeout(function(){window.location.href="' + appUrl + '"},1500)</script></body></html>';
+  return new Response(successHTML, {
+    headers: { "Content-Type": "text/html; charset=utf-8" }
+  });
 }
 __name(handlePaymentSuccess, "handlePaymentSuccess");
 
