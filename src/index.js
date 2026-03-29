@@ -1759,7 +1759,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     color: var(--gold);
   }
 
-  .send-btn.visible { display: flex; }
+  .send-btn.visible { display: flex !important; }
   .send-btn:hover { background: rgba(255,255,255,0.9); transform: scale(1.05); }
   .send-btn:active { transform: scale(0.97); }
   .send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
@@ -2879,18 +2879,18 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
           </svg>
         </button>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
         <button class="voice-btn" id="voice-btn" onclick="toggleVoice()" title="Tap to speak">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
             <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
             <line x1="12" y1="19" x2="12" y2="23"></line>
             <line x1="8" y1="23" x2="16" y2="23"></line>
-          </svg>
-        </button>
-        <button class="send-btn" id="send-btn" onclick="sendMessage()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
         </button>
       </div>
@@ -4381,10 +4381,15 @@ function updateInputToggle() {
   var attachBtn = document.querySelector('.attach-btn');
   if (!input || !sendBtn) return;
   var hasText = input.value.trim().length > 0;
-  sendBtn.style.cssText = hasText ? 'display:flex !important' : 'display:none !important';
-  if (attachBtn) attachBtn.style.cssText = hasText ? 'display:none !important' : 'display:flex !important';
+  if (hasText) {
+    sendBtn.classList.add('visible');
+    if (attachBtn) attachBtn.style.display = 'none';
+  } else {
+    sendBtn.classList.remove('visible');
+    if (attachBtn) attachBtn.style.display = '';
+  }
   if (voiceBtn && !voiceBtn.classList.contains('unsupported')) {
-    voiceBtn.style.cssText = 'display:flex !important';
+    voiceBtn.style.display = '';
   }
 }
 
