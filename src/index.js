@@ -632,7 +632,7 @@ function getErrorPageHTML(statusCode, title, message) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>${title} \u2014 Deep Work</title>
 <link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
@@ -687,7 +687,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Deep Work Blueprint | James Guldan</title>
 <link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
@@ -1732,7 +1732,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     border: none;
     padding: 7px 0;
     color: var(--text);
-    font-size: 14px;
+    font-size: 16px;
     font-family: 'Inter', sans-serif;
     resize: none;
     outline: none;
