@@ -4379,18 +4379,12 @@ function updateInputToggle() {
   var sendBtn = document.getElementById('send-btn');
   var voiceBtn = document.getElementById('voice-btn');
   var attachBtn = document.querySelector('.attach-btn');
-  if (!input || !sendBtn || !voiceBtn) return;
+  if (!input || !sendBtn) return;
   var hasText = input.value.trim().length > 0;
-  if (hasText) {
-    sendBtn.style.display = 'flex';
-    if (attachBtn) attachBtn.style.display = 'none';
-  } else {
-    sendBtn.style.display = 'none';
-    if (attachBtn) attachBtn.style.display = 'flex';
-  }
-  /* Voice btn always visible (unless unsupported) */
-  if (!voiceBtn.classList.contains('unsupported')) {
-    voiceBtn.style.display = 'flex';
+  sendBtn.style.cssText = hasText ? 'display:flex !important' : 'display:none !important';
+  if (attachBtn) attachBtn.style.cssText = hasText ? 'display:none !important' : 'display:flex !important';
+  if (voiceBtn && !voiceBtn.classList.contains('unsupported')) {
+    voiceBtn.style.cssText = 'display:flex !important';
   }
 }
 
