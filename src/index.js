@@ -4378,13 +4378,18 @@ function updateInputToggle() {
   var input = document.getElementById('msg-input');
   var sendBtn = document.getElementById('send-btn');
   var voiceBtn = document.getElementById('voice-btn');
+  var attachBtn = document.querySelector('.attach-btn');
   if (!input || !sendBtn || !voiceBtn) return;
   var hasText = input.value.trim().length > 0;
   if (hasText) {
     sendBtn.style.display = 'flex';
-    voiceBtn.style.display = 'none';
+    if (attachBtn) attachBtn.style.display = 'none';
   } else {
     sendBtn.style.display = 'none';
+    if (attachBtn) attachBtn.style.display = 'flex';
+  }
+  /* Voice btn always visible (unless unsupported) */
+  if (!voiceBtn.classList.contains('unsupported')) {
     voiceBtn.style.display = 'flex';
   }
 }
