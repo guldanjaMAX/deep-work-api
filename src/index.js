@@ -113,6 +113,22 @@ async function logError(env, { endpoint, method, statusCode, errorType, errorMes
   } catch (e) {
     console.error("Failed to log error to D1:", e);
   }
+  // Immediate alert for Anthropic credit exhaustion — throttled to once per hour via KV
+  if (errorMessage && errorMessage.includes('credit balance is too low') && env.SESSIONS && env.RESEND_API_KEY) {
+    try {
+      const throttleKey = 'alert:anthropic_credit_low';
+      const alreadyAlerted = await env.SESSIONS.get(throttleKey);
+      if (!alreadyAlerted) {
+        await env.SESSIONS.put(throttleKey, '1', { expirationTtl: 3600 });
+        await sendEmail(env, {
+          to: 'james@jamesguldan.com',
+          from: 'Deep Work Alerts <notifications@jamesguldan.com>',
+          subject: 'Action Required: Anthropic API credits are out — Deep Work is down',
+          html: `<h2 style="color:#c00;font-family:sans-serif">Deep Work: Anthropic credits exhausted</h2><p style="font-family:sans-serif">Users cannot complete interviews right now. The Anthropic API is rejecting all requests due to a zero credit balance.</p><p style="font-family:sans-serif"><strong>Fix:</strong> Go to <a href="https://console.anthropic.com">console.anthropic.com</a> &rarr; Settings &rarr; Billing &rarr; Add credits.</p><p style="color:#999;font-size:12px;font-family:sans-serif">Session: ${sessionId || 'unknown'} &mdash; ${new Date().toISOString()}</p><p style="color:#999;font-size:12px;font-family:sans-serif">(You will not receive another alert for 1 hour.)</p>`
+        });
+      }
+    } catch (_) {}
+  }
 }
 __name(logError, "logError");
 async function trackMetric(env, name, value, tags = null) {
@@ -219,6 +235,15 @@ async function checkAnthropic(env) {
       return { status: "healthy", latencyMs: latency };
     if (res.status === 429)
       return { status: "warning", latencyMs: latency, error: "Rate limited \u2014 approaching API ceiling" };
+    if (res.status === 400) {
+      try {
+        const body = await res.json();
+        if (body?.error?.message?.includes('credit balance')) {
+          return { status: "critical", latencyMs: latency, error: "Credit balance too low — add credits at console.anthropic.com" };
+        }
+      } catch (_) {}
+      return { status: "critical", latencyMs: latency, error: "HTTP 400" };
+    }
     if (res.status === 401)
       return { status: "critical", latencyMs: latency, error: "API key invalid or expired" };
     if (res.status === 529)
@@ -12938,11 +12963,33 @@ async function runDailyHealthCheck(env) {
   } catch (e) {
     results.d1_database = { ok: false, error: e.message };
   }
+  // Check Anthropic API health (includes credit balance detection)
+  try {
+    const anthropicCheck = await checkAnthropic(env);
+    results.anthropic_api = { ok: anthropicCheck.status === 'healthy', status: anthropicCheck.status, error: anthropicCheck.error || null };
+  } catch (e) {
+    results.anthropic_api = { ok: false, error: e.message };
+  }
   const allOk = Object.values(results).every((r) => r.ok);
   await logEvent(env, null, "daily_health_check", { results, allOk });
   if (!allOk) {
-    const failed = Object.entries(results).filter(([, r]) => !r.ok).map(([name]) => name);
-    console.error(`Daily health check FAILED for: ${failed.join(", ")}`);
+    const failed = Object.entries(results).filter(([, r]) => !r.ok);
+    const failedNames = failed.map(([name]) => name).join(", ");
+    console.error(`Daily health check FAILED for: ${failedNames}`);
+    // Send alert email summarizing all failures
+    if (env.RESEND_API_KEY) {
+      try {
+        const failedRows = failed.map(([name, r]) =>
+          `<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:sans-serif"><strong>${name}</strong></td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-family:sans-serif;color:#c00">${r.error || ('HTTP ' + r.status) || 'Failed'}</td></tr>`
+        ).join('');
+        await sendEmail(env, {
+          to: 'james@jamesguldan.com',
+          from: 'Deep Work Alerts <notifications@jamesguldan.com>',
+          subject: `Deep Work Health Check Failed — ${failedNames}`,
+          html: `<h2 style="font-family:sans-serif">Daily Health Check Failed</h2><p style="font-family:sans-serif">${failed.length} service(s) need attention:</p><table style="border-collapse:collapse;width:100%;max-width:500px">${failedRows}</table><p style="font-family:sans-serif;margin-top:16px"><a href="https://love.jamesguldan.com/admin">View admin dashboard</a></p><p style="color:#999;font-size:12px;font-family:sans-serif">${new Date().toISOString()}</p>`
+        });
+      } catch (_) {}
+    }
   }
   return { allOk, results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }

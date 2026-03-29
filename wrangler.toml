@@ -21,7 +21,7 @@ APP_ORIGIN = "https://love.jamesguldan.com"
 STRIPE_MODE = "test"
 
 [triggers]
-crons = ["0 13 * * 1"]
+crons = ["0 13 * * 1", "0 9 * * *"]
 
 [observability]
 enabled = true
