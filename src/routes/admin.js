@@ -697,3 +697,218 @@ export async function handleAdminPurgeKV(request, env) {
     return json({ error: err.message || String(err), deleted }, 500);
   }
 }
+
+export async function handleAdminTranscriptTxt(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch(_) {}
+
+    const name = sessionRow.name || sessionRow.email || 'Anonymous';
+    const date = (sessionRow.created_at || '').slice(0, 10);
+    let txt = `Deep Work Interview — ${name}\nDate: ${date}\nSession: ${sessionId}\n\n${'='.repeat(60)}\n\n`;
+
+    kvMessages.forEach((m, i) => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map(c => typeof c === 'object' ? (c.text || '') : c).join(' ');
+      content = String(content || '').replace(/\s*METADATA:\{[^}]*\}/g, '').trim();
+      if (!content) return;
+      const role = m.role === 'user' ? name : 'Claude';
+      const ts = m.timestamp ? String(m.timestamp).slice(11, 16) : '';
+      txt += `[${role}${ts ? ' · ' + ts : ''}]\n${content}\n\n`;
+    });
+
+    const filename = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() + '-transcript.txt';
+    return new Response(txt, {
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8',
+        'Content-Disposition': `attachment; filename="${filename}"`
+      }
+    });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
+export async function handleAdminTranscriptFormatted(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch(_) {}
+
+    const name = sessionRow.name || sessionRow.email || 'Anonymous';
+    const date = (sessionRow.created_at || '').slice(0, 10);
+
+    const msgHTML = kvMessages.map(m => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map(c => typeof c === 'object' ? (c.text || '') : c).join(' ');
+      content = String(content || '').replace(/\s*METADATA:\{[^}]*\}/g, '').trim();
+      if (!content) return '';
+      const isUser = m.role === 'user';
+      const role = isUser ? name : 'Claude';
+      const ts = m.timestamp ? String(m.timestamp).slice(11, 16) : '';
+      const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<div class="msg ${isUser ? 'user' : 'ai'}">
+        <div class="label">${esc(role)}${ts ? ' <span class="ts">· ' + ts + '</span>' : ''}</div>
+        <div class="bubble">${esc(content).replace(/\n/g, '<br>')}</div>
+      </div>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${name} — Deep Work Interview Transcript</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#fff;max-width:800px;margin:0 auto;padding:40px 24px}
+h1{font-family:'Outfit',sans-serif;font-size:22px;margin-bottom:4px}
+.meta{color:#86868B;font-size:12px;margin-bottom:32px}
+.msg{margin-bottom:20px}
+.msg.user .bubble{background:#F5F5F7;border-radius:12px 12px 4px 12px}
+.msg.ai .bubble{background:#FDF0E8;border-radius:12px 12px 12px 4px}
+.label{font-size:11px;font-weight:600;color:#86868B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.ts{font-weight:400;text-transform:none;letter-spacing:0}
+.bubble{padding:12px 16px;line-height:1.6}
+@media print{body{padding:20px}h1{font-size:18px}}
+</style>
+</head><body>
+<h1>${name}</h1>
+<div class="meta">Deep Work Interview · ${date} · ${kvMessages.length} messages</div>
+${msgHTML}
+</body></html>`;
+
+    return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
+export async function handleAdminBlueprintJson(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let bp = null;
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) { const kv = JSON.parse(sessRaw); bp = kv.blueprint?.blueprint || kv.blueprint || null; }
+    } catch(_) {}
+    if (!bp) {
+      try { const r = await env.SESSIONS.get('blueprint:' + sessionId); if (r) bp = JSON.parse(r); } catch(_) {}
+    }
+    if (!bp) return new Response(JSON.stringify({ error: 'No blueprint found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+
+    const name = (sessionRow.name || sessionRow.email || 'session').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+    return new Response(JSON.stringify(bp, null, 2), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="${name}-blueprint.json"`
+      }
+    });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
+export async function handleAdminBlueprintFormatted(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let bp = null;
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) { const kv = JSON.parse(sessRaw); bp = kv.blueprint?.blueprint || kv.blueprint || null; }
+    } catch(_) {}
+    if (!bp) {
+      try { const r = await env.SESSIONS.get('blueprint:' + sessionId); if (r) bp = JSON.parse(r); } catch(_) {}
+    }
+    if (!bp) return new Response('<h1>No blueprint found</h1>', { status: 404, headers: { 'Content-Type': 'text/html' } });
+
+    const name = sessionRow.name || sessionRow.email || 'Anonymous';
+    const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    function renderValue(val) {
+      if (typeof val === 'string') return `<p>${esc(val)}</p>`;
+      if (Array.isArray(val)) return val.map(v => typeof v === 'object'
+        ? `<div class="item">${Object.entries(v).map(([k,vv]) => `<div><strong>${esc(k)}:</strong> ${esc(String(vv||''))}</div>`).join('')}</div>`
+        : `<div class="item">${esc(String(v))}</div>`
+      ).join('');
+      if (typeof val === 'object' && val !== null) return Object.entries(val).map(([k,v]) =>
+        `<div class="subfield"><div class="subkey">${esc(k)}</div><div class="subval">${esc(String(v||''))}</div></div>`
+      ).join('');
+      return `<p>${esc(String(val||''))}</p>`;
+    }
+
+    const sections = Object.entries(bp).map(([key, val]) => `
+      <div class="section">
+        <div class="section-key">${esc(key)}</div>
+        <div class="section-val">${renderValue(val)}</div>
+      </div>`).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${esc(name)} — Brand Blueprint</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#fff;max-width:900px;margin:0 auto;padding:40px 24px}
+h1{font-family:'Outfit',sans-serif;font-size:24px;margin-bottom:4px}
+.meta{color:#86868B;font-size:12px;margin-bottom:36px}
+.section{margin-bottom:24px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden}
+.section-key{background:#F5F5F7;padding:8px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#C4703F}
+.section-val{padding:14px 16px;line-height:1.6}
+.section-val p{margin-bottom:8px}.section-val p:last-child{margin-bottom:0}
+.item{padding:8px 0;border-bottom:1px solid #F5F5F7}.item:last-child{border-bottom:none}
+.subfield{display:flex;gap:12px;padding:4px 0}.subkey{font-weight:600;min-width:160px;color:#86868B;font-size:12px}.subval{flex:1}
+@media print{body{padding:20px}.section{break-inside:avoid}}
+</style>
+</head><body>
+<h1>${esc(name)}</h1>
+<div class="meta">Brand Blueprint · ${(sessionRow.created_at||'').slice(0,10)}</div>
+${sections}
+</body></html>`;
+
+    return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
