@@ -58,7 +58,11 @@ import {
   handleAdminGetPrompt, handleAdminSavePrompt, handleHealthCheck, handleMonitoring,
   handleDigest, handleAdminErrors, handleAPIUsage, handleResolveAlert,
   handleAdminTestTrigger, handleSystemHealthCheck, handleAdminUsage,
-  handleAdminUserUsage, handleAdminPurgeKV
+  handleAdminUserUsage, handleAdminPurgeKV,
+  handleAdminTranscriptTxt,
+  handleAdminTranscriptFormatted,
+  handleAdminBlueprintJson,
+  handleAdminBlueprintFormatted
 } from './routes/admin.js';
 
 import { CORS } from './utils/internal.js';
@@ -174,6 +178,15 @@ export async function routeRequest(request, env, ctx) {
     if (path === '/api/admin/users' && request.method === 'GET') return handleAdminListUsers(request, env);
     if (path === '/api/admin/users' && request.method === 'POST') return handleAdminCreateUser(request, env);
     if (path === '/api/admin/sessions' && request.method === 'GET') return handleAdminListSessions(request, env);
+    // Download routes — must be before generic /api/admin/session/ route
+    if (path.match(/^\/api\/admin\/session\/[^/]+\/transcript\.txt$/) && request.method === 'GET')
+      return handleAdminTranscriptTxt(request, env, path);
+    if (path.match(/^\/api\/admin\/session\/[^/]+\/transcript-formatted$/) && request.method === 'GET')
+      return handleAdminTranscriptFormatted(request, env, path);
+    if (path.match(/^\/api\/admin\/session\/[^/]+\/blueprint\.json$/) && request.method === 'GET')
+      return handleAdminBlueprintJson(request, env, path);
+    if (path.match(/^\/api\/admin\/session\/[^/]+\/blueprint-formatted$/) && request.method === 'GET')
+      return handleAdminBlueprintFormatted(request, env, path);
     if (path.startsWith('/api/admin/session/') && request.method === 'GET') return handleAdminGetSession(request, env, path);
     if (path === '/api/admin/magic-link' && request.method === 'POST') return handleAdminMagicLink(request, env);
     if (path === '/api/admin/settings' && request.method === 'GET') return handleAdminGetSettings(request, env);

@@ -688,7 +688,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deep Work Blueprint | James Guldan</title>
+<title>Deep Work Interview | James Guldan</title>
 <link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
@@ -3398,6 +3398,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   const tier = params.get('tier');
   const accessToken = params.get('access');
 
+  // Blueprint share link: ?session=X without ?tier= — render blueprint directly, no auth needed
+  if (sessionId && !tier) {
+    STATE.sessionId = sessionId;
+    window.history.replaceState({}, '', '/app');
+    await renderBlueprint(null, null, true);
+    showScreen('blueprint-screen');
+    return;
+  }
+
   // Stripe redirect: ?session=X&tier=Y&access=TOKEN from checkout
   const upgraded = params.get('upgraded');
   if (sessionId && tier) {
@@ -3448,22 +3457,31 @@ window.addEventListener('DOMContentLoaded', async () => {
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
           STATE.email = user.email || '';
 
-          // Check for active or completed session to resume; if none, auto-start
-          try {
-            const activeRes = await fetch('/api/user/active-session', {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const activeData = await activeRes.json();
-            if (activeData.hasActiveSession && activeData.session) {
-              // Auto-resume \u2014 drop user right where they left off
-              pendingResumeSessionId = activeData.session.id;
-              localStorage.setItem('dw_active_session', activeData.session.id);
-              await resumeSession();
-            } else {
+          // Check for ?session= URL param — if present, render blueprint directly (share link)
+          const urlSessionParam = new URLSearchParams(window.location.search).get('session');
+          if (urlSessionParam) {
+            STATE.sessionId = urlSessionParam;
+            window.history.replaceState({}, '', '/app');
+            await renderBlueprint(null, null, true);
+            showScreen('blueprint-screen');
+          } else {
+            // Check for active or completed session to resume; if none, auto-start
+            try {
+              const activeRes = await fetch('/api/user/active-session', {
+                headers: { 'Authorization': 'Bearer ' + token }
+              });
+              const activeData = await activeRes.json();
+              if (activeData.hasActiveSession && activeData.session) {
+                // Auto-resume \u2014 drop user right where they left off
+                pendingResumeSessionId = activeData.session.id;
+                localStorage.setItem('dw_active_session', activeData.session.id);
+                await resumeSession();
+              } else {
+                await startSessionAuto();
+              }
+            } catch(_) {
               await startSessionAuto();
             }
-          } catch(_) {
-            await startSessionAuto();
           }
         }
       } catch(e) {
@@ -12080,7 +12098,8 @@ async function authRateLimit(env, identifier) {
 }
 __name(authRateLimit, "authRateLimit");
 function getStripeKeys(request, env) {
-  const isTest = env.STRIPE_MODE === "test" || env.ENVIRONMENT === "development";
+  const queryOverride = request && new URL(request.url).searchParams.get("stripe_mode") === "test";
+  const isTest = queryOverride || env.STRIPE_MODE === "test" || env.ENVIRONMENT === "development";
   return {
     secretKey: isTest ? env.STRIPE_TEST_SECRET_KEY || env.STRIPE_SECRET_KEY : env.STRIPE_SECRET_KEY,
     publishableKey: isTest ? env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY : env.STRIPE_PUBLISHABLE_KEY,
@@ -15263,14 +15282,27 @@ Use this to skip surface-level questions. Go deeper faster.` });
             const coreOfferName = bp.part4?.coreOffer?.name || "";
             const heroHeadline = (bp.part7?.heroHeadlineOptions || [])[0] || "";
             const emailGreeting = firstName ? `${firstName}, your` : "Your";
+            // Generate magic link for blueprint view
+            let blueprintMagicUrl = "";
+            try {
+              if (session.userId) {
+                const bpToken = generateMagicToken();
+                await storeMagicToken(env, bpToken, session.userId, "magic_login", 72);
+                const bpOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+                blueprintMagicUrl = `${bpOrigin}/magic?token=${bpToken}`;
+              }
+            } catch(_bpe) {}
+            const bpFallbackUrl = (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/app?session=" + sessionId;
+            const bpViewUrl = blueprintMagicUrl || bpFallbackUrl;
             fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
               body: JSON.stringify({
                 from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
                 to: [session.email],
-                subject: `${emailGreeting} Deep Work Blueprint is ready`,
-                html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Blueprint</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p></td></tr></table></td></tr></table></body></html>`
+                reply_to: "james@jamesguldan.com",
+                subject: `${emailGreeting} Deep Work Interview results are ready`,
+                html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Interview</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p><div style="text-align:center;"><a href="${bpViewUrl}" style="display:inline-block;background:#C4703F;color:#ffffff;font-size:15px;font-weight:600;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:0.01em;">View My Results &rarr;</a></div></td></tr><tr><td style="background:#262626;border-radius:0 0 20px 20px;padding:28px 40px;"><p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.4);">Button not working? Paste this into your browser:</p><p style="margin:0;font-size:11px;"><a href="${bpViewUrl}" style="color:#C4703F;word-break:break-all;">${bpViewUrl}</a></p></td></tr></table></td></tr></table></body></html>`
               })
             }).catch(() => {
             });
@@ -16559,8 +16591,9 @@ async function handleWebhook(request, env) {
 
       // Create/update user and generate access link
       if (email) {
+        let user = null;
         try {
-          let user = await getUserByEmail(env, email);
+          user = await getUserByEmail(env, email);
           if (!user) {
             user = await createUser(env, { email, name: s.customer_details?.name || "", tier });
           } else if (user.tier !== tier) {
@@ -16568,6 +16601,54 @@ async function handleWebhook(request, env) {
           }
         } catch(userErr) {
           console.error("[Webhook] User upsert failed:", userErr.message);
+        }
+
+        // Generate magic link and send purchase confirmation email
+        if (user && env.RESEND_API_KEY) {
+          try {
+            const token = generateMagicToken();
+            await storeMagicToken(env, token, user.id, "magic_login", 72);
+            const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+            const magicUrl = origin + "/magic?token=" + token;
+            const firstName = (s.customer_details?.name || "").split(" ")[0] || "there";
+            const tierLabel = tier === "site" ? "Site In Sixty" : "Deep Work Interview";
+            const emailHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:520px;margin:0 auto;padding:40px 24px;">
+<div style="text-align:center;margin-bottom:32px;"><div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:#1D1D1F;">Deep Work Interview</div></div>
+<div style="background:#fff;border-radius:16px;padding:32px 28px;border:1px solid #F0F0F0;">
+<h1 style="font-size:22px;font-weight:700;color:#1D1D1F;margin:0 0 16px;">Hey ${firstName}, you are in.</h1>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 12px;">Your <strong>${tierLabel}</strong> purchase is confirmed. $${(amountCents/100).toFixed(2)} received.</p>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 24px;">Click below to start your Deep Work session. This is where we excavate everything that makes you different and turn it into a brand blueprint you can actually use.</p>
+<div style="text-align:center;margin:28px 0;"><a href="${magicUrl}" style="display:inline-block;background:#1D1D1F;color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:50px;text-decoration:none;">Start Your Session</a></div>
+<p style="font-size:13px;color:#86868B;line-height:1.5;margin:0;">This link expires in 72 hours. If you need a new one, just visit <a href="${origin}" style="color:#C4703F;">love.jamesguldan.com</a> and request a magic link with your email.</p>
+</div>
+<div style="text-align:center;margin-top:32px;font-size:12px;color:#C0C0C0;">Questions? Reply to this email or reach me at james@jamesguldan.com</div>
+</div></body></html>`;
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+                to: [email],
+                reply_to: "james@jamesguldan.com",
+                subject: "You are in \u2014 your Deep Work session is ready",
+                html: emailHtml
+              })
+            });
+            // Notify James of new purchase
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Deep Work Notifications <noreply@jamesguldan.com>",
+                to: ["james@jamesguldan.com"],
+                subject: "New purchase: " + (s.customer_details?.name || email) + " ($" + (amountCents/100).toFixed(2) + ")",
+                html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (s.customer_details?.name || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents/100).toFixed(2) + "</p><p><strong>Time:</strong> " + new Date().toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>"
+              })
+            }).catch(function(e){ console.error("[Webhook] Admin notify failed:", e.message); });
+          } catch(emailErr) {
+            console.error("[Webhook] Email send failed:", emailErr.message);
+          }
         }
 
         // Forward to external GHL webhook worker if configured
@@ -16586,6 +16667,151 @@ async function handleWebhook(request, env) {
         amount: amountCents / 100,
         email
       });
+    }
+
+    if (event.type === "payment_intent.succeeded") {
+      const pi = event.data.object;
+      const amountCents = pi.amount || 0;
+      const tier = pi.metadata?.tier || "blueprint";
+
+      // Extract email — try multiple sources since charges may not be expanded
+      const charge = (pi.charges?.data || [])[0] || {};
+      let email = charge.billing_details?.email || pi.receipt_email || null;
+      let customerName = charge.billing_details?.name || "";
+
+      // If no email from payload, fetch the latest charge from Stripe API
+      if (!email && pi.latest_charge && env.STRIPE_SECRET_KEY) {
+        try {
+          const chargeRes = await stripeGet(env, "/v1/charges/" + pi.latest_charge);
+          if (chargeRes.ok) {
+            const chargeData = await chargeRes.json();
+            email = chargeData.billing_details?.email || chargeData.receipt_email || null;
+            customerName = customerName || chargeData.billing_details?.name || "";
+          }
+        } catch(_ce) { console.error("[Webhook:PI] Charge lookup failed:", _ce.message); }
+      }
+
+      // If still no email, try looking up the Stripe customer
+      if (!email && pi.customer && env.STRIPE_SECRET_KEY) {
+        try {
+          const custRes = await stripeGet(env, "/v1/customers/" + pi.customer);
+          if (custRes.ok) {
+            const custData = await custRes.json();
+            email = custData.email || null;
+            customerName = customerName || custData.name || "";
+          }
+        } catch(_cue) { console.error("[Webhook:PI] Customer lookup failed:", _cue.message); }
+      }
+
+      console.log("[Webhook:PI] Extracted email:", email, "name:", customerName, "amount:", amountCents, "pi:", pi.id);
+
+      // Check if we already recorded this payment (from checkout.session.completed)
+      const existingPay = await env.DB.prepare("SELECT id FROM payments WHERE stripe_payment_intent_id = ?").bind(pi.id).first().catch(() => null);
+      if (!existingPay && email) {
+        // Insert payment record
+        try {
+          await env.DB.prepare(
+            `INSERT OR IGNORE INTO payments (id, email, amount, currency, status, stripe_payment_intent_id, stripe_customer_id, tier, created_at)
+             VALUES (?, ?, ?, ?, 'succeeded', ?, ?, ?, datetime('now'))`
+          ).bind(
+            "pay_pi_" + pi.id,
+            email,
+            amountCents / 100,
+            (pi.currency || "usd").toUpperCase(),
+            pi.id,
+            pi.customer || null,
+            tier
+          ).run();
+        } catch (dbErr) {
+          console.error("[Webhook:PI] Payment insert failed:", dbErr.message);
+        }
+
+        // Create/update user
+        let user = null;
+        try {
+          user = await getUserByEmail(env, email);
+          if (!user) {
+            user = await createUser(env, { email, name: customerName, tier });
+          } else if (user.tier !== tier) {
+            await env.DB.prepare("UPDATE users SET tier=? WHERE id=?").bind(tier, user.id).run().catch(()=>{});
+          }
+        } catch(userErr) {
+          console.error("[Webhook:PI] User upsert failed:", userErr.message);
+        }
+
+        // Send purchase confirmation email + admin notification
+        if (user && env.RESEND_API_KEY) {
+          try {
+            const token = generateMagicToken();
+            await storeMagicToken(env, token, user.id, "magic_login", 72);
+            const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+            const magicUrl = origin + "/magic?token=" + token;
+            const firstName = customerName.split(" ")[0] || "there";
+            const tierLabel = tier === "site" ? "Site In Sixty" : "Deep Work Interview";
+            const emailHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:520px;margin:0 auto;padding:40px 24px;">
+<div style="text-align:center;margin-bottom:32px;"><div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:#1D1D1F;">Deep Work Interview</div></div>
+<div style="background:#fff;border-radius:16px;padding:32px 28px;border:1px solid #F0F0F0;">
+<h1 style="font-size:22px;font-weight:700;color:#1D1D1F;margin:0 0 16px;">Hey ${firstName}, you are in.</h1>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 12px;">Your <strong>${tierLabel}</strong> purchase is confirmed. $${(amountCents/100).toFixed(2)} received.</p>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 24px;">Click below to start your Deep Work session. This is where we excavate everything that makes you different and turn it into a brand blueprint you can actually use.</p>
+<div style="text-align:center;margin:28px 0;"><a href="${magicUrl}" style="display:inline-block;background:#1D1D1F;color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:50px;text-decoration:none;">Start Your Session</a></div>
+<p style="font-size:13px;color:#86868B;line-height:1.5;margin:0;">This link expires in 72 hours. If you need a new one, just visit <a href="${origin}" style="color:#C4703F;">love.jamesguldan.com</a> and request a magic link with your email.</p>
+</div>
+<div style="text-align:center;margin-top:32px;font-size:12px;color:#C0C0C0;">Questions? Reply to this email or reach me at james@jamesguldan.com</div>
+</div></body></html>`;
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+                to: [email],
+                reply_to: "james@jamesguldan.com",
+                subject: "You are in \u2014 your Deep Work session is ready",
+                html: emailHtml
+              })
+            });
+            // Notify James
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Deep Work Notifications <noreply@jamesguldan.com>",
+                to: ["james@jamesguldan.com"],
+                subject: "New purchase: " + (customerName || email) + " ($" + (amountCents/100).toFixed(2) + ")",
+                html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (customerName || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents/100).toFixed(2) + "</p><p><strong>Time:</strong> " + new Date().toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>"
+              })
+            }).catch(function(e){ console.error("[Webhook:PI] Admin notify failed:", e.message); });
+          } catch(emailErr) {
+            console.error("[Webhook:PI] Email send failed:", emailErr.message);
+          }
+        }
+
+        // Forward to GHL
+        if (email && env.GHL_WEBHOOK_URL) {
+          fetch(env.GHL_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, tier, amount: amountCents / 100, paymentIntentId: pi.id, name: customerName })
+          }).catch(()=>{});
+        }
+
+        await logEvent(env, null, "stripe_payment_completed", {
+          paymentIntentId: pi.id,
+          tier,
+          amount: amountCents / 100,
+          email
+        });
+      } else {
+        // Log even if we couldn't process (missing email or duplicate)
+        await logEvent(env, null, "stripe_webhook_received", {
+          type: "payment_intent.succeeded",
+          paymentIntentId: pi.id,
+          amount: amountCents / 100,
+          emailFound: !!email,
+          alreadyRecorded: !!existingPay
+        });
+      }
     }
 
     if (event.type === "charge.refunded") {
@@ -16794,8 +17020,8 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-size: 18px; color: var(--text); margin-bottom: 24px;
 }
 .bp-letter-italic {
-  font-family: 'Playfair Display', serif; font-style: italic;
-  font-size: 18px; color: #555; line-height: 1.75;
+  font-family: 'Inter', sans-serif; font-weight: 400; font-style: normal;
+  font-size: 15px; color: #555; line-height: 1.85;
   margin-bottom: 24px;
 }
 .bp-letter-body {
@@ -17118,7 +17344,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 .bp-niche-block { margin-bottom: 20px; }
 
 /* === OFFER SUITE === */
-.bp-offers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px; }
+.bp-offers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px; max-width: 800px; }
 .bp-offer-card {
   background: var(--bg2); border-radius: var(--radius); padding: 28px 24px;
   border: 1px solid var(--border); transition: border-color 0.2s;
@@ -17148,7 +17374,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 }
 
 /* === HEADLINES & POSITIONING === */
-.bp-headlines-list { display: flex; flex-direction: column; gap: 12px; }
+.bp-headlines-list { display: flex; flex-direction: column; gap: 8px; }
 .bp-headline-option {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 16px; border-radius: var(--radius-sm);
@@ -17799,30 +18025,11 @@ function renderChapter4(bp, sessionId, firstName) {
     '<div class="bp-gap-top">' +
     '<div class="bp-gap-eyebrow">YOUR BLUEPRINT IS READY. YOUR STRATEGY ISN\'T.</div>' +
     '<div class="bp-gap-headline">You have the map.<br>Let\'s build the route.</div>' +
-    '<div class="bp-gap-sub">Your blueprint shows you what to build. A strategy call shows you what to build first, what to skip, and what will actually move the needle in the next 30 days.</div>' +
-    '</div>' +
-    '<div class="bp-gap-columns">' +
-    '<div class="bp-gap-col">' +
-    '<div class="bp-gap-col-label">WHAT YOUR BLUEPRINT GIVES YOU</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Brand positioning and voice</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Ideal client profile</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Offer suite and pricing</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Website structure and headlines</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Credibility gaps identified</div>' +
-    '</div>' +
-    '<div class="bp-gap-col">' +
-    '<div class="bp-gap-col-label">WHAT THE STRATEGY CALL ADDS</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Prioritized 90-day action plan</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Which offer to launch first (and why)</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Content strategy for your first 10 posts</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Tech stack recommendations for your budget</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Live review of your biggest credibility gap</div>' +
-    '</div>' +
     '</div>' +
     '<div class="bp-gap-bottom">' +
-    '<div class="bp-gap-prep">Before we talk, I will read through your complete blueprint. Your narrative brief, your positioning, your offer structure, your gap analysis. All of it.</div>' +
-    '<div class="bp-gap-prep">On the call we spend about an hour on three things: what I see from the outside that is hard to spot from inside your own brand, the specific gap between where you are and where you are headed, and the most impactful next move given what came up in your session.</div>' +
-    '<div class="bp-gap-prep">Some people leave with a clear plan they execute on their own. Some want ongoing support. Both are good outcomes.</div>' +
+    '<div class="bp-gap-prep">Most people read their blueprint once and file it. The ones who act on it usually do it within the week — and almost always with someone who can tell them what they\'re not seeing from inside their own brand.</div>' +
+    '<div class="bp-gap-prep">Before we talk, I read your complete blueprint. Your narrative, your positioning, your offer structure, your gap analysis. All of it. So when we sit down together, we skip the recap and go straight to what matters.</div>' +
+    '<div class="bp-gap-prep">The call is about three things: what I see from the outside that is hard to spot from where you\'re standing, the specific gap between where you are and where you want to go, and the one move worth doing first given everything that came up in your session.</div>' +
     '<div class="bp-gap-pull-quote">This is not a sales call. It is a working session. Come ready to think.</div>' +
     '<div class="bp-gap-price">$197</div>' +
     '<div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div>' +
@@ -17908,8 +18115,17 @@ function renderOfferSuite(bp) {
       (o.delivery ? '<div class="bp-offer-delivery">' + escHtml(o.delivery) + '</div>' : '') +
       '</div>';
   }).join("");
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Offer Suite</span><div class="chapter-divider-sub">Four doors. Each one built for a different version of your ideal client.</div></div>' +
-    '<section class="bp-section"><div class="bp-inner-wide"><div class="bp-offers-grid">' + offerCards + '</div>' +
+  var offerCount = offers.length;
+  var offerSubtitle = offerCount === 1
+    ? "Your core offer, built for who you actually want to serve."
+    : offerCount === 2
+      ? "Two doors. Each built for a different version of your ideal client."
+      : offerCount === 3
+        ? "Three doors. Each built for a different version of your ideal client."
+        : "Four doors. Each built for a different version of your ideal client.";
+  var gridStyle = offerCount === 1 ? ' style="max-width:480px;"' : '';
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Offer Suite</span><div class="chapter-divider-sub">' + offerSubtitle + '</div></div>' +
+    '<section class="bp-section"><div class="bp-inner-wide"><div class="bp-offers-grid"' + gridStyle + '>' + offerCards + '</div>' +
     (p4.ascensionLogic ? '<div class="bp-ascension"><div class="eyebrow" style="margin-bottom:12px;">The Ascension Logic</div><div class="bp-client-text" style="font-style:italic;color:var(--text2);">' + escHtml(p4.ascensionLogic) + '</div></div>' : '') +
     '</div></section>';
 }
@@ -17917,8 +18133,8 @@ __name(renderOfferSuite, "renderOfferSuite");
 function renderHeadlines(bp) {
   var p7 = bp.part7;
   if (!p7) return "";
-  var headlines = Array.isArray(p7.heroHeadlineOptions) ? p7.heroHeadlineOptions : [];
-  var taglines = Array.isArray(p7.taglineOptions) ? p7.taglineOptions : [];
+  var headlines = Array.isArray(p7.heroHeadlineOptions) ? p7.heroHeadlineOptions.filter(function(h, i, arr) { return arr.indexOf(h) === i; }) : [];
+  var taglines = Array.isArray(p7.taglineOptions) ? p7.taglineOptions.filter(function(t, i, arr) { return arr.indexOf(t) === i; }) : [];
   var pos = p7.positioningStatements || {};
   if (!headlines.length && !taglines.length && !pos.website) return "";
   var headlineHTML = headlines.length ? '<div class="eyebrow" style="margin-bottom:16px;">Hero Headline Options</div><div class="bp-headlines-list">' +
@@ -17993,6 +18209,252 @@ function renderBlueprintResults(bp, userName, apolloData, messageCount) {
 }
 __name(renderBlueprintResults, "renderBlueprintResults");
 
+function renderBlueprintV3(bp, userName, sessionId, sessionMeta) {
+  const firstName = (userName || "Friend").split(" ")[0];
+  const v3 = bp.v3 || {};
+  const depthScore = (sessionMeta && sessionMeta.emotional_depth_score) || 0;
+  const depthGrade = (sessionMeta && sessionMeta.depth_grade) || "";
+  const msgCount = (sessionMeta && sessionMeta.message_count) || 0;
+  const barPct = Math.min(100, Math.round((depthScore / 25) * 100));
+
+  const positioningStatement = v3.positioningStatement || bp.openingHook || "Your unique positioning statement.";
+  const cs = v3.clientStory || {};
+  const rp = v3.realProblem || {};
+  const vis = v3.vision || {};
+
+  const csHeadline = cs.headline || "The Person Who Knows They Have More to Give";
+  const csBody = cs.body || "";
+  const csPullquote = cs.pullquote || "";
+  const csTension = cs.tension || "";
+  const rpHeadline = rp.headline || "Not a Skill Problem. A Clarity Problem.";
+  const rpBody = rp.body || "";
+  const rpInsight = rp.insight || "";
+  const rpPullquote = rp.pullquote || "";
+  const visHeadline = vis.headline || "What Alignment Actually Feels Like";
+  const visBody = vis.body || "";
+  const visInsight = vis.insight || "";
+
+  // New v3 fields
+  const mirrorObservation = v3.mirror_observation || "";
+  const arrogantTruth = v3.arrogant_truth || "";
+  const futureSelfLetter = v3.futureSelfLetter || v3.marcusLetter || "";
+
+  function bodyParas(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map(s => s.trim()).filter(Boolean).map(s => `<p class="body-text">${escHtml(s)}</p>`).join("");
+  }
+  function loveParas(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map(s => s.trim()).filter(Boolean).map(s => `<p>${escHtml(s)}</p>`).join("");
+  }
+  function marcusParas(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map(s => s.trim()).filter(Boolean).map(s => `<p>${escHtml(s)}</p>`).join("");
+  }
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const sessionShort = sessionId ? "DW-" + sessionId.slice(-6).toUpperCase() : "DW-0000";
+
+  // Compute session duration in minutes from D1 timestamps
+  let sessionMinutes = 0;
+  try {
+    const start = sessionMeta && sessionMeta.created_at ? new Date(sessionMeta.created_at) : null;
+    const end = sessionMeta && (sessionMeta.completed_at || sessionMeta.last_active_at) ? new Date(sessionMeta.completed_at || sessionMeta.last_active_at) : null;
+    if (start && end) sessionMinutes = Math.round((end - start) / 60000);
+  } catch(_) {}
+  const insightCount = (sessionMeta && sessionMeta.insight_count) || 0;
+  const beliefCount = (sessionMeta && sessionMeta.belief_pattern_count) || 0;
+
+  const moves = Array.isArray(bp.firstThreeMoves) ? bp.firstThreeMoves.slice(0, 3) : [];
+  let stepsHTML;
+  if (moves.length > 0) {
+    stepsHTML = '<div class="steps">' + moves.map((m, i) => {
+      const t = escHtml(m.move || m.title || m.step || ("Step " + (i + 1)));
+      const d = escHtml(m.detail || m.description || m.body || "");
+      return `<div class="step"><div class="step-num">${i + 1}</div><div class="step-content"><div class="step-title">${t}</div><div class="step-body">${d}</div></div></div>`;
+    }).join("") + "</div>";
+  } else {
+    stepsHTML = `<div class="steps"><div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Name the Real Capability</div><div class="step-body">Not the job title. The actual thing you do that creates transformation for other people.</div></div></div><div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Build the System Around It</div><div class="step-body">Offer, pricing, positioning, delivery, and client selection. Everything restructured around what you actually do best.</div></div></div><div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Operate from the Center</div><div class="step-body">Once the system is aligned with your real capability, the work becomes lighter and more effective.</div></div></div></div>`;
+  }
+
+  const marcusDefault = "\u201cThe work you are doing is harder than most people can see. Not because of what it requires, but because of what it demands you let go of.\u201d\n\n\u201cWhen the path is unclear, return to what is most true about you. Build from there. Everything else will follow.\u201d";
+  const loveDefault = `Dear younger you,\n\nYou didn\u2019t need to work so hard to prove yourself. The thing you were afraid wasn\u2019t enough\u2014it was always the best thing about you.\n\nEverything you\u2019ve built was pointing toward the same thing. You just needed someone to hold up a mirror.\n\nWith everything,\nYour future self`;
+
+  const futureSelfRaw = (futureSelfLetter || marcusDefault).replace(/\s*Marcus Aurelius,?\s*Meditations\s*$/i, "").replace(/Three years from now,?\s*\/?\s*\[?\w+\]?\s*$/i, "").trim();
+  const futureSelfHTML = marcusParas(futureSelfRaw);
+  const loveHTML = loveParas(v3.loveLetter || loveDefault);
+  const promptForJs = positioningStatement.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+  const css = `
+:root{--gold:#C4703F;--white:#FFFFFF;--off:#FAFAFA;--border:#F0F0F0;--text:#1D1D1F;--text2:#86868B;--dark:#0f0f0f;--warm:#FFF9F6;--radius:16px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
+#progress{position:fixed;top:0;left:0;width:0%;height:3px;background:var(--gold);z-index:1000;transition:width 0.1s;}
+.hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;overflow:hidden;background:#111;}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.45) 50%,rgba(0,0,0,0.15) 100%);}
+.hero-content{position:relative;z-index:2;padding:80px 64px;width:100%;max-width:1100px;margin:0 auto;}
+.hero-eyebrow{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#fff;margin-bottom:16px;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
+.hero-name{font-family:'Outfit',sans-serif;font-size:clamp(48px,6vw,80px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1;margin-bottom:16px;}
+.hero-tagline{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(18px,2.5vw,24px);color:rgba(255,255,255,0.92);line-height:1.6;max-width:640px;margin-bottom:40px;}
+.hero-depth{color:rgba(255,255,255,0.55);font-size:13px;line-height:1.6;}
+.hero-depth strong{color:#fff;display:block;font-size:14px;font-family:'Outfit',sans-serif;font-weight:600;}
+.hero-bar{margin-top:8px;width:180px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;}
+.hero-bar-fill{height:100%;background:var(--gold);}
+.glance{background:#fff;padding:64px 64px 48px;border-bottom:1px solid var(--border);}
+.glance-inner{max-width:900px;margin:0 auto;}
+.glance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:28px;}
+.glance-stat{text-align:center;padding:24px 16px;background:var(--off);border-radius:12px;border:1px solid var(--border);}
+.glance-num{font-family:'Outfit',sans-serif;font-size:32px;font-weight:800;color:var(--text);letter-spacing:-0.02em;}
+.glance-num.gold{color:var(--gold);}
+.glance-label{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.4;}
+.glance-bar-track{width:100%;height:6px;background:var(--border);border-radius:4px;margin-top:12px;overflow:hidden;}
+.glance-bar-fill{height:100%;background:var(--gold);border-radius:4px;}
+.act-divider{position:relative;height:380px;overflow:hidden;background:#111;}
+.act-divider-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.35) 60%,rgba(0,0,0,0.1) 100%);}
+.act-label{position:absolute;bottom:0;left:0;right:0;padding:40px 64px;z-index:2;}
+.act-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:10px;}
+.act-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;max-width:640px;}
+.section{background:#fff;padding:80px 64px;}
+.section-inner{max-width:760px;margin:0 auto;}
+.eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
+.section-headline{font-family:'Outfit',sans-serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-0.02em;line-height:1.2;margin-bottom:20px;}
+.body-text{font-size:17px;line-height:1.75;color:#3a3a3a;margin-bottom:20px;}
+.pullquote{font-family:'Outfit',sans-serif;font-weight:600;font-size:clamp(18px,2.2vw,22px);line-height:1.55;color:var(--text);border-left:3px solid var(--gold);padding-left:24px;margin:36px 0;}
+.insight-card{background:var(--off);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 12px 12px 0;margin:28px 0;}
+.insight-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:8px;}
+.insight-text{font-size:16px;line-height:1.65;}
+.steps{margin:32px 0;}
+.step{display:flex;gap:20px;margin-bottom:28px;align-items:flex-start;}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--gold);color:#fff;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-content{flex:1;}
+.step-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;}
+.step-body{font-size:15px;line-height:1.65;color:#555;}
+.prompt-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.prompt-inner{max-width:760px;margin:0 auto;text-align:center;}
+.prompt-card{background:#fff;border:2px solid var(--gold);border-radius:20px;padding:48px 56px;margin-top:24px;box-shadow:0 12px 48px rgba(196,112,63,0.12);}
+.prompt-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--gold);margin-bottom:20px;}
+.prompt-text{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.4;color:var(--text);margin-bottom:24px;}
+.prompt-context{font-size:14px;color:var(--text2);line-height:1.65;max-width:520px;margin:24px auto 0;padding-top:24px;border-top:1px solid var(--border);}
+.prompt-copy-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gold);color:#fff;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:20px;transition:transform 0.15s;}
+.prompt-copy-btn:hover{transform:scale(1.03);}
+.prompt-copied{color:var(--gold);font-size:13px;font-weight:600;margin-top:10px;opacity:0;transition:opacity 0.3s;}
+.prompt-copied.show{opacity:1;}
+.marcus-section{position:relative;background:var(--dark);padding:80px 64px;overflow:hidden;}
+.marcus-inner{position:relative;z-index:2;max-width:760px;margin:0 auto;}
+.marcus-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:20px;}
+.marcus-card{background:rgba(0,0,0,0.72);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius);padding:40px 48px;}
+.marcus-card p{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,19px);color:rgba(255,255,255,0.95);line-height:1.75;margin-bottom:20px;}
+.marcus-sig{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;}
+.love-section{background:var(--warm);padding:80px 64px;}
+.love-inner{max-width:760px;margin:0 auto;}
+.love-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:20px;}
+.love-card{background:#fff;border:1px solid #F0E8E0;border-radius:var(--radius);padding:40px 48px;box-shadow:0 4px 24px rgba(196,112,63,0.08);}
+.love-card p{font-size:17px;line-height:1.8;color:#3a3a3a;margin-bottom:18px;}
+.love-sig{font-family:'Outfit',sans-serif;font-weight:600;font-size:16px;color:var(--gold);}
+.vision-divider{position:relative;height:500px;overflow:hidden;background:#111;}
+.vision-divider-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.6) 100%);}
+.vision-label{position:absolute;bottom:0;left:0;right:0;padding:48px 64px;z-index:2;text-align:center;}
+.vision-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
+.vision-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;}
+.forget-section{background:#fff;padding:80px 64px;border-top:1px solid var(--border);}
+.forget-inner{max-width:760px;margin:0 auto;text-align:center;}
+.forget-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px;}
+.forget-sub{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,20px);color:#555;line-height:1.6;max-width:560px;margin:0 auto 40px;}
+.forget-triggers{display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:left;margin-bottom:40px;}
+.forget-trigger{background:var(--off);border:1px solid var(--border);border-radius:12px;padding:24px 28px;}
+.forget-trigger-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:10px;}
+.forget-trigger-text{font-size:15px;line-height:1.65;color:var(--text);}
+.forget-trigger-action{font-size:13px;color:var(--text2);margin-top:8px;}
+.forget-timestamp{font-size:13px;color:var(--text2);margin-top:32px;font-family:'Outfit',sans-serif;}
+.wallpaper-section{background:#fff;padding:80px 64px;}
+.wallpaper-inner{max-width:1000px;margin:0 auto;}
+.wallpaper-card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
+.wallpaper-copy{padding:48px;display:flex;flex-direction:column;justify-content:center;}
+.wallpaper-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:14px;}
+.wallpaper-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,3.5vw,40px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:14px;}
+.wallpaper-sub{font-size:16px;line-height:1.65;color:var(--text2);margin-bottom:28px;}
+.wallpaper-phones{background:#1D1D1F;padding:48px;display:flex;align-items:center;justify-content:center;gap:16px;}
+.phone-frame{width:100px;height:180px;background:#111;border-radius:18px;border:2px solid rgba(255,255,255,0.12);overflow:hidden;}
+.phone-frame.main{width:120px;height:210px;border-radius:22px;border:2px solid rgba(196,112,63,0.5);}
+.phone-screen{width:100%;height:100%;background:linear-gradient(160deg,#1a1208 0%,#2d1f0e 40%,#1D1D1F 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center;}
+.phone-text{font-family:'Outfit',sans-serif;font-size:7px;font-weight:700;color:rgba(196,112,63,0.9);text-transform:uppercase;letter-spacing:0.1em;line-height:1.4;}
+.phone-text.main{font-size:8px;}
+.final-cta{background:#1D1D1F;padding:96px 64px;}
+.final-inner{max-width:880px;margin:0 auto;text-align:center;}
+.final-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:24px;}
+.final-headline{font-family:'Outfit',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;}
+.final-sub{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,20px);color:rgba(255,255,255,0.75);max-width:560px;margin:0 auto 40px;line-height:1.6;}
+.final-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:48px;text-align:left;margin-bottom:40px;}
+.final-card-title{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:20px;}
+.final-card-items{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.final-item{display:flex;gap:12px;align-items:flex-start;}
+.final-check{width:24px;height:24px;border-radius:50%;background:rgba(196,112,63,0.2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.final-item-text{font-size:15px;line-height:1.5;color:rgba(255,255,255,0.88);}
+.final-price{text-align:center;margin-bottom:32px;}
+.final-price-amount{font-family:'Outfit',sans-serif;font-size:48px;font-weight:800;color:#fff;letter-spacing:-0.03em;}
+.final-price-label{font-size:14px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.final-btn{display:inline-block;padding:18px 48px;background:var(--gold);color:#fff;border-radius:50px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;text-decoration:none;letter-spacing:0.02em;transition:transform 0.15s;}
+.final-btn:hover{transform:scale(1.03);}
+.final-guarantee{margin-top:20px;font-size:13px;color:rgba(255,255,255,0.55);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.55;}
+.final-testimonial{margin-top:40px;padding:28px 32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;text-align:center;}
+.final-testimonial p{font-family:'Inter',sans-serif;font-weight:400;font-size:16px;color:rgba(255,255,255,0.8);line-height:1.7;margin-bottom:12px;}
+.final-testimonial-author{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;}
+.saw-section{background:#fff;padding:64px 64px;border-bottom:1px solid var(--border);}
+.saw-inner{max-width:760px;margin:0 auto;border-left:4px solid var(--gold);padding-left:32px;}
+.saw-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:16px;}
+.saw-body{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(18px,2.2vw,22px);color:var(--text);line-height:1.7;}
+.arrogant-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.arrogant-inner{max-width:760px;margin:0 auto;text-align:center;}
+.arrogant-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:24px;}
+.arrogant-bar{width:40px;height:2px;background:var(--gold);margin:0 auto 32px;}
+.arrogant-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3vw,34px);color:var(--text);line-height:1.5;font-weight:400;}
+@media(max-width:768px){
+.hero-content{padding:48px 24px;}.hero-name{font-size:clamp(36px,10vw,52px);}
+.glance{padding:40px 24px 32px;}.glance-grid{grid-template-columns:1fr 1fr;gap:16px;}
+.act-divider{height:280px;}.act-label{padding:24px 24px;}
+.section{padding:48px 24px;}.section-inner{max-width:100%;}
+.pullquote{padding-left:18px;margin:28px 0;}.step{gap:14px;}.step-num{width:34px;height:34px;font-size:14px;}
+.prompt-section{padding:48px 24px;}.prompt-card{padding:32px 24px;}
+.marcus-section{padding:48px 24px;}.marcus-card{padding:28px 24px;}
+.love-section{padding:48px 24px;}.love-card{padding:28px 24px;}
+.vision-divider{height:360px;}.vision-label{padding:32px 24px;}
+.forget-section{padding:48px 24px;}.forget-triggers{grid-template-columns:1fr;gap:14px;}
+.wallpaper-section{padding:48px 24px;}.wallpaper-card{grid-template-columns:1fr;}.wallpaper-copy{padding:32px 24px;}.wallpaper-phones{padding:32px 16px;}
+.final-cta{padding:56px 24px;}.final-card{padding:32px 24px;}.final-card-items{grid-template-columns:1fr;}.final-btn{padding:16px 36px;font-size:16px;}
+.saw-section{padding:40px 24px;}.arrogant-section{padding:56px 24px;}.arrogant-text{font-size:22px;}
+}
+@media(max-width:480px){
+.hero-name{font-size:36px;}.glance-grid{grid-template-columns:1fr 1fr;gap:12px;}.glance-stat{padding:16px 12px;}.glance-num{font-size:26px;}
+.act-divider{height:220px;}.prompt-text{font-size:22px;}.final-price-amount{font-size:40px;}
+}`;
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escHtml(firstName)}\u2019s Deep Work Interview</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet"><style>${css}</style></head><body>
+<script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var h=document.querySelector('.blueprint-header');if(h)h.style.display='none';var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
+<div id="progress"></div>
+<div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div>${depthScore > 0 ? `<div class="hero-depth"><strong>Interview Complete</strong>Session depth score: ${Math.round((depthScore / 25) * 100)} of 100<div class="hero-bar"><div class="hero-bar-fill" style="width:${barPct}%"></div></div></div>` : ""}</div></div>
+<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num gold">${depthScore ? Math.round((depthScore / 25) * 100) : "—"}</div><div class="glance-label">Session Depth Score</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${barPct}%"></div></div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : (msgCount ? Math.round(msgCount * 0.7) : "—")}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round((sessionMinutes / 90) * 100) : Math.round((msgCount / 130) * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : (msgCount ? Math.round(msgCount / 8) : "—")}</div><div class="glance-label">Core Insights Extracted</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round((insightCount / 20) * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : (arrogantTruth ? 3 : "—")}</div><div class="glance-label">Belief Patterns Identified</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div></div></div></div>
+<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201c${escHtml(csPullquote)}\u201d</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
+${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">A note from the interview.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
+<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201c${escHtml(rpPullquote)}\u201d</div>` : ""}</div></div>
+<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}</div></div>
+${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201c${escHtml(arrogantTruth)}\u201d</div></div></div>` : ""}
+<div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">This is the thing you said you\u2019d never said publicly.</div><div class="prompt-text">\u201c${escHtml(positioningStatement)}\u201d</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
+<div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-eyebrow">A Letter from Your Future Self</div><div class="marcus-card">${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
+<div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
+<div class="vision-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_vision_1.jpg');background-size:cover;background-position:center;"><div class="vision-divider-overlay"></div><div class="vision-label"><div class="vision-eyebrow">The After</div><div class="vision-title">${visHeadline ? escHtml(visHeadline) : "What the Right Life Actually Feels Like"}</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">Your Vision</div><div class="section-headline">${visHeadline ? escHtml(visHeadline) : "Alignment Is a Daily Experience, Not a Destination"}</div>${bodyParas(visBody)}${visInsight ? `<div class="insight-card"><div class="insight-label">What Becomes Possible</div><div class="insight-text">${escHtml(visInsight)}</div></div>` : ""}</div></div>
+<div class="forget-section"><div class="forget-inner"><div class="eyebrow">Bookmark This</div><div class="forget-headline">On the days you forget who you are, come back here.</div><div class="forget-sub">Clarity isn\u2019t a one-time event. It\u2019s something you return to. These are the moments to reopen this blueprint.</div><div class="forget-triggers"><div class="forget-trigger"><div class="forget-trigger-label">When you undercharge</div><div class="forget-trigger-text">Reread Act III. You\u2019re not selling time. You\u2019re selling the system that only you can build.</div><div class="forget-trigger-action">Scroll to: The Path Forward</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you compare yourself</div><div class="forget-trigger-text">Reread Your Prompt. Nobody else does what you do the way you do it. That\u2019s the whole point.</div><div class="forget-trigger-action">Scroll to: Your Prompt</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you feel like a fraud</div><div class="forget-trigger-text">Reread the Love Letter. You were enough before any of this. You\u2019re still enough now.</div><div class="forget-trigger-action">Scroll to: A Letter to Your Younger Self</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you lose the thread</div><div class="forget-trigger-text">Reread the Meditation. The clarity you seek is already inside what you do best. Build from there.</div><div class="forget-trigger-action">Scroll to: A Meditation</div></div></div><div class="forget-timestamp">Blueprint generated ${dateStr} &middot; Deep Work Interview &middot; Session #${sessionShort}</div></div></div>
+<div class="wallpaper-section"><div class="wallpaper-inner"><div class="wallpaper-card"><div class="wallpaper-copy"><div class="wallpaper-eyebrow">Take This With You</div><div class="wallpaper-headline">Always remember who you are.</div><div class="wallpaper-sub">Your positioning statement, with you everywhere you go.</div></div><div class="wallpaper-phones"><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Deep Work Interview</div></div></div><div class="phone-frame main"><div class="phone-screen"><div class="phone-text main">${escHtml(positioningStatement.slice(0, 60))}${positioningStatement.length > 60 ? "\u2026" : ""}</div></div></div><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Always remember<br>who you are.</div></div></div></div></div></div></div>
+<div class="final-cta"><div class="final-inner"><div class="final-eyebrow">What Comes Next</div><div class="final-headline">This blueprint is the map.<br>The call is where we build it.</div><div class="final-sub">60 minutes with James to turn this blueprint into a living system. Your offer, your positioning, your pricing, your client selection. All of it, restructured around what you\u2019re actually great at.</div><div class="final-card"><div class="final-card-title">What happens on the Strategy Call</div><div class="final-card-items"><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Walk through your blueprint together, live</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Name the one offer that should be your entire business</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Price it based on transformation, not time</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Build your client selection criteria</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Map the 90 day implementation path</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Leave with a system, not just a strategy</div></div></div></div><div class="final-price"><div class="final-price-amount">$297</div><div class="final-price-label">One session. One system. One clear direction forward.</div></div><a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" class="final-btn">Book Your Strategy Call</a><div class="final-guarantee">If you don\u2019t leave the call with a clearer direction than you walked in with, you don\u2019t pay. That\u2019s the deal.</div><div class="final-testimonial"><p>\u201cIt just gave me a very honest, objective mirror back at myself. It pointed out that my biggest case study was nowhere on my website and asked, why are you burying all the leads? I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career.\u201d</p><div class="final-testimonial-author">Chris Van Loan II &mdash; Founder, Luminary Media</div></div></div></div>
+<script>window.addEventListener('scroll',function(){var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}<\/script></body></html>`;
+}
+__name(renderBlueprintV3, "renderBlueprintV3");
+
 // src/routes/blueprint.js
 init_resend();
 async function loadBlueprintForSession(env, sessionId) {
@@ -18026,7 +18488,29 @@ async function handleBlueprintRender(request, env) {
   const meta = await loadBlueprintForSession(env, sessionId);
   if (!meta)
     return json({ error: "Blueprint not found" }, 404);
-  const html = renderBlueprintResults(meta.blueprint, meta.name, meta.apolloData, meta.messageCount);
+  // Fetch session metadata + user name from D1
+  let sessionMeta = null;
+  let userName = meta.name;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT s.emotional_depth_score, s.depth_grade, s.message_count, s.created_at, s.completed_at, s.last_active_at, u.name as user_name FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.id = ?"
+    ).bind(sessionId).first();
+    if (row) {
+      sessionMeta = row;
+      if (!userName && row.user_name) userName = row.user_name;
+    }
+  } catch (_) {}
+  // Query insight counts from session_insights table
+  try {
+    const insightRow = await env.DB.prepare(
+      "SELECT COUNT(*) as total, SUM(CASE WHEN insight_type='contrarian_belief' THEN 1 ELSE 0 END) as belief_count FROM session_insights WHERE session_id = ?"
+    ).bind(sessionId).first();
+    if (insightRow && sessionMeta) {
+      sessionMeta.insight_count = insightRow.total || 0;
+      sessionMeta.belief_pattern_count = insightRow.belief_count || 0;
+    }
+  } catch (_) {}
+  const html = renderBlueprintV3(meta.blueprint, userName, sessionId, sessionMeta);
   return new Response(html, {
     headers: { "Content-Type": "text/html; charset=utf-8", ...CORS }
   });
@@ -18607,6 +19091,186 @@ async function handleAdminGenerateDebrief(request, env) {
   }
 }
 __name(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
+
+async function handleAdminGenerateV3Fields(request, env) {
+  // Simple key auth for this one-time backfill endpoint
+  const key = request.headers.get("X-Admin-Key");
+  if (key !== "dw-v3-generate-2026") return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: "Session not found" }, 404);
+    const session = JSON.parse(kvData);
+    if (!session.blueprint) return json({ error: "No blueprint in session" }, 400);
+    const bp = session.blueprint;
+    // Build transcript from messages
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const transcript = messages
+      .filter(m => m.role === "user" || m.role === "assistant")
+      .map(m => {
+        let content = m.content;
+        if (Array.isArray(content)) content = content.map(c => typeof c === "object" ? (c.text || "") : c).join(" ");
+        return m.role.toUpperCase() + ": " + String(content);
+      })
+      .join("\n\n");
+    // Build existing context
+    const idealClient = JSON.stringify(bp.idealClient || bp.part2 || {});
+    const positioning = JSON.stringify((bp.part7 || {}).positioningStatements || {});
+    const closingLine = bp.closingLine || "";
+    const personalLetter = JSON.stringify(bp.personalLetter || bp.debrief || {});
+    const moves = (bp.firstThreeMoves || []).map(m => m.title || m.instruction || "").join(", ");
+    const prompt = `You are reading a complete Deep Work Interview transcript. Your job is to generate the most emotionally precise, hyper-personal blueprint content possible. This person just spent 90 minutes being deeply honest. Honor that by writing content that could ONLY have been written for them.
+
+CRITICAL RULES FOR ALL FIELDS:
+- Use SPECIFIC details, quotes, moments, and language from the interview. Not generalities.
+- Reference the actual things they said, the actual patterns you observed, the actual origin story they shared.
+- If they mentioned their father, their childhood, a specific fear, a specific moment — USE IT.
+- Every sentence should make the reader think "how did they know that about me?"
+- Do NOT write anything that could apply to a generic entrepreneur. Write ONLY what is true for this exact person.
+- The emotional target: this should feel like being truly seen for the first time.
+
+EXISTING BLUEPRINT CONTEXT:
+- Closing Line: ${closingLine}
+- Ideal Client: ${idealClient.slice(0, 600)}
+- Personal Letter: ${personalLetter.slice(0, 600)}
+- First Moves: ${moves}
+- Current Positioning: ${positioning}
+
+FULL INTERVIEW TRANSCRIPT:
+${transcript.slice(0, 55000)}
+
+Generate the following as valid JSON only (no markdown, no explanation):
+{
+  "positioningStatement": "One powerful sentence that captures the truth of what this person does. Not a tagline. The sentence that would make someone who knows them say 'that is exactly right.' Use their actual language from the interview if possible.",
+  "clientStory": {
+    "headline": "A headline so specific to their ideal client that it feels like reading their private journal. Reference the exact type of person described in the interview.",
+    "body": "2-3 long paragraphs. Paint the portrait of their ideal client using the specific details from the interview. Reference the exact patterns, behaviors, and inner monologue that came up. Use second person (you). Do not hedge. Do not soften. Write like you are sitting across from this client and saying out loud what they have never said to anyone. Include details about what they have tried, what keeps failing, the specific flavor of their suffering. Use concrete images and sensory details, not abstract concepts.",
+    "pullquote": "The exact sentence their ideal client says to themselves at 2am. Use the emotional language and specific fears that came up in the interview. Not generic.",
+    "tension": "One sentence naming the specific gap this person identified. Use their words if they named it. Be precise about what is broken and why."
+  },
+  "realProblem": {
+    "headline": "Name the actual root cause using the specific pattern you identified in the interview. Not 'a clarity problem' — the SPECIFIC clarity problem.",
+    "body": "2-3 long paragraphs. Go deep into what is actually happening. Reference the specific survival patterns, origin story details, childhood dynamics, or relationship patterns that came up in the interview. Connect those patterns to the business problems. Be direct and unflinching. This should feel like the person is reading their own internal diagnosis for the first time.",
+    "insight": "One sentence for the insight card. The most important reframe from the interview. The thing that shifts everything.",
+    "pullquote": "A sentence that captures the specific experience of being stuck in this pattern. Use imagery or language from the interview."
+  },
+  "vision": {
+    "headline": "What their specific life looks and feels like when the work is done. Not abstract alignment — the concrete daily experience.",
+    "body": "2-3 long paragraphs. Paint a vivid picture of their aligned life using details from the interview. What their mornings look like. How their relationship with their child changes. How they feel in their body. How their business operates differently. Be concrete and sensory. This should feel like a preview of a life they can almost taste.",
+    "insight": "One concrete sentence about what becomes possible when this specific person stops running their survival pattern."
+  },
+  "mirror_observation": "1-2 paragraphs written in first person from the interviewer's perspective. Start with 'You answered every question about...' or a similar observation pattern. Name the single most striking behavioral or emotional pattern you observed across the entire interview — something they did not say directly but that showed up repeatedly. Be specific. Use their actual words and patterns. This should feel like being seen by someone who was paying close attention. Do not soften it. It should be slightly uncomfortable because it is true.",
+  "arrogant_truth": "A single sentence — the boldest, most direct claim this person could make about their capability. The thing they said or almost said that made them hesitate because it sounded arrogant. It is not arrogant. It is accurate. Pull it directly from what they described in the interview. It should start with 'I can...' or name a specific capability with a specific timeframe or outcome. Max 30 words. No hedging.",
+  "futureSelfLetter": "4-5 paragraphs from this person's FUTURE SELF writing to their PRESENT self (not younger self — to who they are right now, today). CRITICAL: Use their first name. Reference the specific fears they are carrying RIGHT NOW — the specific business decision, relationship dynamic, or identity question they are wrestling with today. Name what the future version knows that the present version cannot yet see. Be specific about what changed and how. Reference their child, their marriage, their specific context if mentioned. Warm but direct. End with: Three years from now, / [First Name]. Do NOT write 'Dear [name]' as an opening — start immediately with the content.",
+  "loveLetter": "5-7 paragraphs from this person's FUTURE SELF writing to their YOUNGER self. CRITICAL: This is the most important piece. Use their name. Reference SPECIFIC biographical details — their father, their childhood, what they were carrying, the specific moments they described. Tell the younger version what was already true about them that they could not see. Reference their child by name if mentioned. Reference their marriage. Reference the specific wounds. Be raw. Be compassionate. Do not hold back. This should make them cry. End with: With everything, / Your future self"
+}`;
+    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-opus-4-6",
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const aiData = await aiResp.json();
+    const rawText = aiData.content?.[0]?.text || "";
+    // Parse JSON from response
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return json({ error: "AI did not return valid JSON", raw: rawText.slice(0, 500) }, 500);
+    const v3Fields = JSON.parse(jsonMatch[0]);
+    // Patch blueprint
+    session.blueprint = { ...bp, v3: v3Fields };
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 60 });
+    // Also update bp_meta cache if it exists
+    try {
+      const metaRaw = await env.SESSIONS.get("bp_meta:" + sessionId);
+      if (metaRaw) {
+        const meta = JSON.parse(metaRaw);
+        if (meta.blueprint) { meta.blueprint.v3 = v3Fields; await env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify(meta), { expirationTtl: 60 * 60 * 24 * 60 }); }
+      }
+    } catch(_) {}
+    return json({ ok: true, v3: v3Fields });
+  } catch (e) {
+    return json({ error: "Failed to generate v3 fields", detail: e.message }, 500);
+  }
+}
+__name(handleAdminGenerateV3Fields, "handleAdminGenerateV3Fields");
+
+async function handleAdminBulkV3(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    // Find all completed sessions with blueprints but no v3 fields
+    const rows = await env.DB.prepare(
+      "SELECT s.id FROM sessions s WHERE s.blueprint_generated = 1 AND s.status IN ('completed','blueprint_complete') ORDER BY s.created_at DESC LIMIT 50"
+    ).all();
+    const sessions = rows?.results || [];
+    const results = [];
+    for (const row of sessions) {
+      const sid = row.id;
+      try {
+        const kvData = await env.SESSIONS.get(sid);
+        if (!kvData) { results.push({ id: sid, status: 'skipped', reason: 'no KV data' }); continue; }
+        const sess = JSON.parse(kvData);
+        const bp = sess.blueprint;
+        if (!bp) { results.push({ id: sid, status: 'skipped', reason: 'no blueprint' }); continue; }
+        if (bp.v3 && bp.v3.positioningStatement && bp.v3.mirror_observation) {
+          results.push({ id: sid, status: 'skipped', reason: 'v3 already complete' });
+          continue;
+        }
+        results.push({ id: sid, status: 'needs_v3', hasV3: !!bp.v3, missingNew: !bp.v3?.mirror_observation });
+      } catch(e) {
+        results.push({ id: sid, status: 'error', reason: e.message });
+      }
+    }
+    const needsV3 = results.filter(function(r) { return r.status === 'needs_v3'; });
+    return json({ total: sessions.length, needs_v3: needsV3.length, skipped: results.filter(function(r) { return r.status === 'skipped'; }).length, sessions: needsV3.map(function(r) { return r.id; }) });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminBulkV3, "handleAdminBulkV3");
+
+async function handleAdminResendBlueprint(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId, email } = await request.json();
+    if (!sessionId || !email) return json({ error: "sessionId and email required" }, 400);
+    const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+    const blueprintUrl = origin + "/app?session=" + sessionId;
+    // Send via Resend
+    const name = email.split('@')[0];
+    const emailBody = '<!DOCTYPE html><html><body style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:40px 20px;color:#1D1D1F">' +
+      '<div style="text-align:center;margin-bottom:32px"><div style="font-family:Outfit,sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:8px">Deep Work Interview</div><div style="font-size:24px;font-weight:800;font-family:Outfit,sans-serif">Your Results Are Ready</div></div>' +
+      '<p style="font-size:16px;line-height:1.65;color:#3a3a3a">Hey ' + escHtml(name) + ',</p>' +
+      '<p style="font-size:16px;line-height:1.65;color:#3a3a3a">Your Deep Work Interview results are ready to view. Click below to see them.</p>' +
+      '<div style="text-align:center;margin:32px 0"><a href="' + blueprintUrl + '" style="display:inline-block;padding:16px 40px;background:#C4703F;color:#fff;border-radius:50px;font-family:Outfit,sans-serif;font-size:16px;font-weight:700;text-decoration:none">View My Blueprint</a></div>' +
+      '<p style="font-size:13px;color:#86868B;margin-top:32px">If the button does not work, copy and paste this link: ' + blueprintUrl + '</p>' +
+      '</body></html>';
+    const resendKey = env.RESEND_API_KEY;
+    if (!resendKey) return json({ error: "RESEND_API_KEY not configured" }, 500);
+    const sendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + resendKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "James Guldan <james@jamesguldan.com>",
+        to: [email],
+        subject: "Your Deep Work Interview Results Are Ready",
+        html: emailBody
+      })
+    });
+    const sendData = await sendRes.json();
+    if (sendData.id) return json({ ok: true, emailId: sendData.id, sentTo: email });
+    return json({ error: "Send failed", detail: sendData }, 500);
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminResendBlueprint, "handleAdminResendBlueprint");
+
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19661,6 +20325,14 @@ ${content}
 </div>
 <script>
 if(window.location.pathname==='/admin'){setTimeout(function(){location.reload()},30000);}
+function bulkV3(){
+  if(!confirm('Run bulk V3 generation for all sessions missing v3 fields?'))return;
+  var btn=event.target;btn.disabled=true;btn.textContent='Running...';
+  fetch('/api/admin/bulk-v3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dryRun:false})})
+  .then(function(r){return r.json()})
+  .then(function(d){alert('Bulk V3: '+d.needs_v3+' sessions queued for generation');btn.textContent='Done';})
+  .catch(function(e){alert('Error: '+e.message);btn.disabled=false;btn.textContent='Bulk Generate V3';});
+}
 </script>
 </body>
 </html>`;
@@ -19767,6 +20439,69 @@ async function handleAdminDashboard(request, env) {
       return '<tr><td>' + escA(r.model||'unknown') + '</td><td>' + (r.calls||0) + '</td><td>$' + parseFloat(r.total||0).toFixed(3) + '</td><td>$' + (r.calls>0 ? (parseFloat(r.total||0)/r.calls).toFixed(4) : '0') + '</td></tr>';
     }).join('');
 
+    // Session Health
+    var [v3CoverageRow, noBpRow, stalledRows, lowDepthRows] = await Promise.all([
+      env.DB.prepare(`
+        SELECT
+          COUNT(*) as total_completed,
+          SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as with_bp,
+          SUM(CASE WHEN depth_grade IS NOT NULL THEN 1 ELSE 0 END) as with_depth
+        FROM sessions WHERE status='completed' OR blueprint_generated=1
+      `).first().catch(()=>({total_completed:0,with_bp:0,with_depth:0})),
+      env.DB.prepare(`
+        SELECT s.id, u.name, u.email, s.phase, s.message_count, s.created_at
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE (s.status='completed' OR s.phase>=7) AND s.blueprint_generated=0
+        ORDER BY s.created_at DESC LIMIT 10
+      `).all().catch(()=>({results:[]})),
+      env.DB.prepare(`
+        SELECT s.id, u.name, u.email, s.phase, s.message_count, s.last_active_at
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE s.status='active' AND s.phase > 1 AND s.last_active_at < datetime('now','-24 hours')
+        ORDER BY s.last_active_at DESC LIMIT 10
+      `).all().catch(()=>({results:[]})),
+      env.DB.prepare(`
+        SELECT s.id, u.name, u.email, s.depth_grade, s.depth_score, s.phase
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE s.blueprint_generated=1 AND s.depth_score IS NOT NULL AND s.depth_score < 12
+        ORDER BY s.depth_score ASC LIMIT 10
+      `).all().catch(()=>({results:[]}))
+    ]);
+    var totalCompleted2 = v3CoverageRow?.total_completed || 0;
+    var withBp = v3CoverageRow?.with_bp || 0;
+    var withDepth = v3CoverageRow?.with_depth || 0;
+    var bpPct = totalCompleted2 > 0 ? Math.round((withBp/totalCompleted2)*100) : 0;
+    var depthPct = totalCompleted2 > 0 ? Math.round((withDepth/totalCompleted2)*100) : 0;
+
+    var noBpList = (noBpRow?.results||[]);
+    var stalledList = (stalledRows?.results||[]);
+    var lowDepthList = (lowDepthRows?.results||[]);
+    var attentionCount = noBpList.length + stalledList.length + lowDepthList.length;
+
+    var healthIssuesHTML = '';
+    if (noBpList.length > 0) {
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#991B1B;margin-bottom:6px">Missing Blueprint (' + noBpList.length + ')</div>';
+      noBpList.forEach(function(r) {
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-gray">Phase ' + (r.phase||'?') + '</span><span class="badge bg-gray">' + (r.message_count||0) + ' msgs</span><span style="color:#86868B">' + timeSince(r.created_at) + '</span></div>';
+      });
+      healthIssuesHTML += '</div>';
+    }
+    if (stalledList.length > 0) {
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#856404;margin-bottom:6px">Stalled 24h+ (' + stalledList.length + ')</div>';
+      stalledList.forEach(function(r) {
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-yellow">Phase ' + (r.phase||'?') + '</span><span class="badge bg-gray">' + (r.message_count||0) + ' msgs</span><span style="color:#86868B">Last active ' + timeSince(r.last_active_at) + '</span></div>';
+      });
+      healthIssuesHTML += '</div>';
+    }
+    if (lowDepthList.length > 0) {
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#C4703F;margin-bottom:6px">Low Depth Score (' + lowDepthList.length + ')</div>';
+      lowDepthList.forEach(function(r) {
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-red">' + escA(r.depth_grade||'?') + ' (' + (r.depth_score||0) + '/25)</span></div>';
+      });
+      healthIssuesHTML += '</div>';
+    }
+    if (!healthIssuesHTML) healthIssuesHTML = '<div style="font-size:12px;color:#86868B;padding:8px 0">All sessions healthy</div>';
+
     // Recent 20 sessions
     var recentRows = await env.DB.prepare(`
       SELECT s.id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
@@ -19810,6 +20545,19 @@ async function handleAdminDashboard(request, env) {
         '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Cost by Model</div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Model</th><th>Calls</th><th>Total</th><th>Per Call</th></tr></thead><tbody>' + (costTableRows||'<tr><td colspan="4" class="adm-empty">No data</td></tr>') + '</tbody></table></div></div>' +
       '</div>' +
 
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px">' +
+        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Session Health</div>' +
+          '<div class="adm-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">' +
+            '<div class="adm-stat"><div class="adm-stat-label">Blueprint Coverage</div><div class="adm-stat-value">' + bpPct + '%</div><div class="adm-stat-sub">' + withBp + '/' + totalCompleted2 + ' completed</div></div>' +
+            '<div class="adm-stat"><div class="adm-stat-label">Depth Scored</div><div class="adm-stat-value">' + depthPct + '%</div><div class="adm-stat-sub">' + withDepth + '/' + totalCompleted2 + '</div></div>' +
+            '<div class="adm-stat' + (attentionCount > 0 ? ' adm-stat-warn' : '') + '"><div class="adm-stat-label">Need Attention</div><div class="adm-stat-value">' + attentionCount + '</div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Issues <button class="adm-btn adm-btn-sm" onclick="bulkV3()" style="margin-left:8px">Bulk Generate V3</button></div>' +
+          '<div class="adm-panel" style="max-height:280px;overflow-y:auto">' + healthIssuesHTML + '</div>' +
+        '</div>' +
+      '</div>' +
+
       '<div class="adm-section">' +
         '<div class="adm-section-hd">Recent Sessions <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div>' +
         '<div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>User</th><th>Status</th><th>Phase</th><th>Msgs</th><th>Blueprint</th><th>Created</th><th>Actions</th></tr></thead><tbody>' +
@@ -19845,19 +20593,40 @@ async function handleAdminSessionDetail(request, env, path) {
     var apollo = null;
     try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
 
-    // Blueprint from KV
+    // Blueprint + messages from KV (primary source)
     var bp = null;
+    var kvMessages = [];
+    var kvSession = null;
     try {
       var bpRaw = await env.SESSIONS.get('blueprint:' + sessionId);
       if (bpRaw) bp = JSON.parse(bpRaw);
     } catch(_){}
-    if (!bp && sessionRow.blueprint_generated) {
-      // try session KV key
-      try {
-        var sessRaw = await env.SESSIONS.get('sess_' + sessionId);
-        if (sessRaw) { var sess = JSON.parse(sessRaw); bp = sess.blueprint?.blueprint || sess.blueprint; }
-      } catch(_){}
-    }
+    // Load full session from KV for blueprint and messages
+    try {
+      var sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        kvSession = JSON.parse(sessRaw);
+        if (!bp) bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
+        if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
+      }
+    } catch(_){}
+
+    // v3 status check
+    var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
+    var v3Fields = hasV3 ? Object.keys(bp.v3) : [];
+    var v3NewFields = ['mirror_observation', 'arrogant_truth', 'futureSelfLetter'];
+    var missingV3New = v3NewFields.filter(function(f){ return !bp?.v3?.[f]; });
+
+    // Depth breakdown from D1
+    var depthBreakdown = null;
+    try { if (sessionRow.depth_breakdown) depthBreakdown = JSON.parse(sessionRow.depth_breakdown); } catch(_){}
+
+    // Insight counts
+    var insightRows = [];
+    try {
+      var insRes = await env.DB.prepare('SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id = ? ORDER BY confidence DESC').bind(sessionId).all();
+      insightRows = insRes?.results || [];
+    } catch(_){}
 
     var userBlock = '<div class="adm-panel"><div class="adm-panel-title">User Profile</div>' +
       '<div class="adm-field"><div class="adm-field-label">Name</div><div class="adm-field-value">' + escA(sessionRow.name||'—') + '</div></div>' +
@@ -19872,13 +20641,21 @@ async function handleAdminSessionDetail(request, env, path) {
     var sessionBlock = '<div class="adm-panel"><div class="adm-panel-title">Session</div>' +
       '<div class="adm-field"><div class="adm-field-label">Session ID</div><div class="adm-field-value" style="font-family:monospace;font-size:11px">' + escA(sessionRow.id) + '</div></div>' +
       '<div class="adm-field"><div class="adm-field-label">Phase</div><div class="adm-field-value">' + (sessionRow.phase||1) + '/8 ' + phaseBar(sessionRow.phase) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Messages</div><div class="adm-field-value">' + (sessionRow.message_count||0) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Status</div><div class="adm-field-value"><span class="badge ' + (sessionRow.status==='active'?'bg-green':'bg-gray') + '">' + escA(sessionRow.status||'?') + '</span></div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Blueprint</div><div class="adm-field-value">' + (sessionRow.blueprint_generated ? '<span class="badge bg-copper">Generated</span>' : '<span class="badge bg-gray">None</span>') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Depth Grade</div><div class="adm-field-value">' + escA(sessionRow.depth_grade||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Resonance Score</div><div class="adm-field-value">' + (sessionRow.resonance_score||'—') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Messages (KV)</div><div class="adm-field-value">' + kvMessages.length + ' messages' + (sessionRow.message_count ? ' (D1: ' + sessionRow.message_count + ')' : '') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Status</div><div class="adm-field-value"><span class="badge ' + (sessionRow.status==='active'?'bg-green':sessionRow.status==='completed'?'bg-copper':'bg-gray') + '">' + escA(sessionRow.status||'?') + '</span></div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Blueprint</div><div class="adm-field-value">' + (bp ? '<span class="badge bg-copper">Generated (' + Object.keys(bp).length + ' keys)</span>' : sessionRow.blueprint_generated ? '<span class="badge bg-orange" style="background:#e67e22;color:#fff">D1 says yes, KV empty</span>' : '<span class="badge bg-gray">None</span>') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">V3 Fields</div><div class="adm-field-value">' + (hasV3 ? '<span class="badge bg-copper">Active (' + v3Fields.length + ' fields)</span>' + (missingV3New.length ? ' <span style="color:#e67e22;font-size:11px">Missing: ' + missingV3New.join(', ') + '</span>' : ' <span style="color:#27ae60;font-size:11px">\u2714 All new fields present</span>') : '<span class="badge bg-gray">Not generated</span>') + '</div></div>' +
+      '<div class="adm-field"><div class="adm-field-label">Depth Grade</div><div class="adm-field-value">' + escA(sessionRow.depth_grade||'—') + (sessionRow.emotional_depth_score ? ' (' + sessionRow.emotional_depth_score + '/25 = ' + Math.round((sessionRow.emotional_depth_score/25)*100) + '%)' : '') + '</div></div>' +
+      (depthBreakdown ? '<div class="adm-field"><div class="adm-field-label">Depth Breakdown</div><div class="adm-field-value" style="font-size:11px">' + Object.entries(depthBreakdown).map(function(e){ return '<span style="display:inline-block;margin-right:10px;padding:2px 6px;background:#F5F5F7;border-radius:4px">' + escA(e[0]) + ': <strong>' + e[1] + '/5</strong></span>'; }).join('') + '</div></div>' : '') +
+      '<div class="adm-field"><div class="adm-field-label">Insights</div><div class="adm-field-value">' + insightRows.length + ' extracted' + (insightRows.length ? ' (' + [...new Set(insightRows.map(function(r){return r.insight_type;}))].slice(0,5).join(', ') + (insightRows.length > 5 ? '...' : '') + ')' : '') + '</div></div>' +
       '<div class="adm-field"><div class="adm-field-label">API Cost</div><div class="adm-field-value">$' + parseFloat(costsRow?.total||0).toFixed(4) + ' (' + (costsRow?.calls||0) + ' calls)</div></div>' +
       '<div class="adm-field"><div class="adm-field-label">Created</div><div class="adm-field-value">' + escA(sessionRow.created_at||'—') + '</div></div>' +
+      '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
+        (sessionRow.blueprint_generated ? '<a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session=' + sessionId + '" target="_blank">\uD83D\uDD0D Preview Blueprint</a>' : '') +
+        (!hasV3 && bp ? '<button class="adm-btn adm-btn-sm" style="background:#C4703F;color:#fff" onclick="generateV3(\'' + sessionId + '\')">Generate V3 Fields</button>' : '') +
+        (hasV3 && missingV3New.length ? '<button class="adm-btn adm-btn-sm" style="background:#e67e22;color:#fff" onclick="generateV3(\'' + sessionId + '\')">Regenerate V3 (missing fields)</button>' : '') +
+        (sessionRow.email && sessionRow.blueprint_generated ? '<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="resendBlueprint(\'' + sessionId + '\',\'' + escA(sessionRow.email) + '\')">\u2709 Resend Blueprint Email</button>' : '') +
+      '</div>' +
     '</div>';
 
     var timelineHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Event Timeline (' + events.length + ' events)</div>' +
@@ -19891,12 +20668,24 @@ async function handleAdminSessionDetail(request, env, path) {
       (events.length>100?'<li class="adm-tl-row" style="color:#86868B">+ '+(events.length-100)+' more events...</li>':'') +
       '</ul></div>';
 
-    var transcriptHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Conversation (' + messages.length + ' messages)</div><div class="adm-msg-wrap">' +
-      messages.map(function(e) {
-        var content = '';
-        try { var d=JSON.parse(e.data||'{}'); content = d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
-        var isUser = e.event_type==='message_sent';
-        return '<div class="adm-msg ' + (isUser?'adm-msg-user':'adm-msg-ai') + '"><div class="adm-msg-label">' + (isUser?'User':'Claude') + (e.created_at?' · '+e.created_at.slice(11,16):'') + '</div>' + escA(String(content).slice(0,500)) + (String(content).length>500?'…':'') + '</div>';
+    // Use KV messages first, fall back to session_events
+    var displayMessages = kvMessages.length > 0 ? kvMessages.map(function(m) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c){ return typeof c === 'object' ? (c.text||'') : c; }).join(' ');
+      // Strip METADATA: blocks from assistant messages for cleaner display
+      content = String(content||'').replace(/\s*METADATA:\{[^}]*\}/g, '');
+      return { role: m.role, content: content, timestamp: m.timestamp || null };
+    }) : messages.map(function(e) {
+      var content = '';
+      try { var d=JSON.parse(e.data||'{}'); content = d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
+      return { role: e.event_type==='message_sent'?'user':'assistant', content: String(content), timestamp: e.created_at };
+    });
+
+    var transcriptHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Conversation (' + displayMessages.length + ' messages' + (kvMessages.length ? ' from KV' : ' from events') + ')</div><div class="adm-msg-wrap">' +
+      displayMessages.map(function(m) {
+        var isUser = m.role === 'user';
+        var ts = m.timestamp ? (typeof m.timestamp === 'string' && m.timestamp.length > 16 ? m.timestamp.slice(11,16) : '') : '';
+        return '<div class="adm-msg ' + (isUser?'adm-msg-user':'adm-msg-ai') + '"><div class="adm-msg-label">' + (isUser?'User':'Claude') + (ts?' · '+ts:'') + '</div>' + escA(String(m.content).slice(0,800)) + (String(m.content).length>800?'…':'') + '</div>';
       }).join('') +
       '</div></div>';
 
@@ -19907,10 +20696,38 @@ async function handleAdminSessionDetail(request, env, path) {
         '<pre style="font-size:11px;overflow:auto;max-height:400px;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap">' + escA(JSON.stringify(bp, null, 2).slice(0,8000)) + (JSON.stringify(bp).length>8000?'\n... (truncated)':'') + '</pre></div>';
     }
 
+    // Insights panel
+    var insightsBlock = '';
+    if (insightRows.length > 0) {
+      insightsBlock = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Extracted Insights (' + insightRows.length + ')</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px">' +
+        insightRows.map(function(r) {
+          return '<div style="background:#F5F5F7;padding:10px 14px;border-radius:8px;font-size:12px;border-left:3px solid #C4703F">' +
+            '<div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">' + escA(r.insight_type) + ' <span style="color:#86868B;font-weight:400">(' + (r.confidence*100).toFixed(0) + '%)</span></div>' +
+            '<div style="color:#1D1D1F;line-height:1.5">' + escA(String(r.insight_value||'').slice(0,200)) + '</div></div>';
+        }).join('') + '</div></div>';
+    }
+
     var html = '<a class="adm-back" href="/admin">&larr; Dashboard</a>' +
       '<h1 class="adm-page-title">' + escA(sessionRow.name||sessionRow.email||'Anonymous') + '</h1>' +
       '<div class="adm-2col" style="margin-bottom:16px">' + userBlock + sessionBlock + '</div>' +
-      '<div class="adm-2col">' + timelineHTML + transcriptHTML + bpBlock + '</div>';
+      '<div class="adm-2col">' + insightsBlock + timelineHTML + transcriptHTML + bpBlock + '</div>' +
+      '<script>' +
+        'function generateV3(sid) {' +
+          'if(!confirm("Generate V3 fields for this session? This calls Claude Opus and costs ~$0.50.")) return;' +
+          'var btn=event.target;btn.textContent="Generating...";btn.disabled=true;' +
+          'fetch("/api/admin/generate-v3-fields",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Key":"dw-v3-generate-2026"},body:JSON.stringify({sessionId:sid})})' +
+          '.then(function(r){return r.json()}).then(function(d){if(d.ok){alert("V3 fields generated! Refreshing...");location.reload();}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}})' +
+          '.catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});' +
+        '}' +
+        'function resendBlueprint(sid,email) {' +
+          'if(!confirm("Resend blueprint link to "+email+"?")) return;' +
+          'var btn=event.target;btn.textContent="Sending...";btn.disabled=true;' +
+          'fetch("/api/admin/resend-blueprint",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+document.cookie.match(/dw_session=([^;]+)/)?.[1]},body:JSON.stringify({sessionId:sid,email:email})})' +
+          '.then(function(r){return r.json()}).then(function(d){if(d.ok){alert("Blueprint email sent to "+email);btn.textContent="Sent \\u2714";btn.disabled=true;}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}})' +
+          '.catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});' +
+        '}' +
+      '<\/script>';
 
     return new Response(adminLayout('Session: ' + (sessionRow.name||sessionRow.email||sessionId), html), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
   } catch(e) {
@@ -19932,16 +20749,42 @@ async function handleAdminExportSession(request, env, path) {
     if (!sessionRow) return new Response('Not found', {status:404});
 
     var bp = null;
+    var kvSession = null;
     try {
-      var sessRaw = await env.SESSIONS.get('sess_' + sessionId);
-      if (sessRaw) { var sess = JSON.parse(sessRaw); bp = sess.blueprint?.blueprint || sess.blueprint; }
+      // sessionId already contains 'sess_' prefix — don't double it
+      var sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) { kvSession = JSON.parse(sessRaw); bp = kvSession.blueprint?.blueprint || kvSession.blueprint; }
     } catch(_){}
+    // Also check bp_meta: key (where loadBlueprintForSession stores blueprint data)
+    if (!bp) {
+      try {
+        var bpMetaRaw = await env.SESSIONS.get('bp_meta:' + sessionId);
+        if (bpMetaRaw) { var bpMeta = JSON.parse(bpMetaRaw); bp = bpMeta.blueprint || null; }
+      } catch(_){}
+    }
+    // Also check blueprint: key (used by session detail)
+    if (!bp) {
+      try {
+        var bpKeyRaw = await env.SESSIONS.get('blueprint:' + sessionId);
+        if (bpKeyRaw) bp = JSON.parse(bpKeyRaw);
+      } catch(_){}
+    }
 
-    var conversation = (eventsRes?.results||[]).map(function(e) {
-      var content = '';
-      try { var d=JSON.parse(e.data||'{}'); content=d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
-      return { role: e.event_type==='message_sent'?'user':'assistant', content: String(content), timestamp: e.created_at };
-    });
+    // Build conversation from KV messages (primary source) or fall back to session_events
+    var conversation = [];
+    if (kvSession && Array.isArray(kvSession.messages) && kvSession.messages.length > 0) {
+      conversation = kvSession.messages.map(function(m, i) {
+        var content = m.content;
+        if (Array.isArray(content)) content = content.map(function(c){ return typeof c === 'object' ? (c.text||'') : c; }).join(' ');
+        return { role: m.role, content: String(content||''), timestamp: m.timestamp || null };
+      });
+    } else {
+      conversation = (eventsRes?.results||[]).map(function(e) {
+        var content = '';
+        try { var d=JSON.parse(e.data||'{}'); content=d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
+        return { role: e.event_type==='message_sent'?'user':'assistant', content: String(content), timestamp: e.created_at };
+      });
+    }
 
     var apollo = null;
     try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
@@ -20083,6 +20926,222 @@ async function handleAdminDeleteUser(request, env, path, url) {
   }
 }
 
+// src/routes/admin.js — download handlers
+async function handleAdminTranscriptTxt(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch(_) {}
+
+    const name = sessionRow.name || sessionRow.email || 'Anonymous';
+    const date = (sessionRow.created_at || '').slice(0, 10);
+    let txt = `Deep Work Interview — ${name}\nDate: ${date}\nSession: ${sessionId}\n\n${'='.repeat(60)}\n\n`;
+
+    kvMessages.forEach((m, i) => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map(c => typeof c === 'object' ? (c.text || '') : c).join(' ');
+      content = String(content || '').replace(/\s*METADATA:\{[^}]*\}/g, '').trim();
+      if (!content) return;
+      const role = m.role === 'user' ? name : 'Claude';
+      const ts = m.timestamp ? String(m.timestamp).slice(11, 16) : '';
+      txt += `[${role}${ts ? ' · ' + ts : ''}]\n${content}\n\n`;
+    });
+
+    const filename = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() + '-transcript.txt';
+    return new Response(txt, {
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8',
+        'Content-Disposition': `attachment; filename="${filename}"`
+      }
+    });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
+async function handleAdminTranscriptFormatted(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch(_) {}
+
+    const name = sessionRow.name || sessionRow.email || 'Anonymous';
+    const date = (sessionRow.created_at || '').slice(0, 10);
+
+    const msgHTML = kvMessages.map(m => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map(c => typeof c === 'object' ? (c.text || '') : c).join(' ');
+      content = String(content || '').replace(/\s*METADATA:\{[^}]*\}/g, '').trim();
+      if (!content) return '';
+      const isUser = m.role === 'user';
+      const role = isUser ? name : 'Claude';
+      const ts = m.timestamp ? String(m.timestamp).slice(11, 16) : '';
+      const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return `<div class="msg ${isUser ? 'user' : 'ai'}">
+        <div class="label">${esc(role)}${ts ? ' <span class="ts">· ' + ts + '</span>' : ''}</div>
+        <div class="bubble">${esc(content).replace(/\n/g, '<br>')}</div>
+      </div>`;
+    }).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${name} — Deep Work Interview Transcript</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#fff;max-width:800px;margin:0 auto;padding:40px 24px}
+h1{font-family:'Outfit',sans-serif;font-size:22px;margin-bottom:4px}
+.meta{color:#86868B;font-size:12px;margin-bottom:32px}
+.msg{margin-bottom:20px}
+.msg.user .bubble{background:#F5F5F7;border-radius:12px 12px 4px 12px}
+.msg.ai .bubble{background:#FDF0E8;border-radius:12px 12px 12px 4px}
+.label{font-size:11px;font-weight:600;color:#86868B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.ts{font-weight:400;text-transform:none;letter-spacing:0}
+.bubble{padding:12px 16px;line-height:1.6}
+@media print{body{padding:20px}h1{font-size:18px}}
+</style>
+</head><body>
+<h1>${name}</h1>
+<div class="meta">Deep Work Interview · ${date} · ${kvMessages.length} messages</div>
+${msgHTML}
+</body></html>`;
+
+    return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
+async function handleAdminBlueprintJson(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let bp = null;
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) { const kv = JSON.parse(sessRaw); bp = kv.blueprint?.blueprint || kv.blueprint || null; }
+    } catch(_) {}
+    if (!bp) {
+      try { const r = await env.SESSIONS.get('blueprint:' + sessionId); if (r) bp = JSON.parse(r); } catch(_) {}
+    }
+    if (!bp) return new Response(JSON.stringify({ error: 'No blueprint found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+
+    const name = (sessionRow.name || sessionRow.email || 'session').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+    return new Response(JSON.stringify(bp, null, 2), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="${name}-blueprint.json"`
+      }
+    });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
+async function handleAdminBlueprintFormatted(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response('Forbidden', { status: 403 });
+  const sessionId = path.split('/')[3];
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      'SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?'
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response('Session not found', { status: 404 });
+
+    let bp = null;
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) { const kv = JSON.parse(sessRaw); bp = kv.blueprint?.blueprint || kv.blueprint || null; }
+    } catch(_) {}
+    if (!bp) {
+      try { const r = await env.SESSIONS.get('blueprint:' + sessionId); if (r) bp = JSON.parse(r); } catch(_) {}
+    }
+    if (!bp) return new Response('<h1>No blueprint found</h1>', { status: 404, headers: { 'Content-Type': 'text/html' } });
+
+    const name = sessionRow.name || sessionRow.email || 'Anonymous';
+    const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    function renderValue(val) {
+      if (typeof val === 'string') return `<p>${esc(val)}</p>`;
+      if (Array.isArray(val)) return val.map(v => typeof v === 'object'
+        ? `<div class="item">${Object.entries(v).map(([k,vv]) => `<div><strong>${esc(k)}:</strong> ${esc(String(vv||''))}</div>`).join('')}</div>`
+        : `<div class="item">${esc(String(v))}</div>`
+      ).join('');
+      if (typeof val === 'object' && val !== null) return Object.entries(val).map(([k,v]) =>
+        `<div class="subfield"><div class="subkey">${esc(k)}</div><div class="subval">${esc(String(v||''))}</div></div>`
+      ).join('');
+      return `<p>${esc(String(val||''))}</p>`;
+    }
+
+    const sections = Object.entries(bp).map(([key, val]) => `
+      <div class="section">
+        <div class="section-key">${esc(key)}</div>
+        <div class="section-val">${renderValue(val)}</div>
+      </div>`).join('');
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${esc(name)} — Brand Blueprint</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#fff;max-width:900px;margin:0 auto;padding:40px 24px}
+h1{font-family:'Outfit',sans-serif;font-size:24px;margin-bottom:4px}
+.meta{color:#86868B;font-size:12px;margin-bottom:36px}
+.section{margin-bottom:24px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden}
+.section-key{background:#F5F5F7;padding:8px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#C4703F}
+.section-val{padding:14px 16px;line-height:1.6}
+.section-val p{margin-bottom:8px}.section-val p:last-child{margin-bottom:0}
+.item{padding:8px 0;border-bottom:1px solid #F5F5F7}.item:last-child{border-bottom:none}
+.subfield{display:flex;gap:12px;padding:4px 0}.subkey{font-weight:600;min-width:160px;color:#86868B;font-size:12px}.subval{flex:1}
+@media print{body{padding:20px}.section{break-inside:avoid}}
+</style>
+</head><body>
+<h1>${esc(name)}</h1>
+<div class="meta">Brand Blueprint · ${(sessionRow.created_at||'').slice(0,10)}</div>
+${sections}
+</body></html>`;
+
+    return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+  } catch(e) {
+    return new Response('Export error: ' + e.message, { status: 500 });
+  }
+}
+
 // src/router.js
 async function routeRequest(request, env, ctx) {
   const url = new URL(request.url);
@@ -20097,6 +21156,15 @@ async function routeRequest(request, env, ctx) {
       return handleApp(request, env);
     if (path === "/admin")
       return handleAdminDashboard(request, env);
+    // Download routes — must be before generic /admin/session/ route
+    if (path.match(/^\/admin\/session\/[^/]+\/transcript\.txt$/) && request.method === "GET")
+      return handleAdminTranscriptTxt(request, env, path);
+    if (path.match(/^\/admin\/session\/[^/]+\/transcript-formatted$/) && request.method === "GET")
+      return handleAdminTranscriptFormatted(request, env, path);
+    if (path.match(/^\/admin\/session\/[^/]+\/blueprint\.json$/) && request.method === "GET")
+      return handleAdminBlueprintJson(request, env, path);
+    if (path.match(/^\/admin\/session\/[^/]+\/blueprint-formatted$/) && request.method === "GET")
+      return handleAdminBlueprintFormatted(request, env, path);
     if (path.startsWith("/admin/session/") && request.method === "GET")
       return handleAdminSessionDetail(request, env, path);
     if (path.startsWith("/admin/export/") && !path.includes('export-all') && request.method === "GET")
@@ -20258,6 +21326,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminSavePrompt(request, env);
     if (path === "/api/admin/generate-debrief" && request.method === "POST")
       return handleAdminGenerateDebrief(request, env);
+    if (path === "/api/admin/generate-v3-fields" && request.method === "POST")
+      return handleAdminGenerateV3Fields(request, env);
     if (path === "/api/admin/inject-debrief" && request.method === "POST")
       return handleAdminInjectDebrief(request, env);
     if (path === "/api/admin/generate-test-blueprint" && request.method === "POST")
@@ -20300,6 +21370,10 @@ async function routeRequest(request, env, ctx) {
       return handleAdminCreateWeeklySnapshot(request, env);
     if (path === "/api/admin/backfill" && request.method === "POST")
       return handleAdminBackfill(request, env);
+    if (path === "/api/admin/bulk-v3" && request.method === "POST")
+      return handleAdminBulkV3(request, env);
+    if (path === "/api/admin/resend-blueprint" && request.method === "POST")
+      return handleAdminResendBlueprint(request, env);
     return new Response(getErrorPageHTML(404, "Page Not Found", ERROR_PAGES[404].message), {
       status: 404,
       headers: htmlHeaders()
