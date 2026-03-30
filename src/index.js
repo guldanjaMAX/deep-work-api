@@ -20575,163 +20575,309 @@ async function handleAdminSessionDetail(request, env, path) {
   var admin = await requireAdmin(request, env);
   if (!admin) return Response.redirect(new URL('/app', request.url).href, 302);
   var sessionId = path.split('/')[3];
-  if (!sessionId) return new Response('Missing session ID', { status:400 });
+  if (!sessionId) return new Response('Missing session ID', { status: 400 });
   try {
-    var [sessionRow, eventsRes, costsRow] = await Promise.all([
+    var [sessionRow, eventsRes, costsRow, insRes] = await Promise.all([
       env.DB.prepare(`
         SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier, u.role, u.created_at as user_created_at
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?
       `).bind(sessionId).first(),
       env.DB.prepare('SELECT * FROM session_events WHERE session_id=? ORDER BY created_at ASC LIMIT 500').bind(sessionId).all(),
-      env.DB.prepare('SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?').bind(sessionId).first().catch(()=>({total:0,calls:0}))
+      env.DB.prepare('SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?').bind(sessionId).first().catch(()=>({total:0,calls:0})),
+      env.DB.prepare('SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id=? ORDER BY confidence DESC').bind(sessionId).all().catch(()=>({results:[]}))
     ]);
     if (!sessionRow) return new Response('Session not found', {status:404, headers:{'Content-Type':'text/plain'}});
 
     var events = eventsRes?.results || [];
-    var messages = events.filter(function(e){ return e.event_type==='message_sent'||e.event_type==='message_received'; });
+    var insightRows = insRes?.results || [];
 
-    var apollo = null;
-    try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
-
-    // Blueprint + messages from KV (primary source)
-    var bp = null;
-    var kvMessages = [];
-    var kvSession = null;
-    try {
-      var bpRaw = await env.SESSIONS.get('blueprint:' + sessionId);
-      if (bpRaw) bp = JSON.parse(bpRaw);
-    } catch(_){}
-    // Load full session from KV for blueprint and messages
+    var bp = null, kvMessages = [], kvSession = null;
     try {
       var sessRaw = await env.SESSIONS.get(sessionId);
       if (sessRaw) {
         kvSession = JSON.parse(sessRaw);
-        if (!bp) bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
+        bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
         if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
       }
     } catch(_){}
+    if (!bp) { try { var bpRaw = await env.SESSIONS.get('blueprint:'+sessionId); if(bpRaw) bp=JSON.parse(bpRaw); }catch(_){} }
 
-    // v3 status check
     var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
     var v3Fields = hasV3 ? Object.keys(bp.v3) : [];
-    var v3NewFields = ['mirror_observation', 'arrogant_truth', 'futureSelfLetter'];
+    var v3NewFields = ['mirror_observation','arrogant_truth','futureSelfLetter'];
     var missingV3New = v3NewFields.filter(function(f){ return !bp?.v3?.[f]; });
 
-    // Depth breakdown from D1
     var depthBreakdown = null;
-    try { if (sessionRow.depth_breakdown) depthBreakdown = JSON.parse(sessionRow.depth_breakdown); } catch(_){}
+    try { if(sessionRow.depth_breakdown) depthBreakdown=JSON.parse(sessionRow.depth_breakdown); }catch(_){}
 
-    // Insight counts
-    var insightRows = [];
-    try {
-      var insRes = await env.DB.prepare('SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id = ? ORDER BY confidence DESC').bind(sessionId).all();
-      insightRows = insRes?.results || [];
-    } catch(_){}
+    var duration = '';
+    if (events.length >= 2) {
+      var first = new Date(events[0].created_at).getTime();
+      var last = new Date(events[events.length-1].created_at).getTime();
+      var mins = Math.round((last - first) / 60000);
+      if (mins > 0) duration = mins + ' min';
+    }
 
-    var userBlock = '<div class="adm-panel"><div class="adm-panel-title">User Profile</div>' +
-      '<div class="adm-field"><div class="adm-field-label">Name</div><div class="adm-field-value">' + escA(sessionRow.name||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Email</div><div class="adm-field-value">' + escA(sessionRow.email||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Phone</div><div class="adm-field-value">' + escA(sessionRow.phone||sessionRow.user_phone||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Tier</div><div class="adm-field-value">' + escA(sessionRow.tier||'free') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Member Since</div><div class="adm-field-value">' + escA(sessionRow.user_created_at||'—') + '</div></div>' +
-      (apollo?.person?.employment_history?.[0] ? '<div class="adm-field"><div class="adm-field-label">Current Role</div><div class="adm-field-value">' + escA((apollo.person.employment_history[0].title||'') + ' @ ' + (apollo.person.employment_history[0].organization_name||'')) + '</div></div>' : '') +
-      '<div style="margin-top:12px"><a class="adm-btn adm-btn-sm" href="/admin/export/' + sessionId + '">Export JSON</a></div>' +
-    '</div>';
+    var flags = [];
+    var phaseMessageCounts = {};
+    events.forEach(function(e) {
+      var ph = null; try { ph = JSON.parse(e.data||'{}').phase; }catch(_){}
+      if (ph) { phaseMessageCounts[ph] = (phaseMessageCounts[ph]||0)+1; }
+    });
+    Object.entries(phaseMessageCounts).forEach(function(entry) {
+      if (entry[1] > 20) flags.push({ type:'red', msg:'Phase ' + entry[0] + ' had ' + entry[1] + ' messages (possible loop)' });
+    });
+    if (depthBreakdown) {
+      Object.entries(depthBreakdown).forEach(function(entry) {
+        if (entry[1] < 2) flags.push({ type:'red', msg: entry[0].replace(/_/g,' ') + ' depth low (' + entry[1] + '/5)' });
+      });
+    }
+    if (bp && !hasV3) flags.push({ type:'yellow', msg:'Blueprint generated but V3 fields missing' });
+    if (hasV3 && missingV3New.length) flags.push({ type:'yellow', msg:'V3 missing: ' + missingV3New.join(', ') });
+    if (sessionRow.status === 'completed' && hasV3 && !flags.length) flags.push({ type:'green', msg:'Completed — all fields present' });
+    if (!flags.length && sessionRow.status !== 'completed') flags.push({ type:'gray', msg:'In progress' });
 
-    var sessionBlock = '<div class="adm-panel"><div class="adm-panel-title">Session</div>' +
-      '<div class="adm-field"><div class="adm-field-label">Session ID</div><div class="adm-field-value" style="font-family:monospace;font-size:11px">' + escA(sessionRow.id) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Phase</div><div class="adm-field-value">' + (sessionRow.phase||1) + '/8 ' + phaseBar(sessionRow.phase) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Messages (KV)</div><div class="adm-field-value">' + kvMessages.length + ' messages' + (sessionRow.message_count ? ' (D1: ' + sessionRow.message_count + ')' : '') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Status</div><div class="adm-field-value"><span class="badge ' + (sessionRow.status==='active'?'bg-green':sessionRow.status==='completed'?'bg-copper':'bg-gray') + '">' + escA(sessionRow.status||'?') + '</span></div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Blueprint</div><div class="adm-field-value">' + (bp ? '<span class="badge bg-copper">Generated (' + Object.keys(bp).length + ' keys)</span>' : sessionRow.blueprint_generated ? '<span class="badge bg-orange" style="background:#e67e22;color:#fff">D1 says yes, KV empty</span>' : '<span class="badge bg-gray">None</span>') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">V3 Fields</div><div class="adm-field-value">' + (hasV3 ? '<span class="badge bg-copper">Active (' + v3Fields.length + ' fields)</span>' + (missingV3New.length ? ' <span style="color:#e67e22;font-size:11px">Missing: ' + missingV3New.join(', ') + '</span>' : ' <span style="color:#27ae60;font-size:11px">\u2714 All new fields present</span>') : '<span class="badge bg-gray">Not generated</span>') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Depth Grade</div><div class="adm-field-value">' + escA(sessionRow.depth_grade||'—') + (sessionRow.emotional_depth_score ? ' (' + sessionRow.emotional_depth_score + '/25 = ' + Math.round((sessionRow.emotional_depth_score/25)*100) + '%)' : '') + '</div></div>' +
-      (depthBreakdown ? '<div class="adm-field"><div class="adm-field-label">Depth Breakdown</div><div class="adm-field-value" style="font-size:11px">' + Object.entries(depthBreakdown).map(function(e){ return '<span style="display:inline-block;margin-right:10px;padding:2px 6px;background:#F5F5F7;border-radius:4px">' + escA(e[0]) + ': <strong>' + e[1] + '/5</strong></span>'; }).join('') + '</div></div>' : '') +
-      '<div class="adm-field"><div class="adm-field-label">Insights</div><div class="adm-field-value">' + insightRows.length + ' extracted' + (insightRows.length ? ' (' + [...new Set(insightRows.map(function(r){return r.insight_type;}))].slice(0,5).join(', ') + (insightRows.length > 5 ? '...' : '') + ')' : '') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">API Cost</div><div class="adm-field-value">$' + parseFloat(costsRow?.total||0).toFixed(4) + ' (' + (costsRow?.calls||0) + ' calls)</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Created</div><div class="adm-field-value">' + escA(sessionRow.created_at||'—') + '</div></div>' +
-      '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
-        (sessionRow.blueprint_generated ? '<a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session=' + sessionId + '" target="_blank">\uD83D\uDD0D Preview Blueprint</a>' : '') +
-        (!hasV3 && bp ? '<button class="adm-btn adm-btn-sm" style="background:#C4703F;color:#fff" onclick="generateV3(\'' + sessionId + '\')">Generate V3 Fields</button>' : '') +
-        (hasV3 && missingV3New.length ? '<button class="adm-btn adm-btn-sm" style="background:#e67e22;color:#fff" onclick="generateV3(\'' + sessionId + '\')">Regenerate V3 (missing fields)</button>' : '') +
-        (sessionRow.email && sessionRow.blueprint_generated ? '<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="resendBlueprint(\'' + sessionId + '\',\'' + escA(sessionRow.email) + '\')">\u2709 Resend Blueprint Email</button>' : '') +
+    var highlights = [];
+    var EMOTIONAL_KEYWORDS = ['afraid','fear','never','always','truth','real','wound','core','pain','hurt','shame','guilt','alone','abandon','trust','worth','enough','belong','lost','broken'];
+    var phaseByMsgIndex = {};
+    var currentPhase = 1;
+    var msgEventIdx = 0;
+    events.forEach(function(e) {
+      var d = null; try { d=JSON.parse(e.data||'{}'); }catch(_){}
+      if (d && d.phase && d.phase !== currentPhase) { phaseByMsgIndex[msgEventIdx] = d.phase; currentPhase = d.phase; }
+      if (e.event_type==='message_sent'||e.event_type==='message_received') msgEventIdx++;
+    });
+    kvMessages.forEach(function(m, i) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c){ return typeof c==='object'?(c.text||''):c; }).join(' ');
+      content = String(content||'').replace(/\s*METADATA:\{[^}]*\}/g,'').trim();
+      if (phaseByMsgIndex[i]) {
+        highlights.push({ type:'transition', label:'Phase '+phaseByMsgIndex[i]+' began', excerpt:content.slice(0,120), idx:i });
+      }
+      if (m.role==='user' && content.length>200) {
+        var lower = content.toLowerCase();
+        var found = EMOTIONAL_KEYWORDS.filter(function(k){ return lower.indexOf(k)>-1; });
+        if (found.length>=2) highlights.push({ type:'breakthrough', label:'Breakthrough moment', excerpt:content.slice(0,120), idx:i });
+      }
+      if (m.role==='assistant' && content.indexOf('?')>-1) {
+        var prev = kvMessages[i-1];
+        if (prev && prev.role==='user') {
+          var prevContent = String(Array.isArray(prev.content)?prev.content.map(function(c){return typeof c==='object'?(c.text||''):c;}).join(' '):prev.content||'').trim();
+          if (prevContent.length>80) highlights.push({ type:'probe', label:'Deep probe', excerpt:content.slice(0,120), idx:i });
+        }
+      }
+      if (m.role==='assistant' && phaseByMsgIndex[i]) {
+        var prevUser = kvMessages[i-1];
+        if (prevUser && prevUser.role==='user') {
+          var prevC = String(Array.isArray(prevUser.content)?prevUser.content.map(function(c){return typeof c==='object'?(c.text||''):c;}).join(' '):prevUser.content||'').trim();
+          if (prevC.length<30) highlights.push({ type:'skipped', label:'Possible skipped surface', excerpt:prevC.slice(0,80)+' → moved to next phase', idx:i });
+        }
+      }
+    });
+    var seenIdx = {};
+    highlights = highlights.filter(function(h){ if(seenIdx[h.idx]) return false; seenIdx[h.idx]=true; return true; }).slice(0,12);
+
+    var displayMessages = kvMessages.map(function(m, i) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c){ return typeof c==='object'?(c.text||''):c; }).join(' ');
+      content = String(content||'').replace(/\s*METADATA:\{[^}]*\}/g,'').trim();
+      var highlightType = null;
+      highlights.forEach(function(h){ if(h.idx===i) highlightType=h.type; });
+      return { role:m.role, content:content, timestamp:m.timestamp||null, highlightType:highlightType, phaseChange:phaseByMsgIndex[i]||null, idx:i };
+    });
+
+    var flagColors = { red:'#FEE2E2', yellow:'#FFF3CD', green:'#E8F8ED', gray:'#F0F0F0' };
+    var flagTextColors = { red:'#991B1B', yellow:'#856404', green:'#1A7F3C', gray:'#86868B' };
+    var flagEmoji = { red:'🔴', yellow:'🟡', green:'🟢', gray:'⚪' };
+    var flagsHTML = flags.map(function(f){
+      return '<div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;background:'+flagColors[f.type]+';margin-bottom:4px">' +
+        '<span>'+flagEmoji[f.type]+'</span><span style="font-size:12px;color:'+flagTextColors[f.type]+'">'+escA(f.msg)+'</span></div>';
+    }).join('');
+
+    var dimBarHTML = '';
+    if (depthBreakdown) {
+      dimBarHTML = '<div style="margin-top:10px">' + Object.entries(depthBreakdown).map(function(entry) {
+        var pct = Math.round((entry[1]/5)*100);
+        var color = entry[1]<2?'#e74c3c':entry[1]<4?'#e67e22':'#27ae60';
+        return '<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:2px"><span>'+escA(entry[0].replace(/_/g,' '))+'</span><span style="font-weight:600;color:'+color+'">'+entry[1]+'/5</span></div>' +
+          '<div style="background:#F0F0F0;height:4px;border-radius:2px"><div style="width:'+pct+'%;height:100%;background:'+color+';border-radius:2px"></div></div></div>';
+      }).join('') + '</div>';
+    }
+
+    var gradeColor = sessionRow.depth_grade ? (sessionRow.depth_grade[0]==='A'?'#27ae60':sessionRow.depth_grade[0]==='B'?'#2980b9':sessionRow.depth_grade[0]==='C'?'#e67e22':'#e74c3c') : '#86868B';
+
+    var scorecard = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:24px;margin-bottom:20px;display:grid;grid-template-columns:1fr 2fr 1fr;gap:24px">' +
+      '<div>' +
+        '<div style="font-family:Outfit,sans-serif;font-weight:700;font-size:18px;margin-bottom:4px">'+escA(sessionRow.name||'Anonymous')+'</div>' +
+        '<div style="color:#86868B;font-size:13px;margin-bottom:8px">'+escA(sessionRow.email||'—')+'</div>' +
+        '<span class="badge bg-copper" style="margin-right:6px">'+escA(sessionRow.tier||'free')+'</span>' +
+        (sessionRow.status==='completed'?'<span class="badge bg-green">completed</span>':'<span class="badge bg-yellow">'+escA(sessionRow.status||'active')+'</span>') +
+        '<div style="margin-top:12px;font-size:11px;color:#86868B">Member since '+escA((sessionRow.user_created_at||'').slice(0,10))+'</div>' +
+        (duration?'<div style="font-size:11px;color:#86868B">Duration: '+escA(duration)+'</div>':'') +
+        '<div style="margin-top:12px"><a class="adm-btn adm-btn-sm" href="/admin/export/'+sessionId+'">Export JSON</a></div>' +
+      '</div>' +
+      '<div>' +
+        '<div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">' +
+          '<div style="text-align:center">' +
+            '<div style="font-family:Outfit,sans-serif;font-size:42px;font-weight:700;color:'+gradeColor+';line-height:1">'+escA(sessionRow.depth_grade||'—')+'</div>' +
+            '<div style="font-size:11px;color:#86868B">'+(sessionRow.emotional_depth_score?sessionRow.emotional_depth_score+'/25 = '+Math.round((sessionRow.emotional_depth_score/25)*100)+'%':'depth')+'</div>' +
+          '</div>' +
+          '<div style="flex:1">' +
+            '<div style="font-size:12px;color:#86868B;margin-bottom:4px">Phase '+escA(String(sessionRow.phase||1))+' of 8</div>' +
+            phaseBar(sessionRow.phase) +
+            '<div style="font-size:11px;color:#86868B;margin-top:6px">'+kvMessages.length+' messages · $'+parseFloat(costsRow?.total||0).toFixed(4)+' API cost</div>' +
+          '</div>' +
+        '</div>' +
+        dimBarHTML +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+          (sessionRow.blueprint_generated?'<a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session='+sessionId+'" target="_blank">🔍 Preview Blueprint</a>':'') +
+          (!hasV3&&bp?'<button class="adm-btn adm-btn-sm" style="background:#C4703F;color:#fff" onclick="generateV3(\''+sessionId+'\')">Generate V3</button>':'') +
+          (sessionRow.email&&sessionRow.blueprint_generated?'<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="resendBlueprint(\''+sessionId+'\',\''+escA(sessionRow.email)+'\')">✉ Resend Email</button>':'') +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:8px">Health Signals</div>' +
+        flagsHTML +
       '</div>' +
     '</div>';
 
-    var timelineHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Event Timeline (' + events.length + ' events)</div>' +
-      '<ul class="adm-timeline">' +
-      events.slice(0,100).map(function(e) {
-        var dataStr = '';
-        try { if(e.data) { var d=JSON.parse(e.data); dataStr = d.phase?'phase '+d.phase:d.event_type||JSON.stringify(d).slice(0,60); } } catch(_){}
-        return '<li class="adm-tl-row"><span class="adm-tl-type">' + escA(e.event_type||'?') + '</span><span class="adm-tl-data">' + escA(dataStr) + '</span><span class="adm-tl-time">' + (e.created_at?e.created_at.slice(11,19):'') + '</span></li>';
-      }).join('') +
-      (events.length>100?'<li class="adm-tl-row" style="color:#86868B">+ '+(events.length-100)+' more events...</li>':'') +
-      '</ul></div>';
+    var hlTypeStyle = {
+      transition: { bg:'#EEF2FF', border:'#818CF8', label:'Phase Transition', color:'#3730A3' },
+      breakthrough: { bg:'#FDF0E8', border:'#C4703F', label:'Breakthrough', color:'#C4703F' },
+      probe: { bg:'#E8F8ED', border:'#27ae60', label:'Deep Probe', color:'#27ae60' },
+      skipped: { bg:'#FEE2E2', border:'#e74c3c', label:'Skipped Surface', color:'#e74c3c' }
+    };
+    var highlightsHTML = '';
+    if (highlights.length) {
+      var cards = highlights.map(function(h) {
+        var s = hlTypeStyle[h.type] || hlTypeStyle.probe;
+        return '<div style="flex-shrink:0;width:260px;background:'+s.bg+';border:1px solid '+s.border+';border-radius:10px;padding:12px 14px">' +
+          '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:'+s.color+';margin-bottom:6px">'+escA(s.label)+'</div>' +
+          '<div style="font-size:12px;color:#1D1D1F;line-height:1.5;margin-bottom:8px">'+escA(h.excerpt)+(h.excerpt.length===120?'…':'')+'</div>' +
+          '<a href="#msg-'+h.idx+'" style="font-size:11px;color:'+s.color+';font-weight:500">Jump to ↓</a>' +
+        '</div>';
+      }).join('');
+      highlightsHTML = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:20px;margin-bottom:20px">' +
+        '<div style="font-family:Outfit,sans-serif;font-weight:700;font-size:13px;margin-bottom:12px">Depth Highlights ('+highlights.length+')</div>' +
+        '<div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px">'+cards+'</div>' +
+      '</div>';
+    } else {
+      highlightsHTML = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:16px 20px;margin-bottom:20px;color:#86868B;font-size:13px">No significant depth moments detected.</div>';
+    }
 
-    // Use KV messages first, fall back to session_events
-    var displayMessages = kvMessages.length > 0 ? kvMessages.map(function(m) {
-      var content = m.content;
-      if (Array.isArray(content)) content = content.map(function(c){ return typeof c === 'object' ? (c.text||'') : c; }).join(' ');
-      // Strip METADATA: blocks from assistant messages for cleaner display
-      content = String(content||'').replace(/\s*METADATA:\{[^}]*\}/g, '');
-      return { role: m.role, content: content, timestamp: m.timestamp || null };
-    }) : messages.map(function(e) {
-      var content = '';
-      try { var d=JSON.parse(e.data||'{}'); content = d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
-      return { role: e.event_type==='message_sent'?'user':'assistant', content: String(content), timestamp: e.created_at };
-    });
+    var downloadBar = '<div style="background:#fff;border-bottom:1px solid #F0F0F0;padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+      '<span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-right:4px">Download:</span>' +
+      '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+sessionId+'/transcript.txt">↓ Transcript .txt</a>' +
+      '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+sessionId+'/transcript-formatted" target="_blank">↓ Transcript PDF</a>' +
+      (bp?'<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+sessionId+'/blueprint.json">↓ Blueprint .json</a>':'') +
+      (bp?'<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+sessionId+'/blueprint-formatted" target="_blank">↓ Blueprint Formatted</a>':'') +
+    '</div>';
 
-    var transcriptHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Conversation (' + displayMessages.length + ' messages' + (kvMessages.length ? ' from KV' : ' from events') + ')</div><div class="adm-msg-wrap">' +
-      displayMessages.map(function(m) {
-        var isUser = m.role === 'user';
-        var ts = m.timestamp ? (typeof m.timestamp === 'string' && m.timestamp.length > 16 ? m.timestamp.slice(11,16) : '') : '';
-        return '<div class="adm-msg ' + (isUser?'adm-msg-user':'adm-msg-ai') + '"><div class="adm-msg-label">' + (isUser?'User':'Claude') + (ts?' · '+ts:'') + '</div>' + escA(String(m.content).slice(0,800)) + (String(m.content).length>800?'…':'') + '</div>';
-      }).join('') +
-      '</div></div>';
+    var hlColorMap = { transition:'#818CF8', breakthrough:'#C4703F', probe:'#27ae60', skipped:'#e74c3c' };
+    var transcriptHTML = displayMessages.map(function(m) {
+      if (!m.content) return '';
+      var isUser = m.role==='user';
+      var ts = m.timestamp ? String(m.timestamp).slice(11,16) : '';
+      var borderStyle = m.highlightType ? 'border-left:3px solid '+hlColorMap[m.highlightType]+';padding-left:10px;' : '';
+      var phaseMarker = m.phaseChange ? '<div style="text-align:center;font-size:11px;color:#86868B;padding:8px 0;border-top:1px dashed #F0F0F0;border-bottom:1px dashed #F0F0F0;margin:8px 0">── Phase '+m.phaseChange+' began ──</div>' : '';
+      return phaseMarker +
+        '<div id="msg-'+m.idx+'" style="margin-bottom:14px;'+borderStyle+'">' +
+          '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#86868B;margin-bottom:4px">'+(isUser?escA(sessionRow.name||'User'):'Claude')+(ts?' · '+ts:'')+'</div>' +
+          '<div style="background:'+(isUser?'#F5F5F7':'#FDF0E8')+';padding:10px 14px;border-radius:'+(isUser?'12px 12px 4px 12px':'12px 12px 12px 4px')+';font-size:13px;line-height:1.6;white-space:pre-wrap">'+escA(m.content)+'</div>' +
+        '</div>';
+    }).join('');
 
-    var bpBlock = '';
+    var blueprintHTML = '';
     if (bp) {
-      var bpKeys = Object.keys(bp);
-      bpBlock = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Blueprint (' + bpKeys.length + ' parts)</div>' +
-        '<pre style="font-size:11px;overflow:auto;max-height:400px;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap">' + escA(JSON.stringify(bp, null, 2).slice(0,8000)) + (JSON.stringify(bp).length>8000?'\n... (truncated)':'') + '</pre></div>';
+      function renderBPValue(val) {
+        if (typeof val==='string') return '<p style="line-height:1.6">'+escA(val)+'</p>';
+        if (Array.isArray(val)) return val.map(function(v){
+          if (typeof v==='object'&&v!==null) return '<div style="padding:8px 0;border-bottom:1px solid #F5F5F7">'+Object.entries(v).map(function(e){return '<div style="display:flex;gap:8px"><span style="color:#86868B;min-width:120px;font-size:11px">'+escA(e[0])+'</span><span>'+escA(String(e[1]||''))+'</span></div>';}).join('')+'</div>';
+          return '<div style="padding:4px 0;border-bottom:1px solid #F5F5F7">'+escA(String(v))+'</div>';
+        }).join('');
+        if (typeof val==='object'&&val!==null) return Object.entries(val).map(function(e){return '<div style="padding:4px 0"><span style="color:#86868B;font-size:11px;display:inline-block;min-width:140px">'+escA(e[0])+'</span> '+escA(String(e[1]||''))+'</div>';}).join('');
+        return '<p>'+escA(String(val||''))+'</p>';
+      }
+      blueprintHTML = Object.entries(bp).map(function(entry){
+        return '<div style="margin-bottom:16px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden">' +
+          '<div style="background:#F5F5F7;padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C4703F">'+escA(entry[0])+'</div>' +
+          '<div style="padding:12px 14px;font-size:13px">'+renderBPValue(entry[1])+'</div></div>';
+      }).join('') +
+      '<details style="margin-top:16px"><summary style="cursor:pointer;font-size:12px;color:#86868B;padding:8px">Show raw JSON</summary>' +
+      '<pre style="font-size:11px;overflow:auto;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap;margin-top:8px">'+escA(JSON.stringify(bp,null,2).slice(0,12000))+(JSON.stringify(bp).length>12000?'\n...(truncated)':'')+'</pre></details>';
+    } else {
+      blueprintHTML = '<div style="color:#86868B;padding:24px;text-align:center">No blueprint generated yet.</div>';
     }
 
-    // Insights panel
-    var insightsBlock = '';
-    if (insightRows.length > 0) {
-      insightsBlock = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Extracted Insights (' + insightRows.length + ')</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px">' +
-        insightRows.map(function(r) {
+    var insightsTabHTML = insightRows.length
+      ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px">'+insightRows.map(function(r){
           return '<div style="background:#F5F5F7;padding:10px 14px;border-radius:8px;font-size:12px;border-left:3px solid #C4703F">' +
-            '<div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">' + escA(r.insight_type) + ' <span style="color:#86868B;font-weight:400">(' + (r.confidence*100).toFixed(0) + '%)</span></div>' +
-            '<div style="color:#1D1D1F;line-height:1.5">' + escA(String(r.insight_value||'').slice(0,200)) + '</div></div>';
-        }).join('') + '</div></div>';
-    }
+            '<div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'+escA(r.insight_type)+' <span style="color:#86868B;font-weight:400">('+Math.round(r.confidence*100)+'%)</span></div>' +
+            '<div style="color:#1D1D1F;line-height:1.5">'+escA(String(r.insight_value||'').slice(0,200))+'</div></div>';
+        }).join('')+'</div>'
+      : '<div style="color:#86868B;padding:24px;text-align:center">No insights extracted yet.</div>';
 
-    var html = '<a class="adm-back" href="/admin">&larr; Dashboard</a>' +
-      '<h1 class="adm-page-title">' + escA(sessionRow.name||sessionRow.email||'Anonymous') + '</h1>' +
-      '<div class="adm-2col" style="margin-bottom:16px">' + userBlock + sessionBlock + '</div>' +
-      '<div class="adm-2col">' + insightsBlock + timelineHTML + transcriptHTML + bpBlock + '</div>' +
-      '<script>' +
-        'function generateV3(sid) {' +
-          'if(!confirm("Generate V3 fields for this session? This calls Claude Opus and costs ~$0.50.")) return;' +
-          'var btn=event.target;btn.textContent="Generating...";btn.disabled=true;' +
-          'fetch("/api/admin/generate-v3-fields",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Key":"dw-v3-generate-2026"},body:JSON.stringify({sessionId:sid})})' +
-          '.then(function(r){return r.json()}).then(function(d){if(d.ok){alert("V3 fields generated! Refreshing...");location.reload();}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}})' +
-          '.catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});' +
-        '}' +
-        'function resendBlueprint(sid,email) {' +
-          'if(!confirm("Resend blueprint link to "+email+"?")) return;' +
-          'var btn=event.target;btn.textContent="Sending...";btn.disabled=true;' +
-          'fetch("/api/admin/resend-blueprint",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+document.cookie.match(/dw_session=([^;]+)/)?.[1]},body:JSON.stringify({sessionId:sid,email:email})})' +
-          '.then(function(r){return r.json()}).then(function(d){if(d.ok){alert("Blueprint email sent to "+email);btn.textContent="Sent \\u2714";btn.disabled=true;}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}})' +
-          '.catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});' +
-        '}' +
-      '<\/script>';
+    var timelineTabHTML = '<details><summary style="cursor:pointer;font-size:12px;color:#86868B;padding:4px 0">Show full event log ('+events.length+' events)</summary>' +
+      '<ul style="list-style:none;margin-top:8px">' +
+      events.slice(0,200).map(function(e){
+        var dataStr=''; try{if(e.data){var d=JSON.parse(e.data);dataStr=d.phase?'phase '+d.phase:d.event_type||'';}}catch(_){}
+        return '<li style="display:flex;gap:12px;padding:3px 0;font-size:12px;border-bottom:1px solid #F5F5F7"><span style="color:#86868B;min-width:180px">'+escA(e.event_type||'?')+'</span><span style="color:#86868B;min-width:60px">'+escA(dataStr)+'</span><span style="color:#86868B;font-family:monospace">'+escA(e.created_at?e.created_at.slice(11,19):'')+'</span></li>';
+      }).join('')+
+      (events.length>200?'<li style="color:#86868B;font-size:11px;padding:8px 0">+ '+(events.length-200)+' more...</li>':'') +
+      '</ul></details>';
 
-    return new Response(adminLayout('Session: ' + (sessionRow.name||sessionRow.email||sessionId), html), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+    var tabbedArea = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;overflow:hidden">' +
+      downloadBar +
+      '<div>' +
+        '<div style="display:flex;border-bottom:1px solid #F0F0F0;background:#FAFAFA">' +
+          '<button class="qa-tab qa-tab-active" onclick="switchTab(this,\'transcript\')">Transcript ('+displayMessages.filter(function(m){return m.content;}).length+')</button>' +
+          '<button class="qa-tab" onclick="switchTab(this,\'blueprint\')">Blueprint'+(bp?' ('+Object.keys(bp).length+'p)':'')+'</button>' +
+          '<button class="qa-tab" onclick="switchTab(this,\'insights\')">Insights ('+insightRows.length+')</button>' +
+          '<button class="qa-tab" onclick="switchTab(this,\'timeline\')">Timeline</button>' +
+        '</div>' +
+        '<div id="tab-transcript" class="qa-tab-panel" style="padding:20px;max-height:700px;overflow-y:auto">'+transcriptHTML+'</div>' +
+        '<div id="tab-blueprint" class="qa-tab-panel" style="display:none;padding:20px;max-height:700px;overflow-y:auto">'+blueprintHTML+'</div>' +
+        '<div id="tab-insights" class="qa-tab-panel" style="display:none;padding:20px;max-height:700px;overflow-y:auto">'+insightsTabHTML+'</div>' +
+        '<div id="tab-timeline" class="qa-tab-panel" style="display:none;padding:20px;max-height:700px;overflow-y:auto">'+timelineTabHTML+'</div>' +
+      '</div>' +
+    '</div>';
+
+    var html = '<style>' +
+      '.qa-tab{background:none;border:none;padding:10px 18px;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;color:#86868B;border-bottom:2px solid transparent;margin-bottom:-1px}' +
+      '.qa-tab:hover{color:#1D1D1F}' +
+      '.qa-tab-active{color:#C4703F;border-bottom-color:#C4703F;font-weight:500}' +
+    '</style>' +
+    '<a class="adm-back" href="/admin">&larr; Dashboard</a>' +
+    '<h1 class="adm-page-title">'+escA(sessionRow.name||sessionRow.email||'Anonymous')+'</h1>' +
+    scorecard +
+    highlightsHTML +
+    tabbedArea +
+    '<script>' +
+      'function switchTab(btn,name){' +
+        'document.querySelectorAll(".qa-tab-panel").forEach(function(p){p.style.display="none"});' +
+        'document.getElementById("tab-"+name).style.display="block";' +
+        'document.querySelectorAll(".qa-tab").forEach(function(t){t.classList.remove("qa-tab-active")});' +
+        'btn.classList.add("qa-tab-active");' +
+      '}' +
+      'function generateV3(sid){' +
+        'if(!confirm("Generate V3 fields? This calls Claude Opus (~$0.50).")) return;' +
+        'var btn=event.target;btn.textContent="Generating...";btn.disabled=true;' +
+        'fetch("/api/admin/generate-v3-fields",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Key":"dw-v3-generate-2026"},body:JSON.stringify({sessionId:sid})})' +
+        '.then(function(r){return r.json()}).then(function(d){if(d.ok){alert("V3 generated! Refreshing...");location.reload();}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}})' +
+        '.catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});' +
+      '}' +
+      'function resendBlueprint(sid,email){' +
+        'if(!confirm("Resend blueprint link to "+email+"?")) return;' +
+        'var btn=event.target;btn.textContent="Sending...";btn.disabled=true;' +
+        'fetch("/api/admin/resend-blueprint",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(document.cookie.match(/dw_session=([^;]+)/)||[])[1]},body:JSON.stringify({sessionId:sid,email:email})})' +
+        '.then(function(r){return r.json()}).then(function(d){if(d.ok){alert("Blueprint email sent to "+email);btn.textContent="Sent ✔";btn.disabled=true;}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}})' +
+        '.catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});' +
+      '}' +
+    '<\/script>';
+
+    return new Response(adminLayout('Session: '+(sessionRow.name||sessionRow.email||sessionId), html), { headers:{'Content-Type':'text/html;charset=UTF-8'} });
   } catch(e) {
-    return new Response('Error: ' + e.message, {status:500, headers:{'Content-Type':'text/plain'}});
+    return new Response('Error: '+e.message, {status:500, headers:{'Content-Type':'text/plain'}});
   }
 }
 
