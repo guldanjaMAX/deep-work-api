@@ -4432,6 +4432,19 @@ async function sendMessage() {
     });
     clearTimeout(fetchTimeout);
 
+    if (res.status === 403) {
+      const errData = await res.json().catch(() => ({}));
+      if (errData.error === 'interview_complete' && errData.blueprint) {
+        removeTyping();
+        hideBlueprintGenerating();
+        STATE.blueprintOverlayShown = false;
+        handleBlueprintReady(errData.blueprint);
+        if (errData.strategistDebrief) STATE.strategistDebrief = errData.strategistDebrief;
+        return;
+      }
+      const errBody = JSON.stringify(errData).substring(0, 200);
+      throw new Error('API error 403: ' + errBody);
+    }
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
       throw new Error('API error ' + res.status + ': ' + errBody.substring(0, 200));
@@ -4522,9 +4535,30 @@ async function sendMessage() {
               }
             } else if (ev.type === 'done') {
               // Fallback: if stream is done but blueprint overlay still showing, recover
-              if (STATE.blueprintOverlayShown && STATE.pendingBlueprint) {
-                hideBlueprintGenerating();
-                handleBlueprintReady(STATE.pendingBlueprint);
+              if (STATE.blueprintOverlayShown) {
+                if (STATE.pendingBlueprint) {
+                  hideBlueprintGenerating();
+                  handleBlueprintReady(STATE.pendingBlueprint);
+                } else {
+                  // Blueprint overlay showing but no blueprint arrived — check session
+                  fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                      if (data && data.blueprintGenerated && data.blueprint) {
+                        hideBlueprintGenerating();
+                        handleBlueprintReady(data.blueprint);
+                      } else {
+                        hideBlueprintGenerating();
+                        STATE.blueprintOverlayShown = false;
+                        appendMessage('ai', 'The blueprint generation ran into an issue. Your conversation is saved. Send me a message to try again.');
+                      }
+                    })
+                    .catch(function() {
+                      hideBlueprintGenerating();
+                      STATE.blueprintOverlayShown = false;
+                      appendMessage('ai', 'Something went wrong generating your blueprint. Your conversation is saved — send a message to try again.');
+                    });
+                }
               }
             }
           } catch (_) {}
@@ -4890,6 +4924,14 @@ function showBlueprintGenerating() {
 
   overlay._progressInterval = progressInterval;
 
+  // Hard dismiss after 7 minutes — show error instead of endless spinner
+  overlay._hardDismiss = setTimeout(() => {
+    if (!overlay.classList.contains('active')) return;
+    hideBlueprintGenerating();
+    STATE.blueprintOverlayShown = false;
+    appendMessage('ai', 'Blueprint generation took longer than expected. Your conversation is saved. Send a message and I will try again.');
+  }, 420000);
+
   // Show retry button after 8 minutes
   overlay._retryTimeout = setTimeout(() => {
     const retryEl = document.getElementById('blueprint-gen-retry');
@@ -4898,22 +4940,34 @@ function showBlueprintGenerating() {
     msgEl.textContent = 'Your conversation is saved. You can try again or go back.';
   }, 480000);
 
-  // Auto-recovery: if blueprint exists but overlay still showing after 3 min
+  // Auto-recovery: if blueprint exists but overlay still showing after 90s
   overlay._autoRecovery = setTimeout(async function() {
-    if (overlay.classList.contains('active') && STATE.pendingBlueprint) {
-      console.warn('[Blueprint] Auto-recovering from stuck overlay');
+    if (!overlay.classList.contains('active')) return;
+    if (STATE.pendingBlueprint) {
+      console.warn('[Blueprint] Auto-recovering from stuck overlay (pendingBlueprint)');
       hideBlueprintGenerating();
       handleBlueprintReady(STATE.pendingBlueprint);
-    } else if (overlay.classList.contains('active')) {
-      try {
-        var checkRes = await fetch('/api/session/' + STATE.sessionId);
-        var checkData = await checkRes.json();
-        if (checkData.blueprintGenerated) {
-          location.reload();
-        }
-      } catch (e) {}
+      return;
     }
-  }, 180000);
+    try {
+      var checkRes = await fetch('/api/session/' + STATE.sessionId, { credentials: 'include' });
+      var contentType = checkRes.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) throw new Error('non-JSON response');
+      var checkData = await checkRes.json();
+      if (checkData.blueprintGenerated && checkData.blueprint) {
+        hideBlueprintGenerating();
+        handleBlueprintReady(checkData.blueprint);
+      } else if (checkData.blueprintGenerated) {
+        location.reload();
+      } else {
+        // Blueprint not ready yet — reassure user but keep overlay
+        var msgElR = document.getElementById('blueprint-gen-msg');
+        if (msgElR) msgElR.textContent = 'Still building. Hang tight — this usually takes 3 to 5 minutes.';
+      }
+    } catch (e) {
+      // Swallow — will retry at 8-minute mark
+    }
+  }, 90000);
 }
 
 function retryBlueprint() {
@@ -4977,6 +5031,7 @@ function hideBlueprintGenerating() {
 
   if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
+  if (overlay._hardDismiss) { clearTimeout(overlay._hardDismiss); overlay._hardDismiss = null; }
   if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
   if (overlay._autoRecovery) { clearTimeout(overlay._autoRecovery); }
   if (retryEl) retryEl.style.display = 'none';
@@ -14431,6 +14486,8 @@ async function handleGetSession(request, env, path) {
     tier: session.tier,
     phase: session.phase,
     blueprintGenerated: session.blueprintGenerated,
+    blueprint: session.blueprintGenerated ? (session.blueprint || null) : undefined,
+    strategistDebrief: session.blueprintGenerated ? (session.strategistDebrief || null) : undefined,
     siteGenerated: session.siteGenerated,
     siteUrl: session.siteUrl || null,
     siteSlug: session.siteSlug || null
@@ -14740,9 +14797,13 @@ async function handleChat(request, env, ctx) {
     return json({ error: "Session not found" }, 404);
   const session = JSON.parse(raw);
   if (session.blueprintGenerated) {
+    const bpMeta = await env.SESSIONS.get("bp_meta:" + sessionId, { type: "json" }).catch(() => null);
     return json({
       error: "interview_complete",
-      message: "Your Deep Work Interview is complete and your blueprint has been generated. If you need to start a new session, please contact support."
+      message: "Your Deep Work Interview is complete and your blueprint has been generated. If you need to start a new session, please contact support.",
+      blueprint: bpMeta?.blueprint || session.blueprint || null,
+      strategistDebrief: session.strategistDebrief || null,
+      blueprintGenerated: true
     }, 403);
   }
   const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1e3;
@@ -14984,14 +15045,14 @@ Use this to skip surface-level questions. Go deeper faster.` });
         } catch (_) {
         }
       }
+      let blueprint = null;
+      const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       if (metadata.sessionComplete && !blueprintMatch) {
         console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, keeping at phase 6");
         metadata.sessionComplete = false;
         metadata.phase = 6;
         metadata.phaseProgress = 95;
       }
-      let blueprint = null;
-      const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       const currentPhase = session.phase || 1;
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
       const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 7 && metadata.phaseProgress >= 100));
