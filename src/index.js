@@ -17346,6 +17346,44 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-family: 'Outfit', sans-serif; font-weight: 700;
   font-size: 22px; color: var(--text); line-height: 1.5; max-width: 700px;
 }
+.bp-category-one {
+  margin: 0 auto 40px; padding: 32px 36px;
+  background: linear-gradient(135deg, #FDF0E8, #FFF8F0);
+  border: 2px solid var(--gold); border-radius: 16px;
+  text-align: center; font-family: 'Outfit', sans-serif;
+  font-weight: 700; font-size: 26px; color: var(--text); line-height: 1.4; max-width: 800px;
+}
+.bp-positioning-shift {
+  display: flex; align-items: stretch; gap: 16px; margin: 32px 0;
+}
+.bp-positioning-before, .bp-positioning-after {
+  flex: 1; padding: 20px; border-radius: 12px;
+}
+.bp-positioning-before { background: #F5F5F7; border: 1px solid #D1D1D6; }
+.bp-positioning-after {
+  background: linear-gradient(135deg, #FDF0E8, #FFF8F0);
+  border: 1px solid rgba(196,112,63,0.3);
+}
+.bp-positioning-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text2); margin-bottom: 8px;
+}
+.bp-positioning-after .bp-positioning-label { color: var(--gold); }
+.bp-positioning-text { font-size: 15px; line-height: 1.6; color: var(--text); }
+.bp-positioning-arrow {
+  display: flex; align-items: center; font-size: 24px; color: var(--gold);
+  flex-shrink: 0; padding: 0 4px;
+}
+.bp-why-it-works, .bp-market-viability {
+  margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);
+}
+.bp-landscape-subhead {
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px;
+  letter-spacing: 0.05em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+}
+.bp-why-it-works p, .bp-market-viability p {
+  font-size: 15px; color: var(--text); line-height: 1.75; max-width: 700px; margin: 0;
+}
 
 /* === CHAPTER 3: IDEAL CLIENT === */
 .bp-portrait {
@@ -18108,6 +18146,11 @@ function renderChapter2(bp) {
   var quotes = Array.isArray(ml.marketQuotes) ? ml.marketQuotes : [];
   var rawAdv = ml.competitiveAdvantage || bp.marketBrief || "";
   var advantage = typeof rawAdv === "string" ? rawAdv : "";
+  var categoryOfOne = typeof ml.categoryOfOne === "string" ? ml.categoryOfOne : "";
+  var beforePositioning = typeof ml.beforePositioning === "string" ? ml.beforePositioning : "";
+  var afterPositioning = typeof ml.afterPositioning === "string" ? ml.afterPositioning : "";
+  var whyItWorks = typeof ml.whyItWorks === "string" ? ml.whyItWorks : "";
+  var marketViability = typeof ml.marketViability === "string" ? ml.marketViability : "";
   var r = 96;
   var circumference = 2 * Math.PI * r;
   var categoryHTML = categories.map(function(cat) {
@@ -18119,7 +18162,7 @@ function renderChapter2(bp) {
   var quotesHTML = quotes.length ? quotes.map(function(q) {
     return '<div class="bp-quote-item"><div class="bp-quote-mark">\u201C</div><div class="bp-quote-text">' + escHtml(q.quote) + '</div><div class="bp-quote-descriptor">' + escHtml(q.descriptor) + "</div></div>";
   }).join("") : "";
-  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + "</div></section>" : "") + "</div>";
+  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage || categoryOfOne || beforePositioning || afterPositioning || whyItWorks || marketViability ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (categoryOfOne ? '<div class="bp-category-one">' + escHtml(categoryOfOne) + '</div>' : '') + (beforePositioning && afterPositioning ? '<div class="bp-positioning-shift"><div class="bp-positioning-before"><div class="bp-positioning-label">Before</div><div class="bp-positioning-text">' + escHtml(beforePositioning) + '</div></div><div class="bp-positioning-arrow">\u2192</div><div class="bp-positioning-after"><div class="bp-positioning-label">After</div><div class="bp-positioning-text">' + escHtml(afterPositioning) + '</div></div></div>' : '') + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + (whyItWorks ? '<div class="bp-why-it-works"><div class="bp-landscape-subhead">Why This Works</div><p>' + escHtml(whyItWorks) + '</p></div>' : '') + (marketViability ? '<div class="bp-market-viability"><div class="bp-landscape-subhead">Market Viability</div><p>' + escHtml(marketViability) + '</p></div>' : '') + "</div></section>" : "") + "</div>";
 }
 __name(renderChapter2, "renderChapter2");
 function renderChapter3(bp) {
@@ -19496,6 +19539,77 @@ Generate the following as valid JSON only (no markdown, no explanation):
   }
 }
 __name(handleAdminGenerateV3Fields, "handleAdminGenerateV3Fields");
+async function handleAdminBackfillLandscape(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: "Session not found in KV" }, 404);
+    const session = JSON.parse(kvData);
+    if (!session.blueprint) return json({ error: "No blueprint in session" }, 400);
+    const bp = session.blueprint?.blueprint || session.blueprint;
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const transcript = messages.filter(function(m) { return m.role === "user" || m.role === "assistant"; }).map(function(m) {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c) { return typeof c === "object" ? c.text || "" : c; }).join(" ");
+      return m.role.toUpperCase() + ": " + String(content);
+    }).join("\n\n");
+    const brandName = bp.brandName || (bp.part1 || {}).brandName || "";
+    const niche = bp.niche || (bp.part1 || {}).niche || "";
+    const positioningStatement = (bp.v3 || {}).positioningStatement || "";
+    const idealClient = JSON.stringify(bp.idealClient || bp.part2 || {}).slice(0, 600);
+    const prompt = `You are reading a complete Deep Work Interview transcript. Generate the Market Landscape section of this person's blueprint — analyzing where they stand in their market and positioning them as a category of one.
+
+CONTEXT:
+- Brand/Name: ${brandName}
+- Niche: ${niche}
+- Current Positioning: ${positioningStatement}
+- Ideal Client: ${idealClient}
+
+FULL INTERVIEW TRANSCRIPT:
+${transcript.slice(0, 55000)}
+
+Generate the complete market landscape analysis as valid JSON only (no markdown, no explanation):
+{
+  "beforePositioning": "The generic thing they were saying before this conversation — their old website copy, their old elevator pitch. Be specific, quote what they described.",
+  "afterPositioning": "The new, specific positioning statement they should use. Niched down, uncatchable, category of one.",
+  "whyItWorks": "2-3 sentences explaining why this positioning shift is dramatically better. Connect it to market opportunity, client psychology, and competitive differentiation.",
+  "marketViability": "2-3 sentences on niche size and viability. Address the fear that niching down means a smaller market. Show why the opposite is true for this specific person.",
+  "categoryOfOne": "One powerful sentence — why nobody can compete with them in this specific space. Hero callout. Bold, direct. Max 25 words.",
+  "competitors": [
+    {"name": "Generic competitor type in their space", "positioning": "What that competitor typically says", "gap": "What they are missing that this person has"},
+    {"name": "Second competitor type", "positioning": "Their positioning", "gap": "Their gap"}
+  ],
+  "marketQuotes": [
+    {"quote": "Something their ideal client says about their frustration with the market", "descriptor": "Frustrated entrepreneur"},
+    {"quote": "A second market insight from the interview", "descriptor": "Your ideal client"}
+  ],
+  "competitiveAdvantage": "One paragraph — the specific, unchallengeable competitive advantage this person has based on their story, niche, and what emerged in this interview."
+}`;
+    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-opus-4-6", max_tokens: 3000, messages: [{ role: "user", content: prompt }] })
+    });
+    const aiData = await aiResp.json();
+    const rawText = aiData.content?.[0]?.text || "";
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return json({ error: "AI did not return valid JSON", raw: rawText.slice(0, 500) }, 500);
+    const landscapeFields = JSON.parse(jsonMatch[0]);
+    if (session.blueprint?.blueprint) {
+      session.blueprint.blueprint = { ...session.blueprint.blueprint, marketLandscape: landscapeFields };
+    } else {
+      session.blueprint = { ...session.blueprint, marketLandscape: landscapeFields };
+    }
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 60 });
+    return json({ ok: true, sessionId, landscape: landscapeFields });
+  } catch (e) {
+    return json({ error: "Failed to generate landscape", detail: e.message }, 500);
+  }
+}
+__name(handleAdminBackfillLandscape, "handleAdminBackfillLandscape");
 async function handleAdminBulkV3(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin) return json({ error: "Forbidden" }, 403);
@@ -21215,6 +21329,7 @@ async function handleAdminPersonProfile(request, env, path) {
     }
 
     var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
+    var hasLandscape = !!(bp && bp.marketLandscape && bp.marketLandscape.categoryOfOne);
     var positioningStatement = hasV3 ? bp.v3.positioningStatement : null;
 
     // Apollo data
@@ -21374,6 +21489,7 @@ async function handleAdminPersonProfile(request, env, path) {
           '</div>'+
           (magicLink?'<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="'+escA(magicLink)+'" target="_blank" style="display:block;text-align:center">Open Their View &rarr;</a></div>':'')+
           (sessionId&&session?.blueprint_generated?'<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session='+escA(sessionId)+'" target="_blank" style="display:block;text-align:center;background:#C4703F;color:#fff">Preview Blueprint</a></div>':'')+
+          (sessionId&&session?.blueprint_generated&&!hasLandscape?'<div style="margin-bottom:8px"><button class="adm-btn adm-btn-sm adm-btn-outline" id="backfill-landscape-btn" onclick="backfillLandscape(\''+escA(sessionId)+'\')" style="display:block;width:100%;text-align:center">Backfill Landscape</button><div id="backfill-landscape-status" style="font-size:11px;color:#86868B;margin-top:4px;text-align:center"></div></div>':'')+
           '<div style="font-size:11px;color:#86868B;padding-top:8px;border-top:1px solid #F5F5F5">'+sessions.length+' session &middot; $'+parseFloat(costRow?.total||0).toFixed(2)+' API cost</div>'+
         '</div>'+
       '</div>'+
@@ -21476,6 +21592,7 @@ async function handleAdminPersonProfile(request, env, path) {
       'function copyMagicLink(){var v=document.getElementById("magic-url").value;navigator.clipboard.writeText(v).then(function(){var b=document.querySelector("[onclick=\'copyMagicLink()\']");b.textContent="Copied!";setTimeout(function(){b.textContent="Copy";},2000);});}'+
       'function genProfileLink(uid){var btn=document.getElementById("gen-link-btn");btn.disabled=true;btn.textContent="Generating...";fetch("/api/admin/magic-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:uid})}).then(function(r){return r.json();}).then(function(d){if(d.magicLink){navigator.clipboard.writeText(d.magicLink);location.reload();}else{btn.textContent="Error";btn.disabled=false;}}).catch(function(){btn.textContent="Error";btn.disabled=false;});}'+
       'function deleteUser(uid,name){if(!confirm("Delete "+name+"? This removes ALL their data. Cannot be undone."))return;if(!confirm("Are you absolutely sure?"))return;fetch("/admin/delete-user/"+uid+"?confirm=DELETE",{method:"POST"}).then(function(r){return r.json();}).then(function(d){if(d.ok||d.success){alert("User deleted.");window.location.href="/admin/people";}else{alert("Error: "+(d.error||"Unknown"));}}).catch(function(e){alert("Error: "+e.message);});}'+
+      'function backfillLandscape(sid){var btn=document.getElementById("backfill-landscape-btn");var st=document.getElementById("backfill-landscape-status");btn.disabled=true;btn.textContent="Generating...";st.textContent="This may take 30 seconds...";fetch("/api/admin/backfill-landscape",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:sid})}).then(function(r){return r.json();}).then(function(d){if(d.ok){st.textContent="Done! Refresh to see blueprint.";st.style.color="#27ae60";btn.textContent="Done";}else{st.textContent="Error: "+(d.error||"Unknown");st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";}}).catch(function(e){st.textContent="Error: "+e.message;st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";});}'+
     '<\/script>';
 
     return new Response(adminLayout(user.name || user.email, html).replace('</body>', pageScript + '</body>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
@@ -22472,6 +22589,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminForceGenerateBlueprint(request, env);
     if (path === "/api/admin/generate-v3-fields" && request.method === "POST")
       return handleAdminGenerateV3Fields(request, env);
+    if (path === "/api/admin/backfill-landscape" && request.method === "POST")
+      return handleAdminBackfillLandscape(request, env);
     if (path === "/api/admin/inject-debrief" && request.method === "POST")
       return handleAdminInjectDebrief(request, env);
     if (path === "/api/admin/generate-test-blueprint" && request.method === "POST")
