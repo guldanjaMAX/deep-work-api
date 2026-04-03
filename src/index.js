@@ -1135,8 +1135,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
 
   input:focus, textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.1);
+    border-color: var(--border2);
+    box-shadow: none;
   }
 
   input::placeholder, textarea::placeholder { color: var(--text3); }
@@ -1721,8 +1721,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
 
   .input-pill:focus-within {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.08);
+    border-color: var(--border2);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
 
   .input-pill textarea {
@@ -7547,7 +7547,7 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
     width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px;
     padding: 10px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s;
   }
-  input:focus, textarea:focus, select:focus { border-color: var(--gold); }
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); box-shadow: none; }
   input::placeholder, textarea::placeholder { color: var(--text3); }
   textarea { resize: vertical; min-height: 100px; }
 
