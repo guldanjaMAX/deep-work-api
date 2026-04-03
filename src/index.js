@@ -4523,6 +4523,31 @@ async function sendMessage() {
               // Blueprint delivered separately to keep metadata event small
               STATE.pendingBlueprint = ev.blueprint;
               STATE.apolloData = ev.apolloData || null;
+            } else if (ev.type === 'blueprint_generating') {
+              // Blueprint is generating async in a background Worker invocation (long sessions)
+              if (!STATE.blueprintOverlayShown) {
+                STATE.blueprintOverlayShown = true;
+                showBlueprintGenerating();
+              }
+              STATE.blueprintAsync = true;
+              var asyncMsgEl = document.getElementById('blueprint-gen-msg');
+              if (asyncMsgEl) asyncMsgEl.textContent = ev.message || 'Your blueprint is generating in the background. This page will update automatically when it is ready.';
+              // Poll every 15s until blueprint appears in session
+              if (!STATE.blueprintPollInterval) {
+                STATE.blueprintPollInterval = setInterval(function() {
+                  fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                      if (data && data.blueprintGenerated && data.blueprint) {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        hideBlueprintGenerating();
+                        handleBlueprintReady(data.blueprint);
+                      }
+                    })
+                    .catch(function() {});
+                }, 15000);
+              }
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
               if (ev.phase >= 7 && !STATE.blueprintOverlayShown) {
@@ -4535,7 +4560,8 @@ async function sendMessage() {
               }
             } else if (ev.type === 'done') {
               // Fallback: if stream is done but blueprint overlay still showing, recover
-              if (STATE.blueprintOverlayShown) {
+              // Skip recovery if async polling is active — the poll interval will handle it
+              if (STATE.blueprintOverlayShown && !STATE.blueprintAsync) {
                 if (STATE.pendingBlueprint) {
                   hideBlueprintGenerating();
                   handleBlueprintReady(STATE.pendingBlueprint);
@@ -5030,6 +5056,8 @@ function hideBlueprintGenerating() {
   const retryEl = document.getElementById('blueprint-gen-retry');
 
   if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
+  if (STATE.blueprintPollInterval) { clearInterval(STATE.blueprintPollInterval); STATE.blueprintPollInterval = null; }
+  STATE.blueprintAsync = false;
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
   if (overlay._hardDismiss) { clearTimeout(overlay._hardDismiss); overlay._hardDismiss = null; }
   if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
@@ -15216,6 +15244,29 @@ Use this to skip surface-level questions. Go deeper faster.` });
       await writer.close();
     } catch (err) {
       console.error("Stream error:", err);
+      const isBpAbort = (err.name === "AbortError" || (err.message || "").toLowerCase().includes("abort")) && isBlueprintPhase && !session.blueprintGenerated;
+      if (isBpAbort) {
+        console.log("[Chat] Blueprint stream timed out — queuing async generation for session=" + sessionId);
+        try {
+          await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+        } catch (_) {}
+        if (ctx) {
+          const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          ctx.waitUntil(
+            fetch(appOrigin + "/api/internal/generate-blueprint", {
+              method: "POST",
+              headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId })
+            }).catch((e) => console.error("[AsyncBP] Self-fetch failed:", e.message))
+          );
+        }
+        try {
+          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          await sendEvent({ type: "done" });
+          await writer.close();
+        } catch (_) {}
+        return;
+      }
       try {
         await sendEvent({ type: "error", message: err.message });
         await writer.close();
@@ -19503,6 +19554,120 @@ async function handleAdminForceGenerateBlueprint(request, env) {
   }
 }
 __name(handleAdminForceGenerateBlueprint, "handleAdminForceGenerateBlueprint");
+
+var INTERNAL_BP_TOKEN = "bp-internal-2026";
+async function handleInternalGenerateBlueprint(request, env) {
+  if (request.headers.get("X-Internal-Token") !== INTERNAL_BP_TOKEN) {
+    return json({ error: "Forbidden" }, 403);
+  }
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: "Session not found" }, 404);
+    const session = JSON.parse(kvData);
+    if (session.blueprintGenerated && session.blueprint) {
+      return json({ ok: true, alreadyDone: true });
+    }
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const triggerMessages = [
+      ...messages.slice(-60),
+      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." }
+    ];
+    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length);
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": env.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: MODEL_OPUS,
+        max_tokens: 16384,
+        system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
+        messages: triggerMessages
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[InternalBP] Anthropic error", res.status, errText.slice(0, 300));
+      return json({ error: "Anthropic error " + res.status }, 500);
+    }
+    const aiData = await res.json();
+    const fullContent = aiData.content?.[0]?.text || "";
+    if (!fullContent) return json({ error: "Empty Anthropic response" }, 500);
+    const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
+    if (!blueprintMatch) {
+      console.error("[InternalBP] No JSON found for session=" + sessionId + " preview=" + fullContent.slice(0, 200));
+      return json({ error: "No blueprint JSON in Anthropic response" }, 500);
+    }
+    let blueprint;
+    try {
+      blueprint = JSON.parse(blueprintMatch[1]);
+    } catch (parseErr) {
+      return json({ error: "Blueprint JSON parse failed: " + parseErr.message }, 500);
+    }
+    const bpValidation = validateBlueprint(blueprint);
+    if (!bpValidation.passed) {
+      const repaired = autoRepairBlueprint(blueprint);
+      blueprint = repaired.blueprint;
+      if (repaired.repairCount > 0) console.log("[InternalBP] Repaired " + repaired.repairCount + " issues");
+    }
+    session.blueprint = blueprint;
+    session.blueprintGenerated = true;
+    session.phase = Math.max(Number(session.phase) || 1, 7);
+    session.messages = [
+      ...messages,
+      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." },
+      { role: "assistant", content: fullContent }
+    ];
+    try {
+      const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+      if (debrief) session.strategistDebrief = debrief;
+    } catch (debriefErr) {
+      console.error("[InternalBP] Debrief failed:", debriefErr.message);
+    }
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+    env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
+      blueprint,
+      name: blueprint.name || session.userName || "",
+      apolloData: session.apolloData || null,
+      messageCount: session.messages.length
+    }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
+    env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
+    await env.DB.prepare(
+      "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
+    ).bind(session.phase, sessionId).run().catch((e) => console.error("[InternalBP] D1 update failed:", e.message));
+    try {
+      if (session.userId) {
+        const user = await getUserById(env, session.userId);
+        if (user?.email) {
+          const bp2 = blueprint?.blueprint || blueprint;
+          fireEventToDripWorker(env, user.email, "interview_completed", {
+            name: user.name || "",
+            phone: session.phone || "",
+            highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
+            niche_statement: bp2?.part3?.nicheStatement || "",
+            brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
+            next_step: bp2?.part8?.recommendation || "self_guided"
+          }).catch(() => {});
+        }
+      }
+    } catch (_) {}
+    saveToRAG(env, session, blueprint).catch(() => {});
+    extractSessionInsights(env, sessionId, session).catch(() => {});
+    const li = blueprint?.leadIntel;
+    if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
+    console.log("[InternalBP] Done — session=" + sessionId + " tokens=" + (aiData.usage?.output_tokens || 0));
+    return json({ ok: true, sessionId });
+  } catch (e) {
+    console.error("[InternalBP] Fatal:", e.message);
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleInternalGenerateBlueprint, "handleInternalGenerateBlueprint");
+
 async function handleAdminGenerateV3Fields(request, env) {
   const key = request.headers.get("X-Admin-Key");
   if (key !== "dw-v3-generate-2026") return json({ error: "Forbidden" }, 403);
@@ -22655,6 +22820,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminGenerateV3Fields(request, env);
     if (path === "/api/admin/backfill-landscape" && request.method === "POST")
       return handleAdminBackfillLandscape(request, env);
+    if (path === "/api/internal/generate-blueprint" && request.method === "POST")
+      return handleInternalGenerateBlueprint(request, env);
     if (path === "/api/admin/inject-debrief" && request.method === "POST")
       return handleAdminInjectDebrief(request, env);
     if (path === "/api/admin/generate-test-blueprint" && request.method === "POST")
