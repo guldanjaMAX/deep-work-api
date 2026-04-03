@@ -4864,8 +4864,11 @@ function showBlueprintGenerating() {
     const mins = Math.floor(elapsed / 60);
     const secs = Math.floor(elapsed % 60);
     const pad = secs < 10 ? '0' : '';
-    if (elapsed < 45) {
-      timerEl.textContent = 'This typically takes 2 to 4 minutes.';
+    // Heartbeat: show reassurance for 8s at every 60s boundary (60-68s, 120-128s, …)
+    if (elapsed >= 60 && Math.floor(elapsed) % 60 < 8) {
+      timerEl.textContent = 'Still working \u2014 this usually takes 3 to 5 minutes. Hang tight.';
+    } else if (elapsed < 45) {
+      timerEl.textContent = 'This typically takes 3 to 5 minutes.';
     } else if (elapsed < 120) {
       timerEl.textContent = mins + 'm ' + pad + secs + 's \u2014 building something worth the wait';
     } else if (elapsed < 240) {
@@ -14991,7 +14994,7 @@ Use this to skip surface-level questions. Go deeper faster.` });
       const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       const currentPhase = session.phase || 1;
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
-      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10;
+      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 7 && metadata.phaseProgress >= 100));
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
