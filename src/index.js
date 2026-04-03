@@ -19589,12 +19589,12 @@ async function handleInternalGenerateBlueprint(request, env) {
     return json({ error: "Forbidden" }, 403);
   }
   try {
-    const { sessionId } = await request.json();
+    const { sessionId, force } = await request.json();
     if (!sessionId) return json({ error: "sessionId required" }, 400);
     const kvData = await env.SESSIONS.get(sessionId);
     if (!kvData) return json({ error: "Session not found" }, 404);
     const session = JSON.parse(kvData);
-    if (session.blueprintGenerated && session.blueprint) {
+    if (!force && session.blueprintGenerated && session.blueprint) {
       return json({ ok: true, alreadyDone: true });
     }
     const messages = Array.isArray(session.messages) ? session.messages : [];
