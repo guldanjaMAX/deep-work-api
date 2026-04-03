@@ -15549,7 +15549,7 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
           },
           body: JSON.stringify({
             model: MODEL_OPUS,
-            max_tokens: 16384,
+            max_tokens: 32768,
             stream: true,
             system: (() => {
               const sysMsgs = [{ type: "text", text: session.systemPrompt, cache_control: { type: "ephemeral" } }];
@@ -18494,7 +18494,7 @@ function renderBlueprintResults(bp, userName, apolloData, messageCount) {
 __name(renderBlueprintResults, "renderBlueprintResults");
 function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) {
   const firstName = (userName || "Friend").split(" ")[0];
-  if (!bp.v3 && bp.part1) {
+  if (!bp.v3) {
     const p1 = bp.part1 || {};
     const p2 = bp.part2 || {};
     const p3 = bp.part3 || {};
@@ -18502,28 +18502,33 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
     const p7 = bp.part7 || {};
     const deb = bp.debrief || {};
     const ps = p7.positioningStatements || {};
+    // New-format field references — fall back to these when old-format parts are empty
+    const il = bp.idealClient || {};
+    const bf = bp.brandFoundation || {};
+    const ml = bp.marketLandscape || {};
+    const pl = bp.personalLetter || {};
     bp.v3 = {
-      positioningStatement: ps.website || ps.social || Array.isArray(p1.taglines) && p1.taglines[0] || p1.coreBrandPromise || "",
+      positioningStatement: ps.website || ps.social || (Array.isArray(p1.taglines) && p1.taglines[0]) || p1.coreBrandPromise || bf.positioningStatement || ml.afterPositioning || "",
       clientStory: {
-        headline: p2.title || (p2.name ? "Meet " + p2.name : ""),
-        body: p2.avatarStory || p2.lifeSituation || "",
-        pullquote: (Array.isArray(p2.exactWords) ? p2.exactWords[0] : typeof p2.exactWords === "string" ? p2.exactWords : "") || "",
-        tension: p2.whatIsStoppingThem || ""
+        headline: p2.title || (p2.name ? "Meet " + p2.name : "") || (il.portrait ? il.portrait.split(".")[0] : ""),
+        body: p2.avatarStory || p2.lifeSituation || [il.fears, il.wants].filter(Boolean).join("\n\n") || "",
+        pullquote: (Array.isArray(p2.exactWords) ? p2.exactWords[0] : typeof p2.exactWords === "string" ? p2.exactWords : "") || il.exactWords || "",
+        tension: p2.whatIsStoppingThem || il.triedSolutions || ""
       },
       realProblem: {
         headline: p3.title || "The Real Problem",
-        body: p3.nicheStatement || "",
-        insight: p3.uniqueMechanism || p3.competitorGap || "",
-        pullquote: ""
+        body: p3.nicheStatement || [ml.whyItWorks, il.triedSolutions].filter(Boolean).join("\n\n") || "",
+        insight: p3.uniqueMechanism || p3.competitorGap || ml.competitiveAdvantage || ml.categoryOfOne || "",
+        pullquote: ml.categoryOfOne || ""
       },
       vision: {
         headline: deb.paragraph4_turn ? "The Turn" : "What Alignment Actually Feels Like",
-        body: deb.paragraph4_turn || "",
-        insight: deb.paragraph5_invitation || ""
+        body: deb.paragraph4_turn || [ml.categoryOfOne, bf.positioningStatement].filter(Boolean).join("\n\n") || "",
+        insight: deb.paragraph5_invitation || ml.afterPositioning || ""
       },
-      mirror_observation: deb.paragraph2_mirror || "",
-      arrogant_truth: deb.paragraph3_quote || "",
-      futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : "",
+      mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
+      arrogant_truth: deb.paragraph3_quote || bp.openingHook || "",
+      futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : (pl.proseBody || ""),
       loveLetter: ""
     };
     if (!bp.openingHook && Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) {
@@ -19494,7 +19499,7 @@ async function handleAdminForceGenerateBlueprint(request, env) {
         },
         body: JSON.stringify({
           model: MODEL_OPUS,
-          max_tokens: 16384,
+          max_tokens: 32768,
           system: sysPrompt,
           messages: triggerMessages
         })
@@ -19593,11 +19598,17 @@ async function handleInternalGenerateBlueprint(request, env) {
       return json({ ok: true, alreadyDone: true });
     }
     const messages = Array.isArray(session.messages) ? session.messages : [];
+    // Strip any assistant messages containing a ```json block — these are previous failed
+    // blueprint attempts. Leaving them in confuses the AI into continuing the old/wrong
+    // schema instead of generating a clean new-format blueprint from scratch.
+    const cleanMessages = messages.filter(function(msg) {
+      return !msg.content || !msg.content.includes("```json");
+    });
     const triggerMessages = [
-      ...messages.slice(-60),
-      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." }
+      ...cleanMessages.slice(-60),
+      { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh — do not reference or continue any previous blueprint attempt. Begin your response with ```json and end with ```." }
     ];
-    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length);
+    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length + " cleaned=" + cleanMessages.length);
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -19607,7 +19618,7 @@ async function handleInternalGenerateBlueprint(request, env) {
       },
       body: JSON.stringify({
         model: MODEL_OPUS,
-        max_tokens: 16384,
+        max_tokens: 32768,
         stream: true,
         system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
         messages: triggerMessages
