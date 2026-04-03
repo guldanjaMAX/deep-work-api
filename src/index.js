@@ -15220,6 +15220,29 @@ Use this to skip surface-level questions. Go deeper faster.` });
           console.error("[Debrief] Generation failed:", debriefErr.message);
         }
       }
+      // Fallback: if the AI attempted a blueprint (started outputting ```json) but it couldn't be
+      // parsed (e.g. max_tokens truncation), trigger async generation rather than showing an error.
+      const blueprintAttempted = fullContent.includes("```json");
+      if (isBlueprintPhase && !session.blueprintGenerated && !blueprint && blueprintAttempted) {
+        console.log("[Chat] Blueprint JSON incomplete (truncated?) — queuing async generation for session=" + sessionId);
+        await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+        if (ctx) {
+          const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          ctx.waitUntil(
+            fetch(appOrigin + "/api/internal/generate-blueprint", {
+              method: "POST",
+              headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId })
+            }).catch((e) => console.error("[AsyncBP] Fallback self-fetch failed:", e.message))
+          );
+        }
+        try {
+          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          await sendEvent({ type: "done" });
+          await writer.close();
+        } catch (_) {}
+        return;
+      }
       await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
       await updateSessionPhaseInD1(env, sessionId, session.phase, session.messages.length, session.blueprintGenerated);
       if (session.blueprintGenerated) {
