@@ -18,7 +18,7 @@ database_id = "92121f3b-dcfb-4fa8-8482-b827224b611d"
 
 [vars]
 APP_ORIGIN = "https://love.jamesguldan.com"
-STRIPE_MODE = "test"
+STRIPE_MODE = "live"
 
 [triggers]
 crons = ["0 13 * * 1"]
