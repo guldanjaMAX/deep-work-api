@@ -19608,6 +19608,7 @@ async function handleInternalGenerateBlueprint(request, env) {
       body: JSON.stringify({
         model: MODEL_OPUS,
         max_tokens: 16384,
+        stream: true,
         system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
         messages: triggerMessages
       })
@@ -19617,8 +19618,35 @@ async function handleInternalGenerateBlueprint(request, env) {
       console.error("[InternalBP] Anthropic error", res.status, errText.slice(0, 300));
       return json({ error: "Anthropic error " + res.status }, 500);
     }
-    const aiData = await res.json();
-    const fullContent = aiData.content?.[0]?.text || "";
+    let fullContent = "";
+    let outputTokens = 0;
+    const bpReader = res.body.getReader();
+    const bpDecoder = new TextDecoder();
+    let bpBuffer = "";
+    try {
+      while (true) {
+        const { done, value } = await bpReader.read();
+        if (done) break;
+        bpBuffer += bpDecoder.decode(value, { stream: true });
+        const bpLines = bpBuffer.split("\n");
+        bpBuffer = bpLines.pop();
+        for (const line of bpLines) {
+          if (!line.startsWith("data: ")) continue;
+          const dataStr = line.slice(6).trim();
+          if (dataStr === "[DONE]") continue;
+          try {
+            const ev = JSON.parse(dataStr);
+            if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") {
+              fullContent += ev.delta.text;
+            } else if (ev.type === "message_delta" && ev.usage) {
+              outputTokens = ev.usage.output_tokens || outputTokens;
+            }
+          } catch (_) {}
+        }
+      }
+    } finally {
+      bpReader.releaseLock();
+    }
     if (!fullContent) return json({ error: "Empty Anthropic response" }, 500);
     const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
     if (!blueprintMatch) {
@@ -19682,7 +19710,7 @@ async function handleInternalGenerateBlueprint(request, env) {
     extractSessionInsights(env, sessionId, session).catch(() => {});
     const li = blueprint?.leadIntel;
     if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
-    console.log("[InternalBP] Done — session=" + sessionId + " tokens=" + (aiData.usage?.output_tokens || 0));
+    console.log("[InternalBP] Done — session=" + sessionId + " tokens=" + outputTokens);
     return json({ ok: true, sessionId });
   } catch (e) {
     console.error("[InternalBP] Fatal:", e.message);
