@@ -12872,6 +12872,27 @@ function computeSessionHealth(s, now = new Date()) {
 __name(computeSessionHealth, "computeSessionHealth");
 // === End Phase 0 ===
 
+// === Phase B: Metric helpers ===
+var BREAKTHROUGH_MARKERS2 = [
+  /\bi realized\b/i, /\bi've never\b/i, /\bi have never\b/i,
+  /\bi don't usually\b/i, /\bi don't normally\b/i,
+  /\bthe truth is\b/i, /\bhonestly\b/i, /\bi'm scared\b/i,
+  /\bi'm ashamed\b/i, /\bthat's the first time\b/i
+];
+function computeHonestAnswerCount(messages) {
+  return (messages || []).filter((m) => m.role === "user" && (m.content || "").split(/\s+/).filter(Boolean).length >= 40).length;
+}
+__name(computeHonestAnswerCount, "computeHonestAnswerCount");
+function computeBreakthroughCount(messages) {
+  return (messages || []).filter((m) => {
+    if (m.role !== "user") return false;
+    const t = m.content || "";
+    return BREAKTHROUGH_MARKERS2.some((r) => r.test(t));
+  }).length;
+}
+__name(computeBreakthroughCount, "computeBreakthroughCount");
+// === End Phase B helpers ===
+
 async function logSessionEvent(env, sessionId, eventType, payload = {}) {
   try {
     await env.DB.prepare(
