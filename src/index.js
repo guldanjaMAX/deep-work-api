@@ -389,6 +389,33 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   }
 }
 __name(sendAlertEmail, "sendAlertEmail");
+async function sendShallowCompletionAlert(env, sessionId, session, depthResult) {
+  const adminEmail = "james@jamesguldan.com";
+  const adminUrl = `https://love.jamesguldan.com/admin/session/${sessionId}`;
+  const userEmail = session.email || session.userEmail || session.user_email || "unknown";
+  const userName = session.userName || session.user_name || "unknown";
+  const breakdown = depthResult.breakdown || {};
+  const breakdownLines = Object.entries(breakdown)
+    .map(([k, v]) => `  ${k}: ${v}/5`)
+    .join("\n");
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "DWI Admin <noreply@jamesguldan.com>",
+      to: [adminEmail],
+      subject: `[DWI] Shallow completion — ${userName} (${userEmail})`,
+      html: `<p>A user completed the interview but scored a C-grade (shallow depth).</p>
+             <p><strong>Session:</strong> ${sessionId}<br>
+             <strong>User:</strong> ${userName} (${userEmail})<br>
+             <strong>Score:</strong> ${depthResult.score}/25 — Grade: ${depthResult.grade}</p>
+             <pre>${breakdownLines}</pre>
+             <p><a href="${adminUrl}">View session in admin →</a></p>`
+    })
+  });
+  await logSessionEvent(env, sessionId, "admin_alert_fired", { alert_type: "shallow_completion", score: depthResult.score, grade: depthResult.grade });
+}
+__name(sendShallowCompletionAlert, "sendShallowCompletionAlert");
 async function trackFunnelEvent(env, eventName, data = {}) {
   try {
     await trackMetric(env, `funnel.${eventName}`, 1, data);
@@ -15599,6 +15626,12 @@ Use this to skip surface-level questions. Go deeper faster.` });
               (/* @__PURE__ */ new Date()).toISOString(),
               sessionId
             ).run();
+            // Admin alert for shallow completions
+            if (depthResult.grade === 'C') {
+              sendShallowCompletionAlert(env, sessionId, session, depthResult).catch((e) => {
+                console.error("[ShallowAlert] error:", e.message);
+              });
+            }
           }
         }).catch(function(e) {
           console.error("[DepthScore] error:", e.message);
