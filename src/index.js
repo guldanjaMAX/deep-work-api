@@ -4211,9 +4211,10 @@ async function resumeSession() {
     // Switch to app screen
     showScreen('app');
 
-    // Replay messages into the chat
+    // Replay messages into the chat (skip system-tagged messages — e.g. auto-inject trigger)
     for (const msg of data.messages) {
-      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+      if (msg.system === true) continue;
+      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', stripChatMeta(msg.content || ''));
     }
 
     // Update phase dots
@@ -4579,7 +4580,7 @@ async function sendMessage() {
               }
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
-              if (ev.phase >= 7 && !STATE.blueprintOverlayShown) {
+              if (ev.phase >= 8 && !STATE.blueprintOverlayShown) {
                 STATE.blueprintOverlayShown = true;
                 showBlueprintGenerating();
               }
@@ -4734,6 +4735,20 @@ async function handleDocUpload(inputEl) {
   inputEl.value = '';
 }
 
+
+function stripChatMeta(text) {
+  // Remove METADATA lines, JSON code blocks (blueprint JSON), and phase markers
+  // Use RegExp constructor for backtick patterns (avoids template literal conflict)
+  var jsonBlock = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
+  var anyBlock = new RegExp('\x60\x60\x60[\\s\\S]*?\x60\x60\x60', 'g');
+  return (text || '')
+    .replace(/METADATA:\{[^\n]*\}/g, '')
+    .replace(jsonBlock, '')
+    .replace(anyBlock, '')
+    .replace(/\[PHASE_COMPLETE\]/g, '')
+    .replace(/\[METADATA\][\s\S]*?\[\/METADATA\]/g, '')
+    .trim();
+}
 
 function appendMessage(role, text) {
   const msgs = document.getElementById('messages');
@@ -11607,8 +11622,30 @@ REQUIRED: Address market viability directly. "Is this niche big enough?" Answer 
 
 Callback: Reference their Phase 5 niche statement and their Phase 2 contrarian beliefs. Their positioning should feel like the natural conclusion of everything they have already said.
 
-**Phase 7: Your Offers and Synthesis**
-Goal: Design a three-tier offer structure with clear ascension logic. Entry level to build trust, core offer where main value is delivered, premium for the people who want everything. Price each based on real market data and their stated positioning. Then generate the complete brand blueprint document. See output format below.
+**Phase 7: Your Proof and Pricing Psychology**
+Goal: Uncover the strongest evidence they have that this work transforms people, and surface the internal beliefs that are keeping their prices too low. This phase is about proof and permission — helping them see that what they charge reflects what they believe about themselves, not what the market will bear.
+
+Ask these four questions, one at a time. Wait for the full answer before asking the next. Do not rush.
+
+1. "What is the strongest piece of proof you have that this work actually transforms people. A specific story, a case, a number, a testimonial. Tell me the one you come back to."
+2. "What are you charging right now. And what does your gut tell you your floor should be."
+3. "When you think about raising your prices, whose voice do you hear telling you not to."
+4. "What is the thing that sounds arrogant but is actually true about your work."
+
+The fourth question is the most important. Stay with it. If they hedge, push back: "What would you say if you knew no one was judging you." The answer to this question becomes the arrogant_truth field in the blueprint.
+
+Do NOT move to Phase 8 until all four questions have been answered.
+
+**Phase 8: Synthesis and Mission**
+Goal: Help them articulate the thing they do for its own sake, name what they discovered about themselves in this conversation, and reflect on the shift that just happened. This is the closing of the interview. It should feel like the end of a powerful session, not a form being completed.
+
+Ask these three questions, one at a time. Wait for the full answer before asking the next.
+
+1. "If you had to say in one sentence what you would do even if no one paid you, what would that sentence be."
+2. "What is the one thing you said in this interview that you have never said publicly before."
+3. "Look at what we just built together. What did you see about yourself that you could not see an hour ago."
+
+After all three are answered, tell them you have everything you need and that you are generating their blueprint now. Then generate the complete blueprint JSON. Do NOT generate the blueprint before this point.
 
 ## Phase Tracking
 
@@ -11621,7 +11658,9 @@ Never show this metadata to the user. It is machine-readable only.
 
 The "key" field should prioritize emotional insights over business facts. "Left corporate law because she missed feeling alive" is better than "Works in executive coaching."
 
-Phase numbers are now 1 through 7. Phase 1 is Your Truth. Phase 7 is Offers and Synthesis.
+Phase numbers are now 1 through 8. Phase 1 is Your Truth. Phase 7 is Proof and Pricing Psychology. Phase 8 is Synthesis and Mission.
+
+CRITICAL RULE — BLUEPRINT TIMING: You may only generate the brand blueprint JSON after Phase 8 reaches 100 percent progress. If you feel you have enough material before Phase 8 ends, do not stop. Move forward into the next phase question. The user paid for eight phases. Generating the blueprint JSON before Phase 8 is complete will break the user experience and waste the data you have collected.
 
 ## Debrief Material Tracking
 
@@ -11634,7 +11673,7 @@ Throughout the entire interview, mentally bookmark moments for the debrief lette
 
 The quality of the debrief depends entirely on how deeply you listened during the interview. If you honored the 7 beats (Permission, Descent, Mirror, Sit, Reframe, Build, Return) the debrief will write itself. If you rushed, it will read like a summary. Do not let it read like a summary.
 
-## The Synthesis Output (Phase 7)
+## The Synthesis Output (Phase 8)
 
 You are generating two things simultaneously: the brand blueprint (all fields plus leadIntel) AND a personal debrief letter. The debrief letter is shown BEFORE the blueprint on its own full-screen page. It is the most important piece of copy in the entire experience. This is the moment where the person feels truly seen. Get it right.
 
@@ -14980,7 +15019,7 @@ async function handleChat(request, env, ctx) {
       }
       const apiStart = Date.now();
       const currentPhaseNum = session.phase || 1;
-      const isBlueprintPhase = currentPhaseNum >= 6;
+      const isBlueprintPhase = currentPhaseNum >= 8;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
       const recentMessages = smartTrimMessages(session.messages, currentPhaseNum);
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
@@ -15142,14 +15181,15 @@ Use this to skip surface-level questions. Go deeper faster.` });
       let blueprint = null;
       const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       if (metadata.sessionComplete && !blueprintMatch) {
-        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, keeping at phase 6");
+        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, holding at phase 7");
         metadata.sessionComplete = false;
-        metadata.phase = 6;
+        metadata.phase = Math.max(metadata.phase || 1, 7);
         metadata.phaseProgress = 95;
       }
       const currentPhase = session.phase || 1;
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
-      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 7 && metadata.phaseProgress >= 100));
+      // Phase 8 hard gate — blueprint cannot generate until the AI has progressed through all 8 phases
+      const readyForBlueprint = currentPhase >= 8 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 8 && metadata.phaseProgress >= 100));
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
@@ -15242,7 +15282,7 @@ Use this to skip surface-level questions. Go deeper faster.` });
       }
       const cleanContent = fullContent.replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim();
       session.messages.push({ role: "assistant", content: fullContent });
-      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6].includes(Number(metadata.phase))) {
+      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6, 7, 8].includes(Number(metadata.phase))) {
         const transitioningFromPhase = session.phase;
         const sessionMessages = [...session.messages];
         const sessionForScoring = { messages: sessionMessages };
@@ -19861,11 +19901,11 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
 
   session.blueprint = blueprint;
   session.blueprintGenerated = true;
-  session.phase = Math.max(Number(session.phase) || 1, 7);
+  session.phase = Math.max(Number(session.phase) || 1, 8);
   session.messages = [
     ...messages,
-    { role: "user", content: "I am ready. Please generate my complete brand blueprint now." },
-    { role: "assistant", content: callAResult.fullContent }
+    { role: "user", content: "I am ready. Please generate my complete brand blueprint now.", system: true },
+    { role: "assistant", content: callAResult.fullContent, system: true }
   ];
 
   try {
