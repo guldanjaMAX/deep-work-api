@@ -4764,16 +4764,19 @@ async function handleDocUpload(inputEl) {
 
 
 function stripChatMeta(text) {
-  // Remove METADATA lines, JSON code blocks (blueprint JSON), and phase markers
-  // Use RegExp constructor for backtick patterns (avoids template literal conflict)
+  // Use RegExp constructors throughout — this function is inside a template literal,
+  // so regex literals with escape sequences (\n, \[, \s etc.) get mangled in the output.
+  var metaBlock = new RegExp('METADATA:\\{[^\\n]*\\}', 'g');
   var jsonBlock = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
   var anyBlock = new RegExp('\x60\x60\x60[\\s\\S]*?\x60\x60\x60', 'g');
+  var phaseComplete = new RegExp('\\[PHASE_COMPLETE\\]', 'g');
+  var metaTagBlock = new RegExp('\\[METADATA\\][\\s\\S]*?\\[\\/METADATA\\]', 'g');
   return (text || '')
-    .replace(/METADATA:\{[^\n]*\}/g, '')
+    .replace(metaBlock, '')
     .replace(jsonBlock, '')
     .replace(anyBlock, '')
-    .replace(/\[PHASE_COMPLETE\]/g, '')
-    .replace(/\[METADATA\][\s\S]*?\[\/METADATA\]/g, '')
+    .replace(phaseComplete, '')
+    .replace(metaTagBlock, '')
     .trim();
 }
 
