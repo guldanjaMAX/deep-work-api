@@ -25,4 +25,14 @@ describe('computeUserTier', () => {
     expect(computeUserTier(null)).toBe(null);
     expect(computeUserTier(undefined)).toBe(null);
   });
+  it('returns null for NaN or non-numeric input', () => {
+    expect(computeUserTier(NaN)).toBe(null);
+    expect(computeUserTier('bad')).toBe(null);
+  });
+  it('covers tier boundaries at 13, 14, 16, 17', () => {
+    expect(computeUserTier(14).grade).toBe('B');
+    expect(computeUserTier(13).grade).toBe('C');
+    expect(computeUserTier(17).grade).toBe('B+');
+    expect(computeUserTier(16).grade).toBe('B');
+  });
 });

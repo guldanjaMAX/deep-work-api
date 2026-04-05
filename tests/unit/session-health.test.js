@@ -60,4 +60,27 @@ describe('computeSessionHealth', () => {
   it('returns unknown for null', () => {
     expect(computeSessionHealth(null, NOW)).toBe('unknown');
   });
+  it('failed status takes priority over shallow_complete', () => {
+    expect(computeSessionHealth({
+      status: 'failed', blueprint_generated: 1, depth_grade: 'C'
+    }, NOW)).toBe('failed');
+  });
+  it('cold_abandoned only fires for active sessions', () => {
+    expect(computeSessionHealth({
+      status: 'completed', message_count: 0,
+      created_at: hoursAgo(25), last_active_at: hoursAgo(25)
+    }, NOW)).toBe('complete');
+  });
+  it('handles malformed date strings gracefully (returns healthy, not crash)', () => {
+    expect(computeSessionHealth({
+      status: 'active', message_count: 0,
+      created_at: 'not-a-date', last_active_at: 'also-bad'
+    }, NOW)).toBe('healthy');
+  });
+  it('cold_abandoned boundary: exactly 24h is still healthy', () => {
+    expect(computeSessionHealth({
+      status: 'active', message_count: 0,
+      created_at: hoursAgo(24), last_active_at: hoursAgo(24)
+    }, NOW)).toBe('healthy');
+  });
 });
