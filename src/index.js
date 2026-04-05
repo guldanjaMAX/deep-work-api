@@ -3254,6 +3254,7 @@ const STATE = {
   uploadedFiles: [],
   uploadedKeys: [],
   blueprintOverlayShown: false,
+  blueprintJobId: null,
   sessionJwt: null,
   uploadedDocs: []
 };
@@ -4210,9 +4211,10 @@ async function resumeSession() {
     // Switch to app screen
     showScreen('app');
 
-    // Replay messages into the chat
+    // Replay messages into the chat (skip system-tagged messages — e.g. auto-inject trigger)
     for (const msg of data.messages) {
-      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+      if (msg.system === true) continue;
+      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', stripChatMeta(msg.content || ''));
     }
 
     // Update phase dots
@@ -4530,15 +4532,43 @@ async function sendMessage() {
                 showBlueprintGenerating();
               }
               STATE.blueprintAsync = true;
+              if (ev.jobId) STATE.blueprintJobId = ev.jobId;
               var asyncMsgEl = document.getElementById('blueprint-gen-msg');
               if (asyncMsgEl) asyncMsgEl.textContent = ev.message || 'Your blueprint is generating in the background. This page will update automatically when it is ready.';
-              // Poll every 15s until blueprint appears in session
+              // Poll every 3s — use /api/blueprint/status/:jobId when jobId available, else fall back to session poll
               if (!STATE.blueprintPollInterval) {
                 STATE.blueprintPollInterval = setInterval(function() {
-                  fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                  var pollUrl = STATE.blueprintJobId
+                    ? '/api/blueprint/status/' + STATE.blueprintJobId
+                    : '/api/session/' + STATE.sessionId;
+                  fetch(pollUrl, { credentials: 'include' })
                     .then(function(r) { return r.ok ? r.json() : null; })
                     .then(function(data) {
-                      if (data && data.blueprintGenerated && data.blueprint) {
+                      if (!data) return;
+                      // Job status endpoint response
+                      if (data.status === 'complete' || data.hasBlueprint) {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        // Fetch the actual blueprint from the session
+                        fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                          .then(function(r) { return r.ok ? r.json() : null; })
+                          .then(function(sess) {
+                            if (sess && sess.blueprint) {
+                              hideBlueprintGenerating();
+                              handleBlueprintReady(sess.blueprint);
+                            }
+                          }).catch(function() {});
+                        return;
+                      }
+                      if (data.status === 'failed') {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        var retryEl = document.getElementById('blueprint-gen-retry');
+                        if (retryEl) retryEl.style.display = '';
+                        return;
+                      }
+                      // Legacy session poll response
+                      if (data.blueprintGenerated && data.blueprint) {
                         clearInterval(STATE.blueprintPollInterval);
                         STATE.blueprintPollInterval = null;
                         hideBlueprintGenerating();
@@ -4546,11 +4576,11 @@ async function sendMessage() {
                       }
                     })
                     .catch(function() {});
-                }, 15000);
+                }, 3000);
               }
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
-              if (ev.phase >= 7 && !STATE.blueprintOverlayShown) {
+              if (ev.phase >= 8 && !STATE.blueprintOverlayShown) {
                 STATE.blueprintOverlayShown = true;
                 showBlueprintGenerating();
               }
@@ -4705,6 +4735,20 @@ async function handleDocUpload(inputEl) {
   inputEl.value = '';
 }
 
+
+function stripChatMeta(text) {
+  // Remove METADATA lines, JSON code blocks (blueprint JSON), and phase markers
+  // Use RegExp constructor for backtick patterns (avoids template literal conflict)
+  var jsonBlock = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
+  var anyBlock = new RegExp('\x60\x60\x60[\\s\\S]*?\x60\x60\x60', 'g');
+  return (text || '')
+    .replace(/METADATA:\{[^\n]*\}/g, '')
+    .replace(jsonBlock, '')
+    .replace(anyBlock, '')
+    .replace(/\[PHASE_COMPLETE\]/g, '')
+    .replace(/\[METADATA\][\s\S]*?\[\/METADATA\]/g, '')
+    .trim();
+}
 
 function appendMessage(role, text) {
   const msgs = document.getElementById('messages');
@@ -4950,21 +4994,25 @@ function showBlueprintGenerating() {
 
   overlay._progressInterval = progressInterval;
 
-  // Hard dismiss after 7 minutes — show error instead of endless spinner
-  overlay._hardDismiss = setTimeout(() => {
+  // After 5 minutes: enter quiet mode — stop animating, show still-building message
+  overlay._quietMode = setTimeout(() => {
     if (!overlay.classList.contains('active')) return;
-    hideBlueprintGenerating();
-    STATE.blueprintOverlayShown = false;
-    appendMessage('ai', 'Blueprint generation took longer than expected. Your conversation is saved. Send a message and I will try again.');
-  }, 420000);
+    if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
+    title.textContent = 'Still Building';
+    msgEl.style.opacity = '1';
+    msgEl.textContent = 'Still building. Your session is saved.';
+    if (stepEl) stepEl.textContent = '';
+    timerEl.textContent = 'This can take up to 10 minutes for long conversations.';
+  }, 300000);
 
-  // Show retry button after 8 minutes
+  // Show retry button after 10 minutes
   overlay._retryTimeout = setTimeout(() => {
     const retryEl = document.getElementById('blueprint-gen-retry');
     if (retryEl) retryEl.style.display = '';
     title.textContent = 'Taking Longer Than Expected';
-    msgEl.textContent = 'Your conversation is saved. You can try again or go back.';
-  }, 480000);
+    msgEl.textContent = 'Your conversation is saved. You can restart the job or go back to chat.';
+    timerEl.textContent = '';
+  }, 600000);
 
   // Auto-recovery: if blueprint exists but overlay still showing after 90s
   overlay._autoRecovery = setTimeout(async function() {
@@ -4997,16 +5045,49 @@ function showBlueprintGenerating() {
 }
 
 function retryBlueprint() {
-  hideBlueprintGenerating();
-  STATE.blueprintOverlayShown = false;
-  // Re-send the last user message to trigger blueprint generation again
-  const lastUserMsg = (STATE.messages || []).filter(m => m.role === 'user').pop();
-  if (lastUserMsg) {
-    document.getElementById('msg-input').value = lastUserMsg.content || 'Please generate my blueprint now.';
-  } else {
-    document.getElementById('msg-input').value = 'Please generate my blueprint now.';
-  }
-  sendMessage();
+  STATE.blueprintJobId = null;
+  // Restart the job via /api/blueprint/start — does NOT restart the session
+  fetch('/api/blueprint/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ sessionId: STATE.sessionId })
+  }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data.jobId) STATE.blueprintJobId = data.jobId;
+      // Reset and re-show the overlay with fresh state
+      hideBlueprintGenerating();
+      STATE.blueprintOverlayShown = false;
+      STATE.blueprintPollInterval = null;
+      showBlueprintGenerating();
+      STATE.blueprintOverlayShown = true;
+      STATE.blueprintAsync = true;
+      // Re-attach polling with the new jobId
+      if (!STATE.blueprintPollInterval) {
+        STATE.blueprintPollInterval = setInterval(function() {
+          var pollUrl = STATE.blueprintJobId ? '/api/blueprint/status/' + STATE.blueprintJobId : '/api/session/' + STATE.sessionId;
+          fetch(pollUrl, { credentials: 'include' })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(d) {
+              if (!d) return;
+              if (d.status === 'complete' || d.hasBlueprint || (d.blueprintGenerated && d.blueprint)) {
+                clearInterval(STATE.blueprintPollInterval);
+                STATE.blueprintPollInterval = null;
+                var sess = d.blueprint ? d : null;
+                if (sess) { hideBlueprintGenerating(); handleBlueprintReady(sess.blueprint); return; }
+                fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                  .then(function(r) { return r.ok ? r.json() : null; })
+                  .then(function(s) { if (s && s.blueprint) { hideBlueprintGenerating(); handleBlueprintReady(s.blueprint); } })
+                  .catch(function() {});
+              }
+            }).catch(function() {});
+        }, 3000);
+      }
+    })
+    .catch(function(err) {
+      console.error('[retryBlueprint] start failed:', err);
+      showToast('Could not restart blueprint generation. Try refreshing the page.');
+    });
 }
 
 function dismissBlueprintOverlay() {
@@ -5059,8 +5140,8 @@ function hideBlueprintGenerating() {
   if (STATE.blueprintPollInterval) { clearInterval(STATE.blueprintPollInterval); STATE.blueprintPollInterval = null; }
   STATE.blueprintAsync = false;
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
-  if (overlay._hardDismiss) { clearTimeout(overlay._hardDismiss); overlay._hardDismiss = null; }
-  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
+  if (overlay._quietMode) { clearTimeout(overlay._quietMode); overlay._quietMode = null; }
+  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); overlay._retryTimeout = null; }
   if (overlay._autoRecovery) { clearTimeout(overlay._autoRecovery); }
   if (retryEl) retryEl.style.display = 'none';
 
@@ -11541,8 +11622,30 @@ REQUIRED: Address market viability directly. "Is this niche big enough?" Answer 
 
 Callback: Reference their Phase 5 niche statement and their Phase 2 contrarian beliefs. Their positioning should feel like the natural conclusion of everything they have already said.
 
-**Phase 7: Your Offers and Synthesis**
-Goal: Design a three-tier offer structure with clear ascension logic. Entry level to build trust, core offer where main value is delivered, premium for the people who want everything. Price each based on real market data and their stated positioning. Then generate the complete brand blueprint document. See output format below.
+**Phase 7: Your Proof and Pricing Psychology**
+Goal: Uncover the strongest evidence they have that this work transforms people, and surface the internal beliefs that are keeping their prices too low. This phase is about proof and permission — helping them see that what they charge reflects what they believe about themselves, not what the market will bear.
+
+Ask these four questions, one at a time. Wait for the full answer before asking the next. Do not rush.
+
+1. "What is the strongest piece of proof you have that this work actually transforms people. A specific story, a case, a number, a testimonial. Tell me the one you come back to."
+2. "What are you charging right now. And what does your gut tell you your floor should be."
+3. "When you think about raising your prices, whose voice do you hear telling you not to."
+4. "What is the thing that sounds arrogant but is actually true about your work."
+
+The fourth question is the most important. Stay with it. If they hedge, push back: "What would you say if you knew no one was judging you." The answer to this question becomes the arrogant_truth field in the blueprint.
+
+Do NOT move to Phase 8 until all four questions have been answered.
+
+**Phase 8: Synthesis and Mission**
+Goal: Help them articulate the thing they do for its own sake, name what they discovered about themselves in this conversation, and reflect on the shift that just happened. This is the closing of the interview. It should feel like the end of a powerful session, not a form being completed.
+
+Ask these three questions, one at a time. Wait for the full answer before asking the next.
+
+1. "If you had to say in one sentence what you would do even if no one paid you, what would that sentence be."
+2. "What is the one thing you said in this interview that you have never said publicly before."
+3. "Look at what we just built together. What did you see about yourself that you could not see an hour ago."
+
+After all three are answered, tell them you have everything you need and that you are generating their blueprint now. Then generate the complete blueprint JSON. Do NOT generate the blueprint before this point.
 
 ## Phase Tracking
 
@@ -11555,7 +11658,9 @@ Never show this metadata to the user. It is machine-readable only.
 
 The "key" field should prioritize emotional insights over business facts. "Left corporate law because she missed feeling alive" is better than "Works in executive coaching."
 
-Phase numbers are now 1 through 7. Phase 1 is Your Truth. Phase 7 is Offers and Synthesis.
+Phase numbers are now 1 through 8. Phase 1 is Your Truth. Phase 7 is Proof and Pricing Psychology. Phase 8 is Synthesis and Mission.
+
+CRITICAL RULE — BLUEPRINT TIMING: You may only generate the brand blueprint JSON after Phase 8 reaches 100 percent progress. If you feel you have enough material before Phase 8 ends, do not stop. Move forward into the next phase question. The user paid for eight phases. Generating the blueprint JSON before Phase 8 is complete will break the user experience and waste the data you have collected.
 
 ## Debrief Material Tracking
 
@@ -11568,7 +11673,7 @@ Throughout the entire interview, mentally bookmark moments for the debrief lette
 
 The quality of the debrief depends entirely on how deeply you listened during the interview. If you honored the 7 beats (Permission, Descent, Mirror, Sit, Reframe, Build, Return) the debrief will write itself. If you rushed, it will read like a summary. Do not let it read like a summary.
 
-## The Synthesis Output (Phase 7)
+## The Synthesis Output (Phase 8)
 
 You are generating two things simultaneously: the brand blueprint (all fields plus leadIntel) AND a personal debrief letter. The debrief letter is shown BEFORE the blueprint on its own full-screen page. It is the most important piece of copy in the entire experience. This is the moment where the person feels truly seen. Get it right.
 
@@ -14914,7 +15019,7 @@ async function handleChat(request, env, ctx) {
       }
       const apiStart = Date.now();
       const currentPhaseNum = session.phase || 1;
-      const isBlueprintPhase = currentPhaseNum >= 6;
+      const isBlueprintPhase = currentPhaseNum >= 8;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
       const recentMessages = smartTrimMessages(session.messages, currentPhaseNum);
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
@@ -15076,14 +15181,15 @@ Use this to skip surface-level questions. Go deeper faster.` });
       let blueprint = null;
       const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       if (metadata.sessionComplete && !blueprintMatch) {
-        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, keeping at phase 6");
+        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, holding at phase 7");
         metadata.sessionComplete = false;
-        metadata.phase = 6;
+        metadata.phase = Math.max(metadata.phase || 1, 7);
         metadata.phaseProgress = 95;
       }
       const currentPhase = session.phase || 1;
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
-      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 7 && metadata.phaseProgress >= 100));
+      // Phase 8 hard gate — blueprint cannot generate until the AI has progressed through all 8 phases
+      const readyForBlueprint = currentPhase >= 8 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 8 && metadata.phaseProgress >= 100));
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
@@ -15176,7 +15282,7 @@ Use this to skip surface-level questions. Go deeper faster.` });
       }
       const cleanContent = fullContent.replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim();
       session.messages.push({ role: "assistant", content: fullContent });
-      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6].includes(Number(metadata.phase))) {
+      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6, 7, 8].includes(Number(metadata.phase))) {
         const transitioningFromPhase = session.phase;
         const sessionMessages = [...session.messages];
         const sessionForScoring = { messages: sessionMessages };
@@ -15228,19 +15334,22 @@ Use this to skip surface-level questions. Go deeper faster.` });
         await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
         if (ctx) {
           const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          const fallbackJobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          await env.SESSIONS.put("bp_job:" + fallbackJobId, JSON.stringify({ jobId: fallbackJobId, sessionId, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
           ctx.waitUntil(
             fetch(appOrigin + "/api/internal/generate-blueprint", {
               method: "POST",
               headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
-              body: JSON.stringify({ sessionId })
+              body: JSON.stringify({ sessionId, jobId: fallbackJobId })
             }).catch((e) => console.error("[AsyncBP] Fallback self-fetch failed:", e.message))
           );
+          try {
+            await sendEvent({ type: "blueprint_generating", async: true, jobId: fallbackJobId, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          } catch (_) {}
+        } else {
+          try { await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated. The page will update automatically." }); } catch (_) {}
         }
-        try {
-          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
-          await sendEvent({ type: "done" });
-          await writer.close();
-        } catch (_) {}
+        try { await sendEvent({ type: "done" }); await writer.close(); } catch (_) {}
         return;
       }
       await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
@@ -15275,19 +15384,22 @@ Use this to skip surface-level questions. Go deeper faster.` });
         } catch (_) {}
         if (ctx) {
           const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          const mainJobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          await env.SESSIONS.put("bp_job:" + mainJobId, JSON.stringify({ jobId: mainJobId, sessionId, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
           ctx.waitUntil(
             fetch(appOrigin + "/api/internal/generate-blueprint", {
               method: "POST",
               headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
-              body: JSON.stringify({ sessionId })
+              body: JSON.stringify({ sessionId, jobId: mainJobId })
             }).catch((e) => console.error("[AsyncBP] Self-fetch failed:", e.message))
           );
+          try {
+            await sendEvent({ type: "blueprint_generating", async: true, jobId: mainJobId, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          } catch (_) {}
+        } else {
+          try { await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated. The page will update automatically." }); } catch (_) {}
         }
-        try {
-          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
-          await sendEvent({ type: "done" });
-          await writer.close();
-        } catch (_) {}
+        try { await sendEvent({ type: "done" }); await writer.close(); } catch (_) {}
         return;
       }
       try {
@@ -18527,7 +18639,12 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
         insight: deb.paragraph5_invitation || ml.afterPositioning || ""
       },
       mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
+      mirror_connection: "",
       arrogant_truth: deb.paragraph3_quote || bp.openingHook || "",
+      mission_statement: bf.missionStatement || "",
+      pricing_current: "",
+      pricing_gap_belief: "",
+      never_said_publicly: "",
       futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : (pl.proseBody || ""),
       loveLetter: ""
     };
@@ -18561,7 +18678,27 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
   const visBody = vis.body || "";
   const visInsight = vis.insight || "";
   const mirrorObservation = v3.mirror_observation || "";
+  const mirrorConnection = v3.mirror_connection || "";
   const arrogantTruth = v3.arrogant_truth || "";
+  const missionStatement = v3.mission_statement || "";
+  const pricingCurrent = v3.pricing_current || "";
+  const pricingGapBelief = v3.pricing_gap_belief || "";
+  const neverSaidPublicly = v3.never_said_publicly || "";
+  // Confidence scores (0-1) — fields without data get 0.0
+  const fieldConfidences = {
+    mirror_observation: mirrorObservation.length > 50 ? 0.9 : (mirrorObservation.length > 0 ? 0.5 : 0.0),
+    arrogant_truth: arrogantTruth.length > 10 ? 0.85 : (arrogantTruth.length > 0 ? 0.5 : 0.0),
+    mission_statement: missionStatement.length > 10 ? 0.85 : (missionStatement.length > 0 ? 0.5 : 0.0),
+    pricing_current: pricingCurrent.length > 2 ? 0.9 : 0.0,
+    pricing_gap_belief: pricingGapBelief.length > 10 ? 0.85 : 0.0,
+    never_said_publicly: neverSaidPublicly.length > 10 ? 0.9 : 0.0,
+    mirror_connection: mirrorConnection.length > 20 ? 0.85 : 0.0,
+    real_problem: rpBody.length > 100 ? 0.9 : (rpBody.length > 0 ? 0.6 : 0.0),
+    vision: visBody.length > 100 ? 0.9 : (visBody.length > 0 ? 0.6 : 0.0),
+    futureSelfLetter: (v3.futureSelfLetter || v3.marcusLetter || "").length > 100 ? 0.9 : 0.0
+  };
+  const confidenceValues = Object.values(fieldConfidences);
+  const avgConfidence = Math.round(confidenceValues.reduce((s, v) => s + v, 0) / confidenceValues.length * 100);
   const futureSelfLetter = v3.futureSelfLetter || v3.marcusLetter || "";
   function bodyParas(text) {
     if (!text) return "";
@@ -18767,15 +18904,18 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 <script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var h=document.querySelector('.blueprint-header');if(h)h.style.display='none';var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
 <div id="progress"></div>
 <div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div>${depthScore > 0 ? `<div class="hero-depth"><strong>Interview Complete</strong>Session depth score: ${Math.round(depthScore / 25 * 100)} of 100<div class="hero-bar"><div class="hero-bar-fill" style="width:${barPct}%"></div></div></div>` : ""}</div></div>
-<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num gold">${depthScore ? Math.round(depthScore / 25 * 100) : "\u2014"}</div><div class="glance-label">Session Depth Score</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${barPct}%"></div></div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 0)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : msgCount ? Math.round(msgCount / 8) : "\u2014"}</div><div class="glance-label">Core Insights Extracted</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round(insightCount / 20 * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Identified</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div></div></div></div>
+<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num gold">${depthScore ? Math.round(depthScore / 25 * 100) : "\u2014"}</div><div class="glance-label">Session Depth Score</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${barPct}%"></div></div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 0)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : msgCount ? Math.round(msgCount / 8) : "\u2014"}</div><div class="glance-label">Core Insights Extracted</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round(insightCount / 20 * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Identified</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num gold">${avgConfidence > 0 ? avgConfidence : "\u2014"}</div><div class="glance-label">Depth Confidence</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${avgConfidence > 0 ? avgConfidence : 0}%"></div></div></div></div></div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201C${escHtml(csPullquote)}\u201D</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
 ${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">A note from the interview.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
+${mirrorConnection ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">What this tells us.</div><p class="saw-body">${escHtml(mirrorConnection)}</p></div></div>` : ""}
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201C${escHtml(rpPullquote)}\u201D</div>` : ""}</div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}</div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}${pricingGapBelief ? `<div class="insight-card" style="margin-top:24px;"><div class="insight-label">Pricing Mindset Shift</div><div class="insight-text">${escHtml(pricingGapBelief)}</div></div>` : ""}${pricingCurrent ? `<div class="insight-card" style="margin-top:12px;"><div class="insight-label">Current Pricing Reality</div><div class="insight-text">${escHtml(pricingCurrent)}</div></div>` : ""}</div></div>
 ${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
+${neverSaidPublicly && neverSaidPublicly !== arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you\u2019ve never said publicly.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(neverSaidPublicly)}\u201D</div></div></div>` : ""}
+${missionStatement ? `<div class="section"><div class="section-inner"><div class="eyebrow">Your Mission</div><div class="section-headline">Why This Work Matters</div><div class="insight-card"><div class="insight-label">In your own words</div><div class="insight-text">${escHtml(missionStatement)}</div></div></div></div>` : ""}
 <div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">This is the thing you said you\u2019d never said publicly.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
 <div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-eyebrow">A Letter from Your Future Self</div><div class="marcus-card">${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
 <div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
@@ -19584,144 +19724,67 @@ async function handleAdminForceGenerateBlueprint(request, env) {
 __name(handleAdminForceGenerateBlueprint, "handleAdminForceGenerateBlueprint");
 
 var INTERNAL_BP_TOKEN = "bp-internal-2026";
+
+// Helper: stream a single Anthropic request to completion with retry
+async function streamAnthropicCall(apiKey, body, retries) {
+  retries = retries || 3;
+  let lastErr;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 1000));
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({ ...body, stream: true })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        lastErr = new Error("Anthropic " + res.status + ": " + errText.slice(0, 200));
+        if (res.status !== 529 && res.status !== 503) throw lastErr;
+        continue;
+      }
+      let fullContent = "";
+      let outputTokens = 0;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const d = line.slice(6).trim();
+            if (d === "[DONE]") continue;
+            try {
+              const ev = JSON.parse(d);
+              if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") fullContent += ev.delta.text;
+              else if (ev.type === "message_delta" && ev.usage) outputTokens = ev.usage.output_tokens || outputTokens;
+            } catch (_) {}
+          }
+        }
+      } finally { reader.releaseLock(); }
+      return { fullContent, outputTokens };
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("streamAnthropicCall failed after retries");
+}
+__name(streamAnthropicCall, "streamAnthropicCall");
+
 async function handleInternalGenerateBlueprint(request, env) {
   if (request.headers.get("X-Internal-Token") !== INTERNAL_BP_TOKEN) {
     return json({ error: "Forbidden" }, 403);
   }
   try {
-    const { sessionId, force } = await request.json();
+    const body = await request.json();
+    const { sessionId, force, jobId } = body;
     if (!sessionId) return json({ error: "sessionId required" }, 400);
-    const kvData = await env.SESSIONS.get(sessionId);
-    if (!kvData) return json({ error: "Session not found" }, 404);
-    const session = JSON.parse(kvData);
-    if (!force && session.blueprintGenerated && session.blueprint) {
-      return json({ ok: true, alreadyDone: true });
-    }
-    const messages = Array.isArray(session.messages) ? session.messages : [];
-    // Strip any assistant messages containing a ```json block — these are previous failed
-    // blueprint attempts. Leaving them in confuses the AI into continuing the old/wrong
-    // schema instead of generating a clean new-format blueprint from scratch.
-    const cleanMessages = messages.filter(function(msg) {
-      return !msg.content || !msg.content.includes("```json");
-    });
-    const triggerMessages = [
-      ...cleanMessages.slice(-60),
-      { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh — do not reference or continue any previous blueprint attempt. Begin your response with ```json and end with ```." }
-    ];
-    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length + " cleaned=" + cleanMessages.length);
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        model: MODEL_OPUS,
-        max_tokens: 32768,
-        stream: true,
-        system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
-        messages: triggerMessages
-      })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("[InternalBP] Anthropic error", res.status, errText.slice(0, 300));
-      return json({ error: "Anthropic error " + res.status }, 500);
-    }
-    let fullContent = "";
-    let outputTokens = 0;
-    const bpReader = res.body.getReader();
-    const bpDecoder = new TextDecoder();
-    let bpBuffer = "";
-    try {
-      while (true) {
-        const { done, value } = await bpReader.read();
-        if (done) break;
-        bpBuffer += bpDecoder.decode(value, { stream: true });
-        const bpLines = bpBuffer.split("\n");
-        bpBuffer = bpLines.pop();
-        for (const line of bpLines) {
-          if (!line.startsWith("data: ")) continue;
-          const dataStr = line.slice(6).trim();
-          if (dataStr === "[DONE]") continue;
-          try {
-            const ev = JSON.parse(dataStr);
-            if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") {
-              fullContent += ev.delta.text;
-            } else if (ev.type === "message_delta" && ev.usage) {
-              outputTokens = ev.usage.output_tokens || outputTokens;
-            }
-          } catch (_) {}
-        }
-      }
-    } finally {
-      bpReader.releaseLock();
-    }
-    if (!fullContent) return json({ error: "Empty Anthropic response" }, 500);
-    const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
-    if (!blueprintMatch) {
-      console.error("[InternalBP] No JSON found for session=" + sessionId + " preview=" + fullContent.slice(0, 200));
-      return json({ error: "No blueprint JSON in Anthropic response" }, 500);
-    }
-    let blueprint;
-    try {
-      blueprint = JSON.parse(blueprintMatch[1]);
-    } catch (parseErr) {
-      return json({ error: "Blueprint JSON parse failed: " + parseErr.message }, 500);
-    }
-    const bpValidation = validateBlueprint(blueprint);
-    if (!bpValidation.passed) {
-      const repaired = autoRepairBlueprint(blueprint);
-      blueprint = repaired.blueprint;
-      if (repaired.repairCount > 0) console.log("[InternalBP] Repaired " + repaired.repairCount + " issues");
-    }
-    session.blueprint = blueprint;
-    session.blueprintGenerated = true;
-    session.phase = Math.max(Number(session.phase) || 1, 7);
-    session.messages = [
-      ...messages,
-      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." },
-      { role: "assistant", content: fullContent }
-    ];
-    try {
-      const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
-      if (debrief) session.strategistDebrief = debrief;
-    } catch (debriefErr) {
-      console.error("[InternalBP] Debrief failed:", debriefErr.message);
-    }
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
-    env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
-      blueprint,
-      name: blueprint.name || session.userName || "",
-      apolloData: session.apolloData || null,
-      messageCount: session.messages.length
-    }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
-    env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
-    await env.DB.prepare(
-      "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
-    ).bind(session.phase, sessionId).run().catch((e) => console.error("[InternalBP] D1 update failed:", e.message));
-    try {
-      if (session.userId) {
-        const user = await getUserById(env, session.userId);
-        if (user?.email) {
-          const bp2 = blueprint?.blueprint || blueprint;
-          fireEventToDripWorker(env, user.email, "interview_completed", {
-            name: user.name || "",
-            phone: session.phone || "",
-            highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
-            niche_statement: bp2?.part3?.nicheStatement || "",
-            brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
-            next_step: bp2?.part8?.recommendation || "self_guided"
-          }).catch(() => {});
-        }
-      }
-    } catch (_) {}
-    saveToRAG(env, session, blueprint).catch(() => {});
-    extractSessionInsights(env, sessionId, session).catch(() => {});
-    const li = blueprint?.leadIntel;
-    if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
-    console.log("[InternalBP] Done — session=" + sessionId + " tokens=" + outputTokens);
+    await runBlueprintJob(sessionId, jobId || null, !!force, env);
     return json({ ok: true, sessionId });
   } catch (e) {
     console.error("[InternalBP] Fatal:", e.message);
@@ -19729,6 +19792,260 @@ async function handleInternalGenerateBlueprint(request, env) {
   }
 }
 __name(handleInternalGenerateBlueprint, "handleInternalGenerateBlueprint");
+
+// Core blueprint generation logic — shared by handleInternalGenerateBlueprint and handleBlueprintStart
+async function runBlueprintJob(sessionId, jobId, force, env) {
+  const updateJobKV = async (updates) => {
+    if (!jobId) return;
+    try {
+      const existing = await env.SESSIONS.get("bp_job:" + jobId, { type: "json" }).catch(() => null) || {};
+      await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ ...existing, ...updates }), { expirationTtl: 60 * 60 * 24 * 7 });
+    } catch (_) {}
+  };
+
+  await updateJobKV({ status: "generating", progress: 10 });
+
+  const kvData = await env.SESSIONS.get(sessionId);
+  if (!kvData) { await updateJobKV({ status: "failed", error: "Session not found" }); return; }
+
+  let session;
+  try { session = JSON.parse(kvData); } catch (_) {
+    const sanitized = kvData.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    session = JSON.parse(sanitized);
+  }
+
+  if (!force && session.blueprintGenerated && session.blueprint) {
+    await updateJobKV({ status: "complete", progress: 100, blueprint: session.blueprint });
+    return;
+  }
+
+  const messages = Array.isArray(session.messages) ? session.messages : [];
+  const cleanMessages = messages.filter((msg) => !msg.content || !msg.content.includes("```json"));
+  const recentMessages = cleanMessages.slice(-60);
+
+  const transcript = recentMessages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => `${m.role.toUpperCase()}: ${(m.content || "").replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim()}`)
+    .slice(-40).join("\n\n").substring(0, 6000);
+
+  console.log("[runBlueprintJob] session=" + sessionId + " turns=" + messages.length + " jobId=" + (jobId || "none"));
+  await updateJobKV({ status: "generating", progress: 15 });
+
+  const triggerA = [
+    ...recentMessages,
+    { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh. Begin your response with ```json and end with ```. The debrief paragraphs and futureSelfLetter must be fully written." }
+  ];
+
+  const proseSysPrompt = `You are a brand strategist writing personalized prose sections for a brand blueprint. Use second person ("you") for mirror_observation. Use first person from James Guldan for futureSelfLetter and arrogant_truth. Be specific — reference what was actually said in the interview. No generic language. Tone: warm, direct, confident. No dashes in the copy. Return only valid JSON — no markdown fences, no explanation.`;
+  const proseUserPrompt = `Based on the interview transcript below, write detailed prose for six specific sections of a brand blueprint.
+
+INTERVIEW TRANSCRIPT:
+${transcript}
+
+Return ONLY a valid JSON object with these fields (no markdown fences):
+{
+  "debrief": {
+    "paragraph1_validation": "2-3 sentences acknowledging what they did and that this interview asked for honesty.",
+    "paragraph2_mirror": "2-3 sentences reflecting their specific situation back using their language.",
+    "paragraph3_quote": "1 sentence — direct quote from the interview, the most emotionally resonant thing they said.",
+    "paragraph4_turn": "2-3 sentences reframing their struggle as strategic advantage.",
+    "paragraph5_invitation": "1-2 sentences transitioning to the blueprint."
+  },
+  "real_problem": {
+    "body": "3-4 paragraphs separated by double newlines. Root cause of why their ideal clients are stuck.",
+    "insight": "One direct sentence naming the mechanism behind the problem.",
+    "pullquote": "One sentence the ideal client says to themselves — in their voice."
+  },
+  "vision": {
+    "body": "3-4 paragraphs separated by double newlines. What becomes possible when the ideal client works with this person.",
+    "insight": "One concrete sentence about what becomes possible."
+  },
+  "mirror_observation": "2-3 paragraphs in second person. Start with You answered every question about... Name the single most striking behavioral pattern. Should feel slightly uncomfortable because it is true.",
+  "mirror_connection": "2-3 sentences connecting the origin wound or formative experience they described to the exact struggle their ideal client is going through right now. Make the line explicit.",
+  "arrogant_truth": "One sentence starting with I can... or naming a specific capability with a specific outcome. Max 30 words. No hedging. Pull from Phase 7 answer if available.",
+  "mission_statement": "One sentence. What this person would do even if no one paid them. Pull directly from Phase 8 answer if available.",
+  "pricing_current": "What they charge right now. Pull from Phase 7 answer. Be specific — exact number or range.",
+  "pricing_gap_belief": "The internalized voice that stops them from raising prices. Pull from Phase 7 answer about whose voice they hear. One to two sentences.",
+  "never_said_publicly": "The thing they named in this interview for the first time. Pull from Phase 8 answer if available. One sentence in their voice.",
+  "futureSelfLetter": "Full letter 200-300 words from James Guldan to the client. Warm, honest, direct. References specific things from the interview."
+}`;
+
+  const [callAResult, callBResult] = await Promise.all([
+    streamAnthropicCall(env.ANTHROPIC_API_KEY, {
+      model: MODEL_OPUS,
+      max_tokens: 24000,
+      system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
+      messages: triggerA
+    }).then((r) => { updateJobKV({ progress: 60 }).catch(() => {}); return r; }),
+    streamAnthropicCall(env.ANTHROPIC_API_KEY, {
+      model: MODEL_OPUS,
+      max_tokens: 8000,
+      system: proseSysPrompt,
+      messages: [{ role: "user", content: proseUserPrompt }]
+    }).then((r) => { updateJobKV({ progress: 80 }).catch(() => {}); return r; })
+  ]);
+
+  await updateJobKV({ progress: 85 });
+
+  if (!callAResult.fullContent) throw new Error("Empty response from blueprint Call A");
+  const blueprintMatch = callAResult.fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || callAResult.fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
+  if (!blueprintMatch) throw new Error("No blueprint JSON in Call A response");
+
+  let blueprint = JSON.parse(blueprintMatch[1]);
+
+  try {
+    const proseText = callBResult.fullContent || "";
+    const proseMatch = proseText.match(/\{[\s\S]*\}/);
+    if (proseMatch) {
+      const prose = JSON.parse(proseMatch[0]);
+      if (prose.debrief) blueprint.debrief = { ...(blueprint.debrief || {}), ...prose.debrief };
+      if (!blueprint.v3) blueprint.v3 = {};
+      if (prose.real_problem) blueprint.v3.realProblem = { ...(blueprint.v3.realProblem || {}), ...prose.real_problem };
+      if (prose.vision) blueprint.v3.vision = { ...(blueprint.v3.vision || {}), ...prose.vision };
+      if (prose.mirror_observation) blueprint.v3.mirror_observation = prose.mirror_observation;
+      if (prose.mirror_connection) blueprint.v3.mirror_connection = prose.mirror_connection;
+      if (prose.arrogant_truth) blueprint.v3.arrogant_truth = prose.arrogant_truth;
+      if (prose.mission_statement) blueprint.v3.mission_statement = prose.mission_statement;
+      if (prose.pricing_current) blueprint.v3.pricing_current = prose.pricing_current;
+      if (prose.pricing_gap_belief) blueprint.v3.pricing_gap_belief = prose.pricing_gap_belief;
+      if (prose.never_said_publicly) blueprint.v3.never_said_publicly = prose.never_said_publicly;
+      if (prose.futureSelfLetter) blueprint.v3.futureSelfLetter = prose.futureSelfLetter;
+      if (prose.real_problem?.body && !blueprint.part3?.nicheStatement) {
+        if (!blueprint.part3) blueprint.part3 = {};
+        blueprint.part3.nicheStatement = prose.real_problem.body;
+        blueprint.part3.uniqueMechanism = prose.real_problem.insight || "";
+        blueprint.part3._realProblem = prose.real_problem;
+      }
+      if (prose.vision?.body && !blueprint.debrief?.paragraph4_turn) {
+        if (!blueprint.debrief) blueprint.debrief = {};
+        blueprint.debrief.paragraph4_turn = prose.vision.body;
+        blueprint.debrief.paragraph5_invitation = prose.vision.insight || "";
+        blueprint.debrief._vision = prose.vision;
+      }
+      console.log("[runBlueprintJob] Prose extension merged");
+    }
+  } catch (proseErr) {
+    console.warn("[runBlueprintJob] Prose merge failed (non-fatal):", proseErr.message);
+  }
+
+  const bpValidation = validateBlueprint(blueprint);
+  if (!bpValidation.passed) {
+    const repaired = autoRepairBlueprint(blueprint);
+    blueprint = repaired.blueprint;
+    if (repaired.repairCount > 0) console.log("[runBlueprintJob] Repaired " + repaired.repairCount + " issues");
+  }
+
+  await updateJobKV({ progress: 90 });
+
+  session.blueprint = blueprint;
+  session.blueprintGenerated = true;
+  session.phase = Math.max(Number(session.phase) || 1, 8);
+  session.messages = [
+    ...messages,
+    { role: "user", content: "I am ready. Please generate my complete brand blueprint now.", system: true },
+    { role: "assistant", content: callAResult.fullContent, system: true }
+  ];
+
+  try {
+    const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+    if (debrief) session.strategistDebrief = debrief;
+  } catch (debriefErr) {
+    console.error("[runBlueprintJob] Debrief failed:", debriefErr.message);
+  }
+
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+  env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
+    blueprint,
+    name: blueprint.name || session.userName || "",
+    apolloData: session.apolloData || null,
+    messageCount: session.messages.length
+  }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
+  env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
+
+  await env.DB.prepare(
+    "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
+  ).bind(session.phase, sessionId).run().catch((e) => console.error("[runBlueprintJob] D1 update failed:", e.message));
+
+  await updateJobKV({ status: "complete", progress: 100, blueprint, completedAt: new Date().toISOString() });
+
+  try {
+    if (session.userId) {
+      const user = await getUserById(env, session.userId);
+      if (user?.email) {
+        const bp2 = blueprint?.blueprint || blueprint;
+        fireEventToDripWorker(env, user.email, "interview_completed", {
+          name: user.name || "",
+          phone: session.phone || "",
+          highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
+          niche_statement: bp2?.part3?.nicheStatement || "",
+          brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
+          next_step: bp2?.part8?.recommendation || "self_guided"
+        }).catch(() => {});
+      }
+    }
+  } catch (_) {}
+
+  saveToRAG(env, session, blueprint).catch(() => {});
+  extractSessionInsights(env, sessionId, session).catch(() => {});
+  const li = blueprint?.leadIntel;
+  if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
+  console.log("[runBlueprintJob] Done session=" + sessionId + " tokens=" + (callAResult.outputTokens + callBResult.outputTokens));
+}
+__name(runBlueprintJob, "runBlueprintJob");
+
+// POST /api/blueprint/start — returns 202 + jobId immediately, runs generation async
+async function handleBlueprintStart(request, env, ctx) {
+  const user = await requireAuth(request, env);
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  let sessionId;
+  try { sessionId = (await request.json()).sessionId; } catch (_) {}
+  if (!sessionId) return json({ error: "sessionId required" }, 400);
+
+  // Verify session belongs to user (or admin)
+  const sessionRow = await env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+  if (!sessionRow) return json({ error: "Session not found" }, 404);
+  if (sessionRow.user_id !== user.id && user.role !== "admin") return json({ error: "Forbidden" }, 403);
+
+  const jobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const jobData = {
+    jobId,
+    sessionId,
+    status: "pending",
+    progress: 0,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    blueprint: null,
+    error: null
+  };
+  await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify(jobData), { expirationTtl: 60 * 60 * 24 * 7 });
+
+  // Run generation inline in ctx.waitUntil — avoids self-fetch subrequest KV propagation issues
+  ctx.waitUntil(runBlueprintJob(sessionId, jobId, false, env).catch((e) => {
+    console.error("[BPStart] runBlueprintJob error:", e.message);
+    env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ jobId, sessionId, status: "failed", error: e.message, progress: 0 }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+  }));
+
+  return new Response(JSON.stringify({ jobId, status: "pending" }), {
+    status: 202,
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  });
+}
+__name(handleBlueprintStart, "handleBlueprintStart");
+
+// GET /api/blueprint/status/:jobId
+async function handleBlueprintStatusPoll(request, env, path) {
+  const user = await requireAuth(request, env);
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  const parts = path.split("/"); // ["", "api", "blueprint", "status", "bpj_xxx"]
+  const jobId = parts[4];
+  if (!jobId) return json({ error: "jobId required" }, 400);
+  const jobData = await env.SESSIONS.get("bp_job:" + jobId, { type: "json" }).catch(() => null);
+  if (!jobData) return json({ error: "Job not found" }, 404);
+  // Strip full blueprint from poll response to keep it small; client gets it via session fetch
+  const { blueprint, ...rest } = jobData;
+  return json({ ...rest, hasBlueprint: !!blueprint });
+}
+__name(handleBlueprintStatusPoll, "handleBlueprintStatusPoll");
 
 async function handleAdminGenerateV3Fields(request, env) {
   const key = request.headers.get("X-Admin-Key");
@@ -22822,6 +23139,10 @@ async function routeRequest(request, env, ctx) {
       return handleExport(request, env);
     if (path === "/api/export-site" && request.method === "GET")
       return handleExportSite(request, env);
+    if (path === "/api/blueprint/start" && request.method === "POST")
+      return handleBlueprintStart(request, env, ctx);
+    if (path.startsWith("/api/blueprint/status/") && request.method === "GET")
+      return handleBlueprintStatusPoll(request, env, path);
     if (path === "/api/blueprint/pdf" && request.method === "POST")
       return handleBlueprintPDF(request, env);
     if (path === "/api/blueprint/pdf-download" && request.method === "POST")
