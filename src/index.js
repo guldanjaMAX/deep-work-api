@@ -12920,6 +12920,49 @@ function computeBreakthroughCount(messages) {
 __name(computeBreakthroughCount, "computeBreakthroughCount");
 // === End Phase B helpers ===
 
+// === Phase A: Nudge unsubscribe ===
+async function generateNudgeUnsubToken(env, userId) {
+  const secret = env.APP_SECRET || env.INTERNAL_BP_TOKEN || "dwi-unsub-2026";
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(userId + ":nudge_unsub"));
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+__name(generateNudgeUnsubToken, "generateNudgeUnsubToken");
+async function verifyNudgeUnsubToken(env, userId, token) {
+  const expected = await generateNudgeUnsubToken(env, userId);
+  return expected === token;
+}
+__name(verifyNudgeUnsubToken, "verifyNudgeUnsubToken");
+async function handleUnsubscribe(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const userId = url.searchParams.get("uid");
+  if (!token || !userId) {
+    return new Response("<html><body><p>Invalid unsubscribe link.</p></body></html>", {
+      headers: { "Content-Type": "text/html" }
+    });
+  }
+  const valid = await verifyNudgeUnsubToken(env, userId, token);
+  if (!valid) {
+    return new Response("<html><body><p>This unsubscribe link is invalid or expired.</p></body></html>", {
+      headers: { "Content-Type": "text/html" }
+    });
+  }
+  await env.DB.prepare(
+    "UPDATE users SET nudges_opted_out=1, nudges_opted_out_at=datetime('now') WHERE id=?"
+  ).bind(userId).run();
+  return new Response(`<html><body style="font-family:sans-serif;max-width:480px;margin:80px auto;padding:24px;text-align:center;">
+    <h2>You're unsubscribed.</h2>
+    <p>You won't receive any more follow-up emails about your Deep Work Interview.</p>
+    <p style="color:#999;font-size:14px;">If you want to complete your interview later, you can still access it at <a href="https://love.jamesguldan.com">love.jamesguldan.com</a>.</p>
+  </body></html>`, {
+    headers: { "Content-Type": "text/html" }
+  });
+}
+__name(handleUnsubscribe, "handleUnsubscribe");
+// === End Phase A: Nudge unsubscribe ===
+
 // === Phase A: Nudge scheduling ===
 function computeNextNudge(session, existingNudges, now = new Date()) {
   if (!session) return null;
@@ -12976,10 +13019,9 @@ function computeNextNudge(session, existingNudges, now = new Date()) {
 }
 __name(computeNextNudge, "computeNextNudge");
 
-function renderNudgeEmail(nudgeType, session) {
+function renderNudgeEmail(nudgeType, session, unsubUrl = "https://love.jamesguldan.com/api/unsubscribe") {
   const firstName = (session.user_name || session.userName || "there").split(" ")[0];
   const continueUrl = `https://love.jamesguldan.com/?session=${session.id || ""}`;
-  const unsubUrl = `https://love.jamesguldan.com/api/unsubscribe?token=${session.unsubToken || ""}`;
   const footer = `<p style="font-size:12px;color:#999;margin-top:32px;">You're getting this because you started the Deep Work Interview. <a href="${unsubUrl}">Stop these emails</a>.</p>`;
 
   const templates = {
@@ -13005,7 +13047,16 @@ function renderNudgeEmail(nudgeType, session) {
 __name(renderNudgeEmail, "renderNudgeEmail");
 
 async function sendNudge(env, session, nudgeType, dryRun = true) {
-  const template = renderNudgeEmail(nudgeType, session);
+  // Generate unsubscribe URL
+  let unsubUrl = "https://love.jamesguldan.com/api/unsubscribe";
+  try {
+    const userId = session.user_id || session.userId;
+    if (userId && env.APP_SECRET) {
+      const token = await generateNudgeUnsubToken(env, userId);
+      unsubUrl = `https://love.jamesguldan.com/api/unsubscribe?token=${token}&uid=${encodeURIComponent(userId)}`;
+    }
+  } catch (_) {}
+  const template = renderNudgeEmail(nudgeType, session, unsubUrl);
   if (!template) {
     console.warn("[sendNudge] unknown nudge type:", nudgeType);
     return { sent: false, reason: "unknown_type" };
@@ -23553,6 +23604,8 @@ async function routeRequest(request, env, ctx) {
       return handleLogEvent(request, env);
     if (path === "/api/track" && request.method === "POST")
       return handleTrack(request, env);
+    if (path === "/api/unsubscribe" && request.method === "GET")
+      return handleUnsubscribe(request, env);
     if (path === "/api/create-payment-intent" && request.method === "POST")
       return handleCreatePaymentIntent(request, env);
     if (path === "/api/fulfill-payment" && request.method === "POST")
@@ -23690,7 +23743,7 @@ async function scanAndSendNudges(env) {
 
   // Fetch sessions that are candidates (active, with session_health set, last active >1h ago)
   const rows = await env.DB.prepare(`
-    SELECT s.id, s.session_health, s.created_at, s.last_active_at, s.phase,
+    SELECT s.id, s.user_id, s.session_health, s.created_at, s.last_active_at, s.phase,
            s.message_count, u.email as user_email,
            u.name as user_name, u.nudges_opted_out
     FROM sessions s
