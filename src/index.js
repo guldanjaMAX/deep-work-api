@@ -12948,6 +12948,74 @@ function computeNextNudge(session, existingNudges, now = new Date()) {
   return null;
 }
 __name(computeNextNudge, "computeNextNudge");
+
+function renderNudgeEmail(nudgeType, session) {
+  const firstName = (session.user_name || session.userName || "there").split(" ")[0];
+  const continueUrl = `https://love.jamesguldan.com/?session=${session.id || ""}`;
+  const unsubUrl = `https://love.jamesguldan.com/api/unsubscribe?token=${session.unsubToken || ""}`;
+  const footer = `<p style="font-size:12px;color:#999;margin-top:32px;">You're getting this because you started the Deep Work Interview. <a href="${unsubUrl}">Stop these emails</a>.</p>`;
+
+  const templates = {
+    cold_48h: {
+      subject: `Your interview is waiting, ${firstName}`,
+      html: `<p>Hey ${firstName},</p><p>You started something. Most people don't even get that far.</p><p>Your Deep Work Interview is still here. It usually takes 20-30 minutes and a willingness to be honest. That's it.</p><p><a href="${continueUrl}">Pick up where you left off →</a></p><p>James</p>${footer}`
+    },
+    cold_7d: {
+      subject: `Still here when you're ready`,
+      html: `<p>Hey ${firstName},</p><p>No pressure. The interview isn't going anywhere.</p><p>When the timing is right, it's 20-30 minutes and usually worth it. People who complete it consistently say the positioning statement alone is worth the time.</p><p><a href="${continueUrl}">Continue your interview →</a></p><p>James</p>${footer}`
+    },
+    mid_drop_initial: {
+      subject: `You were getting somewhere`,
+      html: `<p>Hey ${firstName},</p><p>You got into the interview. That already puts you ahead of most people who buy something and never open it.</p><p>You don't need to redo anything — your answers are saved. Just pick up where you left off.</p><p><a href="${continueUrl}">Continue your interview →</a></p><p>James</p>${footer}`
+    },
+    mid_drop_followup: {
+      subject: `The hardest part was getting started`,
+      html: `<p>Hey ${firstName},</p><p>You already did the hardest part. The questions that matter most are in the second half.</p><p>If life got in the way, that's fine. The interview will wait.</p><p><a href="${continueUrl}">Finish what you started →</a></p><p>James</p>${footer}`
+    }
+  };
+  return templates[nudgeType] || null;
+}
+__name(renderNudgeEmail, "renderNudgeEmail");
+
+async function sendNudge(env, session, nudgeType, dryRun = true) {
+  const template = renderNudgeEmail(nudgeType, session);
+  if (!template) {
+    console.warn("[sendNudge] unknown nudge type:", nudgeType);
+    return { sent: false, reason: "unknown_type" };
+  }
+  const userEmail = session.user_email || session.email || session.userEmail;
+  if (!userEmail) {
+    console.warn("[sendNudge] no email for session:", session.id);
+    return { sent: false, reason: "no_email" };
+  }
+  if (dryRun) {
+    console.log("[sendNudge DRY RUN] would send", nudgeType, "to", userEmail, "for session", session.id);
+    await logSessionEvent(env, session.id, "nudge_dry_run", { nudge_type: nudgeType, email: userEmail });
+    return { sent: false, dry_run: true };
+  }
+  try {
+    const resendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "James Guldan <noreply@jamesguldan.com>",
+        to: [userEmail],
+        subject: template.subject,
+        html: template.html
+      })
+    });
+    if (!resendRes.ok) throw new Error(await resendRes.text());
+    await env.DB.prepare(
+      "INSERT INTO nudges (id, session_id, user_email, nudge_type, sent_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(crypto.randomUUID(), session.id, userEmail, nudgeType).run();
+    await logSessionEvent(env, session.id, "nudge_sent", { nudge_type: nudgeType, email: userEmail });
+    return { sent: true };
+  } catch (e) {
+    console.error("[sendNudge] error:", e.message);
+    return { sent: false, error: e.message };
+  }
+}
+__name(sendNudge, "sendNudge");
 // === End Phase A: Nudge scheduling ===
 
 async function logSessionEvent(env, sessionId, eventType, payload = {}) {
