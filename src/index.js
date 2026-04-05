@@ -12829,6 +12829,60 @@ function autoRepairBlueprint(blueprint) {
   return { blueprint, repairs, repairCount: repairs.length };
 }
 __name(autoRepairBlueprint, "autoRepairBlueprint");
+// === Phase 0: Tier + Health computation ===
+function computeUserTier(score) {
+  if (score === null || score === undefined) return null;
+  const s = Number(score);
+  if (isNaN(s)) return null;
+  if (s >= 23) return { grade: "A+", tier_title: "Didn't Flinch Once" };
+  if (s >= 20) return { grade: "A",  tier_title: "Sat With The Fire" };
+  if (s >= 17) return { grade: "B+", tier_title: "Named The Pattern" };
+  if (s >= 14) return { grade: "B",  tier_title: "Told On Yourself" };
+  return           { grade: "C",  tier_title: "Took The First Swing" };
+}
+__name(computeUserTier, "computeUserTier");
+
+function safeHoursAgo(dateStr, nowMs) {
+  if (!dateStr) return null;
+  const ms = new Date(dateStr).getTime();
+  if (isNaN(ms)) return null;
+  return (nowMs - ms) / (60 * 60 * 1e3);
+}
+__name(safeHoursAgo, "safeHoursAgo");
+
+var EMOTIONAL_PHASES = new Set([2, 3, 5, 8]);
+function computeSessionHealth(s, now = new Date()) {
+  if (!s) return "unknown";
+  const nowMs = now.getTime();
+  const phase = Number(s.phase || 0);
+  const msgCount = Number(s.message_count || 0);
+  if (s.status === "failed") return "failed";
+  if (s.blueprint_generated === 1 && s.depth_grade === "C") return "shallow_complete";
+  if (s.status === "completed" || s.status === "blueprint_complete") return "complete";
+  if (s.status === "active") {
+    const hoursSinceCreated = safeHoursAgo(s.created_at, nowMs);
+    const hoursSinceActive = safeHoursAgo(s.last_active_at, nowMs) ?? safeHoursAgo(s.created_at, nowMs);
+    if (msgCount === 0 && hoursSinceCreated !== null && hoursSinceCreated > 24) return "cold_abandoned";
+    if (msgCount >= 30 && phase <= 2) return "stuck_phase";
+    const dropThreshold = EMOTIONAL_PHASES.has(phase) ? 24 * 5 : 48;
+    if (msgCount > 5 && hoursSinceActive !== null && hoursSinceActive > dropThreshold) return "mid_drop";
+  }
+  return "healthy";
+}
+__name(computeSessionHealth, "computeSessionHealth");
+// === End Phase 0 ===
+
+async function logSessionEvent(env, sessionId, eventType, payload = {}) {
+  try {
+    await env.DB.prepare(
+      "INSERT INTO session_events (session_id, event_type, phase, data, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(sessionId, eventType, payload.phase || null, JSON.stringify(payload)).run();
+  } catch (e) {
+    console.error("[logSessionEvent]", e.message);
+  }
+}
+__name(logSessionEvent, "logSessionEvent");
+
 async function callClaude(env, systemPrompt, messages, streaming = false, maxTokens = 1024) {
   const MAX_RETRIES = 2;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -13458,6 +13512,24 @@ async function runWeeklySnapshot(env) {
   }
 }
 __name(runWeeklySnapshot, "runWeeklySnapshot");
+async function runHourlySnapshot(env) {
+  try {
+    const counts = await env.DB.prepare(
+      "SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health"
+    ).all();
+    const errorCount = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')"
+    ).first();
+    const payload = { counts: counts.results || [], errors_last_hour: errorCount?.cnt || 0, ts: new Date().toISOString() };
+    await env.DB.prepare(
+      "INSERT INTO health_checks (check_type, status, details, created_at) VALUES ('hourly_snapshot', 'ok', ?, datetime('now'))"
+    ).bind(JSON.stringify(payload)).run();
+    console.log("[runHourlySnapshot] snapshot written:", JSON.stringify(payload));
+  } catch (e) {
+    console.error("[runHourlySnapshot] error:", e.message);
+  }
+}
+__name(runHourlySnapshot, "runHourlySnapshot");
 async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session) {
   var buyingTemp = (leadIntel?.buyingTemperature || "").toLowerCase();
   if (buyingTemp !== "warm" && buyingTemp !== "hot") return;
@@ -13552,6 +13624,31 @@ async function handleAdminBackfill(request, env) {
   }
 }
 __name(handleAdminBackfill, "handleAdminBackfill");
+async function handleAdminBackfillHealth(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  const url = new URL(request.url);
+  const dryRun = url.searchParams.get("dry_run") !== "false";
+  const now = new Date();
+  const rows = await env.DB.prepare(
+    "SELECT id, phase, message_count, blueprint_generated, status, depth_grade, emotional_depth_score, created_at, last_active_at FROM sessions"
+  ).all();
+  const updates = [];
+  for (const s of rows.results || []) {
+    const tier = computeUserTier(s.emotional_depth_score);
+    const health = computeSessionHealth(s, now);
+    updates.push({ id: s.id, tier_title: tier?.tier_title || null, session_health: health });
+  }
+  if (!dryRun) {
+    for (const u of updates) {
+      await env.DB.prepare(
+        "UPDATE sessions SET tier_title=?, session_health=?, health_updated_at=? WHERE id=?"
+      ).bind(u.tier_title, u.session_health, now.toISOString(), u.id).run();
+    }
+  }
+  return json({ total: updates.length, dry_run: dryRun, sample: updates.slice(0, 10) });
+}
+__name(handleAdminBackfillHealth, "handleAdminBackfillHealth");
 function injectSEO(html, blueprint, liveUrl, slug) {
   const p1 = blueprint.part1 || {};
   const p2 = blueprint.part2 || {};
@@ -19966,6 +20063,15 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
     "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
   ).bind(session.phase, sessionId).run().catch((e) => console.error("[runBlueprintJob] D1 update failed:", e.message));
 
+  try {
+    const sessionRow = await env.DB.prepare("SELECT emotional_depth_score FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+    const emotionalScore = sessionRow?.emotional_depth_score ?? null;
+    const tier = computeUserTier(emotionalScore);
+    await logSessionEvent(env, sessionId, "tier_computed", { tier_title: tier?.tier_title, grade: tier?.grade, score: emotionalScore });
+  } catch (tierLogErr) {
+    console.error("[runBlueprintJob] tier_computed log failed:", tierLogErr.message);
+  }
+
   await updateJobKV({ status: "complete", progress: 100, blueprint, completedAt: new Date().toISOString() });
 
   try {
@@ -23247,6 +23353,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminCreateWeeklySnapshot(request, env);
     if (path === "/api/admin/backfill" && request.method === "POST")
       return handleAdminBackfill(request, env);
+    if (path === "/api/admin/backfill-health" && request.method === "POST")
+      return handleAdminBackfillHealth(request, env);
     if (path === "/api/admin/bulk-v3" && request.method === "POST")
       return handleAdminBulkV3(request, env);
     if (path === "/api/admin/resend-blueprint" && request.method === "POST")
@@ -23292,12 +23400,16 @@ async function routeRequest(request, env, ctx) {
 __name(routeRequest, "routeRequest");
 var src_default = {
   // Cron triggers:
-  //   Every 2 hours — abandonment check
+  //   Every hour — hourly health snapshot
+  //   Every hour — abandonment check
   //   Daily at 9am UTC — full system health check
   //   Every Monday 1pm UTC (8am CT) — weekly snapshot + email report
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try {
+        if (event.cron === "0 * * * *") {
+          await runHourlySnapshot(env);
+        }
         await runAbandonmentCheck(env);
         if (event.cron === "0 9 * * *") {
           await runDailyHealthCheck(env);
