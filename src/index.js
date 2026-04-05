@@ -389,6 +389,33 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   }
 }
 __name(sendAlertEmail, "sendAlertEmail");
+async function sendShallowCompletionAlert(env, sessionId, session, depthResult) {
+  const adminEmail = "james@jamesguldan.com";
+  const adminUrl = `https://love.jamesguldan.com/admin/session/${sessionId}`;
+  const userEmail = session.email || session.userEmail || session.user_email || "unknown";
+  const userName = session.userName || session.user_name || "unknown";
+  const breakdown = depthResult.breakdown || {};
+  const breakdownLines = Object.entries(breakdown)
+    .map(([k, v]) => `  ${k}: ${v}/5`)
+    .join("\n");
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "DWI Admin <noreply@jamesguldan.com>",
+      to: [adminEmail],
+      subject: `[DWI] Shallow completion — ${userName} (${userEmail})`,
+      html: `<p>A user completed the interview but scored a C-grade (shallow depth).</p>
+             <p><strong>Session:</strong> ${sessionId}<br>
+             <strong>User:</strong> ${userName} (${userEmail})<br>
+             <strong>Score:</strong> ${depthResult.score}/25 — Grade: ${depthResult.grade}</p>
+             <pre>${breakdownLines}</pre>
+             <p><a href="${adminUrl}">View session in admin →</a></p>`
+    })
+  });
+  await logSessionEvent(env, sessionId, "admin_alert_fired", { alert_type: "shallow_completion", score: depthResult.score, grade: depthResult.grade });
+}
+__name(sendShallowCompletionAlert, "sendShallowCompletionAlert");
 async function trackFunnelEvent(env, eventName, data = {}) {
   try {
     await trackMetric(env, `funnel.${eventName}`, 1, data);
@@ -3254,6 +3281,7 @@ const STATE = {
   uploadedFiles: [],
   uploadedKeys: [],
   blueprintOverlayShown: false,
+  blueprintJobId: null,
   sessionJwt: null,
   uploadedDocs: []
 };
@@ -4210,9 +4238,10 @@ async function resumeSession() {
     // Switch to app screen
     showScreen('app');
 
-    // Replay messages into the chat
+    // Replay messages into the chat (skip system-tagged messages — e.g. auto-inject trigger)
     for (const msg of data.messages) {
-      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+      if (msg.system === true) continue;
+      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', stripChatMeta(msg.content || ''));
     }
 
     // Update phase dots
@@ -4530,15 +4559,43 @@ async function sendMessage() {
                 showBlueprintGenerating();
               }
               STATE.blueprintAsync = true;
+              if (ev.jobId) STATE.blueprintJobId = ev.jobId;
               var asyncMsgEl = document.getElementById('blueprint-gen-msg');
               if (asyncMsgEl) asyncMsgEl.textContent = ev.message || 'Your blueprint is generating in the background. This page will update automatically when it is ready.';
-              // Poll every 15s until blueprint appears in session
+              // Poll every 3s — use /api/blueprint/status/:jobId when jobId available, else fall back to session poll
               if (!STATE.blueprintPollInterval) {
                 STATE.blueprintPollInterval = setInterval(function() {
-                  fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                  var pollUrl = STATE.blueprintJobId
+                    ? '/api/blueprint/status/' + STATE.blueprintJobId
+                    : '/api/session/' + STATE.sessionId;
+                  fetch(pollUrl, { credentials: 'include' })
                     .then(function(r) { return r.ok ? r.json() : null; })
                     .then(function(data) {
-                      if (data && data.blueprintGenerated && data.blueprint) {
+                      if (!data) return;
+                      // Job status endpoint response
+                      if (data.status === 'complete' || data.hasBlueprint) {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        // Fetch the actual blueprint from the session
+                        fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                          .then(function(r) { return r.ok ? r.json() : null; })
+                          .then(function(sess) {
+                            if (sess && sess.blueprint) {
+                              hideBlueprintGenerating();
+                              handleBlueprintReady(sess.blueprint);
+                            }
+                          }).catch(function() {});
+                        return;
+                      }
+                      if (data.status === 'failed') {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        var retryEl = document.getElementById('blueprint-gen-retry');
+                        if (retryEl) retryEl.style.display = '';
+                        return;
+                      }
+                      // Legacy session poll response
+                      if (data.blueprintGenerated && data.blueprint) {
                         clearInterval(STATE.blueprintPollInterval);
                         STATE.blueprintPollInterval = null;
                         hideBlueprintGenerating();
@@ -4546,11 +4603,11 @@ async function sendMessage() {
                       }
                     })
                     .catch(function() {});
-                }, 15000);
+                }, 3000);
               }
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
-              if (ev.phase >= 7 && !STATE.blueprintOverlayShown) {
+              if (ev.phase >= 8 && !STATE.blueprintOverlayShown) {
                 STATE.blueprintOverlayShown = true;
                 showBlueprintGenerating();
               }
@@ -4705,6 +4762,23 @@ async function handleDocUpload(inputEl) {
   inputEl.value = '';
 }
 
+
+function stripChatMeta(text) {
+  // Use RegExp constructors throughout — this function is inside a template literal,
+  // so regex literals with escape sequences (\n, \[, \s etc.) get mangled in the output.
+  var metaBlock = new RegExp('METADATA:\\{[^\\n]*\\}', 'g');
+  var jsonBlock = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
+  var anyBlock = new RegExp('\x60\x60\x60[\\s\\S]*?\x60\x60\x60', 'g');
+  var phaseComplete = new RegExp('\\[PHASE_COMPLETE\\]', 'g');
+  var metaTagBlock = new RegExp('\\[METADATA\\][\\s\\S]*?\\[\\/METADATA\\]', 'g');
+  return (text || '')
+    .replace(metaBlock, '')
+    .replace(jsonBlock, '')
+    .replace(anyBlock, '')
+    .replace(phaseComplete, '')
+    .replace(metaTagBlock, '')
+    .trim();
+}
 
 function appendMessage(role, text) {
   const msgs = document.getElementById('messages');
@@ -4950,21 +5024,25 @@ function showBlueprintGenerating() {
 
   overlay._progressInterval = progressInterval;
 
-  // Hard dismiss after 7 minutes — show error instead of endless spinner
-  overlay._hardDismiss = setTimeout(() => {
+  // After 5 minutes: enter quiet mode — stop animating, show still-building message
+  overlay._quietMode = setTimeout(() => {
     if (!overlay.classList.contains('active')) return;
-    hideBlueprintGenerating();
-    STATE.blueprintOverlayShown = false;
-    appendMessage('ai', 'Blueprint generation took longer than expected. Your conversation is saved. Send a message and I will try again.');
-  }, 420000);
+    if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
+    title.textContent = 'Still Building';
+    msgEl.style.opacity = '1';
+    msgEl.textContent = 'Still building. Your session is saved.';
+    if (stepEl) stepEl.textContent = '';
+    timerEl.textContent = 'This can take up to 10 minutes for long conversations.';
+  }, 300000);
 
-  // Show retry button after 8 minutes
+  // Show retry button after 10 minutes
   overlay._retryTimeout = setTimeout(() => {
     const retryEl = document.getElementById('blueprint-gen-retry');
     if (retryEl) retryEl.style.display = '';
     title.textContent = 'Taking Longer Than Expected';
-    msgEl.textContent = 'Your conversation is saved. You can try again or go back.';
-  }, 480000);
+    msgEl.textContent = 'Your conversation is saved. You can restart the job or go back to chat.';
+    timerEl.textContent = '';
+  }, 600000);
 
   // Auto-recovery: if blueprint exists but overlay still showing after 90s
   overlay._autoRecovery = setTimeout(async function() {
@@ -4997,16 +5075,49 @@ function showBlueprintGenerating() {
 }
 
 function retryBlueprint() {
-  hideBlueprintGenerating();
-  STATE.blueprintOverlayShown = false;
-  // Re-send the last user message to trigger blueprint generation again
-  const lastUserMsg = (STATE.messages || []).filter(m => m.role === 'user').pop();
-  if (lastUserMsg) {
-    document.getElementById('msg-input').value = lastUserMsg.content || 'Please generate my blueprint now.';
-  } else {
-    document.getElementById('msg-input').value = 'Please generate my blueprint now.';
-  }
-  sendMessage();
+  STATE.blueprintJobId = null;
+  // Restart the job via /api/blueprint/start — does NOT restart the session
+  fetch('/api/blueprint/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ sessionId: STATE.sessionId })
+  }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data.jobId) STATE.blueprintJobId = data.jobId;
+      // Reset and re-show the overlay with fresh state
+      hideBlueprintGenerating();
+      STATE.blueprintOverlayShown = false;
+      STATE.blueprintPollInterval = null;
+      showBlueprintGenerating();
+      STATE.blueprintOverlayShown = true;
+      STATE.blueprintAsync = true;
+      // Re-attach polling with the new jobId
+      if (!STATE.blueprintPollInterval) {
+        STATE.blueprintPollInterval = setInterval(function() {
+          var pollUrl = STATE.blueprintJobId ? '/api/blueprint/status/' + STATE.blueprintJobId : '/api/session/' + STATE.sessionId;
+          fetch(pollUrl, { credentials: 'include' })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(d) {
+              if (!d) return;
+              if (d.status === 'complete' || d.hasBlueprint || (d.blueprintGenerated && d.blueprint)) {
+                clearInterval(STATE.blueprintPollInterval);
+                STATE.blueprintPollInterval = null;
+                var sess = d.blueprint ? d : null;
+                if (sess) { hideBlueprintGenerating(); handleBlueprintReady(sess.blueprint); return; }
+                fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                  .then(function(r) { return r.ok ? r.json() : null; })
+                  .then(function(s) { if (s && s.blueprint) { hideBlueprintGenerating(); handleBlueprintReady(s.blueprint); } })
+                  .catch(function() {});
+              }
+            }).catch(function() {});
+        }, 3000);
+      }
+    })
+    .catch(function(err) {
+      console.error('[retryBlueprint] start failed:', err);
+      showToast('Could not restart blueprint generation. Try refreshing the page.');
+    });
 }
 
 function dismissBlueprintOverlay() {
@@ -5059,8 +5170,8 @@ function hideBlueprintGenerating() {
   if (STATE.blueprintPollInterval) { clearInterval(STATE.blueprintPollInterval); STATE.blueprintPollInterval = null; }
   STATE.blueprintAsync = false;
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
-  if (overlay._hardDismiss) { clearTimeout(overlay._hardDismiss); overlay._hardDismiss = null; }
-  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
+  if (overlay._quietMode) { clearTimeout(overlay._quietMode); overlay._quietMode = null; }
+  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); overlay._retryTimeout = null; }
   if (overlay._autoRecovery) { clearTimeout(overlay._autoRecovery); }
   if (retryEl) retryEl.style.display = 'none';
 
@@ -7877,6 +7988,10 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
       <div class="nav-item" onclick="showPage('depth-scores')" id="nav-depth-scores">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Depth Grades
+      </div>
+      <div class="nav-item" onclick="window.location.href='/admin/health'" id="nav-health-dashboard">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Health
       </div>
       <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
@@ -11541,8 +11656,30 @@ REQUIRED: Address market viability directly. "Is this niche big enough?" Answer 
 
 Callback: Reference their Phase 5 niche statement and their Phase 2 contrarian beliefs. Their positioning should feel like the natural conclusion of everything they have already said.
 
-**Phase 7: Your Offers and Synthesis**
-Goal: Design a three-tier offer structure with clear ascension logic. Entry level to build trust, core offer where main value is delivered, premium for the people who want everything. Price each based on real market data and their stated positioning. Then generate the complete brand blueprint document. See output format below.
+**Phase 7: Your Proof and Pricing Psychology**
+Goal: Uncover the strongest evidence they have that this work transforms people, and surface the internal beliefs that are keeping their prices too low. This phase is about proof and permission — helping them see that what they charge reflects what they believe about themselves, not what the market will bear.
+
+Ask these four questions, one at a time. Wait for the full answer before asking the next. Do not rush.
+
+1. "What is the strongest piece of proof you have that this work actually transforms people. A specific story, a case, a number, a testimonial. Tell me the one you come back to."
+2. "What are you charging right now. And what does your gut tell you your floor should be."
+3. "When you think about raising your prices, whose voice do you hear telling you not to."
+4. "What is the thing that sounds arrogant but is actually true about your work."
+
+The fourth question is the most important. Stay with it. If they hedge, push back: "What would you say if you knew no one was judging you." The answer to this question becomes the arrogant_truth field in the blueprint.
+
+Do NOT move to Phase 8 until all four questions have been answered.
+
+**Phase 8: Synthesis and Mission**
+Goal: Help them articulate the thing they do for its own sake, name what they discovered about themselves in this conversation, and reflect on the shift that just happened. This is the closing of the interview. It should feel like the end of a powerful session, not a form being completed.
+
+Ask these three questions, one at a time. Wait for the full answer before asking the next.
+
+1. "If you had to say in one sentence what you would do even if no one paid you, what would that sentence be."
+2. "What is the one thing you said in this interview that you have never said publicly before."
+3. "Look at what we just built together. What did you see about yourself that you could not see an hour ago."
+
+After all three are answered, tell them you have everything you need and that you are generating their blueprint now. Then generate the complete blueprint JSON. Do NOT generate the blueprint before this point.
 
 ## Phase Tracking
 
@@ -11555,7 +11692,9 @@ Never show this metadata to the user. It is machine-readable only.
 
 The "key" field should prioritize emotional insights over business facts. "Left corporate law because she missed feeling alive" is better than "Works in executive coaching."
 
-Phase numbers are now 1 through 7. Phase 1 is Your Truth. Phase 7 is Offers and Synthesis.
+Phase numbers are now 1 through 8. Phase 1 is Your Truth. Phase 7 is Proof and Pricing Psychology. Phase 8 is Synthesis and Mission.
+
+CRITICAL RULE — BLUEPRINT TIMING: You may only generate the brand blueprint JSON after Phase 8 reaches 100 percent progress. If you feel you have enough material before Phase 8 ends, do not stop. Move forward into the next phase question. The user paid for eight phases. Generating the blueprint JSON before Phase 8 is complete will break the user experience and waste the data you have collected.
 
 ## Debrief Material Tracking
 
@@ -11568,7 +11707,7 @@ Throughout the entire interview, mentally bookmark moments for the debrief lette
 
 The quality of the debrief depends entirely on how deeply you listened during the interview. If you honored the 7 beats (Permission, Descent, Mirror, Sit, Reframe, Build, Return) the debrief will write itself. If you rushed, it will read like a summary. Do not let it read like a summary.
 
-## The Synthesis Output (Phase 7)
+## The Synthesis Output (Phase 8)
 
 You are generating two things simultaneously: the brand blueprint (all fields plus leadIntel) AND a personal debrief letter. The debrief letter is shown BEFORE the blueprint on its own full-screen page. It is the most important piece of copy in the entire experience. This is the moment where the person feels truly seen. Get it right.
 
@@ -12724,6 +12863,257 @@ function autoRepairBlueprint(blueprint) {
   return { blueprint, repairs, repairCount: repairs.length };
 }
 __name(autoRepairBlueprint, "autoRepairBlueprint");
+// === Phase 0: Tier + Health computation ===
+function computeUserTier(score) {
+  if (score === null || score === undefined) return null;
+  const s = Number(score);
+  if (isNaN(s)) return null;
+  if (s >= 23) return { grade: "A+", tier_title: "Didn't Flinch Once" };
+  if (s >= 20) return { grade: "A",  tier_title: "Sat With The Fire" };
+  if (s >= 17) return { grade: "B+", tier_title: "Named The Pattern" };
+  if (s >= 14) return { grade: "B",  tier_title: "Told On Yourself" };
+  return           { grade: "C",  tier_title: "Took The First Swing" };
+}
+__name(computeUserTier, "computeUserTier");
+
+function safeHoursAgo(dateStr, nowMs) {
+  if (!dateStr) return null;
+  const ms = new Date(dateStr).getTime();
+  if (isNaN(ms)) return null;
+  return (nowMs - ms) / (60 * 60 * 1e3);
+}
+__name(safeHoursAgo, "safeHoursAgo");
+
+var EMOTIONAL_PHASES = new Set([2, 3, 5, 8]);
+function computeSessionHealth(s, now = new Date()) {
+  if (!s) return "unknown";
+  const nowMs = now.getTime();
+  const phase = Number(s.phase || 0);
+  const msgCount = Number(s.message_count || 0);
+  if (s.status === "failed") return "failed";
+  if (s.blueprint_generated === 1 && s.depth_grade === "C") return "shallow_complete";
+  if (s.status === "completed" || s.status === "blueprint_complete") return "complete";
+  if (s.status === "active") {
+    const hoursSinceCreated = safeHoursAgo(s.created_at, nowMs);
+    const hoursSinceActive = safeHoursAgo(s.last_active_at, nowMs) ?? safeHoursAgo(s.created_at, nowMs);
+    if (msgCount === 0 && hoursSinceCreated !== null && hoursSinceCreated > 24) return "cold_abandoned";
+    if (msgCount >= 30 && phase <= 2) return "stuck_phase";
+    const dropThreshold = EMOTIONAL_PHASES.has(phase) ? 24 * 5 : 48;
+    if (msgCount > 5 && hoursSinceActive !== null && hoursSinceActive > dropThreshold) return "mid_drop";
+  }
+  return "healthy";
+}
+__name(computeSessionHealth, "computeSessionHealth");
+// === End Phase 0 ===
+
+// === Phase B: Metric helpers ===
+var BREAKTHROUGH_MARKERS2 = [
+  /\bi realized\b/i, /\bi've never\b/i, /\bi have never\b/i,
+  /\bi don't usually\b/i, /\bi don't normally\b/i,
+  /\bthe truth is\b/i, /\bhonestly\b/i, /\bi'm scared\b/i,
+  /\bi'm ashamed\b/i, /\bthat's the first time\b/i
+];
+function computeHonestAnswerCount(messages) {
+  return (messages || []).filter((m) => m.role === "user" && (m.content || "").split(/\s+/).filter(Boolean).length >= 40).length;
+}
+__name(computeHonestAnswerCount, "computeHonestAnswerCount");
+function computeBreakthroughCount(messages) {
+  return (messages || []).filter((m) => {
+    if (m.role !== "user") return false;
+    const t = m.content || "";
+    return BREAKTHROUGH_MARKERS2.some((r) => r.test(t));
+  }).length;
+}
+__name(computeBreakthroughCount, "computeBreakthroughCount");
+// === End Phase B helpers ===
+
+// === Phase A: Nudge unsubscribe ===
+async function generateNudgeUnsubToken(env, userId) {
+  const secret = env.APP_SECRET || env.INTERNAL_BP_TOKEN || "dwi-unsub-2026";
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(userId + ":nudge_unsub"));
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+__name(generateNudgeUnsubToken, "generateNudgeUnsubToken");
+async function verifyNudgeUnsubToken(env, userId, token) {
+  const expected = await generateNudgeUnsubToken(env, userId);
+  return expected === token;
+}
+__name(verifyNudgeUnsubToken, "verifyNudgeUnsubToken");
+async function handleUnsubscribe(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const userId = url.searchParams.get("uid");
+  if (!token || !userId) {
+    return new Response("<html><body><p>Invalid unsubscribe link.</p></body></html>", {
+      headers: { "Content-Type": "text/html" }
+    });
+  }
+  const valid = await verifyNudgeUnsubToken(env, userId, token);
+  if (!valid) {
+    return new Response("<html><body><p>This unsubscribe link is invalid or expired.</p></body></html>", {
+      headers: { "Content-Type": "text/html" }
+    });
+  }
+  await env.DB.prepare(
+    "UPDATE users SET nudges_opted_out=1, nudges_opted_out_at=datetime('now') WHERE id=?"
+  ).bind(userId).run();
+  return new Response(`<html><body style="font-family:sans-serif;max-width:480px;margin:80px auto;padding:24px;text-align:center;">
+    <h2>You're unsubscribed.</h2>
+    <p>You won't receive any more follow-up emails about your Deep Work Interview.</p>
+    <p style="color:#999;font-size:14px;">If you want to complete your interview later, you can still access it at <a href="https://love.jamesguldan.com">love.jamesguldan.com</a>.</p>
+  </body></html>`, {
+    headers: { "Content-Type": "text/html" }
+  });
+}
+__name(handleUnsubscribe, "handleUnsubscribe");
+// === End Phase A: Nudge unsubscribe ===
+
+// === Phase A: Nudge scheduling ===
+function computeNextNudge(session, existingNudges, now = new Date()) {
+  if (!session) return null;
+  // Respect opt-out
+  if (session.nudges_opted_out) return null;
+
+  const health = session.session_health;
+  const nowMs = now.getTime();
+
+  // Only nudge sessions with a problem state
+  if (!['cold_abandoned', 'mid_drop'].includes(health)) return null;
+
+  // Don't nudge sessions created in last 48h (let welcome email land first)
+  const createdMs = session.created_at ? new Date(session.created_at).getTime() : nowMs;
+  if ((nowMs - createdMs) < 48 * 60 * 60 * 1000) return null;
+
+  const sentTypes = (existingNudges || []).map((n) => n.nudge_type);
+
+  // Cold abandoned flow: cold_48h → cold_7d → stop
+  if (health === 'cold_abandoned') {
+    if (!sentTypes.includes('cold_48h')) {
+      return { nudge_type: 'cold_48h', send_after: new Date(createdMs + 48 * 60 * 60 * 1000) };
+    }
+    const cold48 = existingNudges.find((n) => n.nudge_type === 'cold_48h');
+    const cold48SentMs = cold48 ? new Date(cold48.sent_at).getTime() : 0;
+    if (!sentTypes.includes('cold_7d') && cold48SentMs && (nowMs - cold48SentMs) > 5 * 24 * 60 * 60 * 1000) {
+      return { nudge_type: 'cold_7d', send_after: new Date(cold48SentMs + 5 * 24 * 60 * 60 * 1000) };
+    }
+    return null; // 2 nudges sent, stop
+  }
+
+  // Mid-drop flow: initial → followup → stop
+  if (health === 'mid_drop') {
+    // Productive pause bonus: if last message was >80 words, add 48h grace
+    const lastUserMsg = (session.messages || []).filter((m) => m.role === 'user').pop();
+    const lastMsgWords = lastUserMsg ? (lastUserMsg.content || '').split(/\s+/).filter(Boolean).length : 0;
+    const gracePeriodMs = lastMsgWords > 80 ? 48 * 60 * 60 * 1000 : 0;
+
+    const lastActiveMs = session.last_active_at ? new Date(session.last_active_at).getTime() : createdMs;
+    const sendAfterInitial = new Date(lastActiveMs + 24 * 60 * 60 * 1000 + gracePeriodMs);
+
+    if (!sentTypes.includes('mid_drop_initial') && now >= sendAfterInitial) {
+      return { nudge_type: 'mid_drop_initial', send_after: sendAfterInitial };
+    }
+    const initial = existingNudges.find((n) => n.nudge_type === 'mid_drop_initial');
+    const initialSentMs = initial ? new Date(initial.sent_at).getTime() : 0;
+    if (!sentTypes.includes('mid_drop_followup') && initialSentMs && (nowMs - initialSentMs) > 4 * 24 * 60 * 60 * 1000) {
+      return { nudge_type: 'mid_drop_followup', send_after: new Date(initialSentMs + 4 * 24 * 60 * 60 * 1000) };
+    }
+    return null;
+  }
+
+  return null;
+}
+__name(computeNextNudge, "computeNextNudge");
+
+function renderNudgeEmail(nudgeType, session, unsubUrl = "https://love.jamesguldan.com/api/unsubscribe") {
+  const firstName = (session.user_name || session.userName || "there").split(" ")[0];
+  const continueUrl = `https://love.jamesguldan.com/?session=${session.id || ""}`;
+  const footer = `<p style="font-size:12px;color:#999;margin-top:32px;">You're getting this because you started the Deep Work Interview. <a href="${unsubUrl}">Stop these emails</a>.</p>`;
+
+  const templates = {
+    cold_48h: {
+      subject: `Your interview is waiting, ${firstName}`,
+      html: `<p>Hey ${firstName},</p><p>You started something. Most people don't even get that far.</p><p>Your Deep Work Interview is still here. It usually takes 20-30 minutes and a willingness to be honest. That's it.</p><p><a href="${continueUrl}">Pick up where you left off →</a></p><p>James</p>${footer}`
+    },
+    cold_7d: {
+      subject: `Still here when you're ready`,
+      html: `<p>Hey ${firstName},</p><p>No pressure. The interview isn't going anywhere.</p><p>When the timing is right, it's 20-30 minutes and usually worth it. People who complete it consistently say the positioning statement alone is worth the time.</p><p><a href="${continueUrl}">Continue your interview →</a></p><p>James</p>${footer}`
+    },
+    mid_drop_initial: {
+      subject: `You were getting somewhere`,
+      html: `<p>Hey ${firstName},</p><p>You got into the interview. That already puts you ahead of most people who buy something and never open it.</p><p>You don't need to redo anything — your answers are saved. Just pick up where you left off.</p><p><a href="${continueUrl}">Continue your interview →</a></p><p>James</p>${footer}`
+    },
+    mid_drop_followup: {
+      subject: `The hardest part was getting started`,
+      html: `<p>Hey ${firstName},</p><p>You already did the hardest part. The questions that matter most are in the second half.</p><p>If life got in the way, that's fine. The interview will wait.</p><p><a href="${continueUrl}">Finish what you started →</a></p><p>James</p>${footer}`
+    }
+  };
+  return templates[nudgeType] || null;
+}
+__name(renderNudgeEmail, "renderNudgeEmail");
+
+async function sendNudge(env, session, nudgeType, dryRun = true) {
+  // Generate unsubscribe URL
+  let unsubUrl = "https://love.jamesguldan.com/api/unsubscribe";
+  try {
+    const userId = session.user_id || session.userId;
+    if (userId && env.APP_SECRET) {
+      const token = await generateNudgeUnsubToken(env, userId);
+      unsubUrl = `https://love.jamesguldan.com/api/unsubscribe?token=${token}&uid=${encodeURIComponent(userId)}`;
+    }
+  } catch (_) {}
+  const template = renderNudgeEmail(nudgeType, session, unsubUrl);
+  if (!template) {
+    console.warn("[sendNudge] unknown nudge type:", nudgeType);
+    return { sent: false, reason: "unknown_type" };
+  }
+  const userEmail = session.user_email || session.email || session.userEmail;
+  if (!userEmail) {
+    console.warn("[sendNudge] no email for session:", session.id);
+    return { sent: false, reason: "no_email" };
+  }
+  if (dryRun) {
+    console.log("[sendNudge DRY RUN] would send", nudgeType, "to", userEmail, "for session", session.id);
+    await logSessionEvent(env, session.id, "nudge_dry_run", { nudge_type: nudgeType, email: userEmail });
+    return { sent: false, dry_run: true };
+  }
+  try {
+    const resendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "James Guldan <noreply@jamesguldan.com>",
+        to: [userEmail],
+        subject: template.subject,
+        html: template.html
+      })
+    });
+    if (!resendRes.ok) throw new Error(await resendRes.text());
+    await env.DB.prepare(
+      "INSERT INTO nudges (id, session_id, user_email, nudge_type, sent_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(crypto.randomUUID(), session.id, userEmail, nudgeType).run();
+    await logSessionEvent(env, session.id, "nudge_sent", { nudge_type: nudgeType, email: userEmail });
+    return { sent: true };
+  } catch (e) {
+    console.error("[sendNudge] error:", e.message);
+    return { sent: false, error: e.message };
+  }
+}
+__name(sendNudge, "sendNudge");
+// === End Phase A: Nudge scheduling ===
+
+async function logSessionEvent(env, sessionId, eventType, payload = {}) {
+  try {
+    await env.DB.prepare(
+      "INSERT INTO session_events (session_id, event_type, phase, data, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(sessionId, eventType, payload.phase || null, JSON.stringify(payload)).run();
+  } catch (e) {
+    console.error("[logSessionEvent]", e.message);
+  }
+}
+__name(logSessionEvent, "logSessionEvent");
+
 async function callClaude(env, systemPrompt, messages, streaming = false, maxTokens = 1024) {
   const MAX_RETRIES = 2;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -13295,6 +13685,8 @@ async function runDailyHealthCheck(env) {
   return { allOk, results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runDailyHealthCheck, "runDailyHealthCheck");
+// CLEANUP-2026-04-05: weekly_snapshots table is active. Called by scheduled handler (runWeeklySnapshot).
+// Also writable via /api/admin/weekly-snapshots (POST) and readable via GET. 2 rows as of 2026-04-05, last written 2026-04-05. Keep.
 async function runWeeklySnapshot(env) {
   try {
     var now = /* @__PURE__ */ new Date();
@@ -13353,6 +13745,98 @@ async function runWeeklySnapshot(env) {
   }
 }
 __name(runWeeklySnapshot, "runWeeklySnapshot");
+async function runConditionalDigest(env) {
+  const now = new Date();
+  const isWeeklyHeartbeat = now.getUTCDay() === 0; // Sunday
+
+  const [
+    stuckRow, coldRow, midDropRow, shallowRow,
+    errorRow, failedRow, recentNudgesRow, lowCompletionRow
+  ] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='stuck_phase' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='cold_abandoned' AND status='active' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='mid_drop' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='shallow_complete' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE status='failed' AND created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM nudges WHERE sent_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as total, SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as completed FROM sessions WHERE created_at > datetime('now', '-7 days')").first()
+  ]);
+
+  const stuck = stuckRow?.cnt || 0;
+  const cold = coldRow?.cnt || 0;
+  const midDrop = midDropRow?.cnt || 0;
+  const shallow = shallowRow?.cnt || 0;
+  const errors = errorRow?.cnt || 0;
+  const failed = failedRow?.cnt || 0;
+  const nudgesSent = recentNudgesRow?.cnt || 0;
+  const weekTotal = lowCompletionRow?.total || 0;
+  const weekCompleted = lowCompletionRow?.completed || 0;
+  const completionRate = weekTotal > 0 ? Math.round(weekCompleted / weekTotal * 100) : null;
+  const lowCompletion = completionRate !== null && completionRate < 30;
+
+  const issues = [];
+  if (stuck > 0) issues.push(`\uD83D\uDD34 ${stuck} session(s) stuck in early phase`);
+  if (errors > 5) issues.push(`\uD83D\uDD34 ${errors} errors in last 24h`);
+  if (failed > 0) issues.push(`\uD83D\uDFE1 ${failed} session(s) failed today`);
+  if (shallow > 0) issues.push(`\uD83D\uDFE1 ${shallow} shallow completion(s) today`);
+  if (cold > 3) issues.push(`\uD83D\uDFE1 ${cold} new cold abandonments (24h)`);
+  if (midDrop > 5) issues.push(`\uD83D\uDFE1 ${midDrop} sessions in mid-drop`);
+  if (lowCompletion) issues.push(`\uD83D\uDFE1 Completion rate ${completionRate}% this week (target: 30%+)`);
+
+  const hasIssues = issues.length > 0;
+
+  if (!hasIssues && !isWeeklyHeartbeat) {
+    console.log("[ConditionalDigest] No issues today \u2014 skipping email");
+    return;
+  }
+
+  const adminUrl = "https://love.jamesguldan.com/admin/health";
+  const subject = isWeeklyHeartbeat && !hasIssues
+    ? `[DWI] Weekly heartbeat \u2014 all clear`
+    : `[DWI] ${issues.length} issue${issues.length !== 1 ? "s" : ""} need attention`;
+
+  const issueHtml = hasIssues
+    ? issues.map((i) => `<li>${i}</li>`).join("")
+    : "<li>No issues \u2014 weekly check-in</li>";
+
+  const statsHtml = `
+    <p><strong>7-day stats:</strong> ${weekTotal} sessions started, ${weekCompleted} completed (${completionRate ?? "\u2014"}% rate)</p>
+    <p><strong>Nudges sent (24h):</strong> ${nudgesSent}</p>
+    <p><strong>Errors (24h):</strong> ${errors}</p>
+  `;
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "DWI Admin <noreply@jamesguldan.com>",
+      to: ["james@jamesguldan.com"],
+      subject,
+      html: `<h2>${subject}</h2><ul>${issueHtml}</ul>${statsHtml}<p><a href="${adminUrl}">Open health dashboard \u2192</a></p>`
+    })
+  });
+  console.log("[ConditionalDigest] sent:", subject);
+}
+__name(runConditionalDigest, "runConditionalDigest");
+async function runHourlySnapshot(env) {
+  try {
+    const counts = await env.DB.prepare(
+      "SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health"
+    ).all();
+    const errorCount = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')"
+    ).first();
+    const payload = { counts: counts.results || [], errors_last_hour: errorCount?.cnt || 0, ts: new Date().toISOString() };
+    await env.DB.prepare(
+      "INSERT INTO health_checks (check_type, status, details, created_at) VALUES ('hourly_snapshot', 'ok', ?, datetime('now'))"
+    ).bind(JSON.stringify(payload)).run();
+    console.log("[runHourlySnapshot] snapshot written:", JSON.stringify(payload));
+  } catch (e) {
+    console.error("[runHourlySnapshot] error:", e.message);
+  }
+}
+__name(runHourlySnapshot, "runHourlySnapshot");
 async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session) {
   var buyingTemp = (leadIntel?.buyingTemperature || "").toLowerCase();
   if (buyingTemp !== "warm" && buyingTemp !== "hot") return;
@@ -13447,6 +13931,31 @@ async function handleAdminBackfill(request, env) {
   }
 }
 __name(handleAdminBackfill, "handleAdminBackfill");
+async function handleAdminBackfillHealth(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  const url = new URL(request.url);
+  const dryRun = url.searchParams.get("dry_run") !== "false";
+  const now = new Date();
+  const rows = await env.DB.prepare(
+    "SELECT id, phase, message_count, blueprint_generated, status, depth_grade, emotional_depth_score, created_at, last_active_at FROM sessions"
+  ).all();
+  const updates = [];
+  for (const s of rows.results || []) {
+    const tier = computeUserTier(s.emotional_depth_score);
+    const health = computeSessionHealth(s, now);
+    updates.push({ id: s.id, tier_title: tier?.tier_title || null, session_health: health });
+  }
+  if (!dryRun) {
+    for (const u of updates) {
+      await env.DB.prepare(
+        "UPDATE sessions SET tier_title=?, session_health=?, health_updated_at=? WHERE id=?"
+      ).bind(u.tier_title, u.session_health, now.toISOString(), u.id).run();
+    }
+  }
+  return json({ total: updates.length, dry_run: dryRun, sample: updates.slice(0, 10) });
+}
+__name(handleAdminBackfillHealth, "handleAdminBackfillHealth");
 function injectSEO(html, blueprint, liveUrl, slug) {
   const p1 = blueprint.part1 || {};
   const p2 = blueprint.part2 || {};
@@ -13822,6 +14331,10 @@ var API_RATES = {
   "claude-opus-4-6": { input: 15, output: 75 },
   "claude-opus-4-5": { input: 15, output: 75 }
 };
+// CLEANUP-2026-04-05: Two cost/usage tables are intentional and NOT redundant.
+// api_costs — per-call cost in cost_usd (float), keyed by session+email. Used by admin cost dashboards (/admin/costs, /admin/user-costs).
+// token_usage — token-level rows with cost_cents (int), tracks model/phase/cache tokens. Used by /admin/usage (granular analytics).
+// Both tables are actively written to and queried as of 2026-04-05 (1075 rows / 1064 rows). Keep both.
 async function logApiCost(env, { sessionId, userEmail, model, callType, usage }) {
   try {
     if (!usage || !sessionId)
@@ -14914,9 +15427,48 @@ async function handleChat(request, env, ctx) {
       }
       const apiStart = Date.now();
       const currentPhaseNum = session.phase || 1;
-      const isBlueprintPhase = currentPhaseNum >= 6;
+      const isBlueprintPhase = currentPhaseNum >= 8;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
       const recentMessages = smartTrimMessages(session.messages, currentPhaseNum);
+
+      // A.2: Count user messages since the last phase transition (per-phase count)
+      const userMsgsInCurrentPhase = (() => {
+        const msgs = session.messages || [];
+        let count = 0;
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          const m = msgs[i];
+          if (m.role === "assistant" && /METADATA:\{"phase":(\d+)/.test(m.content || "")) {
+            const mPhase = parseInt(RegExp.$1);
+            if (mPhase !== currentPhaseNum) break; // phase changed here, stop counting
+          }
+          if (m.role === "user") count++;
+        }
+        return count;
+      })();
+
+      // A.1: Detect if METADATA has been silent for the last 3 assistant turns
+      const phaseCheckPending = (() => {
+        if (session._phaseCheckPending) return true;
+        const recentAssistantMsgs = (session.messages || []).filter((m) => m.role === "assistant").slice(-3);
+        const recentHadMetadata = recentAssistantMsgs.some((m) => /METADATA:\{/.test(m.content || ""));
+        if (!recentHadMetadata && recentAssistantMsgs.length >= 3) {
+          console.warn("[PhaseGuard] METADATA silent for 3 turns — session=" + sessionId + " phase=" + currentPhaseNum + " injecting phase sync reminder");
+          return true;
+        }
+        return false;
+      })();
+      // Clear the persisted flag now that we've consumed it
+      if (session._phaseCheckPending) delete session._phaseCheckPending;
+
+      // A.2: Build auto-advance injection string
+      let autoAdvanceInjection = "";
+      if (userMsgsInCurrentPhase >= 12 && currentPhaseNum < 8) {
+        const nextPhase = currentPhaseNum + 1;
+        autoAdvanceInjection = `\n\n[AUTO-ADVANCE] The user has answered ${userMsgsInCurrentPhase} questions in phase ${currentPhaseNum}. Acknowledge their last answer warmly and transition to phase ${nextPhase} now. You MUST emit METADATA:{"phase":${nextPhase},...} in your response.`;
+        logSessionEvent(env, sessionId, "phase_auto_advanced", { from_phase: currentPhaseNum, to_phase: nextPhase, msg_count: userMsgsInCurrentPhase }).catch(() => {});
+        console.log("[AutoAdvance] session=" + sessionId + " advancing from phase " + currentPhaseNum + " to " + nextPhase + " after " + userMsgsInCurrentPhase + " messages");
+      }
+
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
       const MAX_RETRIES = 2;
       let res;
@@ -14982,6 +15534,14 @@ Use this to skip surface-level questions. Go deeper faster.` });
                 }
                 if (currentPhaseNum >= 6 && !session.blueprintGenerated) {
                   sysMsgs.push({ type: "text", text: "URGENT SYSTEM REMINDER: The interview is complete. You MUST output the blueprint JSON now. Your ENTIRE response must be ONLY the ```json code block. No prose. No summary. No explanation. Start with ```json and end with ```. The system renders the JSON into a beautiful page automatically. If you write prose, the user sees raw text and the experience breaks." });
+                }
+                // A.1: PhaseGuard — inject phase sync reminder if METADATA has been silent
+                if (phaseCheckPending) {
+                  sysMsgs.push({ type: "text", text: `[PHASE SYNC REQUIRED] You have not emitted a METADATA block in your last 3 responses. You MUST include METADATA:{...} at the end of your next response. Current phase: ${currentPhaseNum}.` });
+                }
+                // A.2: Auto-advance ceiling injection
+                if (autoAdvanceInjection) {
+                  sysMsgs.push({ type: "text", text: autoAdvanceInjection.trim() });
                 }
                 return sysMsgs;
               })(),
@@ -15073,17 +15633,30 @@ Use this to skip surface-level questions. Go deeper faster.` });
         } catch (_) {
         }
       }
+      // A.1: PhaseGuard — if this response had no METADATA, mark flag for next turn
+      if (!metadataMatch) {
+        const recentAssistantMsgs = (session.messages || []).filter((m) => m.role === "assistant").slice(-3);
+        const recentHadMetadata = recentAssistantMsgs.some((m) => /METADATA:\{/.test(m.content || ""));
+        if (!recentHadMetadata && recentAssistantMsgs.length >= 3) {
+          session._phaseCheckPending = true;
+          console.warn("[PhaseGuard] METADATA silent for 3+ turns — session=" + sessionId + " phase=" + (session.phase || 1) + " flagging for next turn sync");
+        }
+      } else {
+        // METADATA present this turn — clear any pending flag
+        delete session._phaseCheckPending;
+      }
       let blueprint = null;
       const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
       if (metadata.sessionComplete && !blueprintMatch) {
-        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, keeping at phase 6");
+        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, holding at phase 7");
         metadata.sessionComplete = false;
-        metadata.phase = 6;
+        metadata.phase = Math.max(metadata.phase || 1, 7);
         metadata.phaseProgress = 95;
       }
       const currentPhase = session.phase || 1;
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
-      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 7 && metadata.phaseProgress >= 100));
+      // Phase 8 hard gate — blueprint cannot generate until the AI has progressed through all 8 phases
+      const readyForBlueprint = currentPhase >= 8 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 8 && metadata.phaseProgress >= 100));
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
@@ -15176,7 +15749,7 @@ Use this to skip surface-level questions. Go deeper faster.` });
       }
       const cleanContent = fullContent.replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim();
       session.messages.push({ role: "assistant", content: fullContent });
-      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6].includes(Number(metadata.phase))) {
+      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6, 7, 8].includes(Number(metadata.phase))) {
         const transitioningFromPhase = session.phase;
         const sessionMessages = [...session.messages];
         const sessionForScoring = { messages: sessionMessages };
@@ -15191,6 +15764,12 @@ Use this to skip surface-level questions. Go deeper faster.` });
               (/* @__PURE__ */ new Date()).toISOString(),
               sessionId
             ).run();
+            // Admin alert for shallow completions
+            if (depthResult.grade === 'C') {
+              sendShallowCompletionAlert(env, sessionId, session, depthResult).catch((e) => {
+                console.error("[ShallowAlert] error:", e.message);
+              });
+            }
           }
         }).catch(function(e) {
           console.error("[DepthScore] error:", e.message);
@@ -15228,19 +15807,22 @@ Use this to skip surface-level questions. Go deeper faster.` });
         await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
         if (ctx) {
           const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          const fallbackJobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          await env.SESSIONS.put("bp_job:" + fallbackJobId, JSON.stringify({ jobId: fallbackJobId, sessionId, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
           ctx.waitUntil(
             fetch(appOrigin + "/api/internal/generate-blueprint", {
               method: "POST",
               headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
-              body: JSON.stringify({ sessionId })
+              body: JSON.stringify({ sessionId, jobId: fallbackJobId })
             }).catch((e) => console.error("[AsyncBP] Fallback self-fetch failed:", e.message))
           );
+          try {
+            await sendEvent({ type: "blueprint_generating", async: true, jobId: fallbackJobId, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          } catch (_) {}
+        } else {
+          try { await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated. The page will update automatically." }); } catch (_) {}
         }
-        try {
-          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
-          await sendEvent({ type: "done" });
-          await writer.close();
-        } catch (_) {}
+        try { await sendEvent({ type: "done" }); await writer.close(); } catch (_) {}
         return;
       }
       await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
@@ -15275,19 +15857,22 @@ Use this to skip surface-level questions. Go deeper faster.` });
         } catch (_) {}
         if (ctx) {
           const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          const mainJobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          await env.SESSIONS.put("bp_job:" + mainJobId, JSON.stringify({ jobId: mainJobId, sessionId, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
           ctx.waitUntil(
             fetch(appOrigin + "/api/internal/generate-blueprint", {
               method: "POST",
               headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
-              body: JSON.stringify({ sessionId })
+              body: JSON.stringify({ sessionId, jobId: mainJobId })
             }).catch((e) => console.error("[AsyncBP] Self-fetch failed:", e.message))
           );
+          try {
+            await sendEvent({ type: "blueprint_generating", async: true, jobId: mainJobId, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          } catch (_) {}
+        } else {
+          try { await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated. The page will update automatically." }); } catch (_) {}
         }
-        try {
-          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
-          await sendEvent({ type: "done" });
-          await writer.close();
-        } catch (_) {}
+        try { await sendEvent({ type: "done" }); await writer.close(); } catch (_) {}
         return;
       }
       try {
@@ -18483,6 +19068,9 @@ function renderWebsiteBlueprint(bp) {
   return '<div class="chapter-divider"><span class="chapter-divider-label">Your Website Blueprint</span><div class="chapter-divider-sub">The page that turns a stranger into someone who says &ldquo;how did she know.&rdquo;</div></div><section class="bp-section"><div class="bp-inner">' + narrativeHTML + heroHTML + sectionsHTML + proofHTML + testimonialHTML + contraryHTML + "</div></section>";
 }
 __name(renderWebsiteBlueprint, "renderWebsiteBlueprint");
+// CLEANUP-2026-04-05: PDF export renderer — called by handleBlueprintPDF and handleBlueprintPDFDownload.
+// renderBlueprintV3 is the live interactive view; renderBlueprintResults is the static HTML used for PDF generation.
+// Both are active and serve different purposes — do NOT remove.
 function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   var firstName = (userName || "Friend").split(" ")[0];
   var sessionId = bp.sessionId || "";
@@ -18527,7 +19115,12 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
         insight: deb.paragraph5_invitation || ml.afterPositioning || ""
       },
       mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
+      mirror_connection: "",
       arrogant_truth: deb.paragraph3_quote || bp.openingHook || "",
+      mission_statement: bf.missionStatement || "",
+      pricing_current: "",
+      pricing_gap_belief: "",
+      never_said_publicly: "",
       futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : (pl.proseBody || ""),
       loveLetter: ""
     };
@@ -18545,6 +19138,11 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
   const depthGrade = sessionMeta && sessionMeta.depth_grade || "";
   const msgCount = sessionMeta && sessionMeta.message_count || 0;
   const barPct = Math.min(100, Math.round(depthScore / 25 * 100));
+  const messages = sessionMeta && sessionMeta.messages || [];
+  const messagesLoaded = sessionMeta != null && Array.isArray(sessionMeta.messages);
+  const honestAnswers = computeHonestAnswerCount(messages);
+  const breakthroughs = computeBreakthroughCount(messages);
+  const tier = computeUserTier(depthScore) || { grade: "C", tier_title: "Took The First Swing" };
   const positioningStatement = v3.positioningStatement || bp.openingHook || "Your unique positioning statement.";
   const cs = v3.clientStory || {};
   const rp = v3.realProblem || {};
@@ -18561,7 +19159,27 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
   const visBody = vis.body || "";
   const visInsight = vis.insight || "";
   const mirrorObservation = v3.mirror_observation || "";
+  const mirrorConnection = v3.mirror_connection || "";
   const arrogantTruth = v3.arrogant_truth || "";
+  const missionStatement = v3.mission_statement || "";
+  const pricingCurrent = v3.pricing_current || "";
+  const pricingGapBelief = v3.pricing_gap_belief || "";
+  const neverSaidPublicly = v3.never_said_publicly || "";
+  // Confidence scores (0-1) — fields without data get 0.0
+  const fieldConfidences = {
+    mirror_observation: mirrorObservation.length > 50 ? 0.9 : (mirrorObservation.length > 0 ? 0.5 : 0.0),
+    arrogant_truth: arrogantTruth.length > 10 ? 0.85 : (arrogantTruth.length > 0 ? 0.5 : 0.0),
+    mission_statement: missionStatement.length > 10 ? 0.85 : (missionStatement.length > 0 ? 0.5 : 0.0),
+    pricing_current: pricingCurrent.length > 2 ? 0.9 : 0.0,
+    pricing_gap_belief: pricingGapBelief.length > 10 ? 0.85 : 0.0,
+    never_said_publicly: neverSaidPublicly.length > 10 ? 0.9 : 0.0,
+    mirror_connection: mirrorConnection.length > 20 ? 0.85 : 0.0,
+    real_problem: rpBody.length > 100 ? 0.9 : (rpBody.length > 0 ? 0.6 : 0.0),
+    vision: visBody.length > 100 ? 0.9 : (visBody.length > 0 ? 0.6 : 0.0),
+    futureSelfLetter: (v3.futureSelfLetter || v3.marcusLetter || "").length > 100 ? 0.9 : 0.0
+  };
+  const confidenceValues = Object.values(fieldConfidences);
+  const avgConfidence = Math.round(confidenceValues.reduce((s, v) => s + v, 0) / confidenceValues.length * 100);
   const futureSelfLetter = v3.futureSelfLetter || v3.marcusLetter || "";
   function bodyParas(text) {
     if (!text) return "";
@@ -18634,11 +19252,14 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .hero-tagline{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(18px,2.5vw,24px);color:rgba(255,255,255,0.92);line-height:1.6;max-width:640px;margin-bottom:40px;}
 .hero-depth{color:rgba(255,255,255,0.55);font-size:13px;line-height:1.6;}
 .hero-depth strong{color:#fff;display:block;font-size:14px;font-family:'Outfit',sans-serif;font-weight:600;}
-.hero-bar{margin-top:8px;width:180px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;}
-.hero-bar-fill{height:100%;background:var(--gold);}
+
+.hero-tier-badge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.tier-card{background:var(--off);border:1px solid #F0E8E0;border-radius:var(--radius);padding:36px 40px;margin:48px auto 0;max-width:720px;}
+.tier-card-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.tier-card-body{font-size:16px;line-height:1.75;color:#3a3a3a;}
 .glance{background:#fff;padding:64px 64px 48px;border-bottom:1px solid var(--border);}
 .glance-inner{max-width:900px;margin:0 auto;}
-.glance-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;margin-top:28px;}
+.glance-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:28px;}
 .glance-stat{text-align:center;padding:24px 16px;background:var(--off);border-radius:12px;border:1px solid var(--border);}
 .glance-num{font-family:'Outfit',sans-serif;font-size:32px;font-weight:800;color:var(--text);letter-spacing:-0.02em;}
 .glance-num.gold{color:var(--gold);}
@@ -18763,19 +19384,31 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .hero-name{font-size:36px;}.glance-grid{grid-template-columns:1fr 1fr;gap:12px;}.glance-stat{padding:16px 12px;}.glance-num{font-size:26px;}
 .act-divider{height:220px;}.prompt-text{font-size:22px;}.final-price-amount{font-size:40px;}
 }`;
+  const TIER_DESCRIPTIONS = {
+    "Didn't Flinch Once": "You went straight at every question that most people duck. No softening, no hedging. That capacity to name the real thing is the difference between a brand that attracts and one that blends in.",
+    "Sat With The Fire": "You didn't rush through the hard parts. When the interview asked you to name something uncomfortable, you stayed in it. That capacity to sit with what most people run from is the thing your clients feel when they work with you.",
+    "Named The Pattern": "You caught yourself doing the thing. That kind of self-awareness is rare. It means you can see the gap between where you are and where your work wants to take you, and that gap is where real positioning lives.",
+    "Told On Yourself": "You said the quiet part out loud. Not all of it, but enough to matter. The next version of this work is about staying in those moments a little longer. The clarity is on the other side of the discomfort.",
+    "Took The First Swing": "You showed up and answered the questions. That counts more than it feels like. Most people never get here. Come back when you have more space, more time, and fewer distractions. The deeper layer is waiting."
+  };
+  const tierDescription = TIER_DESCRIPTIONS[tier.tier_title] || '';
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escHtml(firstName)}\u2019s Deep Work Interview</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet"><style>${css}</style><script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","w22t78gnya");<\/script></head><body>
 <script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var h=document.querySelector('.blueprint-header');if(h)h.style.display='none';var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
 <div id="progress"></div>
-<div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div>${depthScore > 0 ? `<div class="hero-depth"><strong>Interview Complete</strong>Session depth score: ${Math.round(depthScore / 25 * 100)} of 100<div class="hero-bar"><div class="hero-bar-fill" style="width:${barPct}%"></div></div></div>` : ""}</div></div>
-<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num gold">${depthScore ? Math.round(depthScore / 25 * 100) : "\u2014"}</div><div class="glance-label">Session Depth Score</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${barPct}%"></div></div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 0)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : msgCount ? Math.round(msgCount / 8) : "\u2014"}</div><div class="glance-label">Core Insights Extracted</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round(insightCount / 20 * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Identified</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div></div></div></div>
+<div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div><div class="hero-tier-badge">${escHtml(tier.tier_title)}</div></div></div>
+<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 40)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))}</div><div class="glance-label">Honest Answers</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))) / 10 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${messagesLoaded ? breakthroughs : Math.max(0, Math.round(msgCount / 15))}</div><div class="glance-label">Breakthrough Moments</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? breakthroughs : Math.round(msgCount / 15)) / 5 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Named</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num gold" style="font-size:16px;line-height:1.3;">${escHtml(tier.tier_title)}</div><div class="glance-label">Your Tier</div></div></div></div></div>
+<div class="section" style="padding:48px 64px;"><div class="glance-inner" style="max-width:720px;margin:0 auto;"><div class="tier-card"><div class="tier-card-title">${escHtml(tier.tier_title)}</div><p class="tier-card-body">${escHtml(tierDescription)}</p></div></div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201C${escHtml(csPullquote)}\u201D</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
 ${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">A note from the interview.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
+${mirrorConnection ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">What this tells us.</div><p class="saw-body">${escHtml(mirrorConnection)}</p></div></div>` : ""}
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201C${escHtml(rpPullquote)}\u201D</div>` : ""}</div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}</div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}${pricingGapBelief ? `<div class="insight-card" style="margin-top:24px;"><div class="insight-label">Pricing Mindset Shift</div><div class="insight-text">${escHtml(pricingGapBelief)}</div></div>` : ""}${pricingCurrent ? `<div class="insight-card" style="margin-top:12px;"><div class="insight-label">Current Pricing Reality</div><div class="insight-text">${escHtml(pricingCurrent)}</div></div>` : ""}</div></div>
 ${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
+${neverSaidPublicly && neverSaidPublicly !== arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you\u2019ve never said publicly.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(neverSaidPublicly)}\u201D</div></div></div>` : ""}
+${missionStatement ? `<div class="section"><div class="section-inner"><div class="eyebrow">Your Mission</div><div class="section-headline">Why This Work Matters</div><div class="insight-card"><div class="insight-label">In your own words</div><div class="insight-text">${escHtml(missionStatement)}</div></div></div></div>` : ""}
 <div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">This is the thing you said you\u2019d never said publicly.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
 <div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-eyebrow">A Letter from Your Future Self</div><div class="marcus-card">${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
 <div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
@@ -18785,7 +19418,7 @@ ${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><di
 <div class="wallpaper-section"><div class="wallpaper-inner"><div class="wallpaper-card"><div class="wallpaper-copy"><div class="wallpaper-eyebrow">Take This With You</div><div class="wallpaper-headline">Always remember who you are.</div><div class="wallpaper-sub">Your positioning statement, with you everywhere you go.</div><button onclick="downloadPhoneWallpaper('${wpPrimary}','${wpAccent}','${promptForJs}','${firstNameJs}')" style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1.5px solid #E8E8E8;cursor:pointer;margin-top:8px;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Save as Phone Background</button></div><div class="wallpaper-phones"><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Deep Work Interview</div></div></div><div class="phone-frame main"><div class="phone-screen"><div class="phone-text main">${escHtml(positioningStatement.slice(0, 60))}${positioningStatement.length > 60 ? "\u2026" : ""}</div></div></div><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Always remember<br>who you are.</div></div></div></div></div></div></div>
 <div class="final-cta"><div class="final-inner"><div class="final-eyebrow">What Comes Next</div><div class="final-headline">This blueprint is the map.<br>The call is where we build it.</div><div class="final-sub">60 minutes with James to turn this blueprint into a living system. Your offer, your positioning, your pricing, your client selection. All of it, restructured around what you\u2019re actually great at.</div><div class="final-card"><div class="final-card-title">What happens on the Strategy Call</div><div class="final-card-items"><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Walk through your blueprint together, live</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Name the one offer that should be your entire business</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Price it based on transformation, not time</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Build your client selection criteria</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Map the 90 day implementation path</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Leave with a system, not just a strategy</div></div></div></div><div class="final-price"><div class="final-price-amount">$297</div><div class="final-price-label">One session. One system. One clear direction forward.</div></div><a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" class="final-btn">Book Your Strategy Call</a><div class="final-guarantee">If you don\u2019t leave the call with a clearer direction than you walked in with, you don\u2019t pay. That\u2019s the deal.</div><div class="final-testimonial"><p>\u201CIt just gave me a very honest, objective mirror back at myself. It pointed out that my biggest case study was nowhere on my website and asked, why are you burying all the leads? I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career.\u201D</p><div class="final-testimonial-author">Chris Van Loan II &mdash; Founder, Luminary Media</div></div></div></div>
 <div style="text-align:center;padding:48px 24px;background:#FAFAFA;border-top:1px solid #F0F0F0;"><div style="max-width:600px;margin:0 auto;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:12px;">Take This Further</div><div style="font-size:20px;font-weight:700;color:#1D1D1F;margin-bottom:8px;">Download your interview transcript</div><div style="font-size:15px;color:#86868B;margin-bottom:24px;">Take it to your AI to keep building your brand strategy.</div><a href="/api/session/export-transcript?sessionId=${sessionId}${downloadToken ? "&dltoken=" + downloadToken : ""}" style="display:inline-block;background:#1D1D1F;color:#fff;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;">Download Transcript (.md)</a></div></div>
-<script>window.addEventListener('scroll',function(){var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}if(typeof clarity==='function'){clarity('set','blueprint_viewed','true');clarity('set','session_id','${sessionId}');}document.addEventListener('DOMContentLoaded',function(){var ctaBtn=document.querySelector('.final-btn');if(ctaBtn){ctaBtn.addEventListener('click',function(){if(typeof clarity==='function'){clarity('set','strategy_cta_clicked','true');}});}}); function downloadTranscript(sid){var btn=document.getElementById('transcriptBtn');if(btn)btn.textContent='Downloading\u2026';var token=(window.STATE&&STATE.sessionJwt)||localStorage.getItem('dw_session_jwt')||localStorage.getItem('dw_admin_token')||localStorage.getItem('dw_session')||'';var headers={};if(token)headers['Authorization']='Bearer '+token;fetch('/api/session/export-transcript?sessionId='+sid,{credentials:'include',headers:headers}).then(function(r){if(!r.ok)throw new Error('unauthorized');return r.blob();}).then(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='deep-work-transcript.md';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(btn)btn.textContent='Download Transcript (.md)';}).catch(function(){if(btn)btn.textContent='Download Transcript (.md)';alert('Could not download. Make sure you are logged in and try again.');});} function downloadPhoneWallpaper(primary,accent,statement,name){var c=document.createElement('canvas');c.width=1080;c.height=1920;var ctx=c.getContext('2d');var g=ctx.createLinearGradient(0,0,0,1920);g.addColorStop(0,primary||'#1D1D1F');g.addColorStop(1,_shade(primary||'#1D1D1F',-50));ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,1300,1080,620);ctx.fillStyle=accent||'#C4703F';ctx.font='500 32px Georgia,serif';ctx.textAlign='center';ctx.fillText('DEEP WORK INTERVIEW',540,260);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(180,300);ctx.lineTo(900,300);ctx.stroke();ctx.fillStyle='#FFFFFF';ctx.font='bold 74px Georgia,serif';ctx.textAlign='center';_wrap(ctx,statement||'Your positioning statement.',540,520,820,90);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=1;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(180,1560);ctx.lineTo(900,1560);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='32px Georgia,serif';ctx.fillText('Always remember who you are.',540,1630);ctx.fillStyle=accent||'#C4703F';ctx.font='600 26px sans-serif';ctx.fillText('jamesguldan.com/deep-work',540,1700);c.toBlob(function(blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=(name||'blueprint')+'-phone-wallpaper.png';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);},'image/png');} function _wrap(ctx,text,x,y,maxW,lh){var words=text.split(' '),line='';for(var i=0;i<words.length;i++){var t=line+words[i]+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lh;}else line=t;}ctx.fillText(line,x,y);} function _shade(hex,pct){var n=parseInt(hex.replace('#',''),16),a=Math.round(2.55*pct),R=Math.max(0,Math.min(255,(n>>16)+a)),G=Math.max(0,Math.min(255,(n>>8&255)+a)),B=Math.max(0,Math.min(255,(n&255)+a));return'#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);}<\/script></body></html>`;
+<script>window.addEventListener('scroll',function(){var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}if(typeof clarity==='function'){clarity('set','blueprint_viewed','true');clarity('set','session_id','${sessionId}');}document.addEventListener('DOMContentLoaded',function(){var ctaBtn=document.querySelector('.final-btn');if(ctaBtn){ctaBtn.addEventListener('click',function(){if(typeof clarity==='function'){clarity('set','strategy_cta_clicked','true');}});}});try{fetch('/api/event/tier-viewed',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'${sessionId}',tier:'${escHtml(tier.tier_title)}'})}).catch(function(){});}catch(e){} function downloadTranscript(sid){var btn=document.getElementById('transcriptBtn');if(btn)btn.textContent='Downloading\u2026';var token=(window.STATE&&STATE.sessionJwt)||localStorage.getItem('dw_session_jwt')||localStorage.getItem('dw_admin_token')||localStorage.getItem('dw_session')||'';var headers={};if(token)headers['Authorization']='Bearer '+token;fetch('/api/session/export-transcript?sessionId='+sid,{credentials:'include',headers:headers}).then(function(r){if(!r.ok)throw new Error('unauthorized');return r.blob();}).then(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='deep-work-transcript.md';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(btn)btn.textContent='Download Transcript (.md)';}).catch(function(){if(btn)btn.textContent='Download Transcript (.md)';alert('Could not download. Make sure you are logged in and try again.');});} function downloadPhoneWallpaper(primary,accent,statement,name){var c=document.createElement('canvas');c.width=1080;c.height=1920;var ctx=c.getContext('2d');var g=ctx.createLinearGradient(0,0,0,1920);g.addColorStop(0,primary||'#1D1D1F');g.addColorStop(1,_shade(primary||'#1D1D1F',-50));ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,1300,1080,620);ctx.fillStyle=accent||'#C4703F';ctx.font='500 32px Georgia,serif';ctx.textAlign='center';ctx.fillText('DEEP WORK INTERVIEW',540,260);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(180,300);ctx.lineTo(900,300);ctx.stroke();ctx.fillStyle='#FFFFFF';ctx.font='bold 74px Georgia,serif';ctx.textAlign='center';_wrap(ctx,statement||'Your positioning statement.',540,520,820,90);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=1;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(180,1560);ctx.lineTo(900,1560);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='32px Georgia,serif';ctx.fillText('Always remember who you are.',540,1630);ctx.fillStyle=accent||'#C4703F';ctx.font='600 26px sans-serif';ctx.fillText('jamesguldan.com/deep-work',540,1700);c.toBlob(function(blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=(name||'blueprint')+'-phone-wallpaper.png';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);},'image/png');} function _wrap(ctx,text,x,y,maxW,lh){var words=text.split(' '),line='';for(var i=0;i<words.length;i++){var t=line+words[i]+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lh;}else line=t;}ctx.fillText(line,x,y);} function _shade(hex,pct){var n=parseInt(hex.replace('#',''),16),a=Math.round(2.55*pct),R=Math.max(0,Math.min(255,(n>>16)+a)),G=Math.max(0,Math.min(255,(n>>8&255)+a)),B=Math.max(0,Math.min(255,(n&255)+a));return'#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);}<\/script></body></html>`;
 }
 __name(renderBlueprintV3, "renderBlueprintV3");
 init_resend();
@@ -18811,6 +19444,16 @@ async function loadBlueprintForSession(env, sessionId) {
   };
 }
 __name(loadBlueprintForSession, "loadBlueprintForSession");
+async function handleEventTierViewed(request, env) {
+  try {
+    const { sessionId, tier } = await request.json();
+    if (sessionId) {
+      await logSessionEvent(env, sessionId, "tier_viewed", { tier });
+    }
+  } catch (_) {}
+  return json({ ok: true });
+}
+__name(handleEventTierViewed, "handleEventTierViewed");
 async function handleBlueprintRender(request, env) {
   const { sessionId } = await request.json();
   if (!sessionId)
@@ -18846,6 +19489,9 @@ async function handleBlueprintRender(request, env) {
       if (raw) {
         const session = JSON.parse(raw);
         const messages = Array.isArray(session.messages) ? session.messages : [];
+        if (sessionMeta && !sessionMeta.messages) {
+          sessionMeta.messages = messages;
+        }
         for (let i = 0; i < Math.min(messages.length - 1, 20); i++) {
           const msg = messages[i];
           const content = typeof msg.content === "string" ? msg.content : Array.isArray(msg.content) ? msg.content.map((c) => c.text || "").join(" ") : "";
@@ -18865,6 +19511,17 @@ async function handleBlueprintRender(request, env) {
       }
     } catch (_) {
     }
+  }
+  // Extract messages for metric computation when userName was already known (KV not fetched above)
+  try {
+    if (sessionMeta && !sessionMeta.messages) {
+      const raw = await env.SESSIONS.get(sessionId);
+      if (raw) {
+        const kv = JSON.parse(raw);
+        sessionMeta.messages = Array.isArray(kv.messages) ? kv.messages : [];
+      }
+    }
+  } catch (_) {
   }
   let downloadToken = "";
   try {
@@ -19584,144 +20241,67 @@ async function handleAdminForceGenerateBlueprint(request, env) {
 __name(handleAdminForceGenerateBlueprint, "handleAdminForceGenerateBlueprint");
 
 var INTERNAL_BP_TOKEN = "bp-internal-2026";
+
+// Helper: stream a single Anthropic request to completion with retry
+async function streamAnthropicCall(apiKey, body, retries) {
+  retries = retries || 3;
+  let lastErr;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 1000));
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({ ...body, stream: true })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        lastErr = new Error("Anthropic " + res.status + ": " + errText.slice(0, 200));
+        if (res.status !== 529 && res.status !== 503) throw lastErr;
+        continue;
+      }
+      let fullContent = "";
+      let outputTokens = 0;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const d = line.slice(6).trim();
+            if (d === "[DONE]") continue;
+            try {
+              const ev = JSON.parse(d);
+              if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") fullContent += ev.delta.text;
+              else if (ev.type === "message_delta" && ev.usage) outputTokens = ev.usage.output_tokens || outputTokens;
+            } catch (_) {}
+          }
+        }
+      } finally { reader.releaseLock(); }
+      return { fullContent, outputTokens };
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("streamAnthropicCall failed after retries");
+}
+__name(streamAnthropicCall, "streamAnthropicCall");
+
 async function handleInternalGenerateBlueprint(request, env) {
   if (request.headers.get("X-Internal-Token") !== INTERNAL_BP_TOKEN) {
     return json({ error: "Forbidden" }, 403);
   }
   try {
-    const { sessionId, force } = await request.json();
+    const body = await request.json();
+    const { sessionId, force, jobId } = body;
     if (!sessionId) return json({ error: "sessionId required" }, 400);
-    const kvData = await env.SESSIONS.get(sessionId);
-    if (!kvData) return json({ error: "Session not found" }, 404);
-    const session = JSON.parse(kvData);
-    if (!force && session.blueprintGenerated && session.blueprint) {
-      return json({ ok: true, alreadyDone: true });
-    }
-    const messages = Array.isArray(session.messages) ? session.messages : [];
-    // Strip any assistant messages containing a ```json block — these are previous failed
-    // blueprint attempts. Leaving them in confuses the AI into continuing the old/wrong
-    // schema instead of generating a clean new-format blueprint from scratch.
-    const cleanMessages = messages.filter(function(msg) {
-      return !msg.content || !msg.content.includes("```json");
-    });
-    const triggerMessages = [
-      ...cleanMessages.slice(-60),
-      { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh — do not reference or continue any previous blueprint attempt. Begin your response with ```json and end with ```." }
-    ];
-    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length + " cleaned=" + cleanMessages.length);
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": env.ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        model: MODEL_OPUS,
-        max_tokens: 32768,
-        stream: true,
-        system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
-        messages: triggerMessages
-      })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("[InternalBP] Anthropic error", res.status, errText.slice(0, 300));
-      return json({ error: "Anthropic error " + res.status }, 500);
-    }
-    let fullContent = "";
-    let outputTokens = 0;
-    const bpReader = res.body.getReader();
-    const bpDecoder = new TextDecoder();
-    let bpBuffer = "";
-    try {
-      while (true) {
-        const { done, value } = await bpReader.read();
-        if (done) break;
-        bpBuffer += bpDecoder.decode(value, { stream: true });
-        const bpLines = bpBuffer.split("\n");
-        bpBuffer = bpLines.pop();
-        for (const line of bpLines) {
-          if (!line.startsWith("data: ")) continue;
-          const dataStr = line.slice(6).trim();
-          if (dataStr === "[DONE]") continue;
-          try {
-            const ev = JSON.parse(dataStr);
-            if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") {
-              fullContent += ev.delta.text;
-            } else if (ev.type === "message_delta" && ev.usage) {
-              outputTokens = ev.usage.output_tokens || outputTokens;
-            }
-          } catch (_) {}
-        }
-      }
-    } finally {
-      bpReader.releaseLock();
-    }
-    if (!fullContent) return json({ error: "Empty Anthropic response" }, 500);
-    const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
-    if (!blueprintMatch) {
-      console.error("[InternalBP] No JSON found for session=" + sessionId + " preview=" + fullContent.slice(0, 200));
-      return json({ error: "No blueprint JSON in Anthropic response" }, 500);
-    }
-    let blueprint;
-    try {
-      blueprint = JSON.parse(blueprintMatch[1]);
-    } catch (parseErr) {
-      return json({ error: "Blueprint JSON parse failed: " + parseErr.message }, 500);
-    }
-    const bpValidation = validateBlueprint(blueprint);
-    if (!bpValidation.passed) {
-      const repaired = autoRepairBlueprint(blueprint);
-      blueprint = repaired.blueprint;
-      if (repaired.repairCount > 0) console.log("[InternalBP] Repaired " + repaired.repairCount + " issues");
-    }
-    session.blueprint = blueprint;
-    session.blueprintGenerated = true;
-    session.phase = Math.max(Number(session.phase) || 1, 7);
-    session.messages = [
-      ...messages,
-      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." },
-      { role: "assistant", content: fullContent }
-    ];
-    try {
-      const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
-      if (debrief) session.strategistDebrief = debrief;
-    } catch (debriefErr) {
-      console.error("[InternalBP] Debrief failed:", debriefErr.message);
-    }
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
-    env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
-      blueprint,
-      name: blueprint.name || session.userName || "",
-      apolloData: session.apolloData || null,
-      messageCount: session.messages.length
-    }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
-    env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
-    await env.DB.prepare(
-      "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
-    ).bind(session.phase, sessionId).run().catch((e) => console.error("[InternalBP] D1 update failed:", e.message));
-    try {
-      if (session.userId) {
-        const user = await getUserById(env, session.userId);
-        if (user?.email) {
-          const bp2 = blueprint?.blueprint || blueprint;
-          fireEventToDripWorker(env, user.email, "interview_completed", {
-            name: user.name || "",
-            phone: session.phone || "",
-            highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
-            niche_statement: bp2?.part3?.nicheStatement || "",
-            brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
-            next_step: bp2?.part8?.recommendation || "self_guided"
-          }).catch(() => {});
-        }
-      }
-    } catch (_) {}
-    saveToRAG(env, session, blueprint).catch(() => {});
-    extractSessionInsights(env, sessionId, session).catch(() => {});
-    const li = blueprint?.leadIntel;
-    if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
-    console.log("[InternalBP] Done — session=" + sessionId + " tokens=" + outputTokens);
+    await runBlueprintJob(sessionId, jobId || null, !!force, env);
     return json({ ok: true, sessionId });
   } catch (e) {
     console.error("[InternalBP] Fatal:", e.message);
@@ -19729,6 +20309,269 @@ async function handleInternalGenerateBlueprint(request, env) {
   }
 }
 __name(handleInternalGenerateBlueprint, "handleInternalGenerateBlueprint");
+
+// Core blueprint generation logic — shared by handleInternalGenerateBlueprint and handleBlueprintStart
+async function runBlueprintJob(sessionId, jobId, force, env) {
+  const updateJobKV = async (updates) => {
+    if (!jobId) return;
+    try {
+      const existing = await env.SESSIONS.get("bp_job:" + jobId, { type: "json" }).catch(() => null) || {};
+      await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ ...existing, ...updates }), { expirationTtl: 60 * 60 * 24 * 7 });
+    } catch (_) {}
+  };
+
+  await updateJobKV({ status: "generating", progress: 10 });
+
+  const kvData = await env.SESSIONS.get(sessionId);
+  if (!kvData) { await updateJobKV({ status: "failed", error: "Session not found" }); return; }
+
+  let session;
+  try { session = JSON.parse(kvData); } catch (_) {
+    const sanitized = kvData.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    session = JSON.parse(sanitized);
+  }
+
+  if (!force && session.blueprintGenerated && session.blueprint) {
+    await updateJobKV({ status: "complete", progress: 100, blueprint: session.blueprint });
+    return;
+  }
+
+  const messages = Array.isArray(session.messages) ? session.messages : [];
+  const cleanMessages = messages.filter((msg) => !msg.content || !msg.content.includes("```json"));
+  const recentMessages = cleanMessages.slice(-60);
+
+  const transcript = recentMessages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => `${m.role.toUpperCase()}: ${(m.content || "").replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim()}`)
+    .slice(-40).join("\n\n").substring(0, 6000);
+
+  console.log("[runBlueprintJob] session=" + sessionId + " turns=" + messages.length + " jobId=" + (jobId || "none"));
+  await updateJobKV({ status: "generating", progress: 15 });
+
+  const triggerA = [
+    ...recentMessages,
+    { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh. Begin your response with ```json and end with ```. The debrief paragraphs and futureSelfLetter must be fully written." }
+  ];
+
+  const proseSysPrompt = `You are a brand strategist writing personalized prose sections for a brand blueprint. Use second person ("you") for mirror_observation. Use first person from James Guldan for futureSelfLetter and arrogant_truth. Be specific — reference what was actually said in the interview. No generic language. Tone: warm, direct, confident. No dashes in the copy. Return only valid JSON — no markdown fences, no explanation.`;
+  const proseUserPrompt = `Based on the interview transcript below, write detailed prose for six specific sections of a brand blueprint.
+
+INTERVIEW TRANSCRIPT:
+${transcript}
+
+Return ONLY a valid JSON object with these fields (no markdown fences):
+{
+  "debrief": {
+    "paragraph1_validation": "2-3 sentences acknowledging what they did and that this interview asked for honesty.",
+    "paragraph2_mirror": "2-3 sentences reflecting their specific situation back using their language.",
+    "paragraph3_quote": "1 sentence — direct quote from the interview, the most emotionally resonant thing they said.",
+    "paragraph4_turn": "2-3 sentences reframing their struggle as strategic advantage.",
+    "paragraph5_invitation": "1-2 sentences transitioning to the blueprint."
+  },
+  "real_problem": {
+    "body": "3-4 paragraphs separated by double newlines. Root cause of why their ideal clients are stuck.",
+    "insight": "One direct sentence naming the mechanism behind the problem.",
+    "pullquote": "One sentence the ideal client says to themselves — in their voice."
+  },
+  "vision": {
+    "body": "3-4 paragraphs separated by double newlines. What becomes possible when the ideal client works with this person.",
+    "insight": "One concrete sentence about what becomes possible."
+  },
+  "mirror_observation": "2-3 paragraphs in second person. Start with You answered every question about... Name the single most striking behavioral pattern. Should feel slightly uncomfortable because it is true.",
+  "mirror_connection": "2-3 sentences connecting the origin wound or formative experience they described to the exact struggle their ideal client is going through right now. Make the line explicit.",
+  "arrogant_truth": "One sentence starting with I can... or naming a specific capability with a specific outcome. Max 30 words. No hedging. Pull from Phase 7 answer if available.",
+  "mission_statement": "One sentence. What this person would do even if no one paid them. Pull directly from Phase 8 answer if available.",
+  "pricing_current": "What they charge right now. Pull from Phase 7 answer. Be specific — exact number or range.",
+  "pricing_gap_belief": "The internalized voice that stops them from raising prices. Pull from Phase 7 answer about whose voice they hear. One to two sentences.",
+  "never_said_publicly": "The thing they named in this interview for the first time. Pull from Phase 8 answer if available. One sentence in their voice.",
+  "futureSelfLetter": "Full letter 200-300 words from James Guldan to the client. Warm, honest, direct. References specific things from the interview."
+}`;
+
+  const [callAResult, callBResult] = await Promise.all([
+    streamAnthropicCall(env.ANTHROPIC_API_KEY, {
+      model: MODEL_OPUS,
+      max_tokens: 24000,
+      system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
+      messages: triggerA
+    }).then((r) => { updateJobKV({ progress: 60 }).catch(() => {}); return r; }),
+    streamAnthropicCall(env.ANTHROPIC_API_KEY, {
+      model: MODEL_OPUS,
+      max_tokens: 8000,
+      system: proseSysPrompt,
+      messages: [{ role: "user", content: proseUserPrompt }]
+    }).then((r) => { updateJobKV({ progress: 80 }).catch(() => {}); return r; })
+  ]);
+
+  await updateJobKV({ progress: 85 });
+
+  if (!callAResult.fullContent) throw new Error("Empty response from blueprint Call A");
+  const blueprintMatch = callAResult.fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || callAResult.fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
+  if (!blueprintMatch) throw new Error("No blueprint JSON in Call A response");
+
+  let blueprint = JSON.parse(blueprintMatch[1]);
+
+  try {
+    const proseText = callBResult.fullContent || "";
+    const proseMatch = proseText.match(/\{[\s\S]*\}/);
+    if (proseMatch) {
+      const prose = JSON.parse(proseMatch[0]);
+      if (prose.debrief) blueprint.debrief = { ...(blueprint.debrief || {}), ...prose.debrief };
+      if (!blueprint.v3) blueprint.v3 = {};
+      if (prose.real_problem) blueprint.v3.realProblem = { ...(blueprint.v3.realProblem || {}), ...prose.real_problem };
+      if (prose.vision) blueprint.v3.vision = { ...(blueprint.v3.vision || {}), ...prose.vision };
+      if (prose.mirror_observation) blueprint.v3.mirror_observation = prose.mirror_observation;
+      if (prose.mirror_connection) blueprint.v3.mirror_connection = prose.mirror_connection;
+      if (prose.arrogant_truth) blueprint.v3.arrogant_truth = prose.arrogant_truth;
+      if (prose.mission_statement) blueprint.v3.mission_statement = prose.mission_statement;
+      if (prose.pricing_current) blueprint.v3.pricing_current = prose.pricing_current;
+      if (prose.pricing_gap_belief) blueprint.v3.pricing_gap_belief = prose.pricing_gap_belief;
+      if (prose.never_said_publicly) blueprint.v3.never_said_publicly = prose.never_said_publicly;
+      if (prose.futureSelfLetter) blueprint.v3.futureSelfLetter = prose.futureSelfLetter;
+      if (prose.real_problem?.body && !blueprint.part3?.nicheStatement) {
+        if (!blueprint.part3) blueprint.part3 = {};
+        blueprint.part3.nicheStatement = prose.real_problem.body;
+        blueprint.part3.uniqueMechanism = prose.real_problem.insight || "";
+        blueprint.part3._realProblem = prose.real_problem;
+      }
+      if (prose.vision?.body && !blueprint.debrief?.paragraph4_turn) {
+        if (!blueprint.debrief) blueprint.debrief = {};
+        blueprint.debrief.paragraph4_turn = prose.vision.body;
+        blueprint.debrief.paragraph5_invitation = prose.vision.insight || "";
+        blueprint.debrief._vision = prose.vision;
+      }
+      console.log("[runBlueprintJob] Prose extension merged");
+    }
+  } catch (proseErr) {
+    console.warn("[runBlueprintJob] Prose merge failed (non-fatal):", proseErr.message);
+  }
+
+  const bpValidation = validateBlueprint(blueprint);
+  if (!bpValidation.passed) {
+    const repaired = autoRepairBlueprint(blueprint);
+    blueprint = repaired.blueprint;
+    if (repaired.repairCount > 0) console.log("[runBlueprintJob] Repaired " + repaired.repairCount + " issues");
+  }
+
+  await updateJobKV({ progress: 90 });
+
+  session.blueprint = blueprint;
+  session.blueprintGenerated = true;
+  session.phase = Math.max(Number(session.phase) || 1, 8);
+  session.messages = [
+    ...messages,
+    { role: "user", content: "I am ready. Please generate my complete brand blueprint now.", system: true },
+    { role: "assistant", content: callAResult.fullContent, system: true }
+  ];
+
+  try {
+    const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+    if (debrief) session.strategistDebrief = debrief;
+  } catch (debriefErr) {
+    console.error("[runBlueprintJob] Debrief failed:", debriefErr.message);
+  }
+
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+  env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
+    blueprint,
+    name: blueprint.name || session.userName || "",
+    apolloData: session.apolloData || null,
+    messageCount: session.messages.length
+  }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
+  env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
+
+  await env.DB.prepare(
+    "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
+  ).bind(session.phase, sessionId).run().catch((e) => console.error("[runBlueprintJob] D1 update failed:", e.message));
+
+  try {
+    const sessionRow = await env.DB.prepare("SELECT emotional_depth_score FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+    const emotionalScore = sessionRow?.emotional_depth_score ?? null;
+    const tier = computeUserTier(emotionalScore);
+    await logSessionEvent(env, sessionId, "tier_computed", { tier_title: tier?.tier_title, grade: tier?.grade, score: emotionalScore });
+  } catch (tierLogErr) {
+    console.error("[runBlueprintJob] tier_computed log failed:", tierLogErr.message);
+  }
+
+  await updateJobKV({ status: "complete", progress: 100, blueprint, completedAt: new Date().toISOString() });
+
+  try {
+    if (session.userId) {
+      const user = await getUserById(env, session.userId);
+      if (user?.email) {
+        const bp2 = blueprint?.blueprint || blueprint;
+        fireEventToDripWorker(env, user.email, "interview_completed", {
+          name: user.name || "",
+          phone: session.phone || "",
+          highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
+          niche_statement: bp2?.part3?.nicheStatement || "",
+          brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
+          next_step: bp2?.part8?.recommendation || "self_guided"
+        }).catch(() => {});
+      }
+    }
+  } catch (_) {}
+
+  saveToRAG(env, session, blueprint).catch(() => {});
+  extractSessionInsights(env, sessionId, session).catch(() => {});
+  const li = blueprint?.leadIntel;
+  if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
+  console.log("[runBlueprintJob] Done session=" + sessionId + " tokens=" + (callAResult.outputTokens + callBResult.outputTokens));
+}
+__name(runBlueprintJob, "runBlueprintJob");
+
+// POST /api/blueprint/start — returns 202 + jobId immediately, runs generation async
+async function handleBlueprintStart(request, env, ctx) {
+  const user = await requireAuth(request, env);
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  let sessionId;
+  try { sessionId = (await request.json()).sessionId; } catch (_) {}
+  if (!sessionId) return json({ error: "sessionId required" }, 400);
+
+  // Verify session belongs to user (or admin)
+  const sessionRow = await env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+  if (!sessionRow) return json({ error: "Session not found" }, 404);
+  if (sessionRow.user_id !== user.id && user.role !== "admin") return json({ error: "Forbidden" }, 403);
+
+  const jobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const jobData = {
+    jobId,
+    sessionId,
+    status: "pending",
+    progress: 0,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    blueprint: null,
+    error: null
+  };
+  await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify(jobData), { expirationTtl: 60 * 60 * 24 * 7 });
+
+  // Run generation inline in ctx.waitUntil — avoids self-fetch subrequest KV propagation issues
+  ctx.waitUntil(runBlueprintJob(sessionId, jobId, false, env).catch((e) => {
+    console.error("[BPStart] runBlueprintJob error:", e.message);
+    env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ jobId, sessionId, status: "failed", error: e.message, progress: 0 }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+  }));
+
+  return new Response(JSON.stringify({ jobId, status: "pending" }), {
+    status: 202,
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  });
+}
+__name(handleBlueprintStart, "handleBlueprintStart");
+
+// GET /api/blueprint/status/:jobId
+async function handleBlueprintStatusPoll(request, env, path) {
+  const user = await requireAuth(request, env);
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  const parts = path.split("/"); // ["", "api", "blueprint", "status", "bpj_xxx"]
+  const jobId = parts[4];
+  if (!jobId) return json({ error: "jobId required" }, 400);
+  const jobData = await env.SESSIONS.get("bp_job:" + jobId, { type: "json" }).catch(() => null);
+  if (!jobData) return json({ error: "Job not found" }, 404);
+  // Strip full blueprint from poll response to keep it small; client gets it via session fetch
+  const { blueprint, ...rest } = jobData;
+  return json({ ...rest, hasBlueprint: !!blueprint });
+}
+__name(handleBlueprintStatusPoll, "handleBlueprintStatusPoll");
 
 async function handleAdminGenerateV3Fields(request, env) {
   const key = request.headers.get("X-Admin-Key");
@@ -20044,6 +20887,84 @@ async function handleAdminPersonDetail(request, env, path) {
   });
 }
 __name(handleAdminPersonDetail, "handleAdminPersonDetail");
+async function handleAdminHealthDashboard(request, env) {
+  await requireAdmin(request, env);
+  const now = new Date();
+
+  const [healthCounts, recentCompletions, activeInterviews, nudgeQueue, errorPulse] = await Promise.all([
+    env.DB.prepare("SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health ORDER BY cnt DESC").all(),
+    env.DB.prepare("SELECT s.id, s.created_at, s.last_active_at, u.email, s.tier_title, s.depth_grade FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.blueprint_generated=1 AND s.last_active_at > datetime('now', '-7 days') ORDER BY s.last_active_at DESC LIMIT 20").all(),
+    env.DB.prepare("SELECT s.id, s.phase, s.message_count, s.created_at, u.email FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.status='active' AND s.last_active_at > datetime('now', '-24 hours') ORDER BY s.message_count DESC LIMIT 20").all(),
+    env.DB.prepare("SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IN ('cold_abandoned','mid_drop') AND status='active' GROUP BY session_health").all(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')").first()
+  ]);
+
+  const healthRows = healthCounts.results || [];
+  const completionRows = recentCompletions.results || [];
+  const activeRows = activeInterviews.results || [];
+  const nudgeRows = nudgeQueue.results || [];
+  const recentErrors = errorPulse?.cnt || 0;
+
+  const healthTable = healthRows.map((r) =>
+    `<tr><td>${escHtml(r.session_health || "")}</td><td><strong>${r.cnt}</strong></td></tr>`
+  ).join("") || "<tr><td colspan='2'>No data</td></tr>";
+
+  const completionTable = completionRows.map((r) =>
+    `<tr><td>${escHtml(r.email || "\u2014")}</td><td>${escHtml(r.tier_title || "\u2014")}</td><td>${escHtml(r.depth_grade || "\u2014")}</td><td>${r.last_active_at ? r.last_active_at.slice(0, 10) : "\u2014"}</td></tr>`
+  ).join("") || "<tr><td colspan='4'>No completions this week</td></tr>";
+
+  const activeTable = activeRows.map((r) =>
+    `<tr><td>${escHtml(r.email || "\u2014")}</td><td>${r.phase || "?"}</td><td>${r.message_count || 0}</td><td>${r.created_at ? r.created_at.slice(0, 10) : "\u2014"}</td></tr>`
+  ).join("") || "<tr><td colspan='4'>No active interviews</td></tr>";
+
+  const nudgeSummary = nudgeRows.map((r) => `${r.session_health}: ${r.cnt}`).join(", ") || "0 candidates";
+  const errorColor = recentErrors > 5 ? "#c00" : recentErrors > 0 ? "#c60" : "#090";
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>DWI Health Dashboard</title>
+<meta http-equiv="refresh" content="30">
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f8f8f8;margin:0;padding:24px;color:#1d1d1f;}
+h1{font-size:22px;margin-bottom:4px;}
+.ts{color:#666;font-size:13px;margin-bottom:24px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.panel{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:20px;}
+.panel h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;color:#666;font-weight:500;border-bottom:1px solid #e5e5e5;padding:6px 8px;}
+td{padding:6px 8px;border-bottom:1px solid #f0f0f0;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;}
+.pulse{font-size:28px;font-weight:700;}
+.full{grid-column:1/-1;}
+</style>
+</head><body>
+<h1>DWI Health Dashboard</h1>
+<div class="ts">Last updated: ${now.toISOString()} \u2014 auto-refreshes every 30s</div>
+<div class="grid">
+  <div class="panel">
+    <h2>Session Health States</h2>
+    <table><thead><tr><th>State</th><th>Count</th></tr></thead><tbody>${healthTable}</tbody></table>
+  </div>
+  <div class="panel">
+    <h2>Error Pulse (last 1h)</h2>
+    <div class="pulse" style="color:${errorColor}">${recentErrors}</div>
+    <p style="font-size:13px;color:#666;margin-top:8px;">${recentErrors === 0 ? "All clear" : `${recentErrors} error${recentErrors !== 1 ? "s" : ""} in the last hour`}</p>
+    <h2 style="margin-top:20px;">Nudge Queue</h2>
+    <p style="font-size:13px;">${nudgeSummary}</p>
+  </div>
+  <div class="panel full">
+    <h2>Recent Completions (7d)</h2>
+    <table><thead><tr><th>Email</th><th>Tier</th><th>Grade</th><th>Completed</th></tr></thead><tbody>${completionTable}</tbody></table>
+  </div>
+  <div class="panel full">
+    <h2>Active Interviews (24h)</h2>
+    <table><thead><tr><th>Email</th><th>Phase</th><th>Messages</th><th>Started</th></tr></thead><tbody>${activeTable}</tbody></table>
+  </div>
+</div>
+</body></html>`;
+
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+__name(handleAdminHealthDashboard, "handleAdminHealthDashboard");
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -20308,6 +21229,8 @@ async function handleAdminSaveSettings(request, env) {
   }
 }
 __name(handleAdminSaveSettings, "handleAdminSaveSettings");
+// CLEANUP-2026-04-05: prompt_versions table is active. Used by admin prompt editor to read/save custom system prompts.
+// 1 row as of 2026-04-05, last written 2026-03-25. Fallback to hardcoded DEEP_WORK_SYSTEM_PROMPT if table is empty. Keep.
 async function handleAdminGetPrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -22709,6 +23632,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminBlueprintJson(request, env, path);
     if (path.match(/^\/admin\/session\/[^/]+\/blueprint-formatted$/) && request.method === "GET")
       return handleAdminBlueprintFormatted(request, env, path);
+    if (path === "/admin/health")
+      return handleAdminHealthDashboard(request, env);
     if (path === "/admin/people")
       return handleAdminPeople(request, env);
     if (path.startsWith("/admin/people/") && path !== "/admin/people")
@@ -22822,6 +23747,10 @@ async function routeRequest(request, env, ctx) {
       return handleExport(request, env);
     if (path === "/api/export-site" && request.method === "GET")
       return handleExportSite(request, env);
+    if (path === "/api/blueprint/start" && request.method === "POST")
+      return handleBlueprintStart(request, env, ctx);
+    if (path.startsWith("/api/blueprint/status/") && request.method === "GET")
+      return handleBlueprintStatusPoll(request, env, path);
     if (path === "/api/blueprint/pdf" && request.method === "POST")
       return handleBlueprintPDF(request, env);
     if (path === "/api/blueprint/pdf-download" && request.method === "POST")
@@ -22838,12 +23767,16 @@ async function routeRequest(request, env, ctx) {
       return handleResonanceScore(request, env);
     if (path === "/api/blueprint/testimonial-capture" && request.method === "POST")
       return handleTestimonialCapture(request, env);
+    if (path === "/api/event/tier-viewed" && request.method === "POST")
+      return handleEventTierViewed(request, env);
     if (path === "/api/feedback" && request.method === "POST")
       return handleFeedback(request, env);
     if (path === "/api/log-event" && request.method === "POST")
       return handleLogEvent(request, env);
     if (path === "/api/track" && request.method === "POST")
       return handleTrack(request, env);
+    if (path === "/api/unsubscribe" && request.method === "GET")
+      return handleUnsubscribe(request, env);
     if (path === "/api/create-payment-intent" && request.method === "POST")
       return handleCreatePaymentIntent(request, env);
     if (path === "/api/fulfill-payment" && request.method === "POST")
@@ -22926,6 +23859,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminCreateWeeklySnapshot(request, env);
     if (path === "/api/admin/backfill" && request.method === "POST")
       return handleAdminBackfill(request, env);
+    if (path === "/api/admin/backfill-health" && request.method === "POST")
+      return handleAdminBackfillHealth(request, env);
     if (path === "/api/admin/bulk-v3" && request.method === "POST")
       return handleAdminBulkV3(request, env);
     if (path === "/api/admin/resend-blueprint" && request.method === "POST")
@@ -22934,6 +23869,11 @@ async function routeRequest(request, env, ctx) {
       return handleAdminPeopleSearch(request, env);
     if (path.startsWith("/api/admin/people/") && path.endsWith("/detail") && request.method === "GET")
       return handleAdminPersonDetail(request, env, path);
+    if (path === "/api/admin/test-digest" && request.method === "POST") {
+      await requireAdmin(request, env);
+      await runConditionalDigest(env);
+      return json({ ok: true, message: "Digest triggered" });
+    }
     return new Response(getErrorPageHTML(404, "Page Not Found", ERROR_PAGES[404].message), {
       status: 404,
       headers: htmlHeaders()
@@ -22969,17 +23909,65 @@ async function routeRequest(request, env, ctx) {
   }
 }
 __name(routeRequest, "routeRequest");
+
+// === Phase A: Nudge scanner ===
+async function scanAndSendNudges(env) {
+  const FLAG = env.FLAG_NUDGES_ENABLED || "off"; // "off" | "dry_run" | "live"
+  if (FLAG === "off") return;
+  const dryRun = FLAG !== "live";
+  const now = new Date();
+
+  // Fetch sessions that are candidates (active, with session_health set, last active >1h ago)
+  const rows = await env.DB.prepare(`
+    SELECT s.id, s.user_id, s.session_health, s.created_at, s.last_active_at, s.phase,
+           s.message_count, u.email as user_email,
+           u.name as user_name, u.nudges_opted_out
+    FROM sessions s
+    LEFT JOIN users u ON s.user_id = u.id
+    WHERE s.session_health IN ('cold_abandoned', 'mid_drop')
+    AND s.status = 'active'
+    AND s.last_active_at < datetime('now', '-1 hour')
+    LIMIT 50
+  `).all();
+
+  for (const session of rows.results || []) {
+    try {
+      const nudgeRows = await env.DB.prepare(
+        "SELECT nudge_type, sent_at FROM nudges WHERE session_id = ? ORDER BY sent_at ASC"
+      ).bind(session.id).all();
+      const next = computeNextNudge(session, nudgeRows.results || [], now);
+      if (next && now >= next.send_after) {
+        await sendNudge(env, session, next.nudge_type, dryRun);
+      }
+    } catch (e) {
+      console.error("[scanAndSendNudges] error for session", session.id, ":", e.message);
+    }
+  }
+  console.log("[scanAndSendNudges] FLAG=" + FLAG + " scanned=" + (rows.results || []).length + " candidates");
+}
+__name(scanAndSendNudges, "scanAndSendNudges");
+// === End Phase A: Nudge scanner ===
+
 var src_default = {
   // Cron triggers:
-  //   Every 2 hours — abandonment check
+  //   Every 15 min — nudge scanner
+  //   Every hour — hourly health snapshot
+  //   Every hour — abandonment check
   //   Daily at 9am UTC — full system health check
   //   Every Monday 1pm UTC (8am CT) — weekly snapshot + email report
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try {
+        if (event.cron === "*/15 * * * *") {
+          await scanAndSendNudges(env);
+        }
+        if (event.cron === "0 * * * *") {
+          await runHourlySnapshot(env);
+        }
         await runAbandonmentCheck(env);
         if (event.cron === "0 9 * * *") {
           await runDailyHealthCheck(env);
+          await runConditionalDigest(env); // NEW: conditional issues-only digest
         }
         if (event.cron === "0 13 * * 1") {
           await runWeeklySnapshot(env);
