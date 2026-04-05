@@ -18639,7 +18639,12 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
         insight: deb.paragraph5_invitation || ml.afterPositioning || ""
       },
       mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
+      mirror_connection: "",
       arrogant_truth: deb.paragraph3_quote || bp.openingHook || "",
+      mission_statement: bf.missionStatement || "",
+      pricing_current: "",
+      pricing_gap_belief: "",
+      never_said_publicly: "",
       futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : (pl.proseBody || ""),
       loveLetter: ""
     };
@@ -18673,7 +18678,27 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
   const visBody = vis.body || "";
   const visInsight = vis.insight || "";
   const mirrorObservation = v3.mirror_observation || "";
+  const mirrorConnection = v3.mirror_connection || "";
   const arrogantTruth = v3.arrogant_truth || "";
+  const missionStatement = v3.mission_statement || "";
+  const pricingCurrent = v3.pricing_current || "";
+  const pricingGapBelief = v3.pricing_gap_belief || "";
+  const neverSaidPublicly = v3.never_said_publicly || "";
+  // Confidence scores (0-1) — fields without data get 0.0
+  const fieldConfidences = {
+    mirror_observation: mirrorObservation.length > 50 ? 0.9 : (mirrorObservation.length > 0 ? 0.5 : 0.0),
+    arrogant_truth: arrogantTruth.length > 10 ? 0.85 : (arrogantTruth.length > 0 ? 0.5 : 0.0),
+    mission_statement: missionStatement.length > 10 ? 0.85 : (missionStatement.length > 0 ? 0.5 : 0.0),
+    pricing_current: pricingCurrent.length > 2 ? 0.9 : 0.0,
+    pricing_gap_belief: pricingGapBelief.length > 10 ? 0.85 : 0.0,
+    never_said_publicly: neverSaidPublicly.length > 10 ? 0.9 : 0.0,
+    mirror_connection: mirrorConnection.length > 20 ? 0.85 : 0.0,
+    real_problem: rpBody.length > 100 ? 0.9 : (rpBody.length > 0 ? 0.6 : 0.0),
+    vision: visBody.length > 100 ? 0.9 : (visBody.length > 0 ? 0.6 : 0.0),
+    futureSelfLetter: (v3.futureSelfLetter || v3.marcusLetter || "").length > 100 ? 0.9 : 0.0
+  };
+  const confidenceValues = Object.values(fieldConfidences);
+  const avgConfidence = Math.round(confidenceValues.reduce((s, v) => s + v, 0) / confidenceValues.length * 100);
   const futureSelfLetter = v3.futureSelfLetter || v3.marcusLetter || "";
   function bodyParas(text) {
     if (!text) return "";
@@ -18879,15 +18904,18 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 <script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var h=document.querySelector('.blueprint-header');if(h)h.style.display='none';var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
 <div id="progress"></div>
 <div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div>${depthScore > 0 ? `<div class="hero-depth"><strong>Interview Complete</strong>Session depth score: ${Math.round(depthScore / 25 * 100)} of 100<div class="hero-bar"><div class="hero-bar-fill" style="width:${barPct}%"></div></div></div>` : ""}</div></div>
-<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num gold">${depthScore ? Math.round(depthScore / 25 * 100) : "\u2014"}</div><div class="glance-label">Session Depth Score</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${barPct}%"></div></div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 0)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : msgCount ? Math.round(msgCount / 8) : "\u2014"}</div><div class="glance-label">Core Insights Extracted</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round(insightCount / 20 * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Identified</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div></div></div></div>
+<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num gold">${depthScore ? Math.round(depthScore / 25 * 100) : "\u2014"}</div><div class="glance-label">Session Depth Score</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${barPct}%"></div></div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 0)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : msgCount ? Math.round(msgCount / 8) : "\u2014"}</div><div class="glance-label">Core Insights Extracted</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round(insightCount / 20 * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Identified</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num gold">${avgConfidence > 0 ? avgConfidence : "\u2014"}</div><div class="glance-label">Depth Confidence</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${avgConfidence > 0 ? avgConfidence : 0}%"></div></div></div></div></div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201C${escHtml(csPullquote)}\u201D</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
 ${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">A note from the interview.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
+${mirrorConnection ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">What this tells us.</div><p class="saw-body">${escHtml(mirrorConnection)}</p></div></div>` : ""}
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201C${escHtml(rpPullquote)}\u201D</div>` : ""}</div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}</div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}${pricingGapBelief ? `<div class="insight-card" style="margin-top:24px;"><div class="insight-label">Pricing Mindset Shift</div><div class="insight-text">${escHtml(pricingGapBelief)}</div></div>` : ""}${pricingCurrent ? `<div class="insight-card" style="margin-top:12px;"><div class="insight-label">Current Pricing Reality</div><div class="insight-text">${escHtml(pricingCurrent)}</div></div>` : ""}</div></div>
 ${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
+${neverSaidPublicly && neverSaidPublicly !== arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you\u2019ve never said publicly.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(neverSaidPublicly)}\u201D</div></div></div>` : ""}
+${missionStatement ? `<div class="section"><div class="section-inner"><div class="eyebrow">Your Mission</div><div class="section-headline">Why This Work Matters</div><div class="insight-card"><div class="insight-label">In your own words</div><div class="insight-text">${escHtml(missionStatement)}</div></div></div></div>` : ""}
 <div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">This is the thing you said you\u2019d never said publicly.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
 <div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-eyebrow">A Letter from Your Future Self</div><div class="marcus-card">${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
 <div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
@@ -19833,7 +19861,12 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
     "insight": "One concrete sentence about what becomes possible."
   },
   "mirror_observation": "2-3 paragraphs in second person. Start with You answered every question about... Name the single most striking behavioral pattern. Should feel slightly uncomfortable because it is true.",
-  "arrogant_truth": "One sentence starting with I can... or naming a specific capability with a specific outcome. Max 30 words. No hedging.",
+  "mirror_connection": "2-3 sentences connecting the origin wound or formative experience they described to the exact struggle their ideal client is going through right now. Make the line explicit.",
+  "arrogant_truth": "One sentence starting with I can... or naming a specific capability with a specific outcome. Max 30 words. No hedging. Pull from Phase 7 answer if available.",
+  "mission_statement": "One sentence. What this person would do even if no one paid them. Pull directly from Phase 8 answer if available.",
+  "pricing_current": "What they charge right now. Pull from Phase 7 answer. Be specific — exact number or range.",
+  "pricing_gap_belief": "The internalized voice that stops them from raising prices. Pull from Phase 7 answer about whose voice they hear. One to two sentences.",
+  "never_said_publicly": "The thing they named in this interview for the first time. Pull from Phase 8 answer if available. One sentence in their voice.",
   "futureSelfLetter": "Full letter 200-300 words from James Guldan to the client. Warm, honest, direct. References specific things from the interview."
 }`;
 
@@ -19870,7 +19903,12 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
       if (prose.real_problem) blueprint.v3.realProblem = { ...(blueprint.v3.realProblem || {}), ...prose.real_problem };
       if (prose.vision) blueprint.v3.vision = { ...(blueprint.v3.vision || {}), ...prose.vision };
       if (prose.mirror_observation) blueprint.v3.mirror_observation = prose.mirror_observation;
+      if (prose.mirror_connection) blueprint.v3.mirror_connection = prose.mirror_connection;
       if (prose.arrogant_truth) blueprint.v3.arrogant_truth = prose.arrogant_truth;
+      if (prose.mission_statement) blueprint.v3.mission_statement = prose.mission_statement;
+      if (prose.pricing_current) blueprint.v3.pricing_current = prose.pricing_current;
+      if (prose.pricing_gap_belief) blueprint.v3.pricing_gap_belief = prose.pricing_gap_belief;
+      if (prose.never_said_publicly) blueprint.v3.never_said_publicly = prose.never_said_publicly;
       if (prose.futureSelfLetter) blueprint.v3.futureSelfLetter = prose.futureSelfLetter;
       if (prose.real_problem?.body && !blueprint.part3?.nicheStatement) {
         if (!blueprint.part3) blueprint.part3 = {};
