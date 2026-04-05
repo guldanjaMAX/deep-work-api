@@ -23647,8 +23647,48 @@ async function routeRequest(request, env, ctx) {
   }
 }
 __name(routeRequest, "routeRequest");
+
+// === Phase A: Nudge scanner ===
+async function scanAndSendNudges(env) {
+  const FLAG = env.FLAG_NUDGES_ENABLED || "off"; // "off" | "dry_run" | "live"
+  if (FLAG === "off") return;
+  const dryRun = FLAG !== "live";
+  const now = new Date();
+
+  // Fetch sessions that are candidates (active, with session_health set, last active >1h ago)
+  const rows = await env.DB.prepare(`
+    SELECT s.id, s.session_health, s.created_at, s.last_active_at, s.phase,
+           s.message_count, u.email as user_email,
+           u.name as user_name, u.nudges_opted_out
+    FROM sessions s
+    LEFT JOIN users u ON s.user_id = u.id
+    WHERE s.session_health IN ('cold_abandoned', 'mid_drop')
+    AND s.status = 'active'
+    AND s.last_active_at < datetime('now', '-1 hour')
+    LIMIT 50
+  `).all();
+
+  for (const session of rows.results || []) {
+    try {
+      const nudgeRows = await env.DB.prepare(
+        "SELECT nudge_type, sent_at FROM nudges WHERE session_id = ? ORDER BY sent_at ASC"
+      ).bind(session.id).all();
+      const next = computeNextNudge(session, nudgeRows.results || [], now);
+      if (next && now >= next.send_after) {
+        await sendNudge(env, session, next.nudge_type, dryRun);
+      }
+    } catch (e) {
+      console.error("[scanAndSendNudges] error for session", session.id, ":", e.message);
+    }
+  }
+  console.log("[scanAndSendNudges] FLAG=" + FLAG + " scanned=" + (rows.results || []).length + " candidates");
+}
+__name(scanAndSendNudges, "scanAndSendNudges");
+// === End Phase A: Nudge scanner ===
+
 var src_default = {
   // Cron triggers:
+  //   Every 15 min — nudge scanner
   //   Every hour — hourly health snapshot
   //   Every hour — abandonment check
   //   Daily at 9am UTC — full system health check
@@ -23656,6 +23696,9 @@ var src_default = {
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try {
+        if (event.cron === "*/15 * * * *") {
+          await scanAndSendNudges(env);
+        }
         if (event.cron === "0 * * * *") {
           await runHourlySnapshot(env);
         }
