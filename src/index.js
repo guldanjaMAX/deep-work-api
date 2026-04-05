@@ -13682,6 +13682,8 @@ async function runDailyHealthCheck(env) {
   return { allOk, results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runDailyHealthCheck, "runDailyHealthCheck");
+// CLEANUP-2026-04-05: weekly_snapshots table is active. Called by scheduled handler (runWeeklySnapshot).
+// Also writable via /api/admin/weekly-snapshots (POST) and readable via GET. 2 rows as of 2026-04-05, last written 2026-04-05. Keep.
 async function runWeeklySnapshot(env) {
   try {
     var now = /* @__PURE__ */ new Date();
@@ -14326,6 +14328,10 @@ var API_RATES = {
   "claude-opus-4-6": { input: 15, output: 75 },
   "claude-opus-4-5": { input: 15, output: 75 }
 };
+// CLEANUP-2026-04-05: Two cost/usage tables are intentional and NOT redundant.
+// api_costs — per-call cost in cost_usd (float), keyed by session+email. Used by admin cost dashboards (/admin/costs, /admin/user-costs).
+// token_usage — token-level rows with cost_cents (int), tracks model/phase/cache tokens. Used by /admin/usage (granular analytics).
+// Both tables are actively written to and queried as of 2026-04-05 (1075 rows / 1064 rows). Keep both.
 async function logApiCost(env, { sessionId, userEmail, model, callType, usage }) {
   try {
     if (!usage || !sessionId)
@@ -19059,6 +19065,9 @@ function renderWebsiteBlueprint(bp) {
   return '<div class="chapter-divider"><span class="chapter-divider-label">Your Website Blueprint</span><div class="chapter-divider-sub">The page that turns a stranger into someone who says &ldquo;how did she know.&rdquo;</div></div><section class="bp-section"><div class="bp-inner">' + narrativeHTML + heroHTML + sectionsHTML + proofHTML + testimonialHTML + contraryHTML + "</div></section>";
 }
 __name(renderWebsiteBlueprint, "renderWebsiteBlueprint");
+// CLEANUP-2026-04-05: PDF export renderer — called by handleBlueprintPDF and handleBlueprintPDFDownload.
+// renderBlueprintV3 is the live interactive view; renderBlueprintResults is the static HTML used for PDF generation.
+// Both are active and serve different purposes — do NOT remove.
 function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   var firstName = (userName || "Friend").split(" ")[0];
   var sessionId = bp.sessionId || "";
@@ -19240,8 +19249,7 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .hero-tagline{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(18px,2.5vw,24px);color:rgba(255,255,255,0.92);line-height:1.6;max-width:640px;margin-bottom:40px;}
 .hero-depth{color:rgba(255,255,255,0.55);font-size:13px;line-height:1.6;}
 .hero-depth strong{color:#fff;display:block;font-size:14px;font-family:'Outfit',sans-serif;font-weight:600;}
-.hero-bar{margin-top:8px;width:180px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;}
-.hero-bar-fill{height:100%;background:var(--gold);}
+
 .hero-tier-badge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
 .tier-card{background:var(--off);border:1px solid #F0E8E0;border-radius:var(--radius);padding:36px 40px;margin:48px auto 0;max-width:720px;}
 .tier-card-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
@@ -21218,6 +21226,8 @@ async function handleAdminSaveSettings(request, env) {
   }
 }
 __name(handleAdminSaveSettings, "handleAdminSaveSettings");
+// CLEANUP-2026-04-05: prompt_versions table is active. Used by admin prompt editor to read/save custom system prompts.
+// 1 row as of 2026-04-05, last written 2026-03-25. Fallback to hardcoded DEEP_WORK_SYSTEM_PROMPT if table is empty. Keep.
 async function handleAdminGetPrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
