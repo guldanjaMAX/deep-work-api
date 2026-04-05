@@ -7986,6 +7986,10 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Depth Grades
       </div>
+      <div class="nav-item" onclick="window.location.href='/admin/health'" id="nav-health-dashboard">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Health
+      </div>
       <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
         Settings
@@ -13736,6 +13740,80 @@ async function runWeeklySnapshot(env) {
   }
 }
 __name(runWeeklySnapshot, "runWeeklySnapshot");
+async function runConditionalDigest(env) {
+  const now = new Date();
+  const isWeeklyHeartbeat = now.getUTCDay() === 0; // Sunday
+
+  const [
+    stuckRow, coldRow, midDropRow, shallowRow,
+    errorRow, failedRow, recentNudgesRow, lowCompletionRow
+  ] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='stuck_phase' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='cold_abandoned' AND status='active' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='mid_drop' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='shallow_complete' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE status='failed' AND created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM nudges WHERE sent_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as total, SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as completed FROM sessions WHERE created_at > datetime('now', '-7 days')").first()
+  ]);
+
+  const stuck = stuckRow?.cnt || 0;
+  const cold = coldRow?.cnt || 0;
+  const midDrop = midDropRow?.cnt || 0;
+  const shallow = shallowRow?.cnt || 0;
+  const errors = errorRow?.cnt || 0;
+  const failed = failedRow?.cnt || 0;
+  const nudgesSent = recentNudgesRow?.cnt || 0;
+  const weekTotal = lowCompletionRow?.total || 0;
+  const weekCompleted = lowCompletionRow?.completed || 0;
+  const completionRate = weekTotal > 0 ? Math.round(weekCompleted / weekTotal * 100) : null;
+  const lowCompletion = completionRate !== null && completionRate < 30;
+
+  const issues = [];
+  if (stuck > 0) issues.push(`\uD83D\uDD34 ${stuck} session(s) stuck in early phase`);
+  if (errors > 5) issues.push(`\uD83D\uDD34 ${errors} errors in last 24h`);
+  if (failed > 0) issues.push(`\uD83D\uDFE1 ${failed} session(s) failed today`);
+  if (shallow > 0) issues.push(`\uD83D\uDFE1 ${shallow} shallow completion(s) today`);
+  if (cold > 3) issues.push(`\uD83D\uDFE1 ${cold} new cold abandonments (24h)`);
+  if (midDrop > 5) issues.push(`\uD83D\uDFE1 ${midDrop} sessions in mid-drop`);
+  if (lowCompletion) issues.push(`\uD83D\uDFE1 Completion rate ${completionRate}% this week (target: 30%+)`);
+
+  const hasIssues = issues.length > 0;
+
+  if (!hasIssues && !isWeeklyHeartbeat) {
+    console.log("[ConditionalDigest] No issues today \u2014 skipping email");
+    return;
+  }
+
+  const adminUrl = "https://love.jamesguldan.com/admin/health";
+  const subject = isWeeklyHeartbeat && !hasIssues
+    ? `[DWI] Weekly heartbeat \u2014 all clear`
+    : `[DWI] ${issues.length} issue${issues.length !== 1 ? "s" : ""} need attention`;
+
+  const issueHtml = hasIssues
+    ? issues.map((i) => `<li>${i}</li>`).join("")
+    : "<li>No issues \u2014 weekly check-in</li>";
+
+  const statsHtml = `
+    <p><strong>7-day stats:</strong> ${weekTotal} sessions started, ${weekCompleted} completed (${completionRate ?? "\u2014"}% rate)</p>
+    <p><strong>Nudges sent (24h):</strong> ${nudgesSent}</p>
+    <p><strong>Errors (24h):</strong> ${errors}</p>
+  `;
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "DWI Admin <noreply@jamesguldan.com>",
+      to: ["james@jamesguldan.com"],
+      subject,
+      html: `<h2>${subject}</h2><ul>${issueHtml}</ul>${statsHtml}<p><a href="${adminUrl}">Open health dashboard \u2192</a></p>`
+    })
+  });
+  console.log("[ConditionalDigest] sent:", subject);
+}
+__name(runConditionalDigest, "runConditionalDigest");
 async function runHourlySnapshot(env) {
   try {
     const counts = await env.DB.prepare(
@@ -20798,6 +20876,84 @@ async function handleAdminPersonDetail(request, env, path) {
   });
 }
 __name(handleAdminPersonDetail, "handleAdminPersonDetail");
+async function handleAdminHealthDashboard(request, env) {
+  await requireAdmin(request, env);
+  const now = new Date();
+
+  const [healthCounts, recentCompletions, activeInterviews, nudgeQueue, errorPulse] = await Promise.all([
+    env.DB.prepare("SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health ORDER BY cnt DESC").all(),
+    env.DB.prepare("SELECT s.id, s.created_at, s.last_active_at, u.email, s.tier_title, s.depth_grade FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.blueprint_generated=1 AND s.last_active_at > datetime('now', '-7 days') ORDER BY s.last_active_at DESC LIMIT 20").all(),
+    env.DB.prepare("SELECT s.id, s.phase, s.message_count, s.created_at, u.email FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.status='active' AND s.last_active_at > datetime('now', '-24 hours') ORDER BY s.message_count DESC LIMIT 20").all(),
+    env.DB.prepare("SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IN ('cold_abandoned','mid_drop') AND status='active' GROUP BY session_health").all(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')").first()
+  ]);
+
+  const healthRows = healthCounts.results || [];
+  const completionRows = recentCompletions.results || [];
+  const activeRows = activeInterviews.results || [];
+  const nudgeRows = nudgeQueue.results || [];
+  const recentErrors = errorPulse?.cnt || 0;
+
+  const healthTable = healthRows.map((r) =>
+    `<tr><td>${escHtml(r.session_health || "")}</td><td><strong>${r.cnt}</strong></td></tr>`
+  ).join("") || "<tr><td colspan='2'>No data</td></tr>";
+
+  const completionTable = completionRows.map((r) =>
+    `<tr><td>${escHtml(r.email || "\u2014")}</td><td>${escHtml(r.tier_title || "\u2014")}</td><td>${escHtml(r.depth_grade || "\u2014")}</td><td>${r.last_active_at ? r.last_active_at.slice(0, 10) : "\u2014"}</td></tr>`
+  ).join("") || "<tr><td colspan='4'>No completions this week</td></tr>";
+
+  const activeTable = activeRows.map((r) =>
+    `<tr><td>${escHtml(r.email || "\u2014")}</td><td>${r.phase || "?"}</td><td>${r.message_count || 0}</td><td>${r.created_at ? r.created_at.slice(0, 10) : "\u2014"}</td></tr>`
+  ).join("") || "<tr><td colspan='4'>No active interviews</td></tr>";
+
+  const nudgeSummary = nudgeRows.map((r) => `${r.session_health}: ${r.cnt}`).join(", ") || "0 candidates";
+  const errorColor = recentErrors > 5 ? "#c00" : recentErrors > 0 ? "#c60" : "#090";
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>DWI Health Dashboard</title>
+<meta http-equiv="refresh" content="30">
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f8f8f8;margin:0;padding:24px;color:#1d1d1f;}
+h1{font-size:22px;margin-bottom:4px;}
+.ts{color:#666;font-size:13px;margin-bottom:24px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.panel{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:20px;}
+.panel h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;color:#666;font-weight:500;border-bottom:1px solid #e5e5e5;padding:6px 8px;}
+td{padding:6px 8px;border-bottom:1px solid #f0f0f0;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;}
+.pulse{font-size:28px;font-weight:700;}
+.full{grid-column:1/-1;}
+</style>
+</head><body>
+<h1>DWI Health Dashboard</h1>
+<div class="ts">Last updated: ${now.toISOString()} \u2014 auto-refreshes every 30s</div>
+<div class="grid">
+  <div class="panel">
+    <h2>Session Health States</h2>
+    <table><thead><tr><th>State</th><th>Count</th></tr></thead><tbody>${healthTable}</tbody></table>
+  </div>
+  <div class="panel">
+    <h2>Error Pulse (last 1h)</h2>
+    <div class="pulse" style="color:${errorColor}">${recentErrors}</div>
+    <p style="font-size:13px;color:#666;margin-top:8px;">${recentErrors === 0 ? "All clear" : `${recentErrors} error${recentErrors !== 1 ? "s" : ""} in the last hour`}</p>
+    <h2 style="margin-top:20px;">Nudge Queue</h2>
+    <p style="font-size:13px;">${nudgeSummary}</p>
+  </div>
+  <div class="panel full">
+    <h2>Recent Completions (7d)</h2>
+    <table><thead><tr><th>Email</th><th>Tier</th><th>Grade</th><th>Completed</th></tr></thead><tbody>${completionTable}</tbody></table>
+  </div>
+  <div class="panel full">
+    <h2>Active Interviews (24h)</h2>
+    <table><thead><tr><th>Email</th><th>Phase</th><th>Messages</th><th>Started</th></tr></thead><tbody>${activeTable}</tbody></table>
+  </div>
+</div>
+</body></html>`;
+
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+__name(handleAdminHealthDashboard, "handleAdminHealthDashboard");
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -23463,6 +23619,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminBlueprintJson(request, env, path);
     if (path.match(/^\/admin\/session\/[^/]+\/blueprint-formatted$/) && request.method === "GET")
       return handleAdminBlueprintFormatted(request, env, path);
+    if (path === "/admin/health")
+      return handleAdminHealthDashboard(request, env);
     if (path === "/admin/people")
       return handleAdminPeople(request, env);
     if (path.startsWith("/admin/people/") && path !== "/admin/people")
@@ -23698,6 +23856,11 @@ async function routeRequest(request, env, ctx) {
       return handleAdminPeopleSearch(request, env);
     if (path.startsWith("/api/admin/people/") && path.endsWith("/detail") && request.method === "GET")
       return handleAdminPersonDetail(request, env, path);
+    if (path === "/api/admin/test-digest" && request.method === "POST") {
+      await requireAdmin(request, env);
+      await runConditionalDigest(env);
+      return json({ ok: true, message: "Digest triggered" });
+    }
     return new Response(getErrorPageHTML(404, "Page Not Found", ERROR_PAGES[404].message), {
       status: 404,
       headers: htmlHeaders()
@@ -23791,6 +23954,7 @@ var src_default = {
         await runAbandonmentCheck(env);
         if (event.cron === "0 9 * * *") {
           await runDailyHealthCheck(env);
+          await runConditionalDigest(env); // NEW: conditional issues-only digest
         }
         if (event.cron === "0 13 * * 1") {
           await runWeeklySnapshot(env);
