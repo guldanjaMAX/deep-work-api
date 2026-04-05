@@ -15140,6 +15140,45 @@ async function handleChat(request, env, ctx) {
       const isBlueprintPhase = currentPhaseNum >= 8;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
       const recentMessages = smartTrimMessages(session.messages, currentPhaseNum);
+
+      // A.2: Count user messages since the last phase transition (per-phase count)
+      const userMsgsInCurrentPhase = (() => {
+        const msgs = session.messages || [];
+        let count = 0;
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          const m = msgs[i];
+          if (m.role === "assistant" && /METADATA:\{"phase":(\d+)/.test(m.content || "")) {
+            const mPhase = parseInt(RegExp.$1);
+            if (mPhase !== currentPhaseNum) break; // phase changed here, stop counting
+          }
+          if (m.role === "user") count++;
+        }
+        return count;
+      })();
+
+      // A.1: Detect if METADATA has been silent for the last 3 assistant turns
+      const phaseCheckPending = (() => {
+        if (session._phaseCheckPending) return true;
+        const recentAssistantMsgs = (session.messages || []).filter((m) => m.role === "assistant").slice(-3);
+        const recentHadMetadata = recentAssistantMsgs.some((m) => /METADATA:\{/.test(m.content || ""));
+        if (!recentHadMetadata && recentAssistantMsgs.length >= 3) {
+          console.warn("[PhaseGuard] METADATA silent for 3 turns — session=" + sessionId + " phase=" + currentPhaseNum + " injecting phase sync reminder");
+          return true;
+        }
+        return false;
+      })();
+      // Clear the persisted flag now that we've consumed it
+      if (session._phaseCheckPending) delete session._phaseCheckPending;
+
+      // A.2: Build auto-advance injection string
+      let autoAdvanceInjection = "";
+      if (userMsgsInCurrentPhase >= 12 && currentPhaseNum < 8) {
+        const nextPhase = currentPhaseNum + 1;
+        autoAdvanceInjection = `\n\n[AUTO-ADVANCE] The user has answered ${userMsgsInCurrentPhase} questions in phase ${currentPhaseNum}. Acknowledge their last answer warmly and transition to phase ${nextPhase} now. You MUST emit METADATA:{"phase":${nextPhase},...} in your response.`;
+        logSessionEvent(env, sessionId, "phase_auto_advanced", { from_phase: currentPhaseNum, to_phase: nextPhase, msg_count: userMsgsInCurrentPhase }).catch(() => {});
+        console.log("[AutoAdvance] session=" + sessionId + " advancing from phase " + currentPhaseNum + " to " + nextPhase + " after " + userMsgsInCurrentPhase + " messages");
+      }
+
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
       const MAX_RETRIES = 2;
       let res;
@@ -15205,6 +15244,14 @@ Use this to skip surface-level questions. Go deeper faster.` });
                 }
                 if (currentPhaseNum >= 6 && !session.blueprintGenerated) {
                   sysMsgs.push({ type: "text", text: "URGENT SYSTEM REMINDER: The interview is complete. You MUST output the blueprint JSON now. Your ENTIRE response must be ONLY the ```json code block. No prose. No summary. No explanation. Start with ```json and end with ```. The system renders the JSON into a beautiful page automatically. If you write prose, the user sees raw text and the experience breaks." });
+                }
+                // A.1: PhaseGuard — inject phase sync reminder if METADATA has been silent
+                if (phaseCheckPending) {
+                  sysMsgs.push({ type: "text", text: `[PHASE SYNC REQUIRED] You have not emitted a METADATA block in your last 3 responses. You MUST include METADATA:{...} at the end of your next response. Current phase: ${currentPhaseNum}.` });
+                }
+                // A.2: Auto-advance ceiling injection
+                if (autoAdvanceInjection) {
+                  sysMsgs.push({ type: "text", text: autoAdvanceInjection.trim() });
                 }
                 return sysMsgs;
               })(),
@@ -15295,6 +15342,18 @@ Use this to skip surface-level questions. Go deeper faster.` });
           metadata = JSON.parse(`{${metadataMatch[1]}}`);
         } catch (_) {
         }
+      }
+      // A.1: PhaseGuard — if this response had no METADATA, mark flag for next turn
+      if (!metadataMatch) {
+        const recentAssistantMsgs = (session.messages || []).filter((m) => m.role === "assistant").slice(-3);
+        const recentHadMetadata = recentAssistantMsgs.some((m) => /METADATA:\{/.test(m.content || ""));
+        if (!recentHadMetadata && recentAssistantMsgs.length >= 3) {
+          session._phaseCheckPending = true;
+          console.warn("[PhaseGuard] METADATA silent for 3+ turns — session=" + sessionId + " phase=" + (session.phase || 1) + " flagging for next turn sync");
+        }
+      } else {
+        // METADATA present this turn — clear any pending flag
+        delete session._phaseCheckPending;
       }
       let blueprint = null;
       const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
