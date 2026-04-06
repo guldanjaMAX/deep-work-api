@@ -15480,7 +15480,7 @@ async function handleUserActiveSession(request, env) {
 }
 __name(handleUserActiveSession, "handleUserActiveSession");
 var GEMINI_PROXY_URL = "https://gemini-proxy.james-d13.workers.dev";
-var GEMINI_PROXY_TOKEN = "U$X2eQQST$mz4$vu";
+// Token read from env at call sites via env.GEMINI_PROXY_TOKEN (Cloudflare secret)
 var FETCH_TIMEOUT_MS = 8e3;
 function normalizeUrl(url) {
   if (!url)
@@ -15549,13 +15549,13 @@ function extractTestimonials(html) {
   return found;
 }
 __name(extractTestimonials, "extractTestimonials");
-async function searchWithGemini(query) {
+async function searchWithGemini(query, token) {
   try {
     const res = await fetchWithTimeout(`${GEMINI_PROXY_URL}/v1beta/models/gemini-2.0-flash-001:generateContent`, {
       method: "POST",
       timeout: 2e4,
       headers: {
-        "Authorization": `Bearer ${GEMINI_PROXY_TOKEN}`,
+        "Authorization": `Bearer ${token || ""}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -15614,22 +15614,22 @@ async function fetchLinkedInData(rawUrl) {
   }
 }
 __name(fetchLinkedInData, "fetchLinkedInData");
-async function researchCompetitors(name, niche) {
+async function researchCompetitors(name, niche, token) {
   if (!niche)
     return [];
   const query = `Find the top 5 competitors to "${name}" in the "${niche}" market. For each competitor, list: their name, website URL, how they position themselves (their main tagline or hero copy), and approximate pricing if publicly visible. Format as a numbered list.`;
-  const result = await searchWithGemini(query);
+  const result = await searchWithGemini(query, token);
   if (!result)
     return [{ name: "Search unavailable", note: "Competitor data could not be fetched at this time" }];
   return [{ raw: result, scrapedAt: (/* @__PURE__ */ new Date()).toISOString() }];
 }
 __name(researchCompetitors, "researchCompetitors");
-async function researchAudiencePainPoints(niche, idealClient) {
+async function researchAudiencePainPoints(niche, idealClient, token) {
   if (!niche)
     return [];
   const clientDesc = idealClient || "potential clients";
   const query = `Search Reddit, Quora, and online forums for the top 5 to 8 biggest frustrations and complaints that ${clientDesc} in the "${niche}" space talk about. Use their exact words and phrases. Focus on emotional pain, not just logical problems.`;
-  const result = await searchWithGemini(query);
+  const result = await searchWithGemini(query, token);
   if (!result)
     return [{ raw: "Audience research unavailable at this time" }];
   return [{ raw: result, scrapedAt: (/* @__PURE__ */ new Date()).toISOString() }];
@@ -15637,6 +15637,7 @@ async function researchAudiencePainPoints(niche, idealClient) {
 __name(researchAudiencePainPoints, "researchAudiencePainPoints");
 async function researchUser(env, urls, context) {
   const { websiteUrl, linkedinUrl, name, niche, idealClient } = context || {};
+  const geminiToken = env.GEMINI_PROXY_TOKEN || "";
   const result = {
     website: null,
     linkedin: null,
@@ -15652,8 +15653,8 @@ async function researchUser(env, urls, context) {
   result.linkedin = linkedinData;
   const nicheForSearch = niche || (websiteData?.description ? websiteData.description.substring(0, 100) : "");
   const [competitors, painPoints] = await Promise.all([
-    researchCompetitors(name || "this person", nicheForSearch),
-    researchAudiencePainPoints(nicheForSearch, idealClient)
+    researchCompetitors(name || "this person", nicheForSearch, geminiToken),
+    researchAudiencePainPoints(nicheForSearch, idealClient, geminiToken)
   ]);
   result.competitors = competitors;
   result.audiencePainPoints = painPoints;
