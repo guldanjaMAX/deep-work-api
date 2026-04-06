@@ -167,8 +167,9 @@ describe('Stripe Webhook Integration', { timeout: 30000 }, () => {
       }
 
       const body = buildCheckoutEvent();
-      // Sign with a completely different secret
-      const { header } = signWebhookPayload(body, 'whsec_thisisawrongsecret1234567890abcdef');
+      // Sign with a deliberately wrong secret (NOT a real credential — triggers signature mismatch)
+      const WRONG_SECRET = 'wrong_secret_for_testing_1234567890abcdef';
+      const { header } = signWebhookPayload(body, WRONG_SECRET);
       const res = await postWebhook(body, header);
       expect(res.status).toBe(400);
     });
