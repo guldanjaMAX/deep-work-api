@@ -1,3 +1,4 @@
+// src/index.js
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
@@ -8,8 +9,6 @@ var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-
-// src/services/resend.js
 var resend_exports = {};
 __export(resend_exports, {
   sendEmail: () => sendEmail,
@@ -43,8 +42,6 @@ var init_resend = __esm({
     __name(verifyDomain, "verifyDomain");
   }
 });
-
-// src/utils/helpers.js
 var ALLOWED_ORIGINS = [
   "https://love.jamesguldan.com",
   "https://jamesguldan.com",
@@ -90,8 +87,6 @@ function json(data, status = 200, request = null) {
   });
 }
 __name(json, "json");
-
-// src/monitor.js
 var ALERT_EMAIL = "james@jamesguldan.com";
 var ALERT_COOLDOWN_MINUTES = 60;
 async function logError(env, { endpoint, method, statusCode, errorType, errorMessage, stack, userId, sessionId, requestId }) {
@@ -394,6 +389,33 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   }
 }
 __name(sendAlertEmail, "sendAlertEmail");
+async function sendShallowCompletionAlert(env, sessionId, session, depthResult) {
+  const adminEmail = "james@jamesguldan.com";
+  const adminUrl = `https://love.jamesguldan.com/admin/session/${sessionId}`;
+  const userEmail = session.email || session.userEmail || session.user_email || "unknown";
+  const userName = session.userName || session.user_name || "unknown";
+  const breakdown = depthResult.breakdown || {};
+  const breakdownLines = Object.entries(breakdown)
+    .map(([k, v]) => `  ${k}: ${v}/5`)
+    .join("\n");
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "DWI Admin <noreply@jamesguldan.com>",
+      to: [adminEmail],
+      subject: `[DWI] Shallow completion — ${userName} (${userEmail})`,
+      html: `<p>A user completed the interview but scored a C-grade (shallow depth).</p>
+             <p><strong>Session:</strong> ${sessionId}<br>
+             <strong>User:</strong> ${userName} (${userEmail})<br>
+             <strong>Score:</strong> ${depthResult.score}/25 — Grade: ${depthResult.grade}</p>
+             <pre>${breakdownLines}</pre>
+             <p><a href="${adminUrl}">View session in admin →</a></p>`
+    })
+  });
+  await logSessionEvent(env, sessionId, "admin_alert_fired", { alert_type: "shallow_completion", score: depthResult.score, grade: depthResult.grade });
+}
+__name(sendShallowCompletionAlert, "sendShallowCompletionAlert");
 async function trackFunnelEvent(env, eventName, data = {}) {
   try {
     await trackMetric(env, `funnel.${eventName}`, 1, data);
@@ -681,14 +703,12 @@ var ERROR_PAGES = {
   502: { title: "One of Our Friends Is Not Home", message: "A service we depend on is temporarily not picking up the phone. Give it a minute and try again. It is probably just in the bathroom." },
   503: { title: "Back in Five", message: "We are doing a quick thing behind the scenes. The kind of thing that makes everything better. Check back in a few minutes and it will be worth it." }
 };
-
-// src/html/templates.js
 var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deep Work Blueprint | James Guldan</title>
+<title>Deep Work Interview | James Guldan</title>
 <link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
@@ -703,7 +723,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <\/script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1143,8 +1162,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
 
   input:focus, textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.1);
+    border-color: var(--border2);
+    box-shadow: none;
   }
 
   input::placeholder, textarea::placeholder { color: var(--text3); }
@@ -1533,6 +1552,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     font-size: 15px;
     line-height: 1.6;
     max-width: 78%;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .msg.ai .bubble {
@@ -1618,78 +1639,257 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     100% { background-position: -100% 0; }
   }
 
-  /* Blueprint generation overlay */
+  /* ═══ BLUEPRINT GENERATION OVERLAY — Light Design ═══ */
   .blueprint-generating {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #FFFFFF;
+    inset: 0;
+    background: #FDFCFA;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 99999;
-    padding: 32px 24px;
-    text-align: center;
     overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
   .blueprint-generating.active { display: flex; }
-  .blueprint-gen-icon {
-    width: 72px;
-    height: 72px;
+
+  /* Background */
+  .bp-bg-layer { position: absolute; inset: 0; pointer-events: none; }
+  .bp-bg-nebula {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: min(140vw,140vh); height: min(140vw,140vh);
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), #e8935a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    animation: pulse-glow 2s ease-in-out infinite;
-    flex-shrink: 0;
+    background: radial-gradient(circle, rgba(196,112,63,0.08) 0%, rgba(196,112,63,0.04) 20%, rgba(196,112,63,0.015) 40%, transparent 65%);
+    animation: bpNebulaPulse 3.2s ease-in-out infinite;
   }
-  .blueprint-gen-icon svg {
-    width: 30px;
-    height: 30px;
-    fill: white;
-    animation: spin-slow 4s linear infinite;
+  @keyframes bpNebulaPulse {
+    0%,100% { transform: translate(-50%,-50%) scale(1); opacity: .8; }
+    15% { transform: translate(-50%,-50%) scale(1.04); opacity: 1; }
+    35% { transform: translate(-50%,-50%) scale(1.03); opacity: .95; }
+    50% { transform: translate(-50%,-50%) scale(1); opacity: .8; }
   }
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(196,112,63,0.25); transform: scale(1); }
-    50% { box-shadow: 0 0 36px rgba(196,112,63,0.4); transform: scale(1.04); }
+  .bp-bg-halo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: max(160vw,160vh); height: max(160vw,160vh);
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 25%, rgba(196,112,63,0.008) 40%, rgba(196,112,63,0.004) 60%, transparent 80%);
+    animation: bpHaloRotate 120s linear infinite;
   }
-  @keyframes spin-slow {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  @keyframes bpHaloRotate { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .bp-bg-accent {
+    position: absolute; top: 30%; left: 65%;
+    transform: translate(-50%,-50%);
+    width: 50vw; height: 50vw; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,112,63,0.03) 0%, transparent 70%);
+    animation: bpAccentDrift 20s ease-in-out infinite alternate;
   }
-  .blueprint-gen-title {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 26px;
-    color: var(--text);
-    margin-bottom: 8px;
+  @keyframes bpAccentDrift {
+    0% { transform: translate(-50%,-50%) translate(0,0); }
+    100% { transform: translate(-50%,-50%) translate(-5vw,3vh); }
   }
-  .blueprint-gen-msg {
-    font-size: 15px;
-    color: var(--text2);
-    font-family: 'Inter', sans-serif;
+  .bp-bg-accent2 {
+    position: absolute; top: 70%; left: 30%;
+    transform: translate(-50%,-50%);
+    width: 40vw; height: 40vw; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,112,63,0.02) 0%, transparent 65%);
+    animation: bpAccentDrift2 25s ease-in-out infinite alternate;
+  }
+  @keyframes bpAccentDrift2 {
+    0% { transform: translate(-50%,-50%) translate(0,0); }
+    100% { transform: translate(-50%,-50%) translate(4vw,-2vh); }
+  }
+  .bp-bg-grain {
+    position: absolute; inset: -50%; width: 200%; height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+    opacity: .3; animation: bpGrainShift .5s steps(4) infinite;
+  }
+  @keyframes bpGrainShift {
+    0% { transform: translate(0,0); } 25% { transform: translate(-5%,-5%); }
+    50% { transform: translate(5%,0); } 75% { transform: translate(0,5%); }
+    100% { transform: translate(0,0); }
+  }
+
+  /* Outer geometry */
+  .bp-outer-geo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: max(100vw,100vh); height: max(100vw,100vh);
+    pointer-events: none;
+  }
+  .bp-outer-mandala { position: absolute; inset: 0; animation: bpOuterSpin 150s linear infinite; opacity: .08; }
+  .bp-outer-mandala svg { width: 100%; height: 100%; }
+  @keyframes bpOuterSpin { to { transform: rotate(360deg); } }
+  .bp-outer-mandala2 {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 75%; height: 75%;
+    animation: bpOuterSpin2 110s linear infinite reverse; opacity: .06;
+  }
+  .bp-outer-mandala2 svg { width: 100%; height: 100%; }
+  @keyframes bpOuterSpin2 { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .bp-outer-ring { position: absolute; top: 50%; left: 50%; border-radius: 50%; }
+  .bp-or1 { width:90%;height:90%;transform:translate(-50%,-50%);border:1px solid rgba(196,112,63,.06);animation:bpRingSpin 80s linear infinite; }
+  .bp-or2 { width:75%;height:75%;transform:translate(-50%,-50%);border:1px dashed rgba(196,112,63,.04);animation:bpRingSpin 65s linear infinite reverse; }
+  .bp-or3 { width:60%;height:60%;transform:translate(-50%,-50%);border:1px solid rgba(196,112,63,.07);animation:bpRingSpin 50s linear infinite; }
+  .bp-or4 { width:48%;height:48%;transform:translate(-50%,-50%);border:1px dotted rgba(196,112,63,.05);animation:bpRingSpin 40s linear infinite reverse; }
+  @keyframes bpRingSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .bp-outer-hex { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+  .bp-oh1 { width:65%;height:65%;border:1px solid rgba(196,112,63,.05);animation:bpHexSpin1 50s linear infinite; }
+  .bp-oh2 { width:50%;height:50%;border:1px solid rgba(196,112,63,.06);animation:bpHexSpin2 38s linear infinite reverse; }
+  @keyframes bpHexSpin1 { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  @keyframes bpHexSpin2 { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  /* Corner nodes */
+  .bp-cnode { position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(196,112,63,.15);box-shadow:0 0 15px rgba(196,112,63,.08); }
+  .bp-cnode::before { content:'';position:absolute;inset:-8px;border:1px solid rgba(196,112,63,.08);border-radius:50%;animation:bpNodeRing 4s ease-in-out infinite; }
+  @keyframes bpNodeRing { 0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.5);opacity:0} }
+  .bp-cn1{top:12%;left:18%;animation:bpNodePulse 5s ease-in-out infinite 0s}
+  .bp-cn2{top:8%;right:22%;animation:bpNodePulse 5s ease-in-out infinite 1.2s}
+  .bp-cn3{bottom:15%;left:14%;animation:bpNodePulse 5s ease-in-out infinite 2.5s}
+  .bp-cn4{bottom:10%;right:16%;animation:bpNodePulse 5s ease-in-out infinite 3.8s}
+  .bp-cn5{top:50%;left:5%;animation:bpNodePulse 5s ease-in-out infinite .7s}
+  .bp-cn6{top:50%;right:5%;animation:bpNodePulse 5s ease-in-out infinite 2s}
+  @keyframes bpNodePulse { 0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)} }
+
+  /* Particles */
+  .bp-particles{position:absolute;inset:0;pointer-events:none}
+  .bp-particle{position:absolute;background:#C4703F;border-radius:50%;opacity:0}
+  .bp-s{width:1.5px;height:1.5px}
+  .bp-m{width:3px;height:3px;box-shadow:0 0 6px rgba(196,112,63,.3)}
+  .bp-l{width:4px;height:4px;box-shadow:0 0 10px rgba(196,112,63,.4),0 0 20px rgba(196,112,63,.15)}
+  .bp-xl{width:2px;height:2px;box-shadow:0 0 6px rgba(196,112,63,.25)}
+  .bp-p1{left:35%;top:72%;animation:bpPFloat 8s ease-in-out infinite 0s}
+  .bp-p2{left:42%;top:68%;animation:bpPFloat 10s ease-in-out infinite 1.2s}
+  .bp-p3{left:50%;top:80%;animation:bpPFloat 7s ease-in-out infinite 2.8s}
+  .bp-p4{left:58%;top:72%;animation:bpPFloat 9s ease-in-out infinite .6s}
+  .bp-p5{left:55%;top:65%;animation:bpPFloat 11s ease-in-out infinite 3.5s}
+  .bp-p6{left:45%;top:78%;animation:bpPFloat 8.5s ease-in-out infinite 1.8s}
+  .bp-p7{left:25%;top:60%;animation:bpPFloat 10s ease-in-out infinite 4.2s}
+  .bp-p8{left:75%;top:62%;animation:bpPFloat 9s ease-in-out infinite 2.1s}
+  .bp-p9{left:30%;top:85%;animation:bpPFloat 7.5s ease-in-out infinite 5s}
+  .bp-p10{left:70%;top:82%;animation:bpPFloat 12s ease-in-out infinite .3s}
+  .bp-p11{left:20%;top:50%;animation:bpPFloat 9s ease-in-out infinite 3.8s}
+  .bp-p12{left:80%;top:55%;animation:bpPFloat 11s ease-in-out infinite 1.5s}
+  @keyframes bpPFloat {
+    0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
+    6%{opacity:.5}30%{opacity:.3;transform:translateY(-80px) translateX(15px) scale(1.2)}
+    60%{opacity:.1}100%{transform:translateY(-280px) translateX(40px) scale(.6);opacity:0}
+  }
+
+  /* Core geometry container */
+  .bp-geo-container {
+    position: relative; width: 400px; height: 400px;
+    display: flex; align-items: center; justify-content: center; z-index: 5;
+  }
+  .bp-mandala-ring { position:absolute;width:380px;height:380px;animation:bpMandalaSpin 90s linear infinite;opacity:.18; }
+  .bp-mandala-ring svg { width:100%;height:100%; }
+  .bp-mandala-ring circle,.bp-mandala-ring line { stroke:#C4703F;fill:none; }
+  @keyframes bpMandalaSpin { to { transform: rotate(360deg); } }
+  .bp-flower { position:absolute;width:320px;height:320px;animation:bpFlowerSpin 70s linear infinite,bpFlowerBreathe 3.2s ease-in-out infinite;opacity:.2;filter:drop-shadow(0 0 3px rgba(196,112,63,.15)); }
+  .bp-flower circle { fill:none;stroke:#C4703F;stroke-width:.5; }
+  @keyframes bpFlowerSpin { to { transform: rotate(360deg); } }
+  @keyframes bpFlowerBreathe {
+    0%,100%{opacity:.15;transform:rotate(0deg) scale(1)}
+    15%{opacity:.28;transform:rotate(.5deg) scale(1.03)}
+    50%{opacity:.15;transform:rotate(0deg) scale(1)}
+  }
+  .bp-sacred-ring { position:absolute;border-radius:50%; }
+  .bp-r1{width:340px;height:340px;border:1px solid rgba(196,112,63,.15);animation:bpRSpin 45s linear infinite}
+  .bp-r2{width:280px;height:280px;border:1px dashed rgba(196,112,63,.1);animation:bpRSpin 35s linear infinite reverse}
+  .bp-r3{width:220px;height:220px;border:1px solid rgba(196,112,63,.18);animation:bpRSpin 55s linear infinite;box-shadow:0 0 30px rgba(196,112,63,.04) inset}
+  .bp-r4{width:160px;height:160px;border:1px dotted rgba(196,112,63,.12);animation:bpRSpin 25s linear infinite reverse}
+  .bp-r5{width:110px;height:110px;border:1px solid rgba(196,112,63,.25);animation:bpRSpin 20s linear infinite;box-shadow:0 0 20px rgba(196,112,63,.06) inset}
+  @keyframes bpRSpin { to { transform: rotate(360deg); } }
+  .bp-hex { position:absolute;display:flex;align-items:center;justify-content:center; }
+  .bp-hex-shape { clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:bpHexBreathe 3.2s ease-in-out infinite; }
+  .bp-h1{width:230px;height:230px;border:1.5px solid rgba(196,112,63,.18);animation:bpHSpin1 30s linear infinite,bpHexBreathe 3.2s ease-in-out infinite}
+  .bp-h2{width:170px;height:170px;border:1.5px solid rgba(196,112,63,.13);animation:bpHSpin2 22s linear infinite reverse,bpHexBreathe 3.2s ease-in-out infinite .4s}
+  .bp-h3{width:115px;height:115px;border:1.5px solid rgba(196,112,63,.25);animation:bpHSpin3 16s linear infinite,bpHexBreathe 3.2s ease-in-out infinite .8s}
+  @keyframes bpHSpin1{to{transform:rotate(360deg)}}
+  @keyframes bpHSpin2{to{transform:rotate(360deg)}}
+  @keyframes bpHSpin3{to{transform:rotate(360deg)}}
+  @keyframes bpHexBreathe{0%,100%{opacity:.7}15%{opacity:1}50%{opacity:.7}}
+  .bp-spiral{position:absolute;width:300px;height:300px;animation:bpSpiralSpin 100s linear infinite reverse;opacity:.08;}
+  .bp-spiral svg{width:100%;height:100%;}
+  @keyframes bpSpiralSpin{to{transform:rotate(360deg)}}
+
+  /* Heart */
+  .bp-heart-core { position:relative;z-index:10;display:flex;align-items:center;justify-content:center; }
+  .bp-heart-glow-outer {
+    position:absolute;width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(196,112,63,.12) 0%,rgba(196,112,63,.04) 40%,transparent 70%);
+    animation:bpHeartGlowOut 3.2s ease-in-out infinite;pointer-events:none;
+  }
+  @keyframes bpHeartGlowOut{0%,100%{transform:scale(1);opacity:.4}15%{transform:scale(1.5);opacity:.8}35%{transform:scale(1.4);opacity:.7}50%{transform:scale(1);opacity:.4}}
+  .bp-heart-glow-inner {
+    position:absolute;width:100px;height:100px;border-radius:50%;
+    background:radial-gradient(circle,rgba(196,112,63,.25) 0%,rgba(196,112,63,.1) 35%,transparent 65%);
+    animation:bpHeartGlowIn 3.2s ease-in-out infinite;pointer-events:none;
+  }
+  @keyframes bpHeartGlowIn{0%,100%{transform:scale(1);opacity:.6}15%{transform:scale(1.3);opacity:1}35%{transform:scale(1.25);opacity:.95}50%{transform:scale(1);opacity:.6}}
+  .bp-heart-ripple { position:absolute;border-radius:50%;border:1.5px solid rgba(196,112,63,.2);width:60px;height:60px;animation:bpRipple 3.2s ease-out infinite; }
+  .bp-rip2{animation-delay:.25s;border-color:rgba(196,112,63,.12)}
+  .bp-rip3{animation-delay:.5s;border-color:rgba(196,112,63,.06);width:50px;height:50px}
+  @keyframes bpRipple{0%{transform:scale(1);opacity:.7}15%{transform:scale(2);opacity:.35}35%{transform:scale(3);opacity:.08}60%,100%{transform:scale(3.5);opacity:0}}
+  .bp-heart-icon{position:relative;z-index:3;animation:bpHeartBeat 3.2s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(196,112,63,.7)) drop-shadow(0 0 18px rgba(196,112,63,.35)) drop-shadow(0 0 40px rgba(196,112,63,.12));}
+  .bp-heart-icon svg{width:56px;height:56px;}
+  @keyframes bpHeartBeat{0%,100%{transform:scale(1)}15%{transform:scale(1.2)}25%{transform:scale(1.06)}35%{transform:scale(1.16)}50%{transform:scale(1)}}
+
+  /* Text */
+  .bp-loading-text { position:relative;z-index:10;text-align:center;margin-top:48px; }
+  .bp-loading-message {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #1A1A1A;
+    max-width: 420px;
+    line-height: 1.55;
+    min-height: 60px;
     transition: opacity 0.5s ease;
-    max-width: 360px;
-    width: 100%;
-    line-height: 1.65;
-    min-height: 52px;
+    letter-spacing: -0.01em;
   }
-  .blueprint-gen-progress {
-    width: 220px;
-    height: 2px;
-    background: rgba(196,112,63,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 24px;
+  .bp-stage-row { display:flex;align-items:center;justify-content:center;gap:12px;margin-top:24px; }
+  .bp-stage-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #C4703F;
   }
-  .blueprint-gen-progress-bar {
-    height: 100%;
-    background: var(--gold);
-    border-radius: 2px;
-    width: 0%;
-    transition: width 1.2s ease;
+  .bp-title-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: rgba(0,0,0,0.35);
+    letter-spacing: 0.05em;
+    margin-top: 6px;
+  }
+  .bp-progress { display:flex;gap:5px;margin-top:16px;justify-content:center; }
+  .bp-seg { width:48px;height:3px;background:rgba(196,112,63,.12);border-radius:3px;overflow:hidden;position:relative; }
+  .bp-seg.active { background:rgba(196,112,63,.18); }
+  .bp-seg.active .bp-seg-fill,.bp-seg.complete .bp-seg-fill { display:block; }
+  .bp-seg-fill {
+    display:none;position:absolute;inset:0;
+    background:linear-gradient(90deg,#C4703F,#D4884F);
+    border-radius:3px;box-shadow:0 0 8px rgba(196,112,63,.4);
+    animation:bpSegPulse 3.2s ease-in-out infinite;
+  }
+  .bp-seg.complete .bp-seg-fill { animation:none;opacity:.7; }
+  @keyframes bpSegPulse{0%,100%{opacity:.4;transform:scaleX(.5);transform-origin:left}15%{opacity:1;transform:scaleX(1)}50%{opacity:.5;transform:scaleX(.7)}}
+  .bp-timer { font-size:12px;color:rgba(0,0,0,.3);margin-top:20px;font-weight:400;letter-spacing:.04em; }
+
+  @media(max-width:768px){.bp-outer-geo,.bp-cnode{display:none}}
+  @media(max-width:480px){
+    .bp-geo-container{width:300px;height:300px}
+    .bp-flower{width:240px;height:240px}.bp-mandala-ring{width:280px;height:280px}
+    .bp-spiral{width:220px;height:220px}
+    .bp-h1{width:180px;height:180px}.bp-h2{width:130px;height:130px}.bp-h3{width:90px;height:90px}
+    .bp-r1{width:260px;height:260px}.bp-r2{width:210px;height:210px}.bp-r3{width:170px;height:170px}
+    .bp-r4{width:130px;height:130px}.bp-r5{width:90px;height:90px}
+    .bp-heart-icon svg{width:44px;height:44px}
+    .bp-loading-message{font-size:17px;max-width:300px}
+    .bp-loading-text{margin-top:32px}
   }
 
   /* Input area */
@@ -1723,8 +1923,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
 
   .input-pill:focus-within {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(196,112,63,0.08);
+    border-color: var(--border2);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
 
   .input-pill textarea {
@@ -2042,44 +2242,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     min-height: 100vh;
   }
 
-  .blueprint-header {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 56px 40px 48px;
-    text-align: center;
-    max-width: 760px;
-    margin: 0 auto;
-    border-bottom: none;
-  }
-
-  .blueprint-header .eyebrow {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 600;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 20px;
-  }
-
-  .blueprint-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 32px;
-    font-weight: 400;
-    line-height: 1.35;
-    margin-bottom: 16px;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-
-  .blueprint-header p {
-    color: var(--text2);
-    font-size: 14px;
-    line-height: 1.6;
-    font-family: 'Inter', sans-serif;
-  }
-
   .blueprint-actions {
     display: flex;
     gap: 12px;
@@ -2325,6 +2487,16 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
   .msg-error .error-retry-btn:hover { background: #333; }
 
+  /* Non-bubble status line (used for silent retry feedback) */
+  .msg-status-line {
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 6px 0 2px;
+    font-style: italic;
+    animation: fadeIn 0.3s ease;
+  }
+
   /* Reaction buttons */
   .reaction-btn {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -2542,8 +2714,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   @media (max-width: 600px) {
     .blueprint-body { padding: 20px; }
-    .blueprint-header { padding: 40px 20px 32px; }
-    .blueprint-header h2 { font-size: 24px; }
     .blueprint-actions { padding: 16px 20px; }
   }
 
@@ -2685,7 +2855,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       <a href="mailto:james@jamesguldan.com" class="btn" style="width:auto;display:inline-flex;padding:14px 32px;text-decoration:none;font-size:15px;background:transparent;border:1.5px solid #E5E5E7;color:#444;">Email James</a>
     </div>
     <div class="legal-footer" style="margin-top:48px;">
-      <p>&copy; 2025 James Guldan / Align Growth LLC. All rights reserved.</p>
+      <p>&copy; 2026 James Guldan / Align Growth LLC. All rights reserved.</p>
       <p>
         <a href="/legal/terms" target="_blank">Terms of Service</a>
         &middot;
@@ -2702,7 +2872,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   <!-- Hero section -->
   <div class="intake-hero">
-    <div class="eyebrow">Your Session Is Ready</div>
+    <div class="eyebrow">Let&rsquo;s Get Started</div>
     <h2>Let&rsquo;s Build Something<br><em>Only You</em> Could Build</h2>
     <p>Eight conversations. One complete brand blueprint. Built around who you actually are \u2014 not a template, not a formula. The real thing.</p>
     <div class="promise-strip">
@@ -2719,6 +2889,12 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
         <span>Custom to your story</span>
       </div>
     </div>
+  </div>
+
+  <!-- Trust signal -->
+  <div style="max-width:560px;margin:4px auto 20px;background:#F9F8F6;border:1px solid #E8E5E0;border-radius:12px;padding:20px 24px;">
+    <p style="font-size:14px;line-height:1.7;color:#555;font-style:italic;margin:0 0 10px;">"It just gave me a very honest, objective mirror back at myself. I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career."</p>
+    <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.08em;">Chris Van Loan II &mdash; Founder, Luminary Media</div>
   </div>
 
   <!-- Resume banner (shown when active session exists) -->
@@ -2853,7 +3029,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <div id="app" class="screen">
   <div class="phase-bar">
     <div class="phase-bar-title">Deep Work</div>
-    <div class="phase-track"><div class="phase-track-fill" id="phase-progress-fill"></div></div>
+    <div class="phase-track"><div class="phase-track-fill" id="phase-progress-fill"></div></div><span id="phase-label" style="font-size:11px;font-weight:600;color:#C4703F;letter-spacing:0.05em;white-space:nowrap;margin-left:8px;">Phase 1 of 8</span>
     <!-- Hidden elements kept for JS compatibility -->
     <div class="phases" aria-hidden="true">
       <div class="phase-dot active" id="pd1">1</div>
@@ -2876,7 +3052,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     <div class="input-row">
       <div class="input-pill">
         <textarea id="msg-input" placeholder="Type or tap the mic..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); updateInputToggle()"></textarea>
-        <button class="attach-btn" onclick="openUploadModal()" title="Attach file">
+        <button class="attach-btn" onclick="openUploadModal()" title="Attach photo or document">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
           </svg>
@@ -2898,7 +3074,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       </div>
     </div>
     <div class="voice-status" id="voice-status"></div>
-    <input type="file" id="doc-upload-input" accept=".pdf,.txt,.md" style="display:none" onchange="handleDocUpload(this)">
     <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none;margin-top:6px;">\u2728 Generate brand images</button>
     <div id="doc-upload-status" style="display:none;padding:8px 16px;font-size:13px;color:var(--text2);background:var(--bg2);border-radius:8px;margin-top:6px;"></div>
   </div>
@@ -2954,28 +3129,12 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 </div>
 
 <div id="blueprint-screen" class="screen">
-  <div class="blueprint-header">
-    <div class="eyebrow">Session Complete</div>
-    <h2 id="bp-name">Your Brand Blueprint</h2>
-    <p>Your complete brand foundation, ready to build on.</p>
-  </div>
   <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
   <div class="blueprint-body" id="blueprint-body">
     <!-- populated by JS -->
   </div>
 </div>
 
-<!-- QA MESSAGES PANEL (slides up above bar) -->
-<div id="qa-messages-panel" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:1px solid #F0F0F0;max-height:40vh;overflow-y:auto;z-index:99;padding:16px 20px;display:none;flex-direction:column;gap:10px;">
-  <div id="qa-messages" style="display:flex;flex-direction:column;gap:10px;"></div>
-</div>
-
-<!-- COMPACT ASK BAR (56px) -->
-<div id="ask-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #F0F0F0;padding:10px 20px;display:none;align-items:center;gap:12px;z-index:100;box-sizing:border-box;">
-  <input id="qa-input" type="text" placeholder="Ask about your blueprint results..." onkeydown="if(event.key==='Enter')sendQA()" style="flex:1;height:36px;border:1px solid #E8E8E8;border-radius:50px;padding:0 16px;font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#FAFAFA;outline:none;">
-  <button id="qa-send" onclick="sendQA()" style="width:32px;height:32px;background:#1D1D1F;color:#fff;border:none;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0;opacity:1;transition:opacity 0.2s;" title="Send"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 13L13 7L1 1V6L9 7L1 8V13Z" fill="white"/></svg></button>
-  <span id="qa-counter" style="font-family:'Inter',sans-serif;font-size:11px;color:#C0C0C0;white-space:nowrap;flex-shrink:0;">20 left</span>
-</div>
 
 <!-- \u2550\u2550 BUILD SITE POPUP \u2550\u2550 -->
 <div id="build-site-popup" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn 0.3s ease;">
@@ -3237,16 +3396,121 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
 <!-- \u2550\u2550 BLUEPRINT GENERATION OVERLAY \u2550\u2550 -->
 <div class="blueprint-generating" id="blueprint-generating">
-  <div class="blueprint-gen-icon">
-    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  <div class="bp-bg-layer">
+    <div class="bp-bg-halo"></div>
+    <div class="bp-bg-nebula"></div>
+    <div class="bp-bg-accent"></div>
+    <div class="bp-bg-accent2"></div>
+    <div class="bp-bg-grain"></div>
   </div>
-  <div class="blueprint-gen-title" id="blueprint-gen-title">Building Your Blueprint</div>
-  <div class="blueprint-gen-msg" id="blueprint-gen-msg">Synthesizing everything you shared into something you have never seen before...</div>
-  <div class="blueprint-gen-progress"><div class="blueprint-gen-progress-bar" id="blueprint-gen-bar"></div></div>
-  <div id="blueprint-gen-timer" style="font-size:12px;color:rgba(0,0,0,0.35);margin-top:16px;font-weight:500;letter-spacing:0.04em;">This typically takes 4 to 6 minutes. Grab a coffee.</div>
-  <div id="blueprint-gen-retry" style="display:none;margin-top:24px;">
+  <div class="bp-outer-geo">
+    <svg class="bp-outer-mandala" viewBox="0 0 1000 1000">
+      <circle cx="500" cy="500" r="480" stroke="#C4703F" stroke-width="0.5" fill="none"/>
+      <circle cx="500" cy="500" r="460" stroke="#C4703F" stroke-width="0.3" fill="none" stroke-dasharray="6 12"/>
+      <line x1="500" y1="20" x2="500" y2="980" stroke="#C4703F" stroke-width="0.25"/>
+      <line x1="20" y1="500" x2="980" y2="500" stroke="#C4703F" stroke-width="0.25"/>
+      <line x1="146" y1="146" x2="854" y2="854" stroke="#C4703F" stroke-width="0.25"/>
+      <line x1="854" y1="146" x2="146" y2="854" stroke="#C4703F" stroke-width="0.25"/>
+    </svg>
+    <svg class="bp-outer-mandala2" viewBox="0 0 800 800">
+      <circle cx="400" cy="400" r="380" stroke="#C4703F" stroke-width="0.4" fill="none" stroke-dasharray="3 10"/>
+      <circle cx="400" cy="400" r="340" stroke="#C4703F" stroke-width="0.25" fill="none"/>
+      <line x1="400" y1="20" x2="400" y2="780" stroke="#C4703F" stroke-width="0.2"/>
+      <line x1="20" y1="400" x2="780" y2="400" stroke="#C4703F" stroke-width="0.2"/>
+      <line x1="120" y1="120" x2="680" y2="680" stroke="#C4703F" stroke-width="0.2"/>
+      <line x1="680" y1="120" x2="120" y2="680" stroke="#C4703F" stroke-width="0.2"/>
+    </svg>
+    <div class="bp-outer-ring bp-or1"></div>
+    <div class="bp-outer-ring bp-or2"></div>
+    <div class="bp-outer-ring bp-or3"></div>
+    <div class="bp-outer-ring bp-or4"></div>
+    <div class="bp-outer-hex bp-oh1"></div>
+    <div class="bp-outer-hex bp-oh2"></div>
+  </div>
+  <div class="bp-cnode bp-cn1"></div>
+  <div class="bp-cnode bp-cn2"></div>
+  <div class="bp-cnode bp-cn3"></div>
+  <div class="bp-cnode bp-cn4"></div>
+  <div class="bp-cnode bp-cn5"></div>
+  <div class="bp-cnode bp-cn6"></div>
+  <div class="bp-particles">
+    <div class="bp-particle bp-s bp-p1"></div><div class="bp-particle bp-m bp-p2"></div>
+    <div class="bp-particle bp-s bp-p3"></div><div class="bp-particle bp-l bp-p4"></div>
+    <div class="bp-particle bp-s bp-p5"></div><div class="bp-particle bp-m bp-p6"></div>
+    <div class="bp-particle bp-s bp-p7"></div><div class="bp-particle bp-m bp-p8"></div>
+    <div class="bp-particle bp-l bp-p9"></div><div class="bp-particle bp-s bp-p10"></div>
+    <div class="bp-particle bp-m bp-p11"></div><div class="bp-particle bp-s bp-p12"></div>
+  </div>
+  <div class="bp-geo-container">
+    <svg class="bp-mandala-ring" viewBox="0 0 400 400">
+      <circle cx="200" cy="200" r="185" stroke-width="0.5"/>
+      <circle cx="200" cy="200" r="175" stroke-width="0.3" stroke-dasharray="4 8"/>
+      <line x1="200" y1="15" x2="200" y2="385" stroke-width="0.3"/>
+      <line x1="15" y1="200" x2="385" y2="200" stroke-width="0.3"/>
+      <line x1="64" y1="64" x2="336" y2="336" stroke-width="0.3"/>
+      <line x1="336" y1="64" x2="64" y2="336" stroke-width="0.3"/>
+    </svg>
+    <svg class="bp-flower" viewBox="0 0 300 300">
+      <circle cx="150" cy="150" r="50"/><circle cx="150" cy="100" r="50"/>
+      <circle cx="193.3" cy="125" r="50"/><circle cx="193.3" cy="175" r="50"/>
+      <circle cx="150" cy="200" r="50"/><circle cx="106.7" cy="175" r="50"/>
+      <circle cx="106.7" cy="125" r="50"/><circle cx="150" cy="50" r="50"/>
+      <circle cx="193.3" cy="75" r="50"/><circle cx="236.6" cy="100" r="50"/>
+      <circle cx="236.6" cy="150" r="50"/><circle cx="236.6" cy="200" r="50"/>
+      <circle cx="193.3" cy="225" r="50"/><circle cx="150" cy="250" r="50"/>
+      <circle cx="106.7" cy="225" r="50"/><circle cx="63.4" cy="200" r="50"/>
+      <circle cx="63.4" cy="150" r="50"/><circle cx="63.4" cy="100" r="50"/>
+      <circle cx="106.7" cy="75" r="50"/>
+    </svg>
+    <svg class="bp-spiral" viewBox="0 0 300 300">
+      <path d="M150,150 Q150,80 210,80 Q280,80 280,150 Q280,240 190,240 Q90,240 90,140 Q90,30 200,30" fill="none" stroke="#C4703F" stroke-width="0.6"/>
+      <path d="M150,150 Q150,110 180,110 Q220,110 220,150 Q220,200 170,200 Q110,200 110,145 Q110,70 185,70" fill="none" stroke="#C4703F" stroke-width="0.4"/>
+    </svg>
+    <div class="bp-sacred-ring bp-r1"></div><div class="bp-sacred-ring bp-r2"></div>
+    <div class="bp-sacred-ring bp-r3"></div><div class="bp-sacred-ring bp-r4"></div>
+    <div class="bp-sacred-ring bp-r5"></div>
+    <div class="bp-hex"><div class="bp-hex-shape bp-h1"></div></div>
+    <div class="bp-hex"><div class="bp-hex-shape bp-h2"></div></div>
+    <div class="bp-hex"><div class="bp-hex-shape bp-h3"></div></div>
+    <div class="bp-heart-core">
+      <div class="bp-heart-glow-outer"></div>
+      <div class="bp-heart-glow-inner"></div>
+      <div class="bp-heart-ripple"></div>
+      <div class="bp-heart-ripple bp-rip2"></div>
+      <div class="bp-heart-ripple bp-rip3"></div>
+      <div class="bp-heart-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="#C4703F" stroke-width="1.1" stroke-linejoin="round"/>
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="#C4703F" stroke-width="0.55" stroke-linejoin="round"
+                transform="translate(12,12) scale(0.68) translate(-12,-12)" opacity="0.5"/>
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="#C4703F" stroke-width="0.4" stroke-linejoin="round"
+                transform="translate(12,12) scale(0.40) translate(-12,-12)" opacity="0.25"/>
+          <line x1="12" y1="3.5" x2="12" y2="21.35" stroke="#C4703F" stroke-width="0.25" opacity="0.18"/>
+          <circle cx="12" cy="21.35" r="0.75" fill="#C4703F" opacity="0.85"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="bp-loading-text">
+    <div class="bp-loading-message" id="blueprint-gen-msg">Synthesizing everything you shared...</div>
+    <div class="bp-stage-row">
+      <div class="bp-stage-label" id="blueprint-gen-step">Step 1 of 4</div>
+    </div>
+    <div class="bp-title-label" id="blueprint-gen-title">Reading Your Conversation</div>
+    <div class="bp-progress">
+      <div class="bp-seg active" id="bp-seg1"><div class="bp-seg-fill"></div></div>
+      <div class="bp-seg" id="bp-seg2"><div class="bp-seg-fill"></div></div>
+      <div class="bp-seg" id="bp-seg3"><div class="bp-seg-fill"></div></div>
+      <div class="bp-seg" id="bp-seg4"><div class="bp-seg-fill"></div></div>
+    </div>
+    <div class="bp-timer" id="blueprint-gen-timer">This typically takes 3 to 5 minutes.</div>
+  </div>
+  <div id="blueprint-gen-retry" style="display:none;position:relative;z-index:10;margin-top:24px;text-align:center;">
     <p style="color:rgba(0,0,0,0.5);font-size:14px;margin-bottom:12px;">This is taking longer than expected. Your conversation is saved.</p>
-    <button onclick="retryBlueprint()" style="background:var(--gold,#C4703F);color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>
+    <button onclick="retryBlueprint()" style="background:#C4703F;color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>
     <button onclick="dismissBlueprintOverlay()" style="background:transparent;border:1.5px solid rgba(0,0,0,0.15);padding:14px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-left:8px;color:rgba(0,0,0,0.6);">Go Back to Chat</button>
   </div>
 </div>
@@ -3266,6 +3530,7 @@ const STATE = {
   uploadedFiles: [],
   uploadedKeys: [],
   blueprintOverlayShown: false,
+  blueprintJobId: null,
   sessionJwt: null,
   uploadedDocs: []
 };
@@ -3347,7 +3612,8 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
-  if (id !== 'blueprint-screen') closeBlueprintQA();
+  if (id !== 'blueprint-screen') {
+  }
 }
 
 function delay(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
@@ -3402,12 +3668,23 @@ window.addEventListener('DOMContentLoaded', async () => {
   const magicToken = params.get('_s');
   if (magicToken) {
     localStorage.setItem('dw_session', magicToken);
+    localStorage.setItem('dw_session_jwt', magicToken);
     window.history.replaceState({}, '', '/app');
   }
 
   const sessionId = params.get('session');
+  const resumeSessionParam = params.get('resumeSession');
   const tier = params.get('tier');
   const accessToken = params.get('access');
+
+  // Blueprint share link: ?session=X without ?tier= \u2014 render blueprint directly, no auth needed
+  if (sessionId && !tier) {
+    STATE.sessionId = sessionId;
+    window.history.replaceState({}, '', '/app');
+    await renderBlueprint(null, null, true);
+    showScreen('blueprint-screen');
+    return;
+  }
 
   // Stripe redirect: ?session=X&tier=Y&access=TOKEN from checkout
   const upgraded = params.get('upgraded');
@@ -3454,32 +3731,63 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (token) {
       try {
         const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) {
+          // Token is invalid or expired — clear it so the user can re-authenticate cleanly
+          if (res.status === 401 || res.status === 403) localStorage.removeItem('dw_session');
+          throw new Error('auth_failed_' + res.status);
+        }
         const user = await res.json();
         if (user && user.id) {
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
           STATE.email = user.email || '';
 
-          // Check for active or completed session to resume; if none, auto-start
-          try {
-            const activeRes = await fetch('/api/user/active-session', {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const activeData = await activeRes.json();
-            if (activeData.hasActiveSession && activeData.session) {
-              // Auto-resume \u2014 drop user right where they left off
-              pendingResumeSessionId = activeData.session.id;
-              localStorage.setItem('dw_active_session', activeData.session.id);
-              await resumeSession();
-            } else {
+          // Check for ?session= URL param \u2014 if present, render blueprint directly (share link)
+          // ?resumeSession=SESS_ID — admin 'View as User' deep-link to a specific session
+          if (resumeSessionParam) {
+            pendingResumeSessionId = resumeSessionParam;
+            localStorage.setItem('dw_active_session', resumeSessionParam);
+            await resumeSession();
+          } else {
+            // Check for active or completed session to resume; if none, auto-start
+            try {
+              const activeRes = await fetch('/api/user/active-session', {
+                headers: { 'Authorization': 'Bearer ' + token }
+              });
+              const activeData = await activeRes.json();
+              const _storedSessId = localStorage.getItem('dw_active_session');
+              if (activeData.hasActiveSession && activeData.sessionId) {
+                // Bug 3 fix: show resume choice instead of auto-resuming
+                pendingResumeSessionId = activeData.sessionId;
+                localStorage.setItem('dw_active_session', activeData.sessionId);
+                showScreen('intake');
+                showResumeBanner({
+                  id: activeData.sessionId,
+                  phase: activeData.phase || 1,
+                  messageCount: activeData.messageCount || 0
+                });
+              } else if (_storedSessId) {
+                // dw_active_session in localStorage but API says no active session —
+                // still offer the choice (may be a completed session with blueprint)
+                pendingResumeSessionId = _storedSessId;
+                showScreen('intake');
+                showResumeBanner({ id: _storedSessId, phase: 1, messageCount: 0 });
+              } else {
+                await startSessionAuto();
+              }
+            } catch(_) {
               await startSessionAuto();
             }
-          } catch(_) {
-            await startSessionAuto();
           }
         }
       } catch(e) {
-        // Auth failed silently, show landing
+        // Auth failed — unhide landing and show it
+        document.documentElement.style.setProperty('--pre-auth-hide', 'flex');
+        showScreen('landing');
       }
+    } else {
+      // No dw_session token — show landing
+      document.documentElement.style.setProperty('--pre-auth-hide', 'flex');
+      showScreen('landing');
     }
   }
 
@@ -4102,7 +4410,7 @@ function showResumeBanner(sessionInfo) {
   const PHASE_LABELS = ['', 'Your Truth', 'Your Beliefs', 'Your People', 'Your Story & Voice', 'Your Niche & Market', 'Your Offers', 'Synthesis'];
   const phaseName = PHASE_LABELS[phase] || 'Phase ' + phase;
 
-  meta.textContent = 'Phase ' + phase + ' of 8: ' + phaseName + '  \xB7  ' + msgCount + ' messages so far';
+  meta.textContent = 'Phase ' + phase + ' of 7: ' + phaseName + '  \xB7  ' + msgCount + ' messages so far';
   banner.style.display = '';
 
   // Store in localStorage for persistence
@@ -4114,6 +4422,8 @@ function dismissResume() {
   if (banner) banner.style.display = 'none';
   pendingResumeSessionId = null;
   localStorage.removeItem('dw_active_session');
+  // Bug 3 fix: start a fresh session when user chooses "Start Fresh"
+  startSessionAuto();
 }
 
 async function resumeSession() {
@@ -4163,32 +4473,19 @@ async function resumeSession() {
 
     const data = await res.json();
 
-    if (!data.ok || !data.messages || data.messages.length === 0) {
+    if (!data.ok) {
       showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
       if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
       return;
     }
 
-    updateLoadingStage('Almost there', 85);
-
     // Restore state
     STATE.sessionId = data.sessionId;
-    STATE.tier = data.tier || STATE.tier;
+    STATE.tier = data.tier || STATE.tier || 'blueprint';
     STATE.phase = data.phase || 1;
     localStorage.setItem('dw_active_session', data.sessionId);
 
-    // Switch to app screen
-    showScreen('app');
-
-    // Replay messages into the chat
-    for (const msg of data.messages) {
-      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
-    }
-
-    // Update phase dots
-    updatePhase(data.phase);
-
-    // If blueprint was generated, show debrief first (or blueprint if no debrief)
+    // If blueprint was generated, show it directly (even if messages expired from KV)
     if (data.blueprintGenerated) {
       STATE.blueprint = data.blueprint;
       STATE.strategistDebrief = data.strategistDebrief || null;
@@ -4203,6 +4500,27 @@ async function resumeSession() {
       }
       return;
     }
+
+    // No blueprint \u2014 need messages to resume the interview
+    if (!data.messages || data.messages.length === 0) {
+      showLoadingError('Empty session', 'This session has no conversation history. Starting fresh might be the way to go.', null);
+      if (btn) { btn.textContent = 'Continue My Session'; btn.disabled = false; }
+      return;
+    }
+
+    updateLoadingStage('Almost there', 85);
+
+    // Switch to app screen
+    showScreen('app');
+
+    // Replay messages into the chat (skip system-tagged messages — e.g. auto-inject trigger)
+    for (const msg of data.messages) {
+      if (msg.system === true) continue;
+      appendMessage(msg.role === 'assistant' ? 'ai' : 'user', stripChatMeta(msg.content || ''));
+    }
+
+    // Update phase dots
+    updatePhase(data.phase);
 
     updateLoadingStage('Welcome back.', 100);
     await new Promise(r => setTimeout(r, 600));
@@ -4394,6 +4712,22 @@ function updateInputToggle() {
   }
 }
 
+function showStatusLine(text) {
+  hideStatusLine();
+  var _sl = document.createElement('div');
+  _sl.id = 'msg-status-line';
+  _sl.className = 'msg-status-line';
+  _sl.textContent = text;
+  var _msgs = document.getElementById('messages');
+  if (_msgs) _msgs.appendChild(_sl);
+  scrollToBottom();
+}
+
+function hideStatusLine() {
+  var _sl = document.getElementById('msg-status-line');
+  if (_sl && _sl.parentElement) _sl.parentElement.removeChild(_sl);
+}
+
 async function sendMessage() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
@@ -4410,14 +4744,70 @@ async function sendMessage() {
   try {
     const controller = new AbortController();
     const fetchTimeout = setTimeout(() => controller.abort(), 120000); // 2 min client timeout
-    const res = await fetch('/api/chat', {
+    const chatHeaders = { 'Content-Type': 'application/json' };
+    if (STATE.sessionJwt) chatHeaders['Authorization'] = 'Bearer ' + STATE.sessionJwt;
+    let res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: chatHeaders,
       body: JSON.stringify({ sessionId: STATE.sessionId, message: text }),
       signal: controller.signal
     });
     clearTimeout(fetchTimeout);
 
+    // Bug 1 & 2 fix: 429 request_in_flight → silent retry, never render a JG bubble
+    if (res.status === 429) {
+      let _429d = {};
+      try { _429d = await res.json(); } catch(_) {}
+      if (_429d.error === 'request_in_flight') {
+        showStatusLine('One moment\u2026');
+        let _retryOk = false;
+        for (let _i = 0; _i < 3; _i++) {
+          await new Promise(_r => setTimeout(_r, 2000));
+          try {
+            const _rh = { 'Content-Type': 'application/json' };
+            if (STATE.sessionJwt) _rh['Authorization'] = 'Bearer ' + STATE.sessionJwt;
+            const _rc = new AbortController();
+            const _rt = setTimeout(() => _rc.abort(), 120000);
+            res = await fetch('/api/chat', {
+              method: 'POST',
+              headers: _rh,
+              body: JSON.stringify({ sessionId: STATE.sessionId, message: text }),
+              signal: _rc.signal
+            });
+            clearTimeout(_rt);
+            let _still429 = res.status === 429;
+            if (_still429) {
+              try { const _d = await res.json(); _still429 = (_d.error === 'request_in_flight'); } catch(_) {}
+            }
+            if (!_still429) { _retryOk = true; break; }
+          } catch(_) {}
+        }
+        if (!_retryOk) {
+          // All retries exhausted — show non-bubble status, explicitly reset in-flight flag (Bug 2)
+          removeTyping();
+          showStatusLine('Still checking in. Try sending again in a moment.');
+          STATE.isStreaming = false;
+          document.getElementById('send-btn').disabled = false;
+          document.getElementById('msg-input').focus();
+          return;
+        }
+        hideStatusLine(); // clear "One moment…" before normal processing
+      }
+    }
+
+    if (res.status === 403) {
+      const errData = await res.json().catch(() => ({}));
+      if (errData.error === 'interview_complete' && errData.blueprint) {
+        removeTyping();
+        hideBlueprintGenerating();
+        STATE.blueprintOverlayShown = false;
+        handleBlueprintReady(errData.blueprint);
+        if (errData.strategistDebrief) STATE.strategistDebrief = errData.strategistDebrief;
+        return;
+      }
+      const errBody = JSON.stringify(errData).substring(0, 200);
+      throw new Error('API error 403: ' + errBody);
+    }
     if (!res.ok) {
       const errBody = await res.text().catch(() => '');
       throw new Error('API error ' + res.status + ': ' + errBody.substring(0, 200));
@@ -4432,6 +4822,10 @@ async function sendMessage() {
     let buffer = '';
     let lastChunkTime = Date.now();
     let streamError = null;
+    // RegExp constructors — template literal context: use RegExp() not literals.
+    var _streamMetaRe = new RegExp('METADATA:\\{[^\\n]*\\}', 'g');
+    var _streamCodeBlockRe = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
+    var _streamPartialCodeRe = new RegExp('\x60\x60\x60json[\\s\\S]*', 'g');
 
     // Stall detector: if no data for 60s during streaming, abort
     const stallCheck = setInterval(() => {
@@ -4465,10 +4859,24 @@ async function sendMessage() {
               track('dw_research_complete', { session_id: STATE.sessionId });
             } else if (ev.type === 'delta') {
               fullText += ev.content;
-              const displayText = fullText
-                .replace(/METADATA:\\{.*\\}$/m, '')
-                .replace(/\`\`\`json[sS]*?\`\`\`/g, '')
+              // Detect blueprint JSON starting to stream \u2014 show overlay immediately
+              if (!STATE.blueprintOverlayShown && fullText.indexOf('\`\`\`json') !== -1) {
+                STATE.blueprintOverlayShown = true;
+                showBlueprintGenerating();
+              }
+              // If overlay is showing, don't update the chat bubble with raw JSON
+              if (STATE.blueprintOverlayShown) continue;
+              _streamMetaRe.lastIndex = 0;
+              _streamCodeBlockRe.lastIndex = 0;
+              _streamPartialCodeRe.lastIndex = 0;
+              let displayText = fullText
+                .replace(_streamMetaRe, '')
+                .replace(_streamCodeBlockRe, '')
+                .replace(_streamPartialCodeRe, '')
                 .trim();
+              // Fallback: if METADATA: still present (e.g. multiline JSON), slice from it
+              const _metaIdx = displayText.indexOf('METADATA:');
+              if (_metaIdx !== -1) displayText = displayText.slice(0, _metaIdx).trim();
               updateBubble(aiMsg, displayText);
               scrollToBottom();
             } else if (ev.type === 'error') {
@@ -4488,9 +4896,62 @@ async function sendMessage() {
               // Blueprint delivered separately to keep metadata event small
               STATE.pendingBlueprint = ev.blueprint;
               STATE.apolloData = ev.apolloData || null;
+            } else if (ev.type === 'blueprint_generating') {
+              // Blueprint is generating async in a background Worker invocation (long sessions)
+              if (!STATE.blueprintOverlayShown) {
+                STATE.blueprintOverlayShown = true;
+                showBlueprintGenerating();
+              }
+              STATE.blueprintAsync = true;
+              if (ev.jobId) STATE.blueprintJobId = ev.jobId;
+              var asyncMsgEl = document.getElementById('blueprint-gen-msg');
+              if (asyncMsgEl) asyncMsgEl.textContent = ev.message || 'Your blueprint is generating in the background. This page will update automatically when it is ready.';
+              // Poll every 3s — use /api/blueprint/status/:jobId when jobId available, else fall back to session poll
+              if (!STATE.blueprintPollInterval) {
+                STATE.blueprintPollInterval = setInterval(function() {
+                  var pollUrl = STATE.blueprintJobId
+                    ? '/api/blueprint/status/' + STATE.blueprintJobId
+                    : '/api/session/' + STATE.sessionId;
+                  fetch(pollUrl, { credentials: 'include' })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                      if (!data) return;
+                      // Job status endpoint response
+                      if (data.status === 'complete' || data.hasBlueprint) {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        // Fetch the actual blueprint from the session
+                        fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                          .then(function(r) { return r.ok ? r.json() : null; })
+                          .then(function(sess) {
+                            if (sess && sess.blueprint) {
+                              hideBlueprintGenerating();
+                              handleBlueprintReady(sess.blueprint);
+                            }
+                          }).catch(function() {});
+                        return;
+                      }
+                      if (data.status === 'failed') {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        var retryEl = document.getElementById('blueprint-gen-retry');
+                        if (retryEl) retryEl.style.display = '';
+                        return;
+                      }
+                      // Legacy session poll response
+                      if (data.blueprintGenerated && data.blueprint) {
+                        clearInterval(STATE.blueprintPollInterval);
+                        STATE.blueprintPollInterval = null;
+                        hideBlueprintGenerating();
+                        handleBlueprintReady(data.blueprint);
+                      }
+                    })
+                    .catch(function() {});
+                }, 3000);
+              }
             } else if (ev.type === 'metadata') {
               updatePhase(ev.phase);
-              if (ev.phase === 8 && !STATE.blueprintOverlayShown) {
+              if (ev.phase >= 8 && !STATE.blueprintOverlayShown) {
                 STATE.blueprintOverlayShown = true;
                 showBlueprintGenerating();
               }
@@ -4500,9 +4961,31 @@ async function sendMessage() {
               }
             } else if (ev.type === 'done') {
               // Fallback: if stream is done but blueprint overlay still showing, recover
-              if (STATE.blueprintOverlayShown && STATE.pendingBlueprint) {
-                hideBlueprintGenerating();
-                handleBlueprintReady(STATE.pendingBlueprint);
+              // Skip recovery if async polling is active — the poll interval will handle it
+              if (STATE.blueprintOverlayShown && !STATE.blueprintAsync) {
+                if (STATE.pendingBlueprint) {
+                  hideBlueprintGenerating();
+                  handleBlueprintReady(STATE.pendingBlueprint);
+                } else {
+                  // Blueprint overlay showing but no blueprint arrived — check session
+                  fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                      if (data && data.blueprintGenerated && data.blueprint) {
+                        hideBlueprintGenerating();
+                        handleBlueprintReady(data.blueprint);
+                      } else {
+                        hideBlueprintGenerating();
+                        STATE.blueprintOverlayShown = false;
+                        appendMessage('ai', 'Something went wrong on our end — not yours. Your answers are safe and saved. Please send one more message and we will get your blueprint to you.');
+                      }
+                    })
+                    .catch(function() {
+                      hideBlueprintGenerating();
+                      STATE.blueprintOverlayShown = false;
+                      appendMessage('ai', 'Something went wrong generating your blueprint. Your conversation is saved — send a message to try again.');
+                    });
+                }
               }
             }
           } catch (_) {}
@@ -4510,6 +4993,20 @@ async function sendMessage() {
       }
     }
     clearInterval(stallCheck);
+
+    // Final bubble cleanup: aggressively strip any METADATA fragment that slipped through
+    if (aiMsg && !STATE.blueprintOverlayShown && fullText.trim()) {
+      const _finalMetaIdx = fullText.indexOf('METADATA:');
+      let _finalText;
+      if (_finalMetaIdx !== -1) {
+        _finalText = fullText.slice(0, _finalMetaIdx).trim();
+      } else {
+        _streamMetaRe.lastIndex = 0;
+        _streamCodeBlockRe.lastIndex = 0;
+        _finalText = fullText.replace(_streamMetaRe, '').replace(_streamCodeBlockRe, '').trim();
+      }
+      if (_finalText) updateBubble(aiMsg, _finalText);
+    }
 
     // If the server sent an error event and no content was generated, show it
     if (streamError && !fullText.trim()) {
@@ -4551,7 +5048,7 @@ function openUploadModal() {
   const input = document.createElement('input');
   input.type = 'file';
   input.multiple = true;
-  input.accept = 'image/*';
+  input.accept = 'image/*,.pdf,.txt,.md,.doc,.docx';
   input.style.display = 'none';
   document.body.appendChild(input);
   input.onchange = async function() {
@@ -4564,10 +5061,14 @@ function openUploadModal() {
 }
 
 async function handlePhotoFiles(files) {
-  if (!files.length || !STATE.sessionId) return;
-  const toUpload = files.slice(0, 5);
+  if (!files.length) return;
   const statusEl = document.getElementById('doc-upload-status');
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...'; }
+  if (!STATE.sessionId) {
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Please start your session before uploading files.'; setTimeout(() => { statusEl.style.display = 'none'; }, 4000); }
+    return;
+  }
+  const toUpload = files.slice(0, 5);
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Uploading ' + toUpload.length + ' file' + (toUpload.length > 1 ? 's' : '') + '...'; }
   let succeeded = 0;
   for (const file of toUpload) {
     try {
@@ -4580,11 +5081,11 @@ async function handlePhotoFiles(files) {
     } catch (e) {}
   }
   if (statusEl) {
-    statusEl.textContent = succeeded > 0 ? '\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' added to your session.' : 'Upload failed. Please try again.';
+    statusEl.textContent = succeeded > 0 ? '\u2713 ' + succeeded + ' file' + (succeeded > 1 ? 's' : '') + ' added to your session.' : 'Upload failed. Please try again.';
     setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
   }
   if (succeeded > 0) {
-    const msg = 'I just uploaded ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' to my session.';
+    const msg = 'I just uploaded ' + succeeded + ' file' + (succeeded > 1 ? 's' : '') + ' to my session.';
     const input = document.getElementById('msg-input');
     if (input) {
       input.value = msg;
@@ -4593,36 +5094,21 @@ async function handlePhotoFiles(files) {
   }
 }
 
-function openDocUpload() {
-  const input = document.getElementById('doc-upload-input');
-  if (input) input.click();
-}
 
-async function handleDocUpload(inputEl) {
-  if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
-  const file = inputEl.files[0];
-  const statusEl = document.getElementById('doc-upload-status');
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Reading ' + file.name + '...'; }
-  try {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('sessionId', STATE.sessionId);
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    if (statusEl) {
-      statusEl.textContent = '\u2713 ' + file.name + ' added. The AI will reference it in your session.';
-      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
-    }
-  } catch (e) {
-    if (statusEl) {
-      statusEl.textContent = 'Could not upload: ' + e.message;
-      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
-    }
-  }
-  inputEl.value = '';
+function stripChatMeta(text) {
+  var metaBlock = new RegExp('METADATA:\\{[^\\n]*\\}', 'g');
+  var jsonBlock = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
+  var anyBlock = new RegExp('\x60\x60\x60[\\s\\S]*?\x60\x60\x60', 'g');
+  var phaseComplete = new RegExp('\\[PHASE_COMPLETE\\]', 'g');
+  var metaTagBlock = new RegExp('\\[METADATA\\][\\s\\S]*?\\[\\/METADATA\\]', 'g');
+  return (text || '')
+    .replace(metaBlock, '')
+    .replace(jsonBlock, '')
+    .replace(anyBlock, '')
+    .replace(phaseComplete, '')
+    .replace(metaTagBlock, '')
+    .trim();
 }
-
 
 function appendMessage(role, text) {
   const msgs = document.getElementById('messages');
@@ -4632,7 +5118,7 @@ function appendMessage(role, text) {
   const initial = role === 'ai' ? 'JG' : 'You';
   div.innerHTML = \`
     <div class="avatar \${role === 'ai' ? 'ai' : 'user-av'}">\${initial}</div>
-    <div class="bubble">\${formatText(text)}</div>
+    <div class="bubble" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false">\${formatText(text)}</div>
   \`;
 
   msgs.appendChild(div);
@@ -4687,30 +5173,30 @@ const THINKING_MESSAGES = {
     "One more second. This one is worth the wait...",
   ],
   blueprint_early: [
-    "Reading back through everything you shared...",
-    "This is the part where everything comes together...",
-    "Reviewing your story, your people, and your positioning...",
-    "The AI is re-reading your entire conversation from the start...",
-    "Every answer you gave is being analyzed for patterns...",
-    "Identifying the through-line in your brand story...",
+    "Reading back through<br>everything you shared...",
+    "This is the part where<br>everything comes together...",
+    "Building your brand blueprint<br>from everything you shared...",
+    "The AI is re-reading your entire<br>conversation from the start...",
+    "Every answer you gave<br>is being analyzed for patterns...",
+    "Identifying the through-line<br>in your brand story...",
   ],
   blueprint_mid: [
-    "Building your brand foundation, offer suite, and positioning...",
-    "Turning your conversation into a comprehensive strategy document...",
-    "Designing your complete brand identity and offer structure...",
-    "Creating something you have genuinely never seen before...",
-    "Packaging your genius into a format that actually works...",
-    "Crafting your positioning statements and key messaging...",
-    "Structuring your offer ladder: entry, core, and premium...",
-    "Writing headlines that will stop your ideal client mid scroll...",
+    "Building your brand foundation,<br>offer suite, and positioning...",
+    "Turning your conversation into<br>a comprehensive strategy document...",
+    "Designing your complete<br>brand identity and offer structure...",
+    "Creating something you have<br>genuinely never seen before...",
+    "Packaging your genius into<br>a format that actually works...",
+    "Crafting your positioning statements<br>and key messaging...",
+    "Structuring your offer ladder:<br>entry, core, and premium...",
+    "Writing headlines that will stop<br>your ideal client mid scroll...",
   ],
   blueprint_late: [
-    "Every insight you shared is being woven into this...",
-    "Polishing the final details of your blueprint...",
-    "Running quality checks on your brand strategy...",
-    "Making sure nothing you said was left on the table...",
-    "Your blueprint is going to be worth every minute you invested...",
-    "Finalizing your 7 part brand strategy document...",
+    "Every insight you shared<br>is being woven into this...",
+    "Polishing the final details<br>of your blueprint...",
+    "Running quality checks<br>on your brand strategy...",
+    "Making sure nothing you said<br>was left on the table...",
+    "Your blueprint is going to be<br>worth every minute you invested...",
+    "Finalizing your 7 part<br>brand strategy document...",
   ]
 };
 
@@ -4781,110 +5267,200 @@ function removeTyping() {
 // \u2500\u2500 BLUEPRINT GENERATION OVERLAY \u2500\u2500
 let blueprintGenInterval = null;
 
+function updateBpSegments(step) {
+  for (var i = 1; i <= 4; i++) {
+    var seg = document.getElementById('bp-seg' + i);
+    if (!seg) continue;
+    if (i < step) {
+      seg.className = 'bp-seg complete';
+    } else if (i === step) {
+      seg.className = 'bp-seg active';
+    } else {
+      seg.className = 'bp-seg';
+    }
+  }
+}
+
 function showBlueprintGenerating() {
   const overlay = document.getElementById('blueprint-generating');
   const msgEl = document.getElementById('blueprint-gen-msg');
-  const bar = document.getElementById('blueprint-gen-bar');
   const title = document.getElementById('blueprint-gen-title');
   const timerEl = document.getElementById('blueprint-gen-timer');
 
   overlay.classList.add('active');
   const startTime = Date.now();
 
-  // 3 phases of messages mapped to the actual timeline
+  const stepEl = document.getElementById('blueprint-gen-step');
+
+  // 3 pools of messages mapped to the actual timeline
   const earlyMsgs = [...THINKING_MESSAGES.blueprint_early].sort(() => Math.random() - 0.5);
   const midMsgs = [...THINKING_MESSAGES.blueprint_mid].sort(() => Math.random() - 0.5);
   const lateMsgs = [...THINKING_MESSAGES.blueprint_late].sort(() => Math.random() - 0.5);
   let msgIdx = 0;
   let currentPool = earlyMsgs;
-  msgEl.textContent = earlyMsgs[0];
+  msgEl.innerHTML = earlyMsgs[0];
 
-  // Progress: paced for ~6 min total
-  // 0-2 min: 0% to 30% (reading/analyzing)
-  // 2-4 min: 30% to 65% (building)
-  // 4-6 min: 65% to 90% (polishing)
-  // 6+ min: 90% to 95% (slow crawl)
+  // Progress: paced for ~3 min (actual range 2-4 min)
+  // 0-40s: 0-25% Step 1 (reading conversation)
+  // 40-90s: 25-55% Step 2 (analyzing patterns)
+  // 90-150s: 55-82% Step 3 (building blueprint)
+  // 150-210s: 82-93% Step 4 (polishing)
+  // 210s+: 93-97% (slow crawl)
   const progressInterval = setInterval(() => {
-    const elapsed = (Date.now() - startTime) / 1000; // seconds
-    let progress;
-    if (elapsed < 120) {
-      progress = (elapsed / 120) * 30;
+    const elapsed = (Date.now() - startTime) / 1000;
+    let progress, step;
+    if (elapsed < 40) {
+      progress = (elapsed / 40) * 25;
+      step = 1;
       if (currentPool !== earlyMsgs) { currentPool = earlyMsgs; msgIdx = 0; }
       title.textContent = 'Reading Your Conversation';
-    } else if (elapsed < 240) {
-      progress = 30 + ((elapsed - 120) / 120) * 35;
+    } else if (elapsed < 90) {
+      progress = 25 + ((elapsed - 40) / 50) * 30;
+      step = 2;
+      if (currentPool !== earlyMsgs) { currentPool = earlyMsgs; msgIdx = 0; }
+      title.textContent = 'Analyzing Your Patterns';
+    } else if (elapsed < 150) {
+      progress = 55 + ((elapsed - 90) / 60) * 27;
+      step = 3;
       if (currentPool !== midMsgs) { currentPool = midMsgs; msgIdx = 0; }
       title.textContent = 'Crafting Your Strategy';
-    } else if (elapsed < 360) {
-      progress = 65 + ((elapsed - 240) / 120) * 25;
+    } else if (elapsed < 210) {
+      progress = 82 + ((elapsed - 150) / 60) * 11;
+      step = 4;
       if (currentPool !== lateMsgs) { currentPool = lateMsgs; msgIdx = 0; }
       title.textContent = 'Polishing the Details';
     } else {
-      progress = Math.min(90 + (elapsed - 360) / 60, 97);
+      progress = Math.min(93 + (elapsed - 210) / 30, 97);
+      step = 4;
       title.textContent = 'Finishing Up';
     }
-    bar.style.width = progress + '%';
+    updateBpSegments(step);
+    if (stepEl) stepEl.textContent = 'Step ' + step + ' of 4';
 
     // Update timer
     const mins = Math.floor(elapsed / 60);
     const secs = Math.floor(elapsed % 60);
-    const timeStr = mins > 0 ? mins + 'm ' + secs + 's' : secs + 's';
-    if (elapsed < 30) {
-      timerEl.textContent = 'This typically takes 4 to 6 minutes. Grab a coffee.';
+    const pad = secs < 10 ? '0' : '';
+    // Heartbeat: show reassurance for 8s at every 60s boundary (60-68s, 120-128s, …)
+    if (elapsed >= 60 && Math.floor(elapsed) % 60 < 8) {
+      timerEl.textContent = 'Still working \u2014 this usually takes 3 to 5 minutes. Hang tight.';
+    } else if (elapsed < 45) {
+      timerEl.textContent = 'This typically takes 3 to 5 minutes.';
+    } else if (elapsed < 120) {
+      timerEl.textContent = mins + 'm ' + pad + secs + 's \u2014 building something worth the wait';
+    } else if (elapsed < 240) {
+      timerEl.textContent = mins + 'm ' + pad + secs + 's \u2014 almost there, finalizing details';
     } else {
-      timerEl.textContent = timeStr + ' elapsed \u2014 your blueprint is being crafted with care';
+      timerEl.textContent = mins + 'm ' + pad + secs + 's \u2014 still working, your conversation is saved';
     }
   }, 1000);
 
-  // Rotate messages every 6s (slower for longer wait)
+  // Rotate messages every 4s (faster rotation feels more active)
   blueprintGenInterval = setInterval(() => {
     msgIdx = (msgIdx + 1) % currentPool.length;
     msgEl.style.opacity = '0';
     setTimeout(() => {
-      msgEl.textContent = currentPool[msgIdx];
+      msgEl.innerHTML = currentPool[msgIdx];
       msgEl.style.opacity = '1';
-    }, 400);
-  }, 6000);
+    }, 300);
+  }, 4000);
 
   overlay._progressInterval = progressInterval;
 
-  // Show retry button after 8 minutes
+  // After 5 minutes: enter quiet mode — stop animating, show still-building message
+  overlay._quietMode = setTimeout(() => {
+    if (!overlay.classList.contains('active')) return;
+    if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
+    title.textContent = 'Still Building';
+    msgEl.style.opacity = '1';
+    msgEl.innerHTML = 'Still building. Your session is saved.';
+    if (stepEl) stepEl.textContent = '';
+    timerEl.textContent = 'This can take up to 10 minutes for long conversations.';
+  }, 300000);
+
+  // Show retry button after 10 minutes
   overlay._retryTimeout = setTimeout(() => {
     const retryEl = document.getElementById('blueprint-gen-retry');
     if (retryEl) retryEl.style.display = '';
     title.textContent = 'Taking Longer Than Expected';
-    msgEl.textContent = 'Your conversation is saved. You can try again or go back.';
-  }, 480000);
+    msgEl.innerHTML = 'Your conversation is saved. You can restart the job or go back to chat.';
+    timerEl.textContent = '';
+  }, 600000);
 
-  // Auto-recovery: if blueprint exists but overlay still showing after 3 min
+  // Auto-recovery: if blueprint exists but overlay still showing after 90s
   overlay._autoRecovery = setTimeout(async function() {
-    if (overlay.classList.contains('active') && STATE.pendingBlueprint) {
-      console.warn('[Blueprint] Auto-recovering from stuck overlay');
+    if (!overlay.classList.contains('active')) return;
+    if (STATE.pendingBlueprint) {
+      console.warn('[Blueprint] Auto-recovering from stuck overlay (pendingBlueprint)');
       hideBlueprintGenerating();
       handleBlueprintReady(STATE.pendingBlueprint);
-    } else if (overlay.classList.contains('active')) {
-      try {
-        var checkRes = await fetch('/api/session/' + STATE.sessionId);
-        var checkData = await checkRes.json();
-        if (checkData.blueprintGenerated) {
-          location.reload();
-        }
-      } catch (e) {}
+      return;
     }
-  }, 180000);
+    try {
+      var checkRes = await fetch('/api/session/' + STATE.sessionId, { credentials: 'include' });
+      var contentType = checkRes.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) throw new Error('non-JSON response');
+      var checkData = await checkRes.json();
+      if (checkData.blueprintGenerated && checkData.blueprint) {
+        hideBlueprintGenerating();
+        handleBlueprintReady(checkData.blueprint);
+      } else if (checkData.blueprintGenerated) {
+        location.reload();
+      } else {
+        // Blueprint not ready yet — reassure user but keep overlay
+        var msgElR = document.getElementById('blueprint-gen-msg');
+        if (msgElR) msgElR.innerHTML = 'Still building. Hang tight — this usually takes 3 to 5 minutes.';
+      }
+    } catch (e) {
+      // Swallow — will retry at 8-minute mark
+    }
+  }, 90000);
 }
 
 function retryBlueprint() {
-  hideBlueprintGenerating();
-  STATE.blueprintOverlayShown = false;
-  // Re-send the last user message to trigger blueprint generation again
-  const lastUserMsg = (STATE.messages || []).filter(m => m.role === 'user').pop();
-  if (lastUserMsg) {
-    document.getElementById('msg-input').value = lastUserMsg.content || 'Please generate my blueprint now.';
-  } else {
-    document.getElementById('msg-input').value = 'Please generate my blueprint now.';
-  }
-  sendMessage();
+  STATE.blueprintJobId = null;
+  // Restart the job via /api/blueprint/start — does NOT restart the session
+  fetch('/api/blueprint/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ sessionId: STATE.sessionId })
+  }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      if (data.jobId) STATE.blueprintJobId = data.jobId;
+      // Reset and re-show the overlay with fresh state
+      hideBlueprintGenerating();
+      STATE.blueprintOverlayShown = false;
+      STATE.blueprintPollInterval = null;
+      showBlueprintGenerating();
+      STATE.blueprintOverlayShown = true;
+      STATE.blueprintAsync = true;
+      // Re-attach polling with the new jobId
+      if (!STATE.blueprintPollInterval) {
+        STATE.blueprintPollInterval = setInterval(function() {
+          var pollUrl = STATE.blueprintJobId ? '/api/blueprint/status/' + STATE.blueprintJobId : '/api/session/' + STATE.sessionId;
+          fetch(pollUrl, { credentials: 'include' })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(d) {
+              if (!d) return;
+              if (d.status === 'complete' || d.hasBlueprint || (d.blueprintGenerated && d.blueprint)) {
+                clearInterval(STATE.blueprintPollInterval);
+                STATE.blueprintPollInterval = null;
+                var sess = d.blueprint ? d : null;
+                if (sess) { hideBlueprintGenerating(); handleBlueprintReady(sess.blueprint); return; }
+                fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
+                  .then(function(r) { return r.ok ? r.json() : null; })
+                  .then(function(s) { if (s && s.blueprint) { hideBlueprintGenerating(); handleBlueprintReady(s.blueprint); } })
+                  .catch(function() {});
+              }
+            }).catch(function() {});
+        }, 3000);
+      }
+    })
+    .catch(function(err) {
+      console.error('[retryBlueprint] start failed:', err);
+      showToast('Could not restart blueprint generation. Try refreshing the page.');
+    });
 }
 
 function dismissBlueprintOverlay() {
@@ -4934,8 +5510,11 @@ function hideBlueprintGenerating() {
   const retryEl = document.getElementById('blueprint-gen-retry');
 
   if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
+  if (STATE.blueprintPollInterval) { clearInterval(STATE.blueprintPollInterval); STATE.blueprintPollInterval = null; }
+  STATE.blueprintAsync = false;
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
-  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
+  if (overlay._quietMode) { clearTimeout(overlay._quietMode); overlay._quietMode = null; }
+  if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); overlay._retryTimeout = null; }
   if (overlay._autoRecovery) { clearTimeout(overlay._autoRecovery); }
   if (retryEl) retryEl.style.display = 'none';
 
@@ -5016,12 +5595,22 @@ function updatePhase(phase) {
 
   // Update progress bar fill
   const fill = document.getElementById('phase-progress-fill');
-  if (fill) { fill.style.width = (phase / 8 * 100) + '%'; }
+  if (fill) { fill.style.width = (phase / 7 * 100) + '%'; }
+  const lbl = document.getElementById('phase-label');
+  if (lbl) { lbl.textContent = 'Phase ' + phase + ' of 8'; }
 
   // Show image generation button at phase 5
   if (phase >= 5) {
     document.getElementById('images-btn').style.display = 'flex';
   }
+}
+
+function copyBpText(btn) {
+  var text = btn.dataset.copyText || '';
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied';
+    setTimeout(function() { btn.textContent = 'Copy positioning'; }, 1800);
+  }).catch(function() {});
 }
 
 // \u2500\u2500 DEBRIEF (emotional bridge before blueprint) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -5142,8 +5731,15 @@ function transitionToBlueprint() {
     niche_category: categorizeNiche(nicheText)
   });
   trackServer('blueprint_viewed', STATE.sessionId, { nicheCategory: categorizeNiche(nicheText) });
-  // Show resonance survey after 4 seconds
-  setTimeout(showResonanceSurvey, 4000);
+  // Show resonance survey after user scrolls past 70% of the page
+  var _resonanceScrollHandler = function() {
+    var scrollPct = (window.scrollY || document.documentElement.scrollTop) / (document.documentElement.scrollHeight - document.documentElement.clientHeight);
+    if (scrollPct > 0.7) {
+      window.removeEventListener('scroll', _resonanceScrollHandler);
+      setTimeout(showResonanceSurvey, 1500);
+    }
+  };
+  window.addEventListener('scroll', _resonanceScrollHandler);
 }
 
 function showResonanceSurvey() {
@@ -5246,8 +5842,6 @@ async function renderBlueprint(bp, strategistDebrief, isReturning) {
       s.textContent = old.textContent;
       old.parentNode.replaceChild(s, old);
     });
-    // Wire up ask bar visibility after blueprint content is loaded
-    initAskBarVisibility();
   } catch (e) {
     body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#C4703F;font-family:Outfit,sans-serif;font-size:14px;">Unable to load blueprint. Please refresh the page.</div>';
   }
@@ -5362,103 +5956,269 @@ async function submitBuildWithJames() {
 }
 
 // \u2500\u2500 POST-BLUEPRINT Q&A \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-let QA_QUESTION_COUNT = 0;
 
-function openBlueprintQA() {
-  // no-op: ask bar is always visible once triggered by scroll
+// Blueprint button handlers (defined in SPA to avoid innerHTML script re-execution issues)
+function copyBlock(btn, text) {
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  }).catch(function() {
+    btn.textContent = 'Copy'; btn.classList.remove('copied');
+  });
 }
 
-function closeBlueprintQA() {
-  const bar = document.getElementById('ask-bar');
-  const panel = document.getElementById('qa-messages-panel');
-  if (bar) bar.style.display = 'none';
-  if (panel) panel.style.display = 'none';
+function downloadBlueprintPDF() {
+  if (!STATE.sessionId) { alert('No session found. Please reload and try again.'); return; }
+  var btn = event && event.target;
+  if (btn) { btn.innerHTML = 'Generating PDF\\u2026'; btn.disabled = true; }
+  fetch('/api/blueprint/pdf-download', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: STATE.sessionId })
+  }).then(function(res) {
+    if (!res.ok) throw new Error('PDF generation failed');
+    var cd = res.headers.get('Content-Disposition') || '';
+    var nameMatch = cd.match(/filename="?([^"]+)"?/);
+    var pdfName = nameMatch ? nameMatch[1] : 'deep-work-blueprint.pdf';
+    return res.blob().then(function(b) { return { blob: b, filename: pdfName }; });
+  }).then(function(result) {
+    var url = URL.createObjectURL(result.blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = result.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: STATE.sessionId, eventType: 'pdf_downloaded' }) }).catch(function(){});
+  }).catch(function(err) {
+    console.error('PDF download failed:', err);
+    alert('PDF generation failed. Please try again.');
+  }).finally(function() {
+    if (btn) { btn.innerHTML = '\\u2193 Download PDF'; btn.disabled = false; }
+  });
 }
 
-function initAskBarVisibility() {
-  // Show ask bar after user scrolls past the debrief letter
-  // Hide it when the blueprint footer section is visible
-  const bar = document.getElementById('ask-bar');
-  if (!bar) return;
-
-  // Observe debrief letter (inside injected blueprint HTML)
-  const tryObserve = function() {
-    const letter = document.getElementById('bp-debrief-letter');
-    const footer = document.querySelector('.bp-blueprint-footer');
-    if (!letter) { setTimeout(tryObserve, 500); return; }
-
-    const showObs = new IntersectionObserver(function(entries) {
-      if (!entries[0].isIntersecting && entries[0].boundingClientRect.top < 0) {
-        // Debrief letter scrolled past — show bar
-        bar.style.display = 'flex';
-        if (footer) {
-          const hideObs = new IntersectionObserver(function(fe) {
-            bar.style.display = fe[0].isIntersecting ? 'none' : 'flex';
-          }, { threshold: 0.3 });
-          hideObs.observe(footer);
-        }
-        showObs.disconnect();
-      }
-    }, { threshold: 0 });
-    showObs.observe(letter);
+function copyBlueprintForAI() {
+  var bp = window.__blueprintData;
+  if (!bp) { alert('Blueprint data not available. Please refresh the page.'); return; }
+  var p1 = bp.part1 || {};
+  var p2 = bp.part2 || {};
+  var p3 = bp.part3 || {};
+  var p4 = bp.part4 || {};
+  var p5 = bp.part5 || {};
+  var p7 = bp.part7 || {};
+  var brandName = (Array.isArray(p1.brandNames) && p1.brandNames[0]) || '';
+  var tagline = '';
+  if (Array.isArray(p1.taglines) && p1.taglines.length) {
+    var t0 = p1.taglines[0];
+    tagline = typeof t0 === 'string' ? t0 : (t0.text || t0.tagline || '');
+  }
+  var colors = '';
+  if (Array.isArray(p1.visualDirection && p1.visualDirection.colors)) {
+    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\\n');
+  }
+  var fonts = (p1.visualDirection && p1.visualDirection.fonts) || {};
+  var fontHeading = fonts.heading || (Array.isArray(fonts) ? fonts[0] : 'Outfit');
+  var fontBody = fonts.body || (Array.isArray(fonts) ? fonts[1] : 'Inter');
+  var aesthetic = (p1.visualDirection && p1.visualDirection.aesthetic) || 'Premium minimal. Clean white backgrounds. No gradients.';
+  var bv = p1.brandVoice || {};
+  var descriptors = Array.isArray(bv.descriptors) ? bv.descriptors : (Array.isArray(bv) ? bv : (typeof bv === 'string' ? bv.split(', ') : []));
+  var brandVoice = descriptors.join(', ');
+  var coreBrandPromise = p1.coreBrandPromise || '';
+  var wantToAchieve = p2.tryingToAchieve || p2.goalStatement || '';
+  var whatStops = p2.whatIsStoppingThem || p2.barriers || '';
+  var exactWords = '';
+  if (Array.isArray(p2.exactWords) && p2.exactWords.length) {
+    exactWords = p2.exactWords.map(function(w) { return typeof w === 'string' ? w : (w.text || w.quote || ''); }).filter(Boolean);
+  }
+  var alreadyTried = '';
+  if (Array.isArray(p2.alreadyTried) && p2.alreadyTried.length) {
+    alreadyTried = p2.alreadyTried.join(', ');
+  }
+  var avatarName = p2.name || '';
+  var avatarAge = p2.ageRange || '';
+  var avatarSituation = p2.lifeSituation || '';
+  var whyDidntWork = p2.whyItDidNotWork || '';
+  var nicheStatement = p3.nicheStatement || p3.uniqueMechanism || '';
+  var whoServe = p3.whoTheyServe || '';
+  var whoNotServe = p3.whoTheyDoNotServe || '';
+  var uniqueMechanism = p3.uniqueMechanism || '';
+  var competitorGap = p3.competitorGap || '';
+  var ascensionLogic = p4.ascensionLogic || '';
+  var pageNarrative = p5.pageNarrative || '';
+  var heroImageTheme = p5.heroImageTheme || '';
+  var testimonialFraming = p5.testimonialFraming || '';
+  var posStatements = (p7.positioningStatements && typeof p7.positioningStatements === 'object') ? p7.positioningStatements : {};
+  var headlines = '';
+  if (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions.length) {
+    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\\n');
+  }
+  var offerLines = [];
+  if (p4.entryOffer) offerLines.push((p4.entryOffer.name || 'Entry') + ' (' + (p4.entryOffer.price || 'TBD') + '): ' + (p4.entryOffer.description || '') + (p4.entryOffer.delivery ? ' [Delivery: ' + p4.entryOffer.delivery + ']' : ''));
+  if (p4.coreOffer) offerLines.push((p4.coreOffer.name || 'Core') + ' (' + (p4.coreOffer.price || 'TBD') + '): ' + (p4.coreOffer.description || '') + (p4.coreOffer.delivery ? ' [Delivery: ' + p4.coreOffer.delivery + ']' : ''));
+  if (p4.coreOffer2) offerLines.push((p4.coreOffer2.name || 'Core 2') + ' (' + (p4.coreOffer2.price || 'TBD') + '): ' + (p4.coreOffer2.description || '') + (p4.coreOffer2.delivery ? ' [Delivery: ' + p4.coreOffer2.delivery + ']' : ''));
+  if (p4.premiumOffer) offerLines.push((p4.premiumOffer.name || 'Premium') + ' (' + (p4.premiumOffer.price || 'TBD') + '): ' + (p4.premiumOffer.description || '') + (p4.premiumOffer.delivery ? ' [Delivery: ' + p4.premiumOffer.delivery + ']' : ''));
+  var heroHeadline = (Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) || (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions[0]) || '';
+  if (typeof heroHeadline !== 'string') heroHeadline = heroHeadline.text || heroHeadline.headline || '';
+  var heroSub = p5.heroSubheadline || '';
+  var heroCTA = p5.heroCTA || 'Get Started';
+  var sections = '';
+  if (Array.isArray(p5.sections) && p5.sections.length) {
+    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\\n');
+  }
+  // Build voice contrast pairs from descriptors
+  var contrastMap = {
+    'Strategic': 'Strategic, not academic',
+    'Direct': 'Direct, not blunt',
+    'Clarifying': 'Clarifying, not condescending',
+    'Confident': 'Confident, not arrogant',
+    'Uncompromising': 'Uncompromising, not rigid',
+    'Bold': 'Bold, not reckless',
+    'Warm': 'Warm, not soft',
+    'Witty': 'Witty, not sarcastic',
+    'Professional': 'Professional, not corporate',
+    'Authentic': 'Authentic, not unpolished',
+    'Inspiring': 'Inspiring, not preachy',
+    'Empathetic': 'Empathetic, not patronizing',
+    'Playful': 'Playful, not childish',
+    'Edgy': 'Edgy, not offensive',
+    'Approachable': 'Approachable, not casual',
+    'Premium': 'Premium, not pretentious',
+    'Conversational': 'Conversational, not sloppy',
+    'Authoritative': 'Authoritative, not bossy'
   };
-  tryObserve();
+  var voiceContrasts = descriptors.map(function(d) { return contrastMap[d] || d; }).join('\\n  ');
+  // doSay / neverSay from blueprint data
+  var doSay = (Array.isArray(bv.doSay) && bv.doSay.length) ? bv.doSay : [];
+  var neverSay = (Array.isArray(bv.neverSay) && bv.neverSay.length) ? bv.neverSay : [];
+  // Build golden paragraph samples from taglines + hero headlines + section content
+  var voiceSamples = [];
+  if (Array.isArray(p1.taglines) && p1.taglines.length) {
+    var tSample = p1.taglines.slice(0, 3).map(function(t) { return typeof t === 'string' ? t : (t.text || t.tagline || ''); }).filter(Boolean);
+    if (tSample.length) voiceSamples.push('Tagline examples: ' + tSample.join(' | '));
+  }
+  if (doSay.length) {
+    voiceSamples.push('On-brand phrases: ' + doSay.join(' | '));
+  }
+  if (p5.heroSubheadline) {
+    voiceSamples.push('Hero subheadline: ' + p5.heroSubheadline);
+  }
+  if (Array.isArray(p5.sections) && p5.sections.length) {
+    var problemSection = p5.sections.find(function(s) { return (s.name || '').toLowerCase().indexOf('problem') > -1 || (s.name || '').toLowerCase().indexOf('root') > -1; });
+    if (problemSection && problemSection.content) {
+      voiceSamples.push('Sample body copy: ' + problemSection.content);
+    }
+  }
+  if (posStatements.website) voiceSamples.push('Website positioning statement: ' + posStatements.website);
+  if (posStatements.social) voiceSamples.push('Social bio: ' + posStatements.social);
+  if (posStatements.inPerson) voiceSamples.push('In-person intro: ' + posStatements.inPerson);
+  var handoff = '# ' + (brandName || 'Brand') + ' \\u2014 AI Brand Brief\\n\\n' +
+    'Use this document as your complete reference for writing copy, building pages, and creating content for this brand. Follow the voice rules and design tokens exactly.\\n\\n' +
+    '---\\n\\n' +
+    '## 1. Brand Identity\\n\\n' +
+    'Brand: ' + (brandName || 'My Brand') + '\\n' +
+    (tagline ? 'Tagline: ' + tagline + '\\n' : '') +
+    'Niche: ' + nicheStatement + '\\n' +
+    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\\n' : '') +
+    (uniqueMechanism ? 'Unique Mechanism: ' + uniqueMechanism + '\\n' : '') +
+    '\\n## 2. Voice & Tone\\n\\n' +
+    'Voice attributes (with boundaries):\\n  ' + voiceContrasts + '\\n\\n' +
+    (doSay.length ? 'Things we DO say:\\n' + doSay.map(function(s) { return '  \\u2713 "' + s + '"'; }).join('\\n') + '\\n\\n' : '') +
+    (neverSay.length ? 'Things we NEVER say:\\n' + neverSay.map(function(s) { return '  \\u2717 "' + s + '"'; }).join('\\n') + '\\n\\n' : '') +
+    '## 3. Writing Rules\\n\\n' +
+    'DO:\\n' +
+    '  \\u2713 Use contractions (you\\'ll, we\\'re, that\\'s)\\n' +
+    '  \\u2713 Lead with the benefit, then explain the feature\\n' +
+    '  \\u2713 Use second person ("you") to speak directly to the reader\\n' +
+    '  \\u2713 Keep paragraphs to 2\\u20133 sentences max\\n' +
+    '  \\u2713 Use periods and commas for rhythm. Em dashes for emphasis.\\n' +
+    '  \\u2713 Open with a bold statement or provocative reframe, not a question\\n' +
+    '  \\u2713 Vary sentence length. Short punches. Then longer explanations that build the case.\\n' +
+    '\\nDO NOT:\\n' +
+    '  \\u2717 Use emojis anywhere\\n' +
+    '  \\u2717 Use hyphens/dashes to start list items (use periods, commas, or em dashes)\\n' +
+    '  \\u2717 Use passive voice ("was created" \\u2192 "we created")\\n' +
+    '  \\u2717 Use corporate jargon or filler phrases\\n' +
+    '  \\u2717 Start with "In today\\'s..." or "Are you tired of..."\\n' +
+    '  \\u2717 Use rhetorical questions as openers\\n' +
+    '\\nBANNED WORDS (never use these):\\n' +
+    '  delve, leverage, unlock, harness, seamless, cutting-edge, game-changer,\\n' +
+    '  comprehensive, robust, innovative, synergy, elevate, empower, journey,\\n' +
+    '  landscape, paradigm, revolutionize, transformative, world-class, holistic,\\n' +
+    '  deep dive, next-level, thought leader, disrupt, ecosystem, scalable\\n\\n' +
+    '## 4. Audience\\n\\n' +
+    (avatarName ? 'Ideal client avatar: ' + avatarName + (avatarAge ? ' (age ' + avatarAge + ')' : '') + '\\n' : '') +
+    (avatarSituation ? 'Their situation: ' + avatarSituation + '\\n' : '') +
+    (whoServe ? 'Who we serve: ' + whoServe + '\\n' : '') +
+    (whoNotServe ? 'Who we do NOT serve: ' + whoNotServe + '\\n' : '') +
+    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\\n' : '') +
+    (whatStops ? 'What stops them: ' + whatStops + '\\n' : '') +
+    (alreadyTried ? 'What they\\'ve already tried: ' + alreadyTried + '\\n' : '') +
+    (whyDidntWork ? 'Why it didn\\'t work: ' + whyDidntWork + '\\n' : '') +
+    (Array.isArray(exactWords) && exactWords.length ? '\\nTheir exact words (use this language in copy):\\n' + exactWords.map(function(w) { return '  "' + w + '"'; }).join('\\n') + '\\n' : '') +
+    '\\n## 5. Voice Examples\\n\\n' +
+    'These samples show the brand voice in action. Match this tone, rhythm, and energy:\\n\\n' +
+    voiceSamples.map(function(s) { return '  ' + s; }).join('\\n\\n') + '\\n\\n' +
+    '## 6. Positioning & Headlines\\n\\n' +
+    'Niche: ' + nicheStatement + '\\n' +
+    (competitorGap ? 'How we\\'re different: ' + competitorGap + '\\n' : '') +
+    '\\nHeadline Options:\\n' + (headlines || 'None generated') + '\\n\\n' +
+    '## 7. Offer Suite\\n\\n' + (offerLines.join('\\n') || 'None generated') + '\\n' +
+    (ascensionLogic ? '\\nAscension logic: ' + ascensionLogic + '\\n' : '') +
+    '\\n' +
+    '## 8. Website Blueprint\\n\\n' +
+    (pageNarrative ? 'Site strategy: ' + pageNarrative + '\\n\\n' : '') +
+    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\\n' : '') +
+    (heroSub ? 'Hero Subheadline: ' + heroSub + '\\n' : '') +
+    'Hero CTA: ' + heroCTA + '\\n' +
+    (heroImageTheme ? 'Hero image direction: ' + heroImageTheme + '\\n' : '') +
+    '\\n' +
+    (sections ? 'Page Sections:\\n' + sections + '\\n\\n' : '') +
+    (testimonialFraming ? 'Testimonial strategy: ' + testimonialFraming + '\\n\\n' : '') +
+    '## 9. Design Tokens\\n\\n' +
+    'Colors:\\n' + (colors || '  Primary: #1D1D1F\\n  Accent: #C4703F\\n  Background: #FFFFFF') + '\\n\\n' +
+    'Typography:\\n' +
+    '  Headlines: ' + fontHeading + ' 700\\n' +
+    '  Body: ' + fontBody + ' 400\\n' +
+    '  Emotional: Playfair Display Italic (quotes and taglines only)\\n\\n' +
+    'Aesthetic: ' + aesthetic + '\\n' +
+    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\\n\\n' +
+    '## 10. Build Instructions\\n\\n' +
+    'Build a complete personal brand website using this blueprint.\\n\\n' +
+    'Structure:\\n' +
+    '  1. Start with the hero section using the headline, subheadline, and CTA above\\n' +
+    '  2. Build each page section in the order listed\\n' +
+    '  3. End with a clear CTA section that mirrors the hero\\n\\n' +
+    'Design rules:\\n' +
+    '  Use clean backgrounds (' + ((Array.isArray(p1.visualDirection && p1.visualDirection.colors) && p1.visualDirection.colors.find(function(c) { return c.name === "Background"; })) || {}).hex || '#FFFFFF' + ')\\n' +
+    '  Load ' + fontHeading + ' and ' + fontBody + ' from Google Fonts\\n' +
+    '  No emojis. No gradients. No dark mode.\\n' +
+    '  Buttons: dark pill shapes, never copper/accent colored\\n\\n' +
+    'Copy rules:\\n' +
+    '  Follow the voice rules in Section 3 exactly\\n' +
+    '  Use the audience\\'s exact words from Section 4 in headlines and subheads\\n' +
+    '  Reference the voice examples in Section 5 for tone calibration\\n' +
+    '  No dashes in copy (use periods, commas, or em dashes instead)\\n\\n' +
+    'Generated by Deep Work Interview \\u2014 jamesguldan.com/deep-work';
+  navigator.clipboard.writeText(handoff).then(function() {
+    var toast = document.getElementById('bpAiCopySuccess');
+    if (toast) { toast.style.display = 'block'; setTimeout(function() { toast.style.display = ''; }, 3000); }
+    fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: STATE.sessionId, eventType: 'ai_builder_copied' }) }).catch(function(){});
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = handoff;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(_) {}
+    document.body.removeChild(ta);
+    var toast = document.getElementById('bpAiCopySuccess');
+    if (toast) { toast.style.display = 'block'; setTimeout(function() { toast.style.display = ''; }, 3000); }
+  });
 }
 
-async function sendQA() {
-  const input = document.getElementById('qa-input');
-  const msgs = document.getElementById('qa-messages');
-  const panel = document.getElementById('qa-messages-panel');
-  const question = (input?.value || '').trim();
-  if (!question || !STATE.sessionId) return;
-
-  if (QA_QUESTION_COUNT >= 20) {
-    // Replace bar with upsell content
-    const bar = document.getElementById('ask-bar');
-    if (bar) bar.innerHTML = '<span style="font-family:Inter,sans-serif;font-size:13px;color:#86868B;">Want to go deeper?</span><a href="https://calendly.com/james-jamesguldan/deep-work-review-consult?utm_source=blueprint&utm_medium=askbar&utm_campaign=dwi" target="_blank" rel="noopener" style="flex-shrink:0;font-family:Outfit,sans-serif;font-weight:600;font-size:13px;color:#C4703F;border:1px solid rgba(196,112,63,0.3);border-radius:50px;padding:8px 20px;text-decoration:none;">Book Strategy Call</a>';
-    return;
-  }
-  QA_QUESTION_COUNT++;
-  const remaining = 20 - QA_QUESTION_COUNT;
-  const counter = document.getElementById('qa-counter');
-  if (counter) counter.textContent = remaining + ' left';
-  if (input) input.value = '';
-
-  // Show messages panel
-  if (panel) { panel.style.display = 'flex'; }
-
-  // User bubble
-  const userBubble = document.createElement('div');
-  userBubble.style.cssText = 'align-self:flex-end;background:#ECEAE6;padding:10px 14px;border-radius:14px 14px 4px 14px;font-family:Inter,sans-serif;font-size:13px;color:#111;max-width:80%;line-height:1.5;';
-  userBubble.textContent = question;
-  if (msgs) msgs.appendChild(userBubble);
-
-  // AI typing bubble
-  const aiBubble = document.createElement('div');
-  aiBubble.style.cssText = 'align-self:flex-start;background:#fff;border:1px solid #E8E5E1;padding:10px 14px;border-radius:14px 14px 14px 4px;font-family:Inter,sans-serif;font-size:13px;color:#111;max-width:80%;line-height:1.5;';
-  aiBubble.textContent = '...';
-  if (msgs) { msgs.appendChild(aiBubble); msgs.scrollTop = msgs.scrollHeight; }
-
-  const btn = document.getElementById('qa-send');
-  if (btn) btn.style.opacity = '0.3';
-  track('dw_qa_question_sent', { session_id: STATE.sessionId });
-
-  try {
-    const authToken = localStorage.getItem('dw_session') || '';
-    const res = await fetch('/api/blueprint/qa', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-      body: JSON.stringify({ sessionId: STATE.sessionId, question })
-    });
-    const data = await res.json();
-    aiBubble.textContent = data.answer || 'I could not generate a response. Please try again.';
-  } catch (_) {
-    aiBubble.textContent = 'Something went wrong. Please try again.';
-  } finally {
-    if (btn) btn.style.opacity = '1';
-    if (msgs) msgs.scrollTop = msgs.scrollHeight;
-  }
-}
 
 async function downloadPDF() {
   if (!STATE.sessionId) { showToast('No session found. Please reload and try again.'); return; }
@@ -6438,8 +7198,6 @@ function setDeployStep(n, s) {
 </html>
 
 `, "getHTML");
-
-// src/html/server-pages.js
 function getLoginHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -6789,7 +7547,7 @@ function getLoginHTML() {
       <div class="check-email-icon">\u2709\uFE0F</div>
       <h2 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;margin-bottom:10px;color:var(--text)">Check your inbox</h2>
       <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;" id="checkEmailMsg">
-        A sign in link is on its way. Tap the link in the email to continue.
+        Your sign in link is on its way. Open it on the same device you're using now.
       </p>
       <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">
         Did not get it? Check your spam folder, or
@@ -6896,7 +7654,7 @@ async function doMagic() {
     const data = await res.json();
     if (data.ok) {
       document.getElementById('checkEmailMsg').innerHTML =
-        'A sign in link is on its way to <strong>' + email + '</strong>. Tap it to continue.';
+        'Your link is on its way to <strong>' + email + '</strong>. Open it on the same device — your session will be right here.';
       showView('viewCheckEmail');
     } else {
       showStatus('magicStatus', 'error', data.error || 'Could not send link. Please try again.');
@@ -7213,13 +7971,11 @@ function getLegalHTML(title, content) {
   <p class="meta">Align Consulting LLC &nbsp;\xB7&nbsp; james@jamesguldan.com</p>
   ${content}
 </main>
-<footer>&copy; 2025 Align Consulting LLC &nbsp;\xB7&nbsp; <a href="/legal/terms">Terms</a> &nbsp;\xB7&nbsp; <a href="/legal/privacy">Privacy</a></footer>
+<footer>&copy; 2026 Align Consulting LLC &nbsp;\xB7&nbsp; <a href="/legal/terms">Terms</a> &nbsp;\xB7&nbsp; <a href="/legal/privacy">Privacy</a></footer>
 </body>
 </html>`;
 }
 __name(getLegalHTML, "getLegalHTML");
-
-// src/html/admin.js
 var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7341,7 +8097,7 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
     width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px;
     padding: 10px 12px; color: var(--text); font-size: 13px; font-family: inherit; outline: none; transition: border-color 0.15s;
   }
-  input:focus, textarea:focus, select:focus { border-color: var(--gold); }
+  input:focus, textarea:focus, select:focus { border-color: var(--border2); box-shadow: none; }
   input::placeholder, textarea::placeholder { color: var(--text3); }
   textarea { resize: vertical; min-height: 100px; }
 
@@ -7574,6 +8330,10 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v1m0 16v1M5 12H4m16 0h1M7 7l-1-1M18 18l1 1M17 7l1-1M6 18l-1 1"/><path d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/><circle cx="12" cy="12" r="2"/></svg>
         Monitoring
       </div>
+      <div class="nav-item" onclick="showPage('people')" id="nav-people">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        People
+      </div>
       <div class="nav-item" onclick="showPage('users')" id="nav-users">
         <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Users
@@ -7581,6 +8341,10 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
       <div class="nav-item" onclick="showPage('depth-scores')" id="nav-depth-scores">
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Depth Grades
+      </div>
+      <div class="nav-item" onclick="window.location.href='/admin/health'" id="nav-health-dashboard">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Health
       </div>
       <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>
@@ -7664,7 +8428,7 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
         <div class="card">
           <div class="card-body">
             <table>
-              <thead><tr><th>Session ID</th><th>Tier</th><th>Phase</th><th>Messages</th><th>Blueprint</th><th>Site</th><th>Started</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Person</th><th>Tier</th><th>Phase</th><th>Messages</th><th>Blueprint</th><th>Grade</th><th>Started</th><th>Actions</th></tr></thead>
               <tbody id="sessions-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text2)">Loading...</td></tr></tbody>
             </table>
           </div>
@@ -7965,6 +8729,66 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- PEOPLE SEARCH -->
+      <div class="page" id="page-people">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <h2>People Search</h2>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="people-q" placeholder="Name or email..." style="width:200px;margin:0" oninput="debouncePeopleSearch()">
+              <select id="people-buying-temp" onchange="loadPeopleSearch()" style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:13px;margin:0">
+                <option value="">All temps</option>
+                <option value="hot">Hot</option>
+                <option value="warm">Warm</option>
+                <option value="cold">Cold</option>
+              </select>
+              <select id="people-blueprint" onchange="loadPeopleSearch()" style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:13px;margin:0">
+                <option value="">All</option>
+                <option value="1">Blueprint generated</option>
+                <option value="0">No blueprint</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="loadPeopleSearch()">Search</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="people-results"><div style="padding:24px;text-align:center;color:var(--text2)">Enter a search or hit Search to load all people.</div></div>
+          </div>
+        </div>
+        <!-- Person Detail Panel -->
+        <div id="person-detail" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <h2 id="person-detail-name">Person</h2>
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('person-detail').style.display='none'">Close</button>
+            </div>
+            <div style="padding:20px">
+              <!-- Scored Summary Card -->
+              <div id="person-intel-card" style="background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:20px">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:12px">Lead Intel</div>
+                <div id="person-intel-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+              </div>
+              <!-- Notable Quotes -->
+              <div id="person-quotes-section" style="margin-bottom:20px;display:none">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:10px">Key Quotes</div>
+                <div id="person-quotes-list"></div>
+              </div>
+              <!-- Action Buttons -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+                <button class="btn btn-primary btn-sm" id="person-magic-btn" onclick="personMagicLink()">Generate Magic Link</button>
+                <button class="btn btn-outline btn-sm" id="person-resend-btn" onclick="personResendBlueprint()">Resend Blueprint Email</button>
+                <button class="btn btn-outline btn-sm" id="person-copy-btn" onclick="personCopyTranscript()">Copy Transcript</button>
+                <a id="person-blueprint-link" href="#" target="_blank" class="btn btn-outline btn-sm" style="display:none">View Blueprint</a>
+              </div>
+              <!-- Full Transcript (expandable) -->
+              <details id="person-transcript-details">
+                <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);padding:8px 0;user-select:none">Full Transcript (<span id="person-msg-count">0</span> messages) \u2014 Use this as a brief for their website project</summary>
+                <div id="person-transcript" style="margin-top:12px;max-height:600px;overflow-y:auto;font-size:13px;line-height:1.6"></div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- USERS -->
       <div class="page" id="page-users">
         <div class="card">
@@ -8164,14 +8988,23 @@ async function tryAutoLogin() {
     if (user && user.role === 'admin') {
       CURRENT_USER = user;
       localStorage.setItem('dw_admin_token', AUTH_TOKEN);
+      // /api/auth/me just re-set the HttpOnly cookie \u2014 reload once to get the rich SSR admin
+      if (!sessionStorage.getItem('_spa_tried')) {
+        sessionStorage.setItem('_spa_tried', '1');
+        window.location.reload();
+        return;
+      }
+      // If SSR still didn't load after reload, stay on SPA (fallback)
       showApp();
     } else {
       AUTH_TOKEN = '';
       localStorage.removeItem('dw_admin_token');
+      sessionStorage.removeItem('_spa_tried');
     }
   } catch {
     AUTH_TOKEN = '';
     localStorage.removeItem('dw_admin_token');
+    sessionStorage.removeItem('_spa_tried');
   }
 }
 
@@ -8227,6 +9060,7 @@ async function requestMagicLink() {
 function logout() {
   localStorage.removeItem('dw_admin_token');
   localStorage.removeItem('dw_session');
+  sessionStorage.removeItem('_spa_tried');
   document.cookie = 'dw_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   window.location.href = '/logout';
 }
@@ -8247,10 +9081,11 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   document.getElementById('nav-' + name).classList.add('active');
 
-  const titles = { dashboard: 'Dashboard', users: 'Users', sessions: 'Sessions', 'prompt-lab': 'Prompt Lab', monitoring: 'Monitoring', settings: 'Settings', testing: 'Testing Lab', 'api-costs': 'API Costs', 'depth-scores': 'Depth Grades' };
+  const titles = { dashboard: 'Dashboard', people: 'People Search', users: 'Users', sessions: 'Sessions', 'prompt-lab': 'Prompt Lab', monitoring: 'Monitoring', settings: 'Settings', testing: 'Testing Lab', 'api-costs': 'API Costs', 'depth-scores': 'Depth Grades' };
   document.getElementById('page-title').textContent = titles[name] || name;
 
-  if (name === 'users') loadUsers();
+  if (name === 'people') loadPeopleSearch();
+  else if (name === 'users') loadUsers();
   else if (name === 'sessions') loadSessions();
   else if (name === 'settings') loadSettings();
   else if (name === 'prompt-lab') loadPrompt();
@@ -8320,12 +9155,167 @@ function renderFunnel(funnel) {
 function renderRecentSessions(sessions) {
   document.getElementById('recent-sessions-tbody').innerHTML = sessions.map(s => \`
     <tr>
-      <td>\${esc(s.user_email || s.id?.slice(0,14) || 'anon')}</td>
-      <td><span class="badge \${s.tier === 'site' ? 'badge-gold' : 'badge-gray'}">\${esc(s.tier)}</span></td>
-      <td>\${s.phase}/8</td>
-      <td>\${s.blueprint_generated ? '<span class="badge badge-green">Done</span>' : '<span class="badge badge-gray">In progress</span>'}</td>
+      <td>
+        <div style="font-weight:500">\${esc(s.user_email || 'Anonymous')}</div>
+        <div style="font-size:10px;color:var(--text2);font-family:monospace">\${esc(s.id?.slice(0,18) || '')}</div>
+      </td>
+      <td><span class="badge \${s.tier === 'site' ? 'badge-gold' : 'badge-gray'}">\${esc(s.tier || 'blueprint')}</span></td>
+      <td>\${s.phase || 1}/7 <span style="color:var(--text2);font-size:11px">(\${s.message_count || 0} msgs)</span></td>
+      <td>
+        \${s.blueprint_generated ? '<span class="badge badge-green">Done</span>' : '<span class="badge badge-gray">In progress</span>'}
+        \${s.depth_grade ? ' <strong style="font-size:11px">' + esc(s.depth_grade) + '</strong>' : ''}
+      </td>
     </tr>
   \`).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';
+}
+
+// PEOPLE SEARCH
+var _peopleSearchTimer = null;
+var _currentPersonSession = null;
+function debouncePeopleSearch() {
+  clearTimeout(_peopleSearchTimer);
+  _peopleSearchTimer = setTimeout(loadPeopleSearch, 350);
+}
+async function loadPeopleSearch() {
+  const q = document.getElementById('people-q')?.value || '';
+  const buyingTemp = document.getElementById('people-buying-temp')?.value || '';
+  const blueprint = document.getElementById('people-blueprint')?.value || '';
+  const el = document.getElementById('people-results');
+  el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text2)">Searching...</div>';
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (buyingTemp) params.set('buying_temp', buyingTemp);
+  if (blueprint !== '') params.set('blueprint', blueprint);
+  try {
+    const res = await api('GET', '/api/admin/people/search?' + params.toString());
+    const people = res.people || [];
+    if (!people.length) { el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text2)">No results found.</div>'; return; }
+    const tempColor = t => t === 'hot' ? '#c0392b' : t === 'warm' ? '#C4703F' : '#86868B';
+    el.innerHTML = '<table><thead><tr><th>Person</th><th>Phase</th><th>Blueprint</th><th>Grade</th><th>Temp</th><th>Industry</th><th>Best Fit</th><th>Date</th><th></th></tr></thead><tbody>' +
+      people.map(p => \`<tr>
+        <td>
+          <div style="font-weight:500">\${esc(p.name||'\u2014')}</div>
+          <div style="font-size:11px;color:var(--text2)">\${esc(p.email||'')}</div>
+        </td>
+        <td>\${(p.phase||1)}/7 <span style="color:var(--text2);font-size:11px">(\${p.message_count||0} msgs)</span></td>
+        <td>\${p.blueprint_generated ? '<span style="color:#34C759;font-weight:600">\u2713</span>' : '<span style="color:var(--text2)">\u2014</span>'}</td>
+        <td>\${p.depth_grade ? '<strong>'+esc(p.depth_grade)+'</strong>' : '<span style="color:var(--text2)">\u2014</span>'}</td>
+        <td><span style="font-size:12px;font-weight:600;color:\${tempColor((p.buying_temperature||'').toLowerCase())}">\${esc(p.buying_temperature||'\u2014')}</span></td>
+        <td>\${esc(p.industry||'\u2014')}</td>
+        <td>\${esc(p.best_fit_service||'\u2014')}</td>
+        <td>\${fmtDate(p.created_at)}</td>
+        <td style="display:flex;gap:5px">
+          <button class="btn btn-outline btn-sm" onclick="showPersonDetail('\${esc(p.session_id)}')">Detail</button>
+          <a class="btn btn-outline btn-sm" href="/admin/session/\${esc(p.session_id)}" target="_blank">Full</a>
+          \${p.blueprint_generated ? '<a class="btn btn-outline btn-sm" href="/blueprint?sessionId=\${esc(p.session_id)}" target="_blank">Blueprint</a>' : ''}
+        </td>
+      </tr>\`).join('') + '</tbody></table>';
+  } catch(e) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text2)">Error loading results.</div>';
+  }
+}
+async function showPersonDetail(sessionId) {
+  _currentPersonSession = sessionId;
+  const panel = document.getElementById('person-detail');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('person-detail-name').textContent = 'Loading...';
+  document.getElementById('person-intel-grid').innerHTML = '<div style="color:var(--text2)">Loading...</div>';
+  document.getElementById('person-quotes-section').style.display = 'none';
+  document.getElementById('person-transcript').innerHTML = '';
+  document.getElementById('person-msg-count').textContent = '0';
+  document.getElementById('person-blueprint-link').style.display = 'none';
+  try {
+    const res = await api('GET', '/api/admin/people/' + sessionId + '/detail');
+    const s = res.session || {};
+    const intel = res.intel || {};
+    const quotes = res.quotes || [];
+    document.getElementById('person-detail-name').textContent = (s.name || s.email || 'Unknown') + (s.depth_grade ? '  \xB7  Grade ' + s.depth_grade : '') + (s.phase ? '  \xB7  Phase ' + s.phase + '/7' : '') + (s.message_count ? '  \xB7  ' + s.message_count + ' msgs' : '');
+    // Action buttons
+    const bpLink = document.getElementById('person-blueprint-link');
+    if (s.blueprint_generated) {
+      bpLink.href = '/blueprint?sessionId=' + sessionId;
+      bpLink.style.display = 'inline-block';
+    } else {
+      bpLink.style.display = 'none';
+    }
+    // Full detail link
+    let fullDetailBtn = document.getElementById('person-full-detail-btn');
+    if (!fullDetailBtn) {
+      fullDetailBtn = document.createElement('a');
+      fullDetailBtn.id = 'person-full-detail-btn';
+      fullDetailBtn.className = 'btn btn-outline btn-sm';
+      fullDetailBtn.target = '_blank';
+      fullDetailBtn.textContent = 'Full Session Detail';
+      document.querySelector('#person-detail .card-header').appendChild(fullDetailBtn);
+    }
+    fullDetailBtn.href = '/admin/session/' + sessionId;
+    // Intel grid
+    const fields = [
+      ['Buying Temp', intel.buying_temperature], ['Industry', intel.industry],
+      ['Est Revenue', intel.estimated_revenue], ['Years in Biz', intel.years_in_business],
+      ['Team Size', intel.team_size], ['Brand Maturity', intel.brand_maturity],
+      ['Best Fit Service', intel.best_fit_service], ['Budget Signals', intel.budget_signals],
+      ['Follow Up Angle', intel.follow_up_angle],
+    ];
+    document.getElementById('person-intel-grid').innerHTML = fields.filter(([,v])=>v).map(([label,val])=>\`
+      <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);margin-bottom:4px">\${esc(label)}</div>
+        <div style="font-size:13px;color:var(--text)">\${esc(String(val))}</div>
+      </div>
+    \`).join('') || '<div style="color:var(--text2)">No intel data available.</div>';
+    if (intel.recommendation) {
+      document.getElementById('person-intel-grid').innerHTML += \`<div style="grid-column:1/-1;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold);margin-bottom:4px">Recommendation</div><div style="font-size:13px;color:var(--text)">\${esc(intel.recommendation)}</div></div>\`;
+    }
+    // Notable quotes
+    if (quotes.length) {
+      document.getElementById('person-quotes-section').style.display = 'block';
+      document.getElementById('person-quotes-list').innerHTML = quotes.map(q=>\`<div style="border-left:3px solid var(--gold);padding:8px 12px;margin-bottom:8px;background:var(--bg2);border-radius:0 6px 6px 0;font-size:13px;color:var(--text)">\u201C\${esc(String(q))}\u201D</div>\`).join('');
+    }
+    // Transcript
+    const msgs = res.messages || [];
+    document.getElementById('person-msg-count').textContent = msgs.length;
+    document.getElementById('person-transcript').innerHTML = msgs.map(m=>\`
+      <div style="margin-bottom:10px;padding:8px 12px;border-radius:8px;background:\${m.role==='user'?'var(--bg2)':'#fff'};border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:\${m.role==='user'?'var(--text2)':'var(--gold)'};margin-bottom:4px">\${m.role==='user'?'Them':'James'}\${m.phase?' \xB7 Phase '+m.phase:''}</div>
+        <div style="font-size:13px;white-space:pre-wrap">\${esc(m.content||'')}</div>
+      </div>
+    \`).join('');
+  } catch(e) {
+    document.getElementById('person-intel-grid').innerHTML = '<div style="color:var(--text2)">Failed to load detail: ' + e.message + '</div>';
+  }
+}
+async function personMagicLink() {
+  if (!_currentPersonSession) return;
+  try {
+    const detail = await api('GET', '/api/admin/people/' + _currentPersonSession + '/detail');
+    const userId = detail.session?.id;
+    const email = detail.session?.email;
+    if (!email) { toast('No email found for this person.'); return; }
+    const res = await api('POST', '/api/admin/magic-link', { email });
+    if (res.magicLink) {
+      await navigator.clipboard.writeText(res.magicLink).catch(()=>{});
+      toast('Magic link copied: ' + res.magicLink);
+    }
+  } catch(e) { toast('Failed to generate magic link.'); }
+}
+async function personResendBlueprint() {
+  if (!_currentPersonSession) return;
+  try {
+    const res = await api('POST', '/api/admin/resend-blueprint', { sessionId: _currentPersonSession });
+    if (res.ok) toast('Blueprint email resent.');
+    else toast('Could not resend: ' + (res.error || 'unknown error'));
+  } catch(e) { toast('Failed to resend blueprint email.'); }
+}
+async function personCopyTranscript() {
+  if (!_currentPersonSession) return;
+  try {
+    const res = await api('GET', '/api/admin/people/' + _currentPersonSession + '/detail');
+    const msgs = res.messages || [];
+    const txt = msgs.map(m => (m.role === 'user' ? 'Client: ' : 'James: ') + (m.content || '')).join('\\n\\n');
+    await navigator.clipboard.writeText(txt).catch(()=>{});
+    toast('Transcript copied to clipboard (' + msgs.length + ' messages).');
+  } catch(e) { toast('Failed to copy transcript.'); }
 }
 
 // USERS
@@ -8408,14 +9398,20 @@ async function loadSessions() {
     const sessions = res.sessions || [];
     tbody.innerHTML = sessions.map(s => \`
       <tr>
-        <td style="font-family:monospace;font-size:11px">\${esc(s.id?.slice(0,20))}...</td>
+        <td>
+          <div style="font-weight:500;font-size:13px">\${esc(s.name || s.email || '(anonymous)')}</div>
+          <div style="font-size:10px;color:var(--text2);font-family:monospace">\${esc(s.id?.slice(0,18))}...</div>
+        </td>
         <td><span class="badge \${s.tier==='site'?'badge-gold':'badge-gray'}">\${esc(s.tier)}</span></td>
-        <td>\${s.phase}/8</td>
+        <td>\${s.phase}/7</td>
         <td>\${s.message_count || 0}</td>
-        <td>\${s.blueprint_generated ? '\u2713' : '\u2014'}</td>
-        <td>\${s.site_generated ? '\u2713' : '\u2014'}</td>
+        <td>\${s.blueprint_generated ? '<span style="color:#34C759;font-weight:600">\u2713</span>' : '<span style="color:var(--text2)">\u2014</span>'}</td>
+        <td>\${s.depth_grade ? '<span style="font-weight:600">' + esc(s.depth_grade) + '</span>' : '<span style="color:var(--text2)">\u2014</span>'}</td>
         <td>\${fmtDate(s.created_at)}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="viewSession('\${esc(s.id)}')">View</button></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="viewSession('\${esc(s.id)}')">Preview</button>
+          <a class="btn btn-outline btn-sm" href="/admin/session/\${esc(s.id)}" target="_blank">Full Detail</a>
+        </td>
       </tr>
     \`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text2)">No sessions yet.</td></tr>';
   } catch {
@@ -8941,7 +9937,7 @@ const CHECKLIST = {
     { id: 'a6', label: 'Session saves and restores after closing browser' },
   ],
   blueprint: [
-    { id: 'b1', label: 'Phase 8 generates a blueprint with no raw JSON visible' },
+    { id: 'b1', label: 'Phase 7 generates a blueprint with no raw JSON visible' },
     { id: 'b2', label: 'Blueprint screen renders with all sections' },
     { id: 'b3', label: 'Download Blueprint button produces valid file' },
     { id: 'b4', label: 'Upsell to Site in Sixty shows on blueprint screen' },
@@ -9213,8 +10209,6 @@ async function runTestTrigger() {
 </body>
 </html>
 `, "getAdminHTML");
-
-// src/routes/pages.js
 function handleRoot(request, env) {
   return new Response(getLoginHTML(), { headers: htmlHeaders() });
 }
@@ -9303,8 +10297,6 @@ function handleHealth(request, env) {
   return json({ ok: true, ts: Date.now() });
 }
 __name(handleHealth, "handleHealth");
-
-// src/auth.js
 async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const keyMaterial = await crypto.subtle.importKey(
@@ -9430,11 +10422,23 @@ async function requireAuth(request, env) {
   const token = extractToken(request);
   if (!token)
     return null;
-  const payload = await verifySessionToken(token, env.JWT_SECRET || "dev-secret-change-me");
-  if (!payload)
-    return null;
-  const user = await getUserById(env, payload.userId);
-  return user || null;
+  const secret = env.JWT_SECRET || "dev-secret-change-me";
+  const payload = await verifySessionToken(token, secret);
+  if (payload) {
+    const user = await getUserById(env, payload.userId);
+    if (user) return user;
+  }
+  if (request._allTokens && request._allTokens.length > 1) {
+    for (const alt of request._allTokens) {
+      if (alt === token) continue;
+      const altPayload = await verifySessionToken(alt, secret);
+      if (altPayload) {
+        const altUser = await getUserById(env, altPayload.userId);
+        if (altUser) return altUser;
+      }
+    }
+  }
+  return null;
 }
 __name(requireAuth, "requireAuth");
 async function requireAdmin(request, env) {
@@ -9449,9 +10453,13 @@ function extractToken(request) {
   if (auth?.startsWith("Bearer "))
     return auth.slice(7);
   const cookie = request.headers.get("Cookie") || "";
-  const match = cookie.match(/dw_session=([^;]+)/);
-  if (match)
-    return match[1];
+  const matches = [...cookie.matchAll(/dw_session=([^;]+)/g)];
+  if (matches.length === 1)
+    return matches[0][1];
+  if (matches.length > 1) {
+    request._allTokens = matches.map((m) => m[1]);
+    return matches[0][1];
+  }
   const url = new URL(request.url);
   return url.searchParams.get("token") || null;
 }
@@ -9500,8 +10508,6 @@ function fromHex(hex) {
   return new Uint8Array(hex.match(/.{2}/g).map((b) => parseInt(b, 16)));
 }
 __name(fromHex, "fromHex");
-
-// src/html/brand-guide.js
 function esc(s) {
   if (!s)
     return "";
@@ -10806,8 +11812,6 @@ document.querySelectorAll('.page.content-page').forEach(function(page) {
 </html>`;
 }
 __name(buildBrandGuideHTML, "buildBrandGuideHTML");
-
-// src/prompts.js
 var DEEP_WORK_SYSTEM_PROMPT = `You are a world class brand strategist, offer architect, positioning expert, and market researcher. But before any of that, you are someone who sees people. Really sees them. You speak like a really smart friend who happens to have deep expertise in all of these areas but also happens to have the emotional intelligence of a great therapist and the timing of a good comedian. You never talk like a consultant. You never use corporate language. You are direct, warm, genuinely funny, and always honest. You have a gift for reflecting back to people what they cannot find the words to say themselves. You also know that humor is one of the fastest ways to get someone to drop their guard and tell you the truth.
 
 ## How You Begin Every Session
@@ -10824,7 +11828,7 @@ Then move into Phase 1 Your Truth with a deep personal question. No business que
 
 The website and LinkedIn ask happens at the transition from Phase 1 to Phase 2. After the emotional foundation is laid, say something like: "Okay, I feel like I know who you are now. Before we get into the strategy side, do you have a website or LinkedIn I can look at? I want to see how the world sees you versus who you just showed me." This timing makes the research feel purposeful rather than transactional.
 
-CRITICAL RULE \u2014 BLUEPRINT TIMING: You must NOT generate the brand blueprint JSON until all five interview phases (1 through 5) are fully complete AND you have received explicit user readiness confirmation in Phase 6. If someone sends a short message like "Ready." or "Let's go." during Phases 1-5, do NOT interpret this as permission to generate the blueprint. Continue the interview. The blueprint JSON block (wrapped in \`\`\`json\`\`\`) must appear ONLY when Phase 6 is complete. Generating it earlier will break the user experience.
+CRITICAL RULE \u2014 BLUEPRINT TIMING: You must NOT generate the brand blueprint JSON until all six interview phases (1 through 6) are fully complete AND you have received explicit user readiness confirmation in Phase 7. If someone sends a short message like "Ready." or "Let's go." during Phases 1-5, do NOT interpret this as permission to generate the blueprint. Continue the interview. The blueprint JSON block (wrapped in \`\`\`json\`\`\`) must appear ONLY when Phase 6 is complete. Generating it earlier will break the user experience.
 
 ## Psychology Toolkit Rules (applies across all phases)
 
@@ -10852,9 +11856,11 @@ CRITICAL RULE \u2014 BLUEPRINT TIMING: You must NOT generate the brand blueprint
 13. Assess credibility gaps and flag them honestly before they become positioning problems.
 14. Never use dashes in lists. Use numbered lists or flowing paragraph form.
 15. Keep your messages focused and conversational. Do not write walls of text. Shorter messages land harder.
-16. Be funny. Not stand-up-comedian funny. Smart-friend-at-dinner funny. Use humor to disarm, to call out absurdity, to lighten heavy moments so people can breathe before going deeper. When someone gives you a painfully corporate answer, you might say "That sounds like it came off a LinkedIn carousel. What is the version you would actually say out loud?" When they are being too hard on themselves, try "Okay, so you are behind schedule on a plan you made up. Welcome to entrepreneurship." Humor builds trust faster than empathy alone. Use it.
-17. Stay strictly within the scope of this Deep Work Interview. If someone asks you anything outside of their brand, positioning, business, offers, story, or the interview process itself, decline warmly and bring them back. Do not answer questions about other topics, write code, help with unrelated tasks, act as a general assistant, or engage with off-topic requests of any kind. You are here for one purpose: to build their brand blueprint. That is it.
+16. NEVER ask the same question twice. If you already asked "what changes in your life?" in Phase 1, do not ask it again in Phase 5, 6, or 7. Track what you have already asked and find a different angle.
+17. Be funny. Not stand-up-comedian funny. Smart-friend-at-dinner funny. Use humor to disarm, to call out absurdity, to lighten heavy moments so people can breathe before going deeper. When someone gives you a painfully corporate answer, you might say "That sounds like it came off a LinkedIn carousel. What is the version you would actually say out loud?" When they are being too hard on themselves, try "Okay, so you are behind schedule on a plan you made up. Welcome to entrepreneurship." Humor builds trust faster than empathy alone. Use it.
+18. Stay strictly within the scope of this Deep Work Interview. If someone asks you anything outside of their brand, positioning, business, offers, story, or the interview process itself, decline warmly and bring them back. Do not answer questions about other topics, write code, help with unrelated tasks, act as a general assistant, or engage with off-topic requests of any kind. You are here for one purpose: to build their brand blueprint. That is it.
 18. Deliver at least one reframe during the interview, ideally at the transition from Phase 1 to Phase 2 or from Phase 3 to Phase 4. A reframe is when you take something they described as a weakness, a struggle, or a source of shame and show them why it is actually their greatest strategic asset. For example: "You said you felt behind. But what I am hearing is that while everyone else was chasing trends, you were doing the actual work. That is not being behind. That is building something real while everyone else was performing." The reframe should feel like a revelation, not a pep talk. Ground it in specific things they said. Do not fabricate. After delivering a reframe, honor The Sit.
+19. IDENTITY COHERENCE: If someone changes their name, profession, or other foundational identity information mid-interview, do NOT silently accept the new version and rebuild around it. Instead, name the shift explicitly and confirm which version is canonical before continuing. Say something like: "Hold on — I want to make sure I am building this around the right picture of you. Are we now working from [new name/role], or was there more to [original name/role] that was still true?" The emotional framing of the change (protection, trust, testing) is valid and worth naming. But from a data integrity standpoint, the blueprint must be built on the correct identity. One clear confirmation question before moving on. Do not skip this step.
 
 ## Mirror Moments and The Sit
 
@@ -10863,7 +11869,7 @@ This is the most important thing you do. After every 3 to 4 substantive exchange
 The pattern:
 1. Name the pattern you are hearing: "I keep hearing you say [X]..."
 2. Reveal the deeper truth underneath it: "...but what I actually hear underneath that is [Y]."
-3. THE SIT: After you deliver the mirror, stop. Do not ask another question. Do not pivot to strategy. Do not fill the silence with more words. Say something short like "Sit with that for a second." or "That matters. Take a moment with that." or simply "Yeah. That is it." Then wait for them to respond. Their response to a mirror moment is often the most honest thing they say in the entire interview.
+3. THE SIT: After you deliver the mirror, stop. Do not ask another question. Do not pivot to strategy. Do not fill the silence with more words. Say something short like "Sit with that for a second." or "That matters. Take a moment with that." or simply "Yeah. That is it." Then wait for them to respond. Their response to a mirror moment is often the most honest thing they say in the entire interview. IMPORTANT: Vary your phrasing. Do not use "Sit with that for a second" more than twice in the entire interview. Rotate between different versions: "Let that land." "Take a second with that." "Yeah. That is it." "That matters." If you catch yourself repeating the same phrase, use a different one.
 
 Other mirror moment forms:
 "Can I tell you what I am noticing? [genuine observation about who they are, not what they do]"
@@ -10896,7 +11902,7 @@ At the start of the session, the user may have provided:
 
 Use all of this as living context throughout every phase. Reference it when relevant. Do not re-ask for information they already provided.
 
-If auto-researched competitor data is present, use it as a starting point in Phase 6 but verify with the user: "Based on your website, it looks like some of your competitors might be [names]. Does that sound right, or are there others you would add?"
+If auto-researched competitor data is present, use it as a starting point in Phase 6 (Your Landscape) but verify with the user: "Based on your website, it looks like some of your competitors might be [names]. Does that sound right, or are there others you would add?"
 
 ## Document Uploads
 
@@ -10995,8 +12001,39 @@ WHY: Surfaces the social cost of the identity transition. This reveals the perso
 
 DEPLOYMENT RULE: Use at most 2 of these in Phase 5. If Phase 1 already surfaced deep grief and relational resistance, these are redundant \u2014 skip them.
 
-**Phase 6: Your Offers and Synthesis**
-Goal: Design a three-tier offer structure with clear ascension logic. Entry level to build trust, core offer where main value is delivered, premium for the people who want everything. Price each based on real market data and their stated positioning. Then generate the complete brand blueprint document. See output format below.
+**Phase 6: Your Landscape** (10 to 15 minutes)
+Goal: Help them understand the competitive landscape and why their niche positioning makes them uncatchable. This is where you show them the before and after. Walk through what they were saying before this conversation versus what they should be saying now. Assess the market viability of their niche. Help them see that nobody can compete with them if they niche down hard enough. Use the competitor data from pre-research if available. Make the case that their positioning shift is not just a rebrand but a fundamental strategic advantage.
+
+REQUIRED: Show them the gap between their old generic positioning and their new specific positioning. Say something like: "You were saying [old thing]. What you should be saying is [new thing]. Here is why that changes everything." Make the transformation concrete and undeniable.
+
+REQUIRED: Address market viability directly. "Is this niche big enough?" Answer it with specifics. Size the opportunity in a way that removes doubt.
+
+Callback: Reference their Phase 5 niche statement and their Phase 2 contrarian beliefs. Their positioning should feel like the natural conclusion of everything they have already said.
+
+**Phase 7: Your Proof and Pricing Psychology**
+Goal: Uncover the strongest evidence they have that this work transforms people, and surface the internal beliefs that are keeping their prices too low. This phase is about proof and permission — helping them see that what they charge reflects what they believe about themselves, not what the market will bear.
+
+Ask these four questions, one at a time. Wait for the full answer before asking the next. Do not rush.
+
+1. "What is the strongest piece of proof you have that this work actually transforms people. A specific story, a case, a number, a testimonial. Tell me the one you come back to."
+2. "What are you charging right now. And what does your gut tell you your floor should be."
+3. "When you think about raising your prices, whose voice do you hear telling you not to."
+4. "What is the thing that sounds arrogant but is actually true about your work."
+
+The fourth question is the most important. Stay with it. If they hedge, push back: "What would you say if you knew no one was judging you." The answer to this question becomes the arrogant_truth field in the blueprint.
+
+Do NOT move to Phase 8 until all four questions have been answered.
+
+**Phase 8: Synthesis and Mission**
+Goal: Help them articulate the thing they do for its own sake, name what they discovered about themselves in this conversation, and reflect on the shift that just happened. This is the closing of the interview. It should feel like the end of a powerful session, not a form being completed.
+
+Ask these three questions, one at a time. Wait for the full answer before asking the next.
+
+1. "If you had to say in one sentence what you would do even if no one paid you, what would that sentence be."
+2. "What is the one thing you said in this interview that you have never said publicly before."
+3. "Look at what we just built together. What did you see about yourself that you could not see an hour ago."
+
+After all three are answered, tell them you have everything you need and that you are generating their blueprint now. Then generate the complete blueprint JSON. Do NOT generate the blueprint before this point.
 
 ## Phase Tracking
 
@@ -11009,7 +12046,9 @@ Never show this metadata to the user. It is machine-readable only.
 
 The "key" field should prioritize emotional insights over business facts. "Left corporate law because she missed feeling alive" is better than "Works in executive coaching."
 
-Phase numbers are now 1 through 6. Phase 1 is Your Truth. Phase 6 is Offers and Synthesis.
+Phase numbers are now 1 through 8. Phase 1 is Your Truth. Phase 7 is Proof and Pricing Psychology. Phase 8 is Synthesis and Mission.
+
+CRITICAL RULE — BLUEPRINT TIMING: You may only generate the brand blueprint JSON after Phase 8 reaches 100 percent progress. If you feel you have enough material before Phase 8 ends, do not stop. Move forward into the next phase question. The user paid for eight phases. Generating the blueprint JSON before Phase 8 is complete will break the user experience and waste the data you have collected.
 
 ## Debrief Material Tracking
 
@@ -11022,9 +12061,9 @@ Throughout the entire interview, mentally bookmark moments for the debrief lette
 
 The quality of the debrief depends entirely on how deeply you listened during the interview. If you honored the 7 beats (Permission, Descent, Mirror, Sit, Reframe, Build, Return) the debrief will write itself. If you rushed, it will read like a summary. Do not let it read like a summary.
 
-## The Synthesis Output (Phase 6)
+## The Synthesis Output (Phase 8)
 
-You are generating two things simultaneously: the brand blueprint (parts 1-8 plus leadIntel) AND a personal debrief letter. The debrief letter is shown BEFORE the blueprint on its own full-screen page. It is the most important piece of copy in the entire experience. This is the moment where the person feels truly seen. Get it right.
+You are generating two things simultaneously: the brand blueprint (all fields plus leadIntel) AND a personal debrief letter. The debrief letter is shown BEFORE the blueprint on its own full-screen page. It is the most important piece of copy in the entire experience. This is the moment where the person feels truly seen. Get it right.
 
 The debrief letter must follow this exact structure. Five paragraphs. No headers. No bullet points. No formatting. Just clean prose written in second person ("you").
 
@@ -11048,7 +12087,7 @@ DEBRIEF RULES:
 - Write as James Guldan. First person plural ("we") when referencing the team. Second person ("you") when addressing the user.
 - The quote in paragraph 3 must be real. Pull it from the interview transcript. Do not fabricate.
 
-When you have completed all 6 phases and are ready to generate the blueprint, output the following and nothing else. Wrap it in a JSON code block. IMPORTANT: Every field must reflect what was specifically said in this conversation. Do not write anything generically.
+When you have completed all 7 phases and the user confirms they are ready to see their blueprint, your ENTIRE next message must be ONLY the JSON code block below. No prose before it. No summary. No explanation. No "here is what we built" paragraph. No "let me put this together." JUST the JSON. Start your message with \`\`\`json and end it with \`\`\`. The system will automatically render the JSON into a beautiful blueprint page. If you write prose before the JSON, the user will see raw text instead of the designed experience. IMPORTANT: Every field must reflect what was specifically said in this conversation. Do not write anything generically.
 
 \`\`\`json
 {
@@ -11056,7 +12095,7 @@ When you have completed all 6 phases and are ready to generate the blueprint, ou
   "personalLetter": {
     "salutation": "First name followed by a comma. Example: 'Ava,'",
     "italicOpening": "2-3 sentence emotional opening paragraph. Written in first person from James. Captures the core emotional truth of their story.",
-    "proseBody": "Full prose letter body. 3-4 paragraphs. Connects their journey to their brand potential. Warm, direct, James's voice.",
+    "proseBody": "Full prose letter body. 2-3 paragraphs max. Connects their journey to their brand potential. Warm, direct, James's voice.",
     "keyInsight": "A single sentence extracted from proseBody that is the most quotable insight. This exact sentence must also appear verbatim within proseBody so it can be rendered as a pull quote.",
     "signoff": { "name": "James Guldan", "studio": "Deep Work Studio" }
   },
@@ -11076,13 +12115,18 @@ When you have completed all 6 phases and are ready to generate the blueprint, ou
     ]
   },
   "marketLandscape": {
+    "beforePositioning": "The generic thing they were saying before this conversation. Their old website copy, their old elevator pitch. Be specific and quote what they told you.",
+    "afterPositioning": "The new positioning statement they should use. Specific, niche, and uncatchable. The sentence that makes them a category of one.",
+    "whyItWorks": "2-3 sentences explaining why this positioning shift is dramatically better. Connect it to market opportunity, client psychology, and competitive advantage.",
+    "marketViability": "2-3 sentences on niche size and viability. Address the fear that niching down means a smaller market. Show why the opposite is true.",
+    "categoryOfOne": "One sentence explaining why nobody can compete with them in this specific space. Will render as a large hero callout. Make it unmissable.",
     "competitors": [
       { "name": "Competitor name", "positioning": "Their positioning in 10 words or less", "gap": "The gap they leave open that this person fills" }
     ],
     "marketQuotes": [
       { "quote": "Exact phrase their ideal client says or Googles", "descriptor": "Context for the quote, e.g. What your ideal client Googles at 11pm" }
     ],
-    "competitiveAdvantage": "The single most important competitive edge this person has. One sentence. Will render as a large hero callout. Make it unmissable."
+    "competitiveAdvantage": "The single most important competitive edge this person has. One sentence."
   },
   "idealClient": {
     "portrait": "One sentence character intro. Give them a name, age, role, and one core tension. Example: Jordan is 36, runs a B2B SaaS company, and is three bad hires away from questioning everything.",
@@ -11096,25 +12140,15 @@ When you have completed all 6 phases and are ready to generate the blueprint, ou
     "brandName": "The recommended brand name",
     "tagline": "The recommended tagline. Short, memorable, true.",
     "colorPalette": [
-      { "hex": "#1D1D1F", "name": "Anchor", "narrative": "Short poetic description of why this color. One sentence." }
+      { "hex": "#1D1D1F", "name": "Anchor" }
     ],
-    "typographySpec": {
-      "headline": { "family": "Outfit", "weight": "700", "sample": "Render the tagline in headline font" },
-      "body": { "family": "Inter", "weight": "400", "sample": "A one-sentence body copy sample that fits their brand voice" }
-    },
-    "voiceGuide": {
-      "doSay": ["3-5 specific phrases or patterns that fit their voice"],
-      "neverSay": ["3-5 specific phrases or patterns that undercut their brand"]
-    },
     "positioningStatement": "The single line people will screenshot. Full positioning in one sentence. Make it so specific it could only be about this person."
   },
   "firstThreeMoves": [
     {
       "title": "Short action title",
-      "instruction": "2-3 sentence explanation of exactly what to do and why it matters now",
-      "copyContent": "Ready-to-paste copy they can use immediately. Real, finished copy, not a template.",
-      "deadline": "DO THIS WITHIN 48 HOURS or DO THIS THIS WEEK",
-      "addressesGap": "Category name and grade from credibilityScore.categories, e.g. Digital Presence D+"
+      "instruction": "1-2 sentence explanation of what to do and why",
+      "deadline": "DO THIS WITHIN 48 HOURS or DO THIS THIS WEEK"
     }
   ],
   "projectedScore": {
@@ -11128,29 +12162,17 @@ When you have completed all 6 phases and are ready to generate the blueprint, ou
 
 CRITICAL TONE RULE FOR credibilityScore: Never make someone feel bad. Every gap is an opportunity with a specific, achievable fix. The score and grade must be realistic based on what you learned about their digital presence, authority markers, and market positioning.
 
-CRITICAL INSTRUCTIONS FOR marketLandscape: Use the competitor data from the pre-research context. If no research data is available, generate based on what you learned in the interview. marketQuotes must be in the audience's own language, not consultant-speak.
+CRITICAL INSTRUCTIONS FOR marketLandscape: Use the competitor data from the pre-research context. If no research data is available, generate based on what you learned in the interview. marketQuotes must be in the audience's own language, not consultant-speak. beforePositioning MUST quote or closely paraphrase what the person actually said about their current website, bio, or elevator pitch. afterPositioning must be the new positioning statement you helped them build during the interview. whyItWorks must connect the shift to specific market dynamics. marketViability must address whether the niche is big enough and answer that question with conviction. categoryOfOne is the single sentence that proves nobody else occupies this exact space.
 
-CRITICAL INSTRUCTIONS FOR firstThreeMoves: Each move must directly address one of the categories in credibilityScore.categories. Each must be specific enough to execute without further instruction. The copyContent field must contain real, finished copy the person can paste and use immediately. Not a template. Not instructions. Actual copy.
+CRITICAL INSTRUCTIONS FOR firstThreeMoves: Each move must directly address one of the categories in credibilityScore.categories. Each must be specific enough to execute without further instruction.
 
 CRITICAL INSTRUCTIONS FOR personalLetter: The keyInsight sentence must appear verbatim inside proseBody. Do not paraphrase it. Copy the exact sentence into both fields. The renderer will highlight it as a pull quote inside the letter.
 
 CRITICAL INSTRUCTIONS FOR projectedScore: current must match credibilityScore.score exactly. projected must reflect realistic improvement from completing all three firstThreeMoves. projectedGrade must match the projected number.
 
-CRITICAL INSTRUCTIONS FOR part8 (Your Recommended Next Step):
+IMPORTANT: Keep all text fields concise. The entire JSON must fit within a single response. Prioritize quality over length.
 
-You must choose the recommendation based on what you ACTUALLY learned about this person. Here are the three paths and when to recommend each:
-
-1. **"site_in_sixty"** \u2014 Recommend this when: they do NOT have an internal design/dev team, they are a solopreneur or small team, they need a website or their current one is broken/outdated, they expressed frustration with how long branding takes. Frame it as: "A designer is going to take 30 days and charge you thousands to do what we can make live in the next hour. Your brand strategy is done. Your blueprint is done. Let's not sit on it. Let's turn it into something the world can actually see."
-
-2. **"coaching"** \u2014 Recommend this when: they HAVE an internal team (designers, marketers, developers), they are already at meaningful revenue (500K+), their challenge is more about leadership alignment or strategic direction than execution. Frame it as: "Send this blueprint to your team. They can execute on it. But the deeper work \u2014 aligning your leadership, making sure every decision ladders up to this brand \u2014 that is where I come in. Let me be the strategist in your corner."
-
-3. **"self_guided"** \u2014 Recommend this when: they are early stage with very limited budget, or they explicitly said they want to DIY. Frame it warmly: "You have everything you need to get started. Your blueprint is your north star. When you are ready for the next level, I will be here."
-
-Always be genuine. Never recommend coaching to someone who clearly cannot afford it. Never recommend Site In Sixty to someone who already has a great website and an in house team. The recommendation should feel like honest advice from a friend who actually listened.
-
-For the leadIntel section: Extract every data point you can from the conversation. Be honest about what you do not know \u2014 use "Unknown" rather than guessing. The notableQuotes should be the most revealing things they said that would help a salesperson understand this person in 30 seconds.
-
-After the JSON, write a short warm message to the user (3 to 4 sentences) congratulating them and explaining what comes next.`;
+Do NOT write anything after the closing \`\`\`. The JSON must be your complete response.`;
 function getAestheticOverrides(aesthetic) {
   const a = (aesthetic || "").toLowerCase();
   if (/executive|corporate|finance|law|premium|luxury|elite/i.test(a)) {
@@ -11738,8 +12760,6 @@ Return ONLY valid JSON, no markdown code fences:
   "motivation": "Your encouragement here...",
   "quotedMoment": "The single most powerful thing they said during the interview, verbatim or near-verbatim, that captures who they are"
 }`;
-
-// src/utils/internal.js
 var CORS = getCORSHeaders(null);
 var MODEL_OPUS = "claude-opus-4-6";
 var MODEL_SONNET = "claude-sonnet-4-6";
@@ -11749,7 +12769,7 @@ var MODEL_COSTS = {
   [MODEL_SONNET]: { input: 300, output: 1500, cacheRead: 30, cacheWrite: 375 },
   [MODEL_HAIKU]: { input: 80, output: 400, cacheRead: 8, cacheWrite: 100 }
 };
-var OPUS_PHASES = /* @__PURE__ */ new Set([1, 3, 4, 6]);
+var OPUS_PHASES = /* @__PURE__ */ new Set([1, 3, 4, 6, 7]);
 function pickChatModel(session) {
   const currentPhase = session.phase || 1;
   if (OPUS_PHASES.has(currentPhase))
@@ -11757,33 +12777,25 @@ function pickChatModel(session) {
   return MODEL_SONNET;
 }
 __name(pickChatModel, "pickChatModel");
-
 function getMaxTokensForPhase(phase) {
   const p = Number(phase) || 1;
-  if (p >= 6) return 16384;   // blueprint generation — needs full output
-  if (p >= 4) return 2048;    // deep interview — nuanced responses
-  return 1024;                 // early phases — quick conversational exchanges
+  if (p >= 5) return 16384;
+  if (p >= 4) return 2048;
+  return 1024;
 }
 __name(getMaxTokensForPhase, "getMaxTokensForPhase");
-
 function smartTrimMessages(messages, phase) {
   const p = Number(phase) || 1;
   const keepFull = p >= 6 ? 40 : p >= 4 ? 30 : 20;
   if (messages.length <= keepFull) return messages;
-  // Keep the last `keepFull` messages in full
   const tail = messages.slice(-keepFull);
-  // For older messages, include but truncate content to save tokens
   const head = messages.slice(0, -keepFull).map(function(m) {
     const c = m.content || "";
-    return c.length > 300
-      ? Object.assign({}, m, { content: c.slice(0, 300) + " […]" })
-      : m;
+    return c.length > 300 ? Object.assign({}, m, { content: c.slice(0, 300) + " [\u2026]" }) : m;
   });
-  // Include up to 10 truncated early messages for context continuity
   return head.slice(-10).concat(tail);
 }
 __name(smartTrimMessages, "smartTrimMessages");
-
 function calcCostCents(model, inputTokens, outputTokens, cacheRead, cacheWrite) {
   const r = MODEL_COSTS[model] || MODEL_COSTS[MODEL_SONNET];
   return (inputTokens * r.input + outputTokens * r.output + (cacheRead || 0) * r.cacheRead + (cacheWrite || 0) * r.cacheWrite) / 1e6;
@@ -11920,7 +12932,8 @@ async function authRateLimit(env, identifier) {
 }
 __name(authRateLimit, "authRateLimit");
 function getStripeKeys(request, env) {
-  const isTest = env.STRIPE_MODE === "test" || env.ENVIRONMENT === "development";
+  const queryOverride = request && new URL(request.url).searchParams.get("stripe_mode") === "test";
+  const isTest = queryOverride || env.STRIPE_MODE === "test" || env.ENVIRONMENT === "development";
   return {
     secretKey: isTest ? env.STRIPE_TEST_SECRET_KEY || env.STRIPE_SECRET_KEY : env.STRIPE_SECRET_KEY,
     publishableKey: isTest ? env.STRIPE_TEST_PUBLISHABLE_KEY || env.STRIPE_PUBLISHABLE_KEY : env.STRIPE_PUBLISHABLE_KEY,
@@ -12204,6 +13217,262 @@ function autoRepairBlueprint(blueprint) {
   return { blueprint, repairs, repairCount: repairs.length };
 }
 __name(autoRepairBlueprint, "autoRepairBlueprint");
+// === Phase 0: Tier + Health computation ===
+function computeUserTier(score) {
+  if (score === null || score === undefined) return null;
+  const s = Number(score);
+  if (isNaN(s)) return null;
+  if (s >= 23) return { grade: "A+", tier_title: "Didn't Flinch Once" };
+  if (s >= 20) return { grade: "A",  tier_title: "Sat With The Fire" };
+  if (s >= 17) return { grade: "B+", tier_title: "Named The Pattern" };
+  if (s >= 14) return { grade: "B",  tier_title: "Told On Yourself" };
+  return           { grade: "C",  tier_title: "Took The First Swing" };
+}
+__name(computeUserTier, "computeUserTier");
+
+function safeHoursAgo(dateStr, nowMs) {
+  if (!dateStr) return null;
+  const ms = new Date(dateStr).getTime();
+  if (isNaN(ms)) return null;
+  return (nowMs - ms) / (60 * 60 * 1e3);
+}
+__name(safeHoursAgo, "safeHoursAgo");
+
+var EMOTIONAL_PHASES = new Set([2, 3, 5, 8]);
+function computeSessionHealth(s, now = new Date()) {
+  if (!s) return "unknown";
+  const nowMs = now.getTime();
+  const phase = Number(s.phase || 0);
+  const msgCount = Number(s.message_count || 0);
+  if (s.status === "failed") return "failed";
+  if (s.blueprint_generated === 1 && s.depth_grade === "C") return "shallow_complete";
+  if (s.status === "completed" || s.status === "blueprint_complete") return "complete";
+  if (s.status === "active") {
+    const hoursSinceCreated = safeHoursAgo(s.created_at, nowMs);
+    const hoursSinceActive = safeHoursAgo(s.last_active_at, nowMs) ?? safeHoursAgo(s.created_at, nowMs);
+    if (msgCount === 0 && hoursSinceCreated !== null && hoursSinceCreated > 24) return "cold_abandoned";
+    if (msgCount >= 30 && phase <= 2) return "stuck_phase";
+    const dropThreshold = EMOTIONAL_PHASES.has(phase) ? 24 * 5 : 48;
+    if (msgCount > 5 && hoursSinceActive !== null && hoursSinceActive > dropThreshold) return "mid_drop";
+  }
+  return "healthy";
+}
+__name(computeSessionHealth, "computeSessionHealth");
+// === End Phase 0 ===
+
+// === Phase B: Metric helpers ===
+var BREAKTHROUGH_MARKERS2 = [
+  /\bi realized\b/i, /\bi've never\b/i, /\bi have never\b/i,
+  /\bi don't usually\b/i, /\bi don't normally\b/i,
+  /\bthe truth is\b/i, /\bhonestly\b/i, /\bi'm scared\b/i,
+  /\bi'm ashamed\b/i, /\bthat's the first time\b/i
+];
+function computeHonestAnswerCount(messages) {
+  return (messages || []).filter((m) => m.role === "user" && (m.content || "").split(/\s+/).filter(Boolean).length >= 40).length;
+}
+__name(computeHonestAnswerCount, "computeHonestAnswerCount");
+function computeBreakthroughCount(messages) {
+  return (messages || []).filter((m) => {
+    if (m.role !== "user") return false;
+    const t = m.content || "";
+    return BREAKTHROUGH_MARKERS2.some((r) => r.test(t));
+  }).length;
+}
+__name(computeBreakthroughCount, "computeBreakthroughCount");
+// === End Phase B helpers ===
+
+// === Phase A: Nudge unsubscribe ===
+async function generateNudgeUnsubToken(env, userId) {
+  const secret = env.APP_SECRET || env.INTERNAL_BP_TOKEN || "dwi-unsub-2026";
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(userId + ":nudge_unsub"));
+  return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+__name(generateNudgeUnsubToken, "generateNudgeUnsubToken");
+async function verifyNudgeUnsubToken(env, userId, token) {
+  const expected = await generateNudgeUnsubToken(env, userId);
+  return expected === token;
+}
+__name(verifyNudgeUnsubToken, "verifyNudgeUnsubToken");
+async function handleUnsubscribe(request, env) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const userId = url.searchParams.get("uid");
+  if (!token || !userId) {
+    return new Response("<html><body><p>Invalid unsubscribe link.</p></body></html>", {
+      headers: { "Content-Type": "text/html" }
+    });
+  }
+  const valid = await verifyNudgeUnsubToken(env, userId, token);
+  if (!valid) {
+    return new Response("<html><body><p>This unsubscribe link is invalid or expired.</p></body></html>", {
+      headers: { "Content-Type": "text/html" }
+    });
+  }
+  await env.DB.prepare(
+    "UPDATE users SET nudges_opted_out=1, nudges_opted_out_at=datetime('now') WHERE id=?"
+  ).bind(userId).run();
+  return new Response(`<html><body style="font-family:sans-serif;max-width:480px;margin:80px auto;padding:24px;text-align:center;">
+    <h2>You're unsubscribed.</h2>
+    <p>You won't receive any more follow-up emails about your Deep Work Interview.</p>
+    <p style="color:#999;font-size:14px;">If you want to complete your interview later, you can still access it at <a href="https://love.jamesguldan.com">love.jamesguldan.com</a>.</p>
+  </body></html>`, {
+    headers: { "Content-Type": "text/html" }
+  });
+}
+__name(handleUnsubscribe, "handleUnsubscribe");
+// === End Phase A: Nudge unsubscribe ===
+
+// === Phase A: Nudge scheduling ===
+function computeNextNudge(session, existingNudges, now = new Date()) {
+  if (!session) return null;
+  // Respect opt-out
+  if (session.nudges_opted_out) return null;
+
+  const health = session.session_health;
+  const nowMs = now.getTime();
+
+  // Only nudge sessions with a problem state
+  if (!['cold_abandoned', 'mid_drop'].includes(health)) return null;
+
+  // Don't nudge sessions created in last 48h (let welcome email land first)
+  const createdMs = session.created_at ? new Date(session.created_at).getTime() : nowMs;
+  if ((nowMs - createdMs) < 48 * 60 * 60 * 1000) return null;
+
+  const sentTypes = (existingNudges || []).map((n) => n.nudge_type);
+
+  // Cold abandoned flow: cold_48h → cold_7d → stop
+  if (health === 'cold_abandoned') {
+    if (!sentTypes.includes('cold_48h')) {
+      return { nudge_type: 'cold_48h', send_after: new Date(createdMs + 48 * 60 * 60 * 1000) };
+    }
+    const cold48 = existingNudges.find((n) => n.nudge_type === 'cold_48h');
+    const cold48SentMs = cold48 ? new Date(cold48.sent_at).getTime() : 0;
+    if (!sentTypes.includes('cold_7d') && cold48SentMs && (nowMs - cold48SentMs) > 5 * 24 * 60 * 60 * 1000) {
+      return { nudge_type: 'cold_7d', send_after: new Date(cold48SentMs + 5 * 24 * 60 * 60 * 1000) };
+    }
+    return null; // 2 nudges sent, stop
+  }
+
+  // Mid-drop flow: initial → followup → stop
+  if (health === 'mid_drop') {
+    // Productive pause bonus: if last message was >80 words, add 48h grace
+    const lastUserMsg = (session.messages || []).filter((m) => m.role === 'user').pop();
+    const lastMsgWords = lastUserMsg ? (lastUserMsg.content || '').split(/\s+/).filter(Boolean).length : 0;
+    const gracePeriodMs = lastMsgWords > 80 ? 48 * 60 * 60 * 1000 : 0;
+
+    const lastActiveMs = session.last_active_at ? new Date(session.last_active_at).getTime() : createdMs;
+    const sendAfterInitial = new Date(lastActiveMs + 24 * 60 * 60 * 1000 + gracePeriodMs);
+
+    if (!sentTypes.includes('mid_drop_initial') && now >= sendAfterInitial) {
+      return { nudge_type: 'mid_drop_initial', send_after: sendAfterInitial };
+    }
+    const initial = existingNudges.find((n) => n.nudge_type === 'mid_drop_initial');
+    const initialSentMs = initial ? new Date(initial.sent_at).getTime() : 0;
+    if (!sentTypes.includes('mid_drop_followup') && initialSentMs && (nowMs - initialSentMs) > 4 * 24 * 60 * 60 * 1000) {
+      return { nudge_type: 'mid_drop_followup', send_after: new Date(initialSentMs + 4 * 24 * 60 * 60 * 1000) };
+    }
+    return null;
+  }
+
+  return null;
+}
+__name(computeNextNudge, "computeNextNudge");
+
+function renderNudgeEmail(nudgeType, session, unsubUrl = "https://love.jamesguldan.com/api/unsubscribe") {
+  const firstName = (session.user_name || session.userName || "there").split(" ")[0];
+  const continueUrl = `https://love.jamesguldan.com/?session=${session.id || ""}`;
+  const footer = `<p style="font-size:12px;color:#999;margin-top:32px;">You're getting this because you started the Deep Work Interview. <a href="${unsubUrl}">Stop these emails</a>.</p>`;
+
+  const templates = {
+    cold_48h: {
+      subject: `Your interview is waiting, ${firstName}`,
+      html: `<p>Hey ${firstName},</p><p>You started something. Most people don't even get that far.</p><p>Your Deep Work Interview is still here. It usually takes 20-30 minutes and a willingness to be honest. That's it.</p><p><a href="${continueUrl}">Pick up where you left off →</a></p><p>James</p>${footer}`
+    },
+    cold_7d: {
+      subject: `Still here when you're ready`,
+      html: `<p>Hey ${firstName},</p><p>No pressure. The interview isn't going anywhere.</p><p>When the timing is right, it's 20-30 minutes and usually worth it. People who complete it consistently say the positioning statement alone is worth the time.</p><p><a href="${continueUrl}">Continue your interview →</a></p><p>James</p>${footer}`
+    },
+    mid_drop_initial: {
+      subject: `You were getting somewhere`,
+      html: `<p>Hey ${firstName},</p><p>You got into the interview. That already puts you ahead of most people who buy something and never open it.</p><p>You don't need to redo anything — your answers are saved. Just pick up where you left off.</p><p><a href="${continueUrl}">Continue your interview →</a></p><p>James</p>${footer}`
+    },
+    mid_drop_followup: {
+      subject: `The hardest part was getting started`,
+      html: `<p>Hey ${firstName},</p><p>You already did the hardest part. The questions that matter most are in the second half.</p><p>If life got in the way, that's fine. The interview will wait.</p><p><a href="${continueUrl}">Finish what you started →</a></p><p>James</p>${footer}`
+    }
+  };
+  return templates[nudgeType] || null;
+}
+__name(renderNudgeEmail, "renderNudgeEmail");
+
+async function sendNudge(env, session, nudgeType, dryRun = true) {
+  // Generate unsubscribe URL
+  let unsubUrl = "https://love.jamesguldan.com/api/unsubscribe";
+  try {
+    const userId = session.user_id || session.userId;
+    if (userId && env.APP_SECRET) {
+      const token = await generateNudgeUnsubToken(env, userId);
+      unsubUrl = `https://love.jamesguldan.com/api/unsubscribe?token=${token}&uid=${encodeURIComponent(userId)}`;
+    }
+  } catch (_) {}
+  const template = renderNudgeEmail(nudgeType, session, unsubUrl);
+  if (!template) {
+    console.warn("[sendNudge] unknown nudge type:", nudgeType);
+    return { sent: false, reason: "unknown_type" };
+  }
+  const userEmail = session.user_email || session.email || session.userEmail;
+  if (!userEmail) {
+    console.warn("[sendNudge] no email for session:", session.id);
+    return { sent: false, reason: "no_email" };
+  }
+  if (dryRun) {
+    console.log("[sendNudge DRY RUN] would send", nudgeType, "to", userEmail, "for session", session.id);
+    await logSessionEvent(env, session.id, "nudge_dry_run", { nudge_type: nudgeType, email: userEmail });
+    // Record with a "dry_run:" prefix so live mode won't treat this as already sent.
+    // Prevents the scanner from re-firing the same dry_run every 15 minutes.
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO nudges (id, session_id, user_email, nudge_type, sent_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(crypto.randomUUID(), session.id, userEmail, "dry_run:" + nudgeType).run().catch(() => {});
+    return { sent: false, dry_run: true };
+  }
+  try {
+    const resendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "James Guldan <noreply@jamesguldan.com>",
+        to: [userEmail],
+        subject: template.subject,
+        html: template.html
+      })
+    });
+    if (!resendRes.ok) throw new Error(await resendRes.text());
+    await env.DB.prepare(
+      "INSERT INTO nudges (id, session_id, user_email, nudge_type, sent_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(crypto.randomUUID(), session.id, userEmail, nudgeType).run();
+    await logSessionEvent(env, session.id, "nudge_sent", { nudge_type: nudgeType, email: userEmail });
+    return { sent: true };
+  } catch (e) {
+    console.error("[sendNudge] error:", e.message);
+    return { sent: false, error: e.message };
+  }
+}
+__name(sendNudge, "sendNudge");
+// === End Phase A: Nudge scheduling ===
+
+async function logSessionEvent(env, sessionId, eventType, payload = {}) {
+  try {
+    await env.DB.prepare(
+      "INSERT INTO session_events (session_id, event_type, phase, data, created_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(sessionId, eventType, payload.phase || null, JSON.stringify(payload)).run();
+  } catch (e) {
+    console.error("[logSessionEvent]", e.message);
+  }
+}
+__name(logSessionEvent, "logSessionEvent");
+
 async function callClaude(env, systemPrompt, messages, streaming = false, maxTokens = 1024) {
   const MAX_RETRIES = 2;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -12574,7 +13843,9 @@ async function enrichFromDomain(email) {
     var freeProviders = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "me.com", "live.com", "msn.com", "aol.com", "protonmail.com", "ymail.com"];
     if (freeProviders.indexOf(domain.toLowerCase()) !== -1) return null;
     var ctrl = new AbortController();
-    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
+    var timer = setTimeout(function() {
+      ctrl.abort();
+    }, 5e3);
     var res = await fetch("https://" + domain, { headers: { "User-Agent": "Mozilla/5.0" }, signal: ctrl.signal });
     clearTimeout(timer);
     if (!res.ok) return null;
@@ -12584,7 +13855,7 @@ async function enrichFromDomain(email) {
     var descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
     var description = descMatch ? descMatch[1].trim().slice(0, 300) : null;
     if (!title && !description) return null;
-    return { domain: domain, title: title, description: description, scraped_at: (/* @__PURE__ */ new Date()).toISOString() };
+    return { domain, title, description, scraped_at: (/* @__PURE__ */ new Date()).toISOString() };
   } catch (_) {
     return null;
   }
@@ -12594,7 +13865,9 @@ async function checkCalendlyHistory(email, env) {
   if (!env.CALENDLY_API_KEY || !env.CALENDLY_ORG_URI) return null;
   try {
     var ctrl = new AbortController();
-    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
+    var timer = setTimeout(function() {
+      ctrl.abort();
+    }, 5e3);
     var url = "https://api.calendly.com/scheduled_events?organization=" + encodeURIComponent(env.CALENDLY_ORG_URI) + "&invitee_email=" + encodeURIComponent(email) + "&count=5&status=active";
     var res = await fetch(url, { headers: { "Authorization": "Bearer " + env.CALENDLY_API_KEY, "Content-Type": "application/json" }, signal: ctrl.signal });
     clearTimeout(timer);
@@ -12602,7 +13875,7 @@ async function checkCalendlyHistory(email, env) {
     var data = await res.json();
     var events = data.collection || [];
     if (events.length === 0) return null;
-    return { meeting_count: events.length, last_meeting: events[0] ? (events[0].start_time || null) : null, checked_at: (/* @__PURE__ */ new Date()).toISOString() };
+    return { meeting_count: events.length, last_meeting: events[0] ? events[0].start_time || null : null, checked_at: (/* @__PURE__ */ new Date()).toISOString() };
   } catch (_) {
     return null;
   }
@@ -12612,7 +13885,9 @@ async function checkStripeHistory(email, env) {
   if (!env.STRIPE_SECRET_KEY) return null;
   try {
     var ctrl = new AbortController();
-    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
+    var timer = setTimeout(function() {
+      ctrl.abort();
+    }, 5e3);
     var res = await fetch("https://api.stripe.com/v1/customers/search?query=" + encodeURIComponent('email:"' + email + '"') + "&limit=3", {
       headers: { "Authorization": "Bearer " + env.STRIPE_SECRET_KEY },
       signal: ctrl.signal
@@ -12626,7 +13901,7 @@ async function checkStripeHistory(email, env) {
     return {
       is_existing_customer: true,
       customer_id: customer.id,
-      created: customer.created ? new Date(customer.created * 1000).toISOString() : null,
+      created: customer.created ? new Date(customer.created * 1e3).toISOString() : null,
       checked_at: (/* @__PURE__ */ new Date()).toISOString()
     };
   } catch (_) {
@@ -12642,7 +13917,7 @@ async function enrichNewSession(email, sessionId2, env) {
       checkStripeHistory(email, env)
     ]);
     var enrichment = {
-      email: email,
+      email,
       domain: results[0].status === "fulfilled" ? results[0].value : null,
       calendly: results[1].status === "fulfilled" ? results[1].value : null,
       stripe: results[2].status === "fulfilled" ? results[2].value : null,
@@ -12650,7 +13925,7 @@ async function enrichNewSession(email, sessionId2, env) {
     };
     var hasData = enrichment.domain || enrichment.calendly || enrichment.stripe;
     if (hasData) {
-      await env.SESSIONS.put("enrichment:" + sessionId2, JSON.stringify(enrichment), { expirationTtl: 60 * 60 * 24 * 30 });
+      await env.SESSIONS.put("enrichment:" + sessionId2, JSON.stringify(enrichment), { expirationTtl: 60 * 60 * 24 * 180 });
     }
     await logEvent(env, sessionId2, "enrichment_complete", {
       hasDomain: !!enrichment.domain,
@@ -12658,7 +13933,10 @@ async function enrichNewSession(email, sessionId2, env) {
       hasStripe: !!enrichment.stripe
     });
   } catch (e) {
-    try { await logEvent(env, sessionId2, "enrichment_failed", { error: e.message }); } catch (_) {}
+    try {
+      await logEvent(env, sessionId2, "enrichment_failed", { error: e.message });
+    } catch (_) {
+    }
   }
 }
 __name(enrichNewSession, "enrichNewSession");
@@ -12689,6 +13967,23 @@ async function runAbandonmentCheck(env) {
   try {
     await env.DB.exec(`ALTER TABLE sessions ADD COLUMN abandonment_email_count INTEGER DEFAULT 0`).catch(() => {
     });
+
+    // Clean up empty sessions (0 messages, older than 2 hours) — prevents them from
+    // blocking real sessions in handleFastResume's active-session query.
+    try {
+      const cleanup = await env.DB.prepare(`
+        UPDATE sessions SET status = 'abandoned'
+        WHERE message_count = 0
+          AND created_at < datetime('now', '-2 hours')
+          AND status NOT IN ('completed', 'expired', 'abandoned', 'blueprint_complete')
+      `).run();
+      if (cleanup.meta?.changes > 0) {
+        console.log("[AbandonmentCheck] Marked " + cleanup.meta.changes + " empty sessions as abandoned");
+      }
+    } catch (cleanupErr) {
+      console.error("[AbandonmentCheck] Empty session cleanup error:", cleanupErr.message);
+    }
+
     let fired = 0;
     for (const step of ABANDONMENT_SCHEDULE) {
       const abandoned = await env.DB.prepare(`
@@ -12766,103 +14061,173 @@ async function runDailyHealthCheck(env) {
   return { allOk, results, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
 }
 __name(runDailyHealthCheck, "runDailyHealthCheck");
-
+// CLEANUP-2026-04-05: weekly_snapshots table is active. Called by scheduled handler (runWeeklySnapshot).
+// Also writable via /api/admin/weekly-snapshots (POST) and readable via GET. 2 rows as of 2026-04-05, last written 2026-04-05. Keep.
 async function runWeeklySnapshot(env) {
   try {
-    var now = new Date();
+    var now = /* @__PURE__ */ new Date();
     var weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay() + 1); // Monday
-    weekStart.setHours(0,0,0,0);
+    weekStart.setDate(now.getDate() - now.getDay() + 1);
+    weekStart.setHours(0, 0, 0, 0);
     var weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-    var ws = weekStart.toISOString().slice(0,10);
-    var we = weekEnd.toISOString().slice(0,10);
-
+    var ws = weekStart.toISOString().slice(0, 10);
+    var we = weekEnd.toISOString().slice(0, 10);
     var [newSessions, completions, costRow, avgMsgRow] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE created_at > datetime('now','-7 days')").first(),
       env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE blueprint_generated=1 AND updated_at > datetime('now','-7 days')").first(),
-      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE called_at > datetime('now','-7 days')").first().catch(()=>({total:0})),
-      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE created_at > datetime('now','-7 days')").first().catch(()=>({avg:0}))
+      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE called_at > datetime('now','-7 days')").first().catch(() => ({ total: 0 })),
+      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE created_at > datetime('now','-7 days')").first().catch(() => ({ avg: 0 }))
     ]);
-    var phaseRows = await env.DB.prepare("SELECT phase, COUNT(*) as cnt FROM sessions WHERE created_at > datetime('now','-7 days') GROUP BY phase").all().catch(()=>({results:[]}));
+    var phaseRows = await env.DB.prepare("SELECT phase, COUNT(*) as cnt FROM sessions WHERE created_at > datetime('now','-7 days') GROUP BY phase").all().catch(() => ({ results: [] }));
     var phaseDist = {};
-    (phaseRows?.results||[]).forEach(function(r){ phaseDist[r.phase]=r.cnt; });
-
+    (phaseRows?.results || []).forEach(function(r) {
+      phaseDist[r.phase] = r.cnt;
+    });
     var data = {
       week_start: ws,
       week_end: we,
       new_sessions: newSessions?.cnt || 0,
       completions: completions?.cnt || 0,
-      api_cost_usd: parseFloat(costRow?.total||0).toFixed(4),
+      api_cost_usd: parseFloat(costRow?.total || 0).toFixed(4),
       avg_messages: avgMsgRow?.avg ? Math.round(avgMsgRow.avg) : 0,
       phase_distribution: phaseDist,
       generated_at: now.toISOString()
     };
-    var snapshotId = "ws_" + ws.replace(/-/g,"") + "_" + Date.now();
+    var snapshotId = "ws_" + ws.replace(/-/g, "") + "_" + Date.now();
     await env.DB.prepare(
       "INSERT OR REPLACE INTO weekly_snapshots (id, week_start, week_end, snapshot_data) VALUES (?,?,?,?)"
     ).bind(snapshotId, ws, we, JSON.stringify(data)).run().catch(async function() {
-      await env.DB.prepare("DELETE FROM weekly_snapshots WHERE week_start=?").bind(ws).run().catch(()=>{});
+      await env.DB.prepare("DELETE FROM weekly_snapshots WHERE week_start=?").bind(ws).run().catch(() => {
+      });
       await env.DB.prepare("INSERT INTO weekly_snapshots (id, week_start, week_end, snapshot_data) VALUES (?,?,?,?)").bind(snapshotId, ws, we, JSON.stringify(data)).run();
     });
-
-    // Send weekly report email
     try {
-      var emailBody = "<h2 style='font-family:sans-serif'>DWI Weekly Report — " + ws + "</h2>" +
-        "<table style='font-family:sans-serif;font-size:14px;border-collapse:collapse'>" +
-        "<tr><td style='padding:6px 16px 6px 0;color:#666'>New sessions</td><td><strong>" + data.new_sessions + "</strong></td></tr>" +
-        "<tr><td style='padding:6px 16px 6px 0;color:#666'>Blueprints generated</td><td><strong>" + data.completions + "</strong></td></tr>" +
-        "<tr><td style='padding:6px 16px 6px 0;color:#666'>API spend</td><td><strong>$" + data.api_cost_usd + "</strong></td></tr>" +
-        "<tr><td style='padding:6px 16px 6px 0;color:#666'>Avg messages</td><td><strong>" + data.avg_messages + "</strong></td></tr>" +
-        "</table>" +
-        "<p style='font-family:sans-serif;font-size:13px;color:#666;margin-top:16px'>Phase distribution this week: " + JSON.stringify(phaseDist) + "</p>" +
-        "<p style='font-family:sans-serif;font-size:12px;color:#999;margin-top:8px'><a href='https://love.jamesguldan.com/admin'>View Admin Dashboard</a></p>";
+      var emailBody = "<h2 style='font-family:sans-serif'>DWI Weekly Report \u2014 " + ws + "</h2><table style='font-family:sans-serif;font-size:14px;border-collapse:collapse'><tr><td style='padding:6px 16px 6px 0;color:#666'>New sessions</td><td><strong>" + data.new_sessions + "</strong></td></tr><tr><td style='padding:6px 16px 6px 0;color:#666'>Blueprints generated</td><td><strong>" + data.completions + "</strong></td></tr><tr><td style='padding:6px 16px 6px 0;color:#666'>API spend</td><td><strong>$" + data.api_cost_usd + "</strong></td></tr><tr><td style='padding:6px 16px 6px 0;color:#666'>Avg messages</td><td><strong>" + data.avg_messages + "</strong></td></tr></table><p style='font-family:sans-serif;font-size:13px;color:#666;margin-top:16px'>Phase distribution this week: " + JSON.stringify(phaseDist) + "</p><p style='font-family:sans-serif;font-size:12px;color:#999;margin-top:8px'><a href='https://love.jamesguldan.com/admin'>View Admin Dashboard</a></p>";
       await sendEmail(env, {
         to: "james@jamesguldan.com",
         from: "DWI Reports <reports@jamesguldan.com>",
-        subject: "DWI Weekly: " + data.new_sessions + " sessions, " + data.completions + " blueprints — " + ws,
+        subject: "DWI Weekly: " + data.new_sessions + " sessions, " + data.completions + " blueprints \u2014 " + ws,
         html: emailBody
       });
-    } catch(emailErr) {
+    } catch (emailErr) {
       console.error("[WeeklySnapshot] Email failed:", emailErr.message);
     }
-
     console.log("[WeeklySnapshot] Saved snapshot for week " + ws);
     return data;
-  } catch(e) {
+  } catch (e) {
     console.error("[WeeklySnapshot] Failed:", e.message);
     return null;
   }
 }
 __name(runWeeklySnapshot, "runWeeklySnapshot");
+async function runConditionalDigest(env) {
+  const now = new Date();
+  const isWeeklyHeartbeat = now.getUTCDay() === 0; // Sunday
 
+  const [
+    stuckRow, coldRow, midDropRow, shallowRow,
+    errorRow, failedRow, recentNudgesRow, lowCompletionRow
+  ] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='stuck_phase' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='cold_abandoned' AND status='active' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='mid_drop' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='shallow_complete' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE status='failed' AND created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM nudges WHERE sent_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as total, SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as completed FROM sessions WHERE created_at > datetime('now', '-7 days')").first()
+  ]);
+
+  const stuck = stuckRow?.cnt || 0;
+  const cold = coldRow?.cnt || 0;
+  const midDrop = midDropRow?.cnt || 0;
+  const shallow = shallowRow?.cnt || 0;
+  const errors = errorRow?.cnt || 0;
+  const failed = failedRow?.cnt || 0;
+  const nudgesSent = recentNudgesRow?.cnt || 0;
+  const weekTotal = lowCompletionRow?.total || 0;
+  const weekCompleted = lowCompletionRow?.completed || 0;
+  const completionRate = weekTotal > 0 ? Math.round(weekCompleted / weekTotal * 100) : null;
+  const lowCompletion = completionRate !== null && completionRate < 30;
+
+  const issues = [];
+  if (stuck > 0) issues.push(`\uD83D\uDD34 ${stuck} session(s) stuck in early phase`);
+  if (errors > 5) issues.push(`\uD83D\uDD34 ${errors} errors in last 24h`);
+  if (failed > 0) issues.push(`\uD83D\uDFE1 ${failed} session(s) failed today`);
+  if (shallow > 0) issues.push(`\uD83D\uDFE1 ${shallow} shallow completion(s) today`);
+  if (cold > 3) issues.push(`\uD83D\uDFE1 ${cold} new cold abandonments (24h)`);
+  if (midDrop > 5) issues.push(`\uD83D\uDFE1 ${midDrop} sessions in mid-drop`);
+  if (lowCompletion) issues.push(`\uD83D\uDFE1 Completion rate ${completionRate}% this week (target: 30%+)`);
+
+  const hasIssues = issues.length > 0;
+
+  if (!hasIssues && !isWeeklyHeartbeat) {
+    console.log("[ConditionalDigest] No issues today \u2014 skipping email");
+    return;
+  }
+
+  const adminUrl = "https://love.jamesguldan.com/admin/health";
+  const subject = isWeeklyHeartbeat && !hasIssues
+    ? `[DWI] Weekly heartbeat \u2014 all clear`
+    : `[DWI] ${issues.length} issue${issues.length !== 1 ? "s" : ""} need attention`;
+
+  const issueHtml = hasIssues
+    ? issues.map((i) => `<li>${i}</li>`).join("")
+    : "<li>No issues \u2014 weekly check-in</li>";
+
+  const statsHtml = `
+    <p><strong>7-day stats:</strong> ${weekTotal} sessions started, ${weekCompleted} completed (${completionRate ?? "\u2014"}% rate)</p>
+    <p><strong>Nudges sent (24h):</strong> ${nudgesSent}</p>
+    <p><strong>Errors (24h):</strong> ${errors}</p>
+  `;
+
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: "DWI Admin <noreply@jamesguldan.com>",
+      to: ["james@jamesguldan.com"],
+      subject,
+      html: `<h2>${subject}</h2><ul>${issueHtml}</ul>${statsHtml}<p><a href="${adminUrl}">Open health dashboard \u2192</a></p>`
+    })
+  });
+  console.log("[ConditionalDigest] sent:", subject);
+}
+__name(runConditionalDigest, "runConditionalDigest");
+async function runHourlySnapshot(env) {
+  try {
+    const counts = await env.DB.prepare(
+      "SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health"
+    ).all();
+    const errorCount = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')"
+    ).first();
+    const payload = { counts: counts.results || [], errors_last_hour: errorCount?.cnt || 0, ts: new Date().toISOString() };
+    await env.DB.prepare(
+      "INSERT INTO health_checks (check_type, status, details, created_at) VALUES ('hourly_snapshot', 'ok', ?, datetime('now'))"
+    ).bind(JSON.stringify(payload)).run();
+    console.log("[runHourlySnapshot] snapshot written:", JSON.stringify(payload));
+  } catch (e) {
+    console.error("[runHourlySnapshot] error:", e.message);
+  }
+}
+__name(runHourlySnapshot, "runHourlySnapshot");
 async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session) {
   var buyingTemp = (leadIntel?.buyingTemperature || "").toLowerCase();
   if (buyingTemp !== "warm" && buyingTemp !== "hot") return;
   try {
-    var existing = await env.DB.prepare("SELECT id FROM sales_briefs WHERE session_id=? LIMIT 1").bind(sessionId).first().catch(()=>null);
-    if (existing) return; // Already have one
-
-    var messages = (session?.messages || []).filter(function(m,i){
-      return !(i===0 && m.role==="user" && m.content==="Start the interview.");
+    var existing = await env.DB.prepare("SELECT id FROM sales_briefs WHERE session_id=? LIMIT 1").bind(sessionId).first().catch(() => null);
+    if (existing) return;
+    var messages = (session?.messages || []).filter(function(m, i) {
+      return !(i === 0 && m.role === "user" && m.content === "Start the interview.");
     });
-    var transcript = messages.slice(-30).map(function(m){
-      return (m.role==="user"?"GUEST":"INTERVIEWER")+": "+(m.content||"").substring(0,600);
+    var transcript = messages.slice(-30).map(function(m) {
+      return (m.role === "user" ? "GUEST" : "INTERVIEWER") + ": " + (m.content || "").substring(0, 600);
     }).join("\n\n");
-
     var userName = session?.userName || session?.userEmail || "Unknown";
     var userEmail = session?.email || session?.userEmail || "Unknown";
-
-    var prompt = "Based on this brand interview, write a concise sales prep brief for James Guldan.\n\n" +
-      "Person: " + userName + " (" + userEmail + ")\n" +
-      "Buying Temperature: " + buyingTemp + "\n" +
-      "Industry: " + (leadIntel.industry||"Unknown") + "\n" +
-      "Biggest Pain: " + (leadIntel.biggestPainPoint||"Unknown") + "\n" +
-      "Best Fit Service: " + (leadIntel.bestFitService||"Unknown") + "\n" +
-      "Notable Quotes: " + JSON.stringify(leadIntel.notableQuotes||[]) + "\n\n" +
-      "TRANSCRIPT (last 30 messages):\n" + transcript + "\n\n---\n\n" +
-      "Write:\n1. Who this person is (2 sentences)\n2. Their biggest pain point\n3. Recommended service and why\n4. Suggested opening message for follow-up\n5. Top 3 key quotes showing buying intent";
-
+    var prompt = "Based on this brand interview, write a concise sales prep brief for James Guldan.\n\nPerson: " + userName + " (" + userEmail + ")\nBuying Temperature: " + buyingTemp + "\nIndustry: " + (leadIntel.industry || "Unknown") + "\nBiggest Pain: " + (leadIntel.biggestPainPoint || "Unknown") + "\nBest Fit Service: " + (leadIntel.bestFitService || "Unknown") + "\nNotable Quotes: " + JSON.stringify(leadIntel.notableQuotes || []) + "\n\nTRANSCRIPT (last 30 messages):\n" + transcript + "\n\n---\n\nWrite:\n1. Who this person is (2 sentences)\n2. Their biggest pain point\n3. Recommended service and why\n4. Suggested opening message for follow-up\n5. Top 3 key quotes showing buying intent";
     var res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -12873,27 +14238,30 @@ async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session
         messages: [{ role: "user", content: prompt }]
       })
     });
-    if (!res.ok) { console.error("[AutoBrief] Haiku error:", res.status); return; }
+    if (!res.ok) {
+      console.error("[AutoBrief] Haiku error:", res.status);
+      return;
+    }
     var data = await res.json();
-    if (data.usage) logApiCost(env, { sessionId, userEmail, model: MODEL_HAIKU, callType: "auto_sales_brief", usage: data.usage }).catch(()=>{});
+    if (data.usage) logApiCost(env, { sessionId, userEmail, model: MODEL_HAIKU, callType: "auto_sales_brief", usage: data.usage }).catch(() => {
+    });
     var briefContent = data.content?.[0]?.text || "";
     if (!briefContent) return;
     var briefId = "sb_auto_" + sessionId + "_" + Date.now();
     await env.DB.prepare(
       "INSERT INTO sales_briefs (id, session_id, brief_content, model_used) VALUES (?,?,?,?)"
-    ).bind(briefId, sessionId, briefContent, MODEL_HAIKU).run().catch(()=>{});
+    ).bind(briefId, sessionId, briefContent, MODEL_HAIKU).run().catch(() => {
+    });
     console.log("[AutoBrief] Generated sales brief for session " + sessionId + " (buying_temperature=" + buyingTemp + ")");
-  } catch(e) {
+  } catch (e) {
     console.error("[AutoBrief] Failed:", e.message);
   }
 }
 __name(autoGenerateSalesBrief, "autoGenerateSalesBrief");
-
 async function handleAdminBackfill(request, env) {
   var admin = await requireAdmin(request, env);
   if (!admin) return json({ error: "Forbidden" }, 403);
   try {
-    // Get all completed sessions that have blueprints
     var rows = await env.DB.prepare(
       "SELECT s.id, s.user_id, s.phase, u.email, u.name FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.blueprint_generated=1 ORDER BY s.created_at DESC LIMIT 50"
     ).all();
@@ -12901,55 +14269,69 @@ async function handleAdminBackfill(request, env) {
     var processed = 0;
     var errors = 0;
     var results = [];
-
     for (var i = 0; i < sessions.length; i++) {
       var s = sessions[i];
       try {
-        // Load session from KV
         var sessRaw = await env.SESSIONS.get(s.id);
         if (!sessRaw) {
           results.push({ id: s.id, status: "skipped", reason: "not in KV" });
           continue;
         }
         var session = JSON.parse(sessRaw);
-
-        // Re-run session_insights extraction if needed
-        var existingInsights = await env.DB.prepare("SELECT COUNT(*) as cnt FROM session_insights WHERE session_id=?").bind(s.id).first().catch(()=>({cnt:0}));
+        var existingInsights = await env.DB.prepare("SELECT COUNT(*) as cnt FROM session_insights WHERE session_id=?").bind(s.id).first().catch(() => ({ cnt: 0 }));
         if (!existingInsights?.cnt) {
-          await extractSessionInsights(env, s.id, session).catch(()=>{});
+          await extractSessionInsights(env, s.id, session).catch(() => {
+          });
         }
-
-        // Re-run lead_intel if blueprint has leadIntel
         var bp = session.blueprint?.blueprint || session.blueprint;
         var li = bp?.leadIntel;
         if (li) {
-          var existingLI = await env.DB.prepare("SELECT COUNT(*) as cnt FROM lead_intel WHERE session_id=?").bind(s.id).first().catch(()=>({cnt:0}));
+          var existingLI = await env.DB.prepare("SELECT COUNT(*) as cnt FROM lead_intel WHERE session_id=?").bind(s.id).first().catch(() => ({ cnt: 0 }));
           if (!existingLI?.cnt) {
-            await env.DB.prepare(`INSERT OR REPLACE INTO lead_intel (session_id, user_id, email, phone, estimated_revenue, industry, years_in_business, team_size, has_existing_brand, has_existing_website, has_internal_team, brand_maturity, buying_temperature, biggest_pain_point, budget_signals, best_fit_service, best_fit_reason, notable_quotes, follow_up_angle, recommendation, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`)
-              .bind(s.id, s.user_id||null, s.email||null, null, li.estimatedRevenue||"Unknown", li.industry||"Unknown", li.yearsInBusiness||"Unknown", li.teamSize||"Unknown", li.hasExistingBrand?1:0, li.hasExistingWebsite?1:0, li.hasInternalTeam?1:0, li.brandMaturity||"Unknown", li.buyingTemperature||"Unknown", li.biggestPainPoint||"", li.budgetSignals||"", li.bestFitService||"", li.bestFitReason||"", JSON.stringify(li.notableQuotes||[]), li.followUpAngle||"", bp?.part8?.recommendation||"")
-              .run().catch(()=>{});
-            // Auto-generate sales brief if warm/hot
-            await autoGenerateSalesBrief(env, s.id, s.user_id, li, session).catch(()=>{});
+            await env.DB.prepare(`INSERT OR REPLACE INTO lead_intel (session_id, user_id, email, phone, estimated_revenue, industry, years_in_business, team_size, has_existing_brand, has_existing_website, has_internal_team, brand_maturity, buying_temperature, biggest_pain_point, budget_signals, best_fit_service, best_fit_reason, notable_quotes, follow_up_angle, recommendation, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))`).bind(s.id, s.user_id || null, s.email || null, null, li.estimatedRevenue || "Unknown", li.industry || "Unknown", li.yearsInBusiness || "Unknown", li.teamSize || "Unknown", li.hasExistingBrand ? 1 : 0, li.hasExistingWebsite ? 1 : 0, li.hasInternalTeam ? 1 : 0, li.brandMaturity || "Unknown", li.buyingTemperature || "Unknown", li.biggestPainPoint || "", li.budgetSignals || "", li.bestFitService || "", li.bestFitReason || "", JSON.stringify(li.notableQuotes || []), li.followUpAngle || "", bp?.part8?.recommendation || "").run().catch(() => {
+            });
+            await autoGenerateSalesBrief(env, s.id, s.user_id, li, session).catch(() => {
+            });
           }
         }
-
         processed++;
-        results.push({ id: s.id, email: s.email||"anon", status: "processed" });
-      } catch(err) {
+        results.push({ id: s.id, email: s.email || "anon", status: "processed" });
+      } catch (err) {
         errors++;
         results.push({ id: s.id, status: "error", reason: err.message });
       }
-
-      // No delay needed — backfill only hits D1/KV, no external API rate limits
     }
-
     return json({ ok: true, total: sessions.length, processed, errors, results });
-  } catch(e) {
+  } catch (e) {
     return json({ error: e.message }, 500);
   }
 }
 __name(handleAdminBackfill, "handleAdminBackfill");
-
+async function handleAdminBackfillHealth(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  const url = new URL(request.url);
+  const dryRun = url.searchParams.get("dry_run") !== "false";
+  const now = new Date();
+  const rows = await env.DB.prepare(
+    "SELECT id, phase, message_count, blueprint_generated, status, depth_grade, emotional_depth_score, created_at, last_active_at FROM sessions"
+  ).all();
+  const updates = [];
+  for (const s of rows.results || []) {
+    const tier = computeUserTier(s.emotional_depth_score);
+    const health = computeSessionHealth(s, now);
+    updates.push({ id: s.id, tier_title: tier?.tier_title || null, session_health: health });
+  }
+  if (!dryRun) {
+    for (const u of updates) {
+      await env.DB.prepare(
+        "UPDATE sessions SET tier_title=?, session_health=?, health_updated_at=? WHERE id=?"
+      ).bind(u.tier_title, u.session_health, now.toISOString(), u.id).run();
+    }
+  }
+  return json({ total: updates.length, dry_run: dryRun, sample: updates.slice(0, 10) });
+}
+__name(handleAdminBackfillHealth, "handleAdminBackfillHealth");
 function injectSEO(html, blueprint, liveUrl, slug) {
   const p1 = blueprint.part1 || {};
   const p2 = blueprint.part2 || {};
@@ -13325,6 +14707,10 @@ var API_RATES = {
   "claude-opus-4-6": { input: 15, output: 75 },
   "claude-opus-4-5": { input: 15, output: 75 }
 };
+// CLEANUP-2026-04-05: Two cost/usage tables are intentional and NOT redundant.
+// api_costs — per-call cost in cost_usd (float), keyed by session+email. Used by admin cost dashboards (/admin/costs, /admin/user-costs).
+// token_usage — token-level rows with cost_cents (int), tracks model/phase/cache tokens. Used by /admin/usage (granular analytics).
+// Both tables are actively written to and queried as of 2026-04-05 (1075 rows / 1064 rows). Keep both.
 async function logApiCost(env, { sessionId, userEmail, model, callType, usage }) {
   try {
     if (!usage || !sessionId)
@@ -13396,8 +14782,6 @@ function getMagicLinkEmail(magicUrl, email) {
 </html>`;
 }
 __name(getMagicLinkEmail, "getMagicLinkEmail");
-
-// src/routes/auth.js
 async function handleAuthLogin(request, env) {
   try {
     const { email, password } = await request.json();
@@ -13545,7 +14929,13 @@ async function handleAuthMe(request, env) {
   const user = await requireAuth(request, env);
   if (!user)
     return json({ error: "Unauthorized" }, 401);
-  return json({ id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier });
+  const auth = request.headers.get("Authorization");
+  const bearerToken = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+  const resp = json({ id: user.id, email: user.email, name: user.name, role: user.role, tier: user.tier });
+  if (bearerToken) {
+    resp.headers.set("Set-Cookie", `dw_session=${bearerToken}; Path=/; Max-Age=${30 * 24 * 3600}; Secure; SameSite=Lax; HttpOnly`);
+  }
+  return resp;
 }
 __name(handleAuthMe, "handleAuthMe");
 async function handleFastResume(request, env) {
@@ -13583,33 +14973,34 @@ async function handleFastResume(request, env) {
         await env.DB.prepare("UPDATE sessions SET status = 'expired' WHERE id = ?").bind(completedRow.id).run().catch(() => null);
       }
     }
-    const activeRow = await env.DB.prepare(
-      "SELECT id, tier, phase, message_count, created_at, updated_at FROM sessions WHERE user_id = ? AND (status = 'active' OR status IS NULL) AND blueprint_generated = 0 ORDER BY created_at DESC LIMIT 1"
-    ).bind(user.id).first();
-    if (activeRow) {
-      const kvData = await env.SESSIONS.get(activeRow.id);
-      if (kvData) {
-        const session = JSON.parse(kvData);
-        if (session.messages && session.messages.length > 0) {
-          const displayMessages = session.messages.filter((m, i) => !(i === 0 && m.role === "user" && m.content === "Start the interview."));
-          await logEvent(env, activeRow.id, "session_resumed", { phase: session.phase, messageCount: displayMessages.length, fast: true });
-          return json({
-            ok: true,
-            user: userInfo,
-            hasActiveSession: true,
-            blueprintComplete: false,
-            sessionId: activeRow.id,
-            tier: session.tier || activeRow.tier,
-            phase: session.phase || activeRow.phase || 1,
-            messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
-            blueprintGenerated: false,
-            blueprint: null,
-            strategistDebrief: null
-          });
-        }
-      } else {
-        await env.DB.prepare("UPDATE sessions SET status = 'expired' WHERE id = ?").bind(activeRow.id).run().catch(() => null);
-      }
+    // Fetch top 3 active sessions ordered by message_count DESC so sessions with content
+    // are tried before empty ones (empty sessions can block if their KV data is missing).
+    const activeRows = await env.DB.prepare(
+      "SELECT id, tier, phase, message_count, created_at, updated_at FROM sessions WHERE user_id = ? AND (status = 'active' OR status IS NULL) AND blueprint_generated = 0 ORDER BY message_count DESC, last_active_at DESC LIMIT 3"
+    ).bind(user.id).all().catch(() => ({ results: [] }));
+    let activeRow = null;
+    let activeKvData = null;
+    for (const row of (activeRows.results || [])) {
+      const kv = await env.SESSIONS.get(row.id);
+      if (kv) { const parsed = JSON.parse(kv); if (parsed.messages && parsed.messages.length > 0) { activeRow = row; activeKvData = kv; break; } }
+    }
+    if (activeRow && activeKvData) {
+      const session = JSON.parse(activeKvData);
+      const displayMessages = session.messages.filter((m, i) => !(i === 0 && m.role === "user" && m.content === "Start the interview."));
+      await logEvent(env, activeRow.id, "session_resumed", { phase: session.phase, messageCount: displayMessages.length, fast: true });
+      return json({
+        ok: true,
+        user: userInfo,
+        hasActiveSession: true,
+        blueprintComplete: false,
+        sessionId: activeRow.id,
+        tier: session.tier || activeRow.tier,
+        phase: session.phase || activeRow.phase || 1,
+        messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
+        blueprintGenerated: false,
+        blueprint: null,
+        strategistDebrief: null
+      });
     }
     return json({ ok: true, user: userInfo, hasActiveSession: false });
   } catch (e) {
@@ -13679,17 +15070,20 @@ a{display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;paddin
       const secret = getJWTSecret(env);
       const sessionToken = await createSessionToken(user.id, user.role, secret);
       const maxAge = 30 * 24 * 3600;
-      const isAdmin = row.type === "admin_magic" || row.type === "persistent_magic" && user.role === "admin";
-      const baseDest = isAdmin ? `${origin}/admin` : redirect ? `${origin}${redirect}` : `${origin}/app`;
-      const dest2 = `${baseDest}?_s=${encodeURIComponent(sessionToken)}`;
-      return new Response(null, {
-        status: 302,
-        headers: {
-          "Location": dest2,
-          "Set-Cookie": `dw_session=${sessionToken}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Lax; HttpOnly`,
-          "Cache-Control": "no-store"
-        }
-      });
+      const isAdmin = user.role === "admin" || row.type === "admin_magic" || row.type === "persistent_magic" && user.role === "admin";
+      const forceCustomer = url.searchParams.get("force_customer") === "1";
+      const baseDest = (isAdmin && !forceCustomer) ? `${origin}/admin` : redirect ? `${origin}${redirect}` : `${origin}/app`;
+      const sep = baseDest.includes('?') ? '&' : '?';
+      const dest2 = `${baseDest}${sep}_s=${encodeURIComponent(sessionToken)}`;
+      // Only set the dw_session cookie when redirecting to /admin.
+      // For /app redirects the token is already in the _s URL param (stored to localStorage by /app).
+      // Setting the cookie for /app routes overwrites the admin's dw_session cookie, breaking
+      // admin panel auth after impersonating a user.
+      const respHeaders = { "Location": dest2, "Cache-Control": "no-store" };
+      if (isAdmin && !forceCustomer) {
+        respHeaders["Set-Cookie"] = `dw_session=${sessionToken}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Lax; HttpOnly`;
+      }
+      return new Response(null, { status: 302, headers: respHeaders });
     }
   } catch (e) {
   }
@@ -13734,7 +15128,7 @@ async function handlePaymentSuccess(request, env, url) {
       existingSession.tier = "site";
       existingSession.blueprintTier = tier;
       existingSession.stripeCheckoutId = checkoutSessionId;
-      await env.SESSIONS.put(existingSessionId, JSON.stringify(existingSession), { expirationTtl: 60 * 60 * 24 * 30 });
+      await env.SESSIONS.put(existingSessionId, JSON.stringify(existingSession), { expirationTtl: 60 * 60 * 24 * 180 });
       await logEvent(env, existingSessionId, "tier_upgraded", { from: existingSession.tier, to: tier });
       const upgradeAccess = await generateSessionAccessToken(env, existingSessionId);
       return Response.redirect(`${origin}/app?session=${existingSessionId}&tier=${tier}&upgraded=true&access=${upgradeAccess}`, 302);
@@ -13754,7 +15148,7 @@ async function handlePaymentSuccess(request, env, url) {
     blueprintGenerated: false,
     siteGenerated: false,
     createdAt: (/* @__PURE__ */ new Date()).toISOString()
-  }), { expirationTtl: 60 * 60 * 24 * 30 });
+  }), { expirationTtl: 60 * 60 * 24 * 180 });
   const accessToken = await generateSessionAccessToken(env, sessionId);
   if (env.RESEND_API_KEY) {
     const checkoutDetails = await stripeGet(env, `/v1/checkout/sessions/${checkoutSessionId}`).then((r) => r.json()).catch(() => ({}));
@@ -13778,12 +15172,9 @@ async function handlePaymentSuccess(request, env, url) {
   return Response.redirect(`${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`, 302);
 }
 __name(handlePaymentSuccess, "handlePaymentSuccess");
-
-// src/routes/session.js
 async function handleSessionStart(request, env, ctx) {
   const body = await request.json();
   const { sessionId, tier, existingWebsiteUrl, linkedinUrl, competitorUrls, testimonials, uploadedKeys, phone, utmSource, utmMedium, utmCampaign } = body;
-  // Server-side device detection from User-Agent as fallback
   const uaHeader = request.headers.get("User-Agent") || "";
   const deviceType = body.deviceType || (/Mobi|Android|iPhone|iPad|tablet/i.test(uaHeader) ? "mobile" : "desktop");
   let userId = null;
@@ -13870,7 +15261,7 @@ async function handleSessionStart(request, env, ctx) {
     { role: "user", content: "Start the interview." },
     { role: "assistant", content: firstMessage }
   ];
-  await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+  await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   await initSessionInD1(env, session);
   if (utmSource)
     session.utmSource = utmSource;
@@ -13880,7 +15271,7 @@ async function handleSessionStart(request, env, ctx) {
     session.utmCampaign = utmCampaign;
   if (deviceType)
     session.deviceType = deviceType;
-  await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+  await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   await logEvent(env, session.id, "session_started", { tier, phase: 1, utmSource, utmCampaign, deviceType });
   if (session.userId) {
     const bgWork = getUserById(env, session.userId).then(async (user) => {
@@ -13896,7 +15287,7 @@ async function handleSessionStart(request, env, ctx) {
         ]);
         if (apolloResult.status === "fulfilled" && apolloResult.value) {
           session.apolloData = apolloResult.value;
-          await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+          await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
           await env.DB.prepare("UPDATE users SET apollo_data = ? WHERE id = ?").bind(JSON.stringify(apolloResult.value), session.userId).run().catch(() => {
           });
         }
@@ -14016,6 +15407,8 @@ async function handleGetSession(request, env, path) {
     tier: session.tier,
     phase: session.phase,
     blueprintGenerated: session.blueprintGenerated,
+    blueprint: session.blueprintGenerated ? (session.blueprint || null) : undefined,
+    strategistDebrief: session.blueprintGenerated ? (session.strategistDebrief || null) : undefined,
     siteGenerated: session.siteGenerated,
     siteUrl: session.siteUrl || null,
     siteSlug: session.siteSlug || null
@@ -14086,8 +15479,6 @@ async function handleUserActiveSession(request, env) {
   }
 }
 __name(handleUserActiveSession, "handleUserActiveSession");
-
-// src/utils/research.js
 var GEMINI_PROXY_URL = "https://gemini-proxy.james-d13.workers.dev";
 var GEMINI_PROXY_TOKEN = "U$X2eQQST$mz4$vu";
 var FETCH_TIMEOUT_MS = 8e3;
@@ -14315,8 +15706,6 @@ function formatResearchForPrompt(research) {
   return lines.join("\n");
 }
 __name(formatResearchForPrompt, "formatResearchForPrompt");
-
-// src/routes/interview.js
 async function handleChat(request, env, ctx) {
   const body = await request.json();
   const { sessionId, message } = body;
@@ -14328,10 +15717,39 @@ async function handleChat(request, env, ctx) {
   if (!raw)
     return json({ error: "Session not found" }, 404);
   const session = JSON.parse(raw);
+  // Auth check: verify JWT token matches this session
+  const chatToken = extractToken(request);
+  if (chatToken) {
+    const jwtSecret = env.JWT_SECRET || "dev-secret-change-me";
+    const userPayload = await verifySessionToken(chatToken, jwtSecret);
+    if (userPayload) {
+      // User JWT (magic link path) — userId must match if session has one
+      if (session.userId && userPayload.userId && userPayload.userId !== session.userId) {
+        return json({ error: "Session access denied" }, 403);
+      }
+    } else {
+      // Try session-access JWT (Stripe checkout path, signed with TTL as key)
+      const sessionPayload = await verifySessionToken(chatToken, String(60 * 60 * 24 * 30));
+      if (sessionPayload && sessionPayload.userId?.sessionId) {
+        if (sessionPayload.userId.sessionId !== sessionId) {
+          return json({ error: "Session access denied" }, 403);
+        }
+      } else {
+        return json({ error: "Invalid or expired session token" }, 401);
+      }
+    }
+  } else if (session.userId) {
+    // Session has an owner but no token was provided
+    return json({ error: "Authorization required" }, 401);
+  }
   if (session.blueprintGenerated) {
+    const bpMeta = await env.SESSIONS.get("bp_meta:" + sessionId, { type: "json" }).catch(() => null);
     return json({
       error: "interview_complete",
-      message: "Your Deep Work Interview is complete and your blueprint has been generated. If you need to start a new session, please contact support."
+      message: "Your Deep Work Interview is complete and your blueprint has been generated. If you need to start a new session, please contact support.",
+      blueprint: bpMeta?.blueprint || session.blueprint || null,
+      strategistDebrief: session.strategistDebrief || null,
+      blueprintGenerated: true
     }, 403);
   }
   const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1e3;
@@ -14355,13 +15773,24 @@ async function handleChat(request, env, ctx) {
       message: "You are sending messages too quickly. Please wait a moment and try again."
     }, 429);
   }
+  // Concurrency lock: reject duplicate/racing requests to the same session
+  const lockKey = "chat_lock:" + sessionId;
+  const existingLock = await env.SESSIONS.get(lockKey);
+  if (existingLock) {
+    return json({
+      error: "request_in_flight",
+      message: "A response is already being generated. Please wait a moment before sending another message."
+    }, 429);
+  }
+  await env.SESSIONS.put(lockKey, "1", { expirationTtl: 120 });
   session.messages.push({ role: "user", content: message });
   await logEvent(env, sessionId, "message_sent", { phase: session.phase, messageCount: session.messages.length });
   let enrichmentData = null;
   try {
     const enrichRaw = await env.SESSIONS.get("enrichment:" + sessionId);
     if (enrichRaw) enrichmentData = JSON.parse(enrichRaw);
-  } catch (_) {}
+  } catch (_) {
+  }
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
@@ -14412,10 +15841,69 @@ async function handleChat(request, env, ctx) {
         }
       }
       const apiStart = Date.now();
+      // BUG-RECOVERY-01: if session.phase in KV is lower than what message history shows,
+      // restore it so stuck sessions auto-heal on the next message.
+      {
+        const observedMaxPhase = (session.messages || []).reduce((max, m) => {
+          if (m.role !== "assistant") return max;
+          const mMatch = (m.content || "").match(/METADATA:\{"phase":(\d+)/);
+          return mMatch ? Math.max(max, parseInt(mMatch[1])) : max;
+        }, 0);
+        if (observedMaxPhase > (session.phase || 1)) {
+          const recoveredFrom = session.phase || 1;
+          console.log("[PhaseRecovery] session=" + sessionId + " restoring phase from " + recoveredFrom + " to " + observedMaxPhase);
+          session.phase = observedMaxPhase;
+          logSessionEvent(env, sessionId, "phase_recovered", { from: recoveredFrom, to: observedMaxPhase }).catch(() => {});
+        }
+      }
       const currentPhaseNum = session.phase || 1;
-      const isBlueprintPhase = currentPhaseNum >= 6;
+      const isBlueprintPhase = currentPhaseNum >= 8;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
       const recentMessages = smartTrimMessages(session.messages, currentPhaseNum);
+
+      // A.2: Count user messages since the last phase transition (per-phase count)
+      const userMsgsInCurrentPhase = (() => {
+        const msgs = session.messages || [];
+        let count = 0;
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          const m = msgs[i];
+          if (m.role === "assistant" && /METADATA:\{"phase":(\d+)/.test(m.content || "")) {
+            const mPhase = parseInt(RegExp.$1);
+            if (mPhase !== currentPhaseNum) break; // phase changed here, stop counting
+          }
+          if (m.role === "user") count++;
+        }
+        return count;
+      })();
+
+      // A.1: Detect if METADATA has been silent for the last 3 assistant turns
+      const phaseCheckPending = (() => {
+        if (session._phaseCheckPending) return true;
+        const recentAssistantMsgs = (session.messages || []).filter((m) => m.role === "assistant").slice(-3);
+        const recentHadMetadata = recentAssistantMsgs.some((m) => /METADATA:\{/.test(m.content || ""));
+        if (!recentHadMetadata && recentAssistantMsgs.length >= 3) {
+          console.warn("[PhaseGuard] METADATA silent for 3 turns — session=" + sessionId + " phase=" + currentPhaseNum + " injecting phase sync reminder");
+          return true;
+        }
+        return false;
+      })();
+      // Clear the persisted flag now that we've consumed it
+      if (session._phaseCheckPending) delete session._phaseCheckPending;
+
+      // A.2: Build auto-advance injection string
+      let autoAdvanceInjection = "";
+      if (userMsgsInCurrentPhase >= 12 && currentPhaseNum < 8) {
+        const nextPhase = currentPhaseNum + 1;
+        autoAdvanceInjection = `\n\n[AUTO-ADVANCE] The user has answered ${userMsgsInCurrentPhase} questions in phase ${currentPhaseNum}. Acknowledge their last answer warmly and transition to phase ${nextPhase} now. You MUST emit METADATA:{"phase":${nextPhase},...} in your response.`;
+        logSessionEvent(env, sessionId, "phase_auto_advanced", { from_phase: currentPhaseNum, to_phase: nextPhase, msg_count: userMsgsInCurrentPhase }).catch(() => {});
+        console.log("[AutoAdvance] session=" + sessionId + " advancing from phase " + currentPhaseNum + " to " + nextPhase + " after " + userMsgsInCurrentPhase + " messages");
+      }
+      if (currentPhaseNum >= 8 && userMsgsInCurrentPhase >= 4 && !session.blueprintGenerated) {
+        autoAdvanceInjection = '[SYNTHESIS COMPLETE] The user has answered ' + userMsgsInCurrentPhase + ' questions in Phase 8. You have gathered sufficient material. Output the complete brand blueprint JSON now. Set sessionComplete:true and phaseProgress:100 in METADATA. Your ENTIRE response must be ONLY the ```json code block. No prose before or after.';
+        logSessionEvent(env, sessionId, "phase8_blueprint_forced", { msg_count: userMsgsInCurrentPhase }).catch(() => {});
+        console.log("[Phase8Force] session=" + sessionId + " forcing blueprint output after " + userMsgsInCurrentPhase + " Phase 8 messages");
+      }
+
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
       const MAX_RETRIES = 2;
       let res;
@@ -14478,6 +15966,17 @@ Use this to skip surface-level questions. Go deeper faster.` });
                   if (enrichLines.length > 0) {
                     sysMsgs.push({ type: "text", text: "## Additional Pre-Session Context (silent \u2014 do NOT reveal source)\n" + enrichLines.join("\n") });
                   }
+                }
+                if (currentPhaseNum >= 6 && !session.blueprintGenerated) {
+                  sysMsgs.push({ type: "text", text: "URGENT SYSTEM REMINDER: The interview is complete. You MUST output the blueprint JSON now. Your ENTIRE response must be ONLY the ```json code block. No prose. No summary. No explanation. Start with ```json and end with ```. The system renders the JSON into a beautiful page automatically. If you write prose, the user sees raw text and the experience breaks." });
+                }
+                // A.1: PhaseGuard — inject phase sync reminder if METADATA has been silent
+                if (phaseCheckPending) {
+                  sysMsgs.push({ type: "text", text: `[PHASE SYNC REQUIRED] You have not emitted a METADATA block in your last 3 responses. You MUST include METADATA:{...} at the end of your next response. Current phase: ${currentPhaseNum}.` });
+                }
+                // A.2: Auto-advance ceiling injection
+                if (autoAdvanceInjection) {
+                  sysMsgs.push({ type: "text", text: autoAdvanceInjection.trim() });
                 }
                 return sysMsgs;
               })(),
@@ -14569,11 +16068,33 @@ Use this to skip surface-level questions. Go deeper faster.` });
         } catch (_) {
         }
       }
+      // A.1: PhaseGuard — if this response had no METADATA, mark flag for next turn
+      if (!metadataMatch) {
+        const recentAssistantMsgs = (session.messages || []).filter((m) => m.role === "assistant").slice(-3);
+        const recentHadMetadata = recentAssistantMsgs.some((m) => /METADATA:\{/.test(m.content || ""));
+        if (!recentHadMetadata && recentAssistantMsgs.length >= 3) {
+          session._phaseCheckPending = true;
+          console.warn("[PhaseGuard] METADATA silent for 3+ turns — session=" + sessionId + " phase=" + (session.phase || 1) + " flagging for next turn sync");
+        }
+      } else {
+        // METADATA present this turn — clear any pending flag
+        delete session._phaseCheckPending;
+      }
       let blueprint = null;
       const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
+      if (metadata.sessionComplete && !blueprintMatch) {
+        console.log("[PhaseGuard] session=" + sessionId + " AI tried sessionComplete at phase " + (metadata.phase || session.phase) + " without blueprint JSON, holding at phase 7");
+        metadata.sessionComplete = false;
+        metadata.phase = Math.max(metadata.phase || 1, 7);
+        metadata.phaseProgress = 95;
+      }
       const currentPhase = session.phase || 1;
+      // Use the higher of stored phase vs metadata phase — the blueprint JSON often arrives in the same
+      // response that first emits METADATA:{"phase":8}, so session.phase is still 7 at that point.
+      const effectivePhase = Math.max(currentPhase, metadata.phase || 0);
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
-      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10;
+      // Phase 8 hard gate — blueprint cannot generate until the AI has progressed through all 8 phases
+      const readyForBlueprint = effectivePhase >= 8 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 8 && metadata.phaseProgress >= 100));
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
@@ -14591,13 +16112,13 @@ Use this to skip surface-level questions. Go deeper faster.` });
           session.blueprint = blueprint;
           session.blueprintGenerated = true;
           await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
-          // Cache blueprint metadata separately for fast subsequent renders
           env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
             blueprint,
             name: blueprint.name || session.userName || "",
             apolloData: session.apolloData || null,
             messageCount: session.messages.length
-          }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(()=>{});
+          }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {
+          });
           await saveToRAG(env, session, blueprint);
           const li2 = blueprint?.leadIntel;
           if (li2) {
@@ -14654,8 +16175,10 @@ Use this to skip surface-level questions. Go deeper faster.` });
               })
             ]));
           } else {
-            extractSessionInsights(env, sessionId, session).catch(function() {});
-            autoGenerateSalesBrief(env, sessionId, session.userId, li2, session).catch(function() {});
+            extractSessionInsights(env, sessionId, session).catch(function() {
+            });
+            autoGenerateSalesBrief(env, sessionId, session.userId, li2, session).catch(function() {
+            });
           }
         } catch (_) {
         }
@@ -14664,7 +16187,7 @@ Use this to skip surface-level questions. Go deeper faster.` });
       }
       const cleanContent = fullContent.replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim();
       session.messages.push({ role: "assistant", content: fullContent });
-      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6].includes(Number(metadata.phase))) {
+      if (metadata.phase && metadata.phase !== session.phase && [2, 4, 6, 7, 8].includes(Number(metadata.phase))) {
         const transitioningFromPhase = session.phase;
         const sessionMessages = [...session.messages];
         const sessionForScoring = { messages: sessionMessages };
@@ -14679,6 +16202,12 @@ Use this to skip surface-level questions. Go deeper faster.` });
               (/* @__PURE__ */ new Date()).toISOString(),
               sessionId
             ).run();
+            // Admin alert for shallow completions
+            if (depthResult.grade === 'C') {
+              sendShallowCompletionAlert(env, sessionId, session, depthResult).catch((e) => {
+                console.error("[ShallowAlert] error:", e.message);
+              });
+            }
           }
         }).catch(function(e) {
           console.error("[DepthScore] error:", e.message);
@@ -14693,8 +16222,9 @@ Use this to skip surface-level questions. Go deeper faster.` });
           ctx.waitUntil(Promise.all([depthTask, phaseTask, flagTask]));
         }
       }
-      if (metadata.phase)
-        session.phase = metadata.phase;
+      // BUG-REGRESSION-01: use effectivePhase (Math.max) so phase never goes backward.
+      // metadata.phase from AI can be lower than session.phase if the AI hallucinates an old phase.
+      session.phase = effectivePhase;
       if (blueprint) {
         await sendEvent({ type: "blueprint_ready", blueprint, apolloData: session.apolloData || null });
         try {
@@ -14708,7 +16238,34 @@ Use this to skip surface-level questions. Go deeper faster.` });
           console.error("[Debrief] Generation failed:", debriefErr.message);
         }
       }
-      await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+      // Fallback: if the AI attempted a blueprint (started outputting ```json) but it couldn't be
+      // parsed (e.g. max_tokens truncation), trigger async generation rather than showing an error.
+      const blueprintAttempted = fullContent.includes("```json");
+      const inBpPhase = isBlueprintPhase || (metadata.phase >= 8);
+      if (inBpPhase && !session.blueprintGenerated && !blueprint && blueprintAttempted) {
+        console.log("[Chat] Blueprint JSON incomplete (truncated?) — queuing async generation for session=" + sessionId);
+        await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+        if (ctx) {
+          const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          const fallbackJobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          await env.SESSIONS.put("bp_job:" + fallbackJobId, JSON.stringify({ jobId: fallbackJobId, sessionId, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+          ctx.waitUntil(
+            fetch(appOrigin + "/api/internal/generate-blueprint", {
+              method: "POST",
+              headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId, jobId: fallbackJobId })
+            }).catch((e) => console.error("[AsyncBP] Fallback self-fetch failed:", e.message))
+          );
+          try {
+            await sendEvent({ type: "blueprint_generating", async: true, jobId: fallbackJobId, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          } catch (_) {}
+        } else {
+          try { await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated. The page will update automatically." }); } catch (_) {}
+        }
+        try { await sendEvent({ type: "done" }); await writer.close(); } catch (_) {}
+        return;
+      }
+      await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
       await updateSessionPhaseInD1(env, sessionId, session.phase, session.messages.length, session.blueprintGenerated);
       if (session.blueprintGenerated) {
         await env.DB.prepare(
@@ -14732,11 +16289,40 @@ Use this to skip surface-level questions. Go deeper faster.` });
       await writer.close();
     } catch (err) {
       console.error("Stream error:", err);
+      const isBpAbort = (err.name === "AbortError" || (err.message || "").toLowerCase().includes("abort")) && isBlueprintPhase && !session.blueprintGenerated;
+      if (isBpAbort) {
+        console.log("[Chat] Blueprint stream timed out — queuing async generation for session=" + sessionId);
+        try {
+          await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+        } catch (_) {}
+        if (ctx) {
+          const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+          const mainJobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          await env.SESSIONS.put("bp_job:" + mainJobId, JSON.stringify({ jobId: mainJobId, sessionId, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+          ctx.waitUntil(
+            fetch(appOrigin + "/api/internal/generate-blueprint", {
+              method: "POST",
+              headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
+              body: JSON.stringify({ sessionId, jobId: mainJobId })
+            }).catch((e) => console.error("[AsyncBP] Self-fetch failed:", e.message))
+          );
+          try {
+            await sendEvent({ type: "blueprint_generating", async: true, jobId: mainJobId, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          } catch (_) {}
+        } else {
+          try { await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated. The page will update automatically." }); } catch (_) {}
+        }
+        try { await sendEvent({ type: "done" }); await writer.close(); } catch (_) {}
+        return;
+      }
       try {
         await sendEvent({ type: "error", message: err.message });
         await writer.close();
       } catch (_) {
       }
+    } finally {
+      // Always release the concurrency lock when streaming ends
+      env.SESSIONS.delete(lockKey).catch(() => {});
     }
   })();
   return new Response(readable, {
@@ -14991,7 +16577,7 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
           },
           body: JSON.stringify({
             model: MODEL_OPUS,
-            max_tokens: 8192,
+            max_tokens: 32768,
             stream: true,
             system: (() => {
               const sysMsgs = [{ type: "text", text: session.systemPrompt, cache_control: { type: "ephemeral" } }];
@@ -15103,14 +16689,27 @@ Use this to skip surface-level questions. Go deeper faster.` });
             const coreOfferName = bp.part4?.coreOffer?.name || "";
             const heroHeadline = (bp.part7?.heroHeadlineOptions || [])[0] || "";
             const emailGreeting = firstName ? `${firstName}, your` : "Your";
+            let blueprintMagicUrl = "";
+            try {
+              if (session.userId) {
+                const bpToken = generateMagicToken();
+                await storeMagicToken(env, bpToken, session.userId, "magic_login", 72);
+                const bpOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+                blueprintMagicUrl = `${bpOrigin}/magic?token=${bpToken}`;
+              }
+            } catch (_bpe) {
+            }
+            const bpFallbackUrl = (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/app?session=" + sessionId;
+            const bpViewUrl = blueprintMagicUrl || bpFallbackUrl;
             fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
               body: JSON.stringify({
                 from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
                 to: [session.email],
-                subject: `${emailGreeting} Deep Work Blueprint is ready`,
-                html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Blueprint</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p></td></tr></table></td></tr></table></body></html>`
+                reply_to: "james@jamesguldan.com",
+                subject: `${emailGreeting} Deep Work Interview results are ready`,
+                html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Interview</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p><div style="text-align:center;"><a href="${bpViewUrl}" style="display:inline-block;background:#C4703F;color:#ffffff;font-size:15px;font-weight:600;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:0.01em;">View My Results &rarr;</a></div></td></tr><tr><td style="background:#262626;border-radius:0 0 20px 20px;padding:28px 40px;"><p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.4);">Button not working? Paste this into your browser:</p><p style="margin:0;font-size:11px;"><a href="${bpViewUrl}" style="color:#C4703F;word-break:break-all;">${bpViewUrl}</a></p></td></tr></table></td></tr></table></body></html>`
               })
             }).catch(() => {
             });
@@ -15185,8 +16784,6 @@ Use this to skip surface-level questions. Go deeper faster.` });
   });
 }
 __name(handleTestBlueprint, "handleTestBlueprint");
-
-// src/routes/upload.js
 async function handleUpload(request, env) {
   const formData = await request.formData();
   const file = formData.get("file");
@@ -15241,7 +16838,7 @@ async function handleUpload(request, env) {
 ${extractedText}`);
         const contextExtra = contextEnrichmentPrompt(session.userData);
         session.systemPrompt = DEEP_WORK_SYSTEM_PROMPT + (contextExtra ? "\n\n" + contextExtra : "");
-        await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+        await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
       }
     }
   }
@@ -15362,7 +16959,7 @@ async function handlePhotoProcess(request, env) {
         cutoutUrl,
         processedAt: (/* @__PURE__ */ new Date()).toISOString()
       };
-      await env.SESSIONS.put(sessionId, JSON.stringify(kvSession), { expirationTtl: 60 * 60 * 24 * 30 });
+      await env.SESSIONS.put(sessionId, JSON.stringify(kvSession), { expirationTtl: 60 * 60 * 24 * 180 });
     }
   } catch (_) {
   }
@@ -15412,7 +17009,7 @@ async function handleGenerateImages(request, env) {
     }
   }
   session.generatedImageKeys = generatedImages.map((_, i) => `sessions/${sessionId}/images/img_${i}.png`);
-  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   return json({ ok: true, images: generatedImages });
 }
 __name(handleGenerateImages, "handleGenerateImages");
@@ -15633,8 +17230,6 @@ ${exampleJson}`;
   }
 }
 __name(handleGenerateSectionVariants, "handleGenerateSectionVariants");
-
-// src/routes/site.js
 async function handleSaveSectionChoices(request, env) {
   let body;
   try {
@@ -15649,7 +17244,7 @@ async function handleSaveSectionChoices(request, env) {
       if (raw) {
         const s = JSON.parse(raw);
         s.sectionChoices = chosen;
-        await env.SESSIONS.put(sessionId, JSON.stringify(s), { expirationTtl: 60 * 60 * 24 * 30 });
+        await env.SESSIONS.put(sessionId, JSON.stringify(s), { expirationTtl: 60 * 60 * 24 * 180 });
       }
     } catch (_) {
     }
@@ -15694,7 +17289,7 @@ async function handleDeployPickerSite(request, env) {
   if (chosen)
     session.sectionChoices = chosen;
   try {
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   } catch (_) {
   }
   try {
@@ -15738,7 +17333,7 @@ async function handleGenerateSite(request, env) {
     session.blueprint = preGenRepair.blueprint;
     if (preGenRepair.repairCount > 0) {
       console.log("[SiteGen Blueprint QA] Repaired " + preGenRepair.repairCount + ": " + preGenRepair.repairs.join("; "));
-      await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+      await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     }
   }
   const bp_for_theme = session.blueprint?.blueprint || session.blueprint || {};
@@ -15978,7 +17573,7 @@ ${finalBodyHtml}
   });
   session.siteGenerated = true;
   session.siteHtml = cleanHtml.substring(0, 500);
-  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   try {
     await env.DB.prepare("UPDATE sessions SET site_generated = 1, version = version + 1 WHERE id = ?").bind(sessionId).run();
   } catch (_) {
@@ -16067,7 +17662,7 @@ async function handleDeploy(request, env) {
     session.siteUrl = liveUrl;
     session.siteSlug = slug;
     session.seoOptimized = true;
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     try {
       await env.DB.prepare("UPDATE sessions SET cf_deployed = 1, pages_url = ? WHERE id = ?").bind(liveUrl, sessionId).run();
     } catch (_) {
@@ -16125,7 +17720,7 @@ ${cleanBody}
   if (!session.refinements)
     session.refinements = [];
   session.refinements.push({ category, option, customText, at: (/* @__PURE__ */ new Date()).toISOString() });
-  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   await logEvent(env, sessionId, "site_refined", { category, option });
   return json({ ok: true, refinementCount: session.refinements.length });
 }
@@ -16183,8 +17778,6 @@ async function handleExportSite(request, env) {
   });
 }
 __name(handleExportSite, "handleExportSite");
-
-// src/services/stripe.js
 async function verifyStripeSignature(payload, sigHeader, secret) {
   try {
     const parts = Object.fromEntries(sigHeader.split(",").map((p) => p.split("=")));
@@ -16205,8 +17798,6 @@ async function verifyStripeSignature(payload, sigHeader, secret) {
   }
 }
 __name(verifyStripeSignature, "verifyStripeSignature");
-
-// src/routes/payment.js
 async function handleCreatePaymentIntent(request, env) {
   try {
     const body = await request.json();
@@ -16378,8 +17969,6 @@ async function handleWebhook(request, env) {
       const email = s.customer_details?.email || s.metadata?.email || null;
       const tier = s.metadata?.tier || "blueprint";
       const amountCents = s.amount_total || 0;
-
-      // Insert into payments table
       try {
         await env.DB.prepare(
           `INSERT OR IGNORE INTO payments (id, email, amount, currency, status, stripe_payment_intent_id, stripe_customer_id, tier, created_at)
@@ -16396,30 +17985,83 @@ async function handleWebhook(request, env) {
       } catch (dbErr) {
         console.error("[Webhook] Payment insert failed:", dbErr.message);
       }
-
-      // Create/update user and generate access link
       if (email) {
+        let user = null;
         try {
-          let user = await getUserByEmail(env, email);
+          user = await getUserByEmail(env, email);
           if (!user) {
             user = await createUser(env, { email, name: s.customer_details?.name || "", tier });
           } else if (user.tier !== tier) {
-            await env.DB.prepare("UPDATE users SET tier=? WHERE id=?").bind(tier, user.id).run().catch(()=>{});
+            await env.DB.prepare("UPDATE users SET tier=? WHERE id=?").bind(tier, user.id).run().catch(() => {
+            });
           }
-        } catch(userErr) {
+        } catch (userErr) {
           console.error("[Webhook] User upsert failed:", userErr.message);
         }
-
-        // Forward to external GHL webhook worker if configured
+        if (user && env.RESEND_API_KEY) {
+          try {
+            // Dedup: skip if a magic token was already created for this user in the last 10 minutes
+            const recentToken = await env.DB.prepare(
+              "SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'magic_login' AND created_at > datetime('now', '-10 minutes')"
+            ).bind(user.id).first().catch(() => null);
+            if (recentToken) {
+              console.log("[Webhook] Skipping duplicate email for user=" + user.id + " — token created within last 10 min");
+            } else {
+            const token = generateMagicToken();
+            await storeMagicToken(env, token, user.id, "magic_login", 72);
+            const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+            const magicUrl = origin + "/magic?token=" + token;
+            const firstName = (s.customer_details?.name || "").split(" ")[0] || "there";
+            const tierLabel = tier === "site" ? "Site In Sixty" : "Deep Work Interview";
+            const emailHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:520px;margin:0 auto;padding:40px 24px;">
+<div style="text-align:center;margin-bottom:32px;"><div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:#1D1D1F;">Deep Work Interview</div></div>
+<div style="background:#fff;border-radius:16px;padding:32px 28px;border:1px solid #F0F0F0;">
+<h1 style="font-size:22px;font-weight:700;color:#1D1D1F;margin:0 0 16px;">Hey ${firstName}, you are in.</h1>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 12px;">Your <strong>${tierLabel}</strong> purchase is confirmed. $${(amountCents / 100).toFixed(2)} received.</p>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 24px;">Click below to start your Deep Work session. This is where we excavate everything that makes you different and turn it into a brand blueprint you can actually use.</p>
+<div style="text-align:center;margin:28px 0;"><a href="${magicUrl}" style="display:inline-block;background:#1D1D1F;color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:50px;text-decoration:none;">Start Your Session</a></div>
+<p style="font-size:13px;color:#86868B;line-height:1.5;margin:0;">This link expires in 72 hours. If you need a new one, just visit <a href="${origin}" style="color:#C4703F;">love.jamesguldan.com</a> and request a magic link with your email.</p>
+</div>
+<div style="text-align:center;margin-top:32px;font-size:12px;color:#C0C0C0;">Questions? Reply to this email or reach me at james@jamesguldan.com</div>
+</div></body></html>`;
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+                to: [email],
+                reply_to: "james@jamesguldan.com",
+                subject: "You are in \u2014 your Deep Work session is ready",
+                html: emailHtml
+              })
+            });
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Deep Work Notifications <noreply@jamesguldan.com>",
+                to: ["james@jamesguldan.com"],
+                subject: "New purchase: " + (s.customer_details?.name || email) + " ($" + (amountCents / 100).toFixed(2) + ")",
+                html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (s.customer_details?.name || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents / 100).toFixed(2) + "</p><p><strong>Time:</strong> " + (/* @__PURE__ */ new Date()).toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>"
+              })
+            }).catch(function(e) {
+              console.error("[Webhook] Admin notify failed:", e.message);
+            });
+            }
+          } catch (emailErr) {
+            console.error("[Webhook] Email send failed:", emailErr.message);
+          }
+        }
         if (env.GHL_WEBHOOK_URL) {
           fetch(env.GHL_WEBHOOK_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, tier, amount: amountCents / 100, checkoutId: s.id, name: s.customer_details?.name || "" })
-          }).catch(()=>{});
+          }).catch(() => {
+          });
         }
       }
-
       await logEvent(env, null, "stripe_payment_completed", {
         checkoutId: s.id,
         tier,
@@ -16427,12 +18069,153 @@ async function handleWebhook(request, env) {
         email
       });
     }
-
+    if (event.type === "payment_intent.succeeded") {
+      const pi = event.data.object;
+      const amountCents = pi.amount || 0;
+      const tier = pi.metadata?.tier || "blueprint";
+      const charge = (pi.charges?.data || [])[0] || {};
+      let email = charge.billing_details?.email || pi.receipt_email || null;
+      let customerName = charge.billing_details?.name || "";
+      if (!email && pi.latest_charge && env.STRIPE_SECRET_KEY) {
+        try {
+          const chargeRes = await stripeGet(env, "/v1/charges/" + pi.latest_charge);
+          if (chargeRes.ok) {
+            const chargeData = await chargeRes.json();
+            email = chargeData.billing_details?.email || chargeData.receipt_email || null;
+            customerName = customerName || chargeData.billing_details?.name || "";
+          }
+        } catch (_ce) {
+          console.error("[Webhook:PI] Charge lookup failed:", _ce.message);
+        }
+      }
+      if (!email && pi.customer && env.STRIPE_SECRET_KEY) {
+        try {
+          const custRes = await stripeGet(env, "/v1/customers/" + pi.customer);
+          if (custRes.ok) {
+            const custData = await custRes.json();
+            email = custData.email || null;
+            customerName = customerName || custData.name || "";
+          }
+        } catch (_cue) {
+          console.error("[Webhook:PI] Customer lookup failed:", _cue.message);
+        }
+      }
+      console.log("[Webhook:PI] Extracted email:", email, "name:", customerName, "amount:", amountCents, "pi:", pi.id);
+      const existingPay = await env.DB.prepare("SELECT id FROM payments WHERE stripe_payment_intent_id = ?").bind(pi.id).first().catch(() => null);
+      if (!existingPay && email) {
+        try {
+          await env.DB.prepare(
+            `INSERT OR IGNORE INTO payments (id, email, amount, currency, status, stripe_payment_intent_id, stripe_customer_id, tier, created_at)
+             VALUES (?, ?, ?, ?, 'succeeded', ?, ?, ?, datetime('now'))`
+          ).bind(
+            "pay_pi_" + pi.id,
+            email,
+            amountCents / 100,
+            (pi.currency || "usd").toUpperCase(),
+            pi.id,
+            pi.customer || null,
+            tier
+          ).run();
+        } catch (dbErr) {
+          console.error("[Webhook:PI] Payment insert failed:", dbErr.message);
+        }
+        let user = null;
+        try {
+          user = await getUserByEmail(env, email);
+          if (!user) {
+            user = await createUser(env, { email, name: customerName, tier });
+          } else if (user.tier !== tier) {
+            await env.DB.prepare("UPDATE users SET tier=? WHERE id=?").bind(tier, user.id).run().catch(() => {
+            });
+          }
+        } catch (userErr) {
+          console.error("[Webhook:PI] User upsert failed:", userErr.message);
+        }
+        if (user && env.RESEND_API_KEY) {
+          try {
+            // Dedup: skip if a magic token was already created for this user in the last 10 minutes
+            const recentToken = await env.DB.prepare(
+              "SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'magic_login' AND created_at > datetime('now', '-10 minutes')"
+            ).bind(user.id).first().catch(() => null);
+            if (recentToken) {
+              console.log("[Webhook:PI] Skipping duplicate email for user=" + user.id + " — token created within last 10 min");
+            } else {
+            const token = generateMagicToken();
+            await storeMagicToken(env, token, user.id, "magic_login", 72);
+            const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+            const magicUrl = origin + "/magic?token=" + token;
+            const firstName = customerName.split(" ")[0] || "there";
+            const tierLabel = tier === "site" ? "Site In Sixty" : "Deep Work Interview";
+            const emailHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#FDFCFA;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:520px;margin:0 auto;padding:40px 24px;">
+<div style="text-align:center;margin-bottom:32px;"><div style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:#1D1D1F;">Deep Work Interview</div></div>
+<div style="background:#fff;border-radius:16px;padding:32px 28px;border:1px solid #F0F0F0;">
+<h1 style="font-size:22px;font-weight:700;color:#1D1D1F;margin:0 0 16px;">Hey ${firstName}, you are in.</h1>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 12px;">Your <strong>${tierLabel}</strong> purchase is confirmed. $${(amountCents / 100).toFixed(2)} received.</p>
+<p style="font-size:15px;line-height:1.6;color:#444;margin:0 0 24px;">Click below to start your Deep Work session. This is where we excavate everything that makes you different and turn it into a brand blueprint you can actually use.</p>
+<div style="text-align:center;margin:28px 0;"><a href="${magicUrl}" style="display:inline-block;background:#1D1D1F;color:#fff;font-size:15px;font-weight:600;padding:14px 36px;border-radius:50px;text-decoration:none;">Start Your Session</a></div>
+<p style="font-size:13px;color:#86868B;line-height:1.5;margin:0;">This link expires in 72 hours. If you need a new one, just visit <a href="${origin}" style="color:#C4703F;">love.jamesguldan.com</a> and request a magic link with your email.</p>
+</div>
+<div style="text-align:center;margin-top:32px;font-size:12px;color:#C0C0C0;">Questions? Reply to this email or reach me at james@jamesguldan.com</div>
+</div></body></html>`;
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+                to: [email],
+                reply_to: "james@jamesguldan.com",
+                subject: "You are in \u2014 your Deep Work session is ready",
+                html: emailHtml
+              })
+            });
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "Deep Work Notifications <noreply@jamesguldan.com>",
+                to: ["james@jamesguldan.com"],
+                subject: "New purchase: " + (customerName || email) + " ($" + (amountCents / 100).toFixed(2) + ")",
+                html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (customerName || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents / 100).toFixed(2) + "</p><p><strong>Time:</strong> " + (/* @__PURE__ */ new Date()).toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>"
+              })
+            }).catch(function(e) {
+              console.error("[Webhook:PI] Admin notify failed:", e.message);
+            });
+            }
+          } catch (emailErr) {
+            console.error("[Webhook:PI] Email send failed:", emailErr.message);
+          }
+        }
+        if (email && env.GHL_WEBHOOK_URL) {
+          fetch(env.GHL_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, tier, amount: amountCents / 100, paymentIntentId: pi.id, name: customerName })
+          }).catch(() => {
+          });
+        }
+        await logEvent(env, null, "stripe_payment_completed", {
+          paymentIntentId: pi.id,
+          tier,
+          amount: amountCents / 100,
+          email
+        });
+      } else {
+        await logEvent(env, null, "stripe_webhook_received", {
+          type: "payment_intent.succeeded",
+          paymentIntentId: pi.id,
+          amount: amountCents / 100,
+          emailFound: !!email,
+          alreadyRecorded: !!existingPay
+        });
+      }
+    }
     if (event.type === "charge.refunded") {
       const c = event.data.object;
       await env.DB.prepare(
         "UPDATE payments SET status='refunded' WHERE stripe_payment_intent_id=?"
-      ).bind(c.payment_intent || c.id).run().catch(()=>{});
+      ).bind(c.payment_intent || c.id).run().catch(() => {
+      });
       await logEvent(env, null, "stripe_refund", { chargeId: c.id, amount: c.amount_refunded / 100 });
     }
   } catch (e) {
@@ -16443,8 +18226,6 @@ async function handleWebhook(request, env) {
   return json({ received: true });
 }
 __name(handleWebhook, "handleWebhook");
-
-// src/html/blueprint-tabs.js
 function escHtml(str) {
   if (!str)
     return "";
@@ -16463,8 +18244,8 @@ function formatProse(prose, keyInsight) {
     }
   }
   escaped = escaped.replace(/\n\n+/g, '</p><p style="margin-top:16px;">');
-  escaped = escaped.replace(/\n/g, '<br>');
-  return '<p>' + escaped + '</p>';
+  escaped = escaped.replace(/\n/g, "<br>");
+  return "<p>" + escaped + "</p>";
 }
 __name(formatProse, "formatProse");
 function getBlueprintCSS() {
@@ -16634,8 +18415,8 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-size: 18px; color: var(--text); margin-bottom: 24px;
 }
 .bp-letter-italic {
-  font-family: 'Playfair Display', serif; font-style: italic;
-  font-size: 18px; color: #555; line-height: 1.75;
+  font-family: 'Inter', sans-serif; font-weight: 400; font-style: normal;
+  font-size: 15px; color: #555; line-height: 1.85;
   margin-bottom: 24px;
 }
 .bp-letter-body {
@@ -16684,6 +18465,10 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 .bp-context-line {
   font-size: 13px; color: var(--text2); text-align: center;
   max-width: 520px; margin: 0 auto 32px;
+}
+.bp-score-frame {
+  font-size: 14px; font-style: italic; color: var(--text2); text-align: center;
+  max-width: 480px; margin: 0 auto 20px; line-height: 1.6;
 }
 .bp-score-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -16746,6 +18531,52 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   border-radius: 12px; text-align: center;
   font-family: 'Outfit', sans-serif; font-weight: 700;
   font-size: 22px; color: var(--text); line-height: 1.5; max-width: 700px;
+}
+.bp-category-one {
+  margin: 0 auto 40px; padding: 32px 36px;
+  background: linear-gradient(135deg, #FDF0E8, #FFF8F0);
+  border: 2px solid var(--gold); border-radius: 16px;
+  text-align: center; font-family: 'Outfit', sans-serif;
+  font-weight: 700; font-size: 26px; color: var(--text); line-height: 1.4; max-width: 800px;
+}
+.bp-positioning-shift {
+  display: flex; align-items: stretch; gap: 16px; margin: 32px 0;
+}
+.bp-positioning-before, .bp-positioning-after {
+  flex: 1; padding: 20px; border-radius: 12px;
+}
+.bp-positioning-before { background: #F5F5F7; border: 1px solid #D1D1D6; }
+.bp-copy-btn {
+  display: inline-block; margin-top: 12px; padding: 7px 18px;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+  color: var(--gold); background: transparent;
+  border: 1.5px solid rgba(196,112,63,0.4); border-radius: 50px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.bp-copy-btn:hover { background: rgba(196,112,63,0.08); border-color: var(--gold); }
+.bp-positioning-after {
+  background: linear-gradient(135deg, #FDF0E8, #FFF8F0);
+  border: 1px solid rgba(196,112,63,0.3);
+}
+.bp-positioning-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text2); margin-bottom: 8px;
+}
+.bp-positioning-after .bp-positioning-label { color: var(--gold); }
+.bp-positioning-text { font-size: 15px; line-height: 1.6; color: var(--text); }
+.bp-positioning-arrow {
+  display: flex; align-items: center; font-size: 24px; color: var(--gold);
+  flex-shrink: 0; padding: 0 4px;
+}
+.bp-why-it-works, .bp-market-viability {
+  margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);
+}
+.bp-landscape-subhead {
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px;
+  letter-spacing: 0.05em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+}
+.bp-why-it-works p, .bp-market-viability p {
+  font-size: 15px; color: var(--text); line-height: 1.75; max-width: 700px; margin: 0;
 }
 
 /* === CHAPTER 3: IDEAL CLIENT === */
@@ -16867,7 +18698,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-size: 22px; color: var(--text); line-height: 1.65;
   max-width: 600px; margin: 80px auto 48px; text-align: center;
 }
-/* ── The Gap CTA ── */
+/* \u2500\u2500 The Gap CTA \u2500\u2500 */
 .bp-gap-cta { margin-top: 56px; border-radius: 16px; overflow: hidden; border: 1px solid #F0F0F0; }
 .bp-gap-top { background: #FAFAFA; padding: 48px 48px 40px; text-align: center; border-bottom: 1px solid #F0F0F0; }
 .bp-gap-eyebrow { font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #C4703F; margin-bottom: 16px; }
@@ -16893,13 +18724,13 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 .bp-gap-book-btn:hover { opacity: 0.85; }
 .bp-gap-guarantee { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 14px; }
 .bp-gap-reply { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; text-decoration: none; border-bottom: 1px solid #E8E8E8; padding-bottom: 1px; }
-/* ── Build With AI ── */
+/* \u2500\u2500 Build With AI \u2500\u2500 */
 .bp-ai-builder { margin-top: 40px; padding: 40px; background: #FAFAFA; border-radius: 16px; border: 1px solid #F0F0F0; text-align: center; }
 .bp-ai-builder-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px; color: #1D1D1F; margin-bottom: 8px; }
 .bp-ai-builder-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; line-height: 1.7; max-width: 460px; margin: 0 auto 20px; }
 .bp-ai-builder-tools { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 12px; }
 .bp-ai-copy-success { display: none; font-family: 'Inter', sans-serif; font-size: 12px; color: #2D7A4F; margin-top: 8px; }
-/* ── PDF Download ── */
+/* \u2500\u2500 PDF Download \u2500\u2500 */
 .bp-pdf-section { margin-top: 32px; padding: 32px; text-align: center; border-top: 1px solid #F0F0F0; }
 .bp-pdf-section-desc { font-family: 'Inter', sans-serif; font-size: 13px; color: #86868B; line-height: 1.7; margin-bottom: 16px; }
 .bp-pdf-footer-note { font-family: 'Inter', sans-serif; font-size: 11px; color: #C0C0C0; margin-top: 16px; }
@@ -16958,7 +18789,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 .bp-niche-block { margin-bottom: 20px; }
 
 /* === OFFER SUITE === */
-.bp-offers-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px; }
+.bp-offers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px; max-width: 800px; }
 .bp-offer-card {
   background: var(--bg2); border-radius: var(--radius); padding: 28px 24px;
   border: 1px solid var(--border); transition: border-color 0.2s;
@@ -16988,7 +18819,7 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
 }
 
 /* === HEADLINES & POSITIONING === */
-.bp-headlines-list { display: flex; flex-direction: column; gap: 12px; }
+.bp-headlines-list { display: flex; flex-direction: column; gap: 8px; }
 .bp-headline-option {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 16px; border-radius: var(--radius-sm);
@@ -17156,6 +18987,116 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-family: 'Inter', sans-serif; font-size: 11px; color: #86868B;
 }
 
+/* === HERO BRAND MARK & COVER === */
+.bp-hero-reveal {
+  background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 30%, #FFFFFF 70%) !important;
+}
+.bp-hero-brand-mark {
+  position: absolute; top: 28px; left: 0; right: 0;
+  font-family: 'Outfit', sans-serif; font-weight: 700;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em;
+  color: #C4703F; text-align: center;
+}
+.bp-hero-subtitle {
+  font-family: 'Outfit', sans-serif; font-weight: 600;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: #86868B; margin-bottom: 20px;
+}
+.bp-hero-url {
+  position: absolute; bottom: 92px; left: 0; right: 0;
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: #C0C0C0; text-align: center; letter-spacing: 0.02em;
+}
+
+/* === VISUAL DEPTH: CARD SHADOWS === */
+.bp-card, .bp-offer-card, .bp-website-section-card, .bp-website-hero-preview {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.02);
+}
+.bp-letter-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.03);
+}
+
+/* === CHAPTER DIVIDERS: VISUAL PUNCH === */
+.chapter-divider {
+  background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%) !important;
+  padding: 64px 24px !important;
+  position: relative;
+}
+.chapter-divider::before {
+  content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+  height: 2px; background: linear-gradient(90deg, transparent, #C4703F, transparent);
+}
+
+/* === SHARE SECTION === */
+.bp-share-section {
+  margin-top: 48px; padding: 56px 40px;
+  background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 100%);
+  border-radius: 20px; border: 1px solid rgba(196,112,63,0.12);
+  text-align: center;
+}
+.bp-share-inner { max-width: 460px; margin: 0 auto; }
+.bp-share-eyebrow {
+  font-family: 'Outfit', sans-serif; font-weight: 600;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+  color: #C4703F; margin-bottom: 16px;
+}
+.bp-share-headline {
+  font-family: 'Playfair Display', serif; font-style: italic;
+  font-size: 28px; color: #1D1D1F; line-height: 1.3; margin-bottom: 16px;
+}
+.bp-share-desc {
+  font-family: 'Inter', sans-serif; font-size: 14px; color: #86868B;
+  line-height: 1.7; margin-bottom: 28px;
+}
+.bp-share-cta-row { margin-bottom: 20px; }
+.bp-share-get-own {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #1D1D1F; color: #fff; text-decoration: none;
+  font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 14px;
+  padding: 14px 32px; border-radius: 50px; transition: opacity 0.2s;
+}
+.bp-share-get-own:hover { opacity: 0.85; }
+.bp-share-url {
+  font-family: 'Inter', sans-serif; font-size: 12px; color: #C4703F;
+  letter-spacing: 0.02em;
+}
+
+/* === SECTION ACCENTS === */
+.bp-score-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.03);
+}
+.bp-gap-cta {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 8px 40px rgba(0,0,0,0.04);
+}
+.bp-move-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.02);
+}
+
+/* === PRINT / PDF OPTIMIZATION === */
+@media print {
+  /* Fix invisible content \u2014 animations leave opacity:0 in static PDF render */
+  .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3 { opacity: 1 !important; animation: none !important; transform: none !important; }
+  /* Hero: full cover page, then natural flow */
+  .bp-hero-reveal { min-height: 90vh !important; page-break-after: always; padding: 80px 24px 60px !important; }
+  .bp-hero-begin { display: none !important; }
+  .bp-hero-url { position: static !important; margin-top: 32px; }
+  .bp-scroll-indicator { display: none !important; }
+  /* Chapter dividers: no forced page break, compact, stay attached to following content */
+  .chapter-divider { page-break-before: auto !important; page-break-after: avoid !important; page-break-inside: avoid !important; padding: 20px 24px !important; }
+  /* Sections: let content flow naturally, no forced breaks */
+  .bp-section { page-break-inside: auto !important; padding: 32px 24px !important; }
+  /* Individual cards: keep together */
+  .bp-card, .bp-offer-card, .bp-move-card, .bp-website-section-card, .bp-letter-card, .bp-gap-cta { page-break-inside: avoid; }
+  /* Hide interactive/irrelevant elements */
+  .bp-feedback, .bp-cta-block, .no-print { display: none !important; }
+  .bp-pdf-section { display: none !important; }
+  .bp-ai-builder { display: none !important; }
+  #bp-progress-bar { display: none !important; }
+  /* Layout */
+  .bp-offers-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .bp-share-get-own { background: #1D1D1F !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
 /* === MOBILE === */
 @media (max-width: 768px) {
   #bp-progress-bar { display: flex; }
@@ -17201,6 +19142,11 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   .bp-footer-headline { font-size: 26px; }
   .bp-footer-secondary-btns { flex-direction: column; align-items: center; }
   .bp-footer-copper-divider { margin: 0 24px; }
+  .bp-hero-brand-mark { font-size: 9px; top: 20px; }
+  .bp-hero-subtitle { font-size: 10px; }
+  .bp-hero-url { bottom: 72px; font-size: 10px; }
+  .bp-share-section { padding: 40px 24px; }
+  .bp-share-headline { font-size: 22px; }
 }
 `;
 }
@@ -17288,150 +19234,6 @@ function submitFeedback(rating) {
   }, 600);
 })();
 
-function downloadBlueprintPDF() {
-  var btn = event && event.target;
-  var originalHTML = btn ? btn.innerHTML : '';
-  try {
-    var element = document.querySelector('.bp-page');
-    if (!element) {
-      alert('Blueprint content not found. Please refresh and try again.');
-      return;
-    }
-    if (btn) { btn.innerHTML = 'Generating\u2026'; btn.disabled = true; }
-    var clone = element.cloneNode(true);
-    clone.querySelectorAll('.bp-feedback, button, .no-print').forEach(function(el) { el.remove(); });
-    var footer = document.createElement('div');
-    footer.style.cssText = 'margin-top:40px;padding-top:20px;border-top:1px solid #F0F0F0;text-align:center;font-size:11px;color:#86868B;font-family:Inter,sans-serif;';
-    footer.textContent = 'Powered by Deep Work Interview \u2014 jamesguldan.com/deep-work';
-    clone.appendChild(footer);
-    var opt = {
-      margin: [0.5, 0.5, 0.75, 0.5],
-      filename: '` + fnSafe + `-blueprint.pdf',
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-    if (typeof html2pdf === 'undefined') {
-      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-      alert('PDF library not loaded. Please save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
-      return;
-    }
-    html2pdf().set(opt).from(clone).save().then(function() {
-      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-      fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: '` + sid + `', eventType: 'pdf_downloaded' }) }).catch(function(){});
-    }).catch(function(err) {
-      console.error('PDF generation failed:', err);
-      if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-      alert('PDF generation failed. You can save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
-    });
-  } catch(e) {
-    if (btn) { btn.innerHTML = originalHTML; btn.disabled = false; }
-    alert('PDF generation failed. You can save this page as a PDF using File \u2192 Print \u2192 Save as PDF.');
-  }
-}
-
-function copyBlueprintForAI() {
-  var bp = window.__blueprintData;
-  if (!bp) {
-    alert('Blueprint data not available. Please refresh the page.');
-    return;
-  }
-  var p1 = bp.part1 || {};
-  var p2 = bp.part2 || {};
-  var p3 = bp.part3 || {};
-  var p4 = bp.part4 || {};
-  var p5 = bp.part5 || {};
-  var p7 = bp.part7 || {};
-  var brandName = (Array.isArray(p1.brandNames) && p1.brandNames[0]) || '';
-  var tagline = '';
-  if (Array.isArray(p1.taglines) && p1.taglines.length) {
-    var t0 = p1.taglines[0];
-    tagline = typeof t0 === 'string' ? t0 : (t0.text || t0.tagline || '');
-  }
-  var colors = '';
-  if (Array.isArray(p1.visualDirection && p1.visualDirection.colors)) {
-    colors = p1.visualDirection.colors.map(function(c) { return '  ' + (c.name || 'Color') + ': ' + (c.hex || c); }).join('\n');
-  }
-  var fonts = (p1.visualDirection && Array.isArray(p1.visualDirection.fonts)) ? p1.visualDirection.fonts : ['Outfit', 'Inter'];
-  var aesthetic = (p1.visualDirection && p1.visualDirection.aesthetic) || 'Premium minimal. Clean white backgrounds. No gradients.';
-  var brandVoice = Array.isArray(p1.brandVoice) ? p1.brandVoice.join(', ') : (p1.brandVoice || '');
-  var coreBrandPromise = p1.coreBrandPromise || '';
-  var wantToAchieve = p2.tryingToAchieve || p2.goalStatement || '';
-  var whatStops = p2.whatIsStoppingThem || p2.barriers || '';
-  var exactWords = '';
-  if (Array.isArray(p2.exactWords) && p2.exactWords.length) {
-    exactWords = p2.exactWords.map(function(w) { return typeof w === 'string' ? w : (w.text || w.quote || ''); }).filter(Boolean).join(' | ');
-  }
-  var nicheStatement = p3.nicheStatement || p3.uniqueMechanism || '';
-  var headlines = '';
-  if (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions.length) {
-    headlines = p7.heroHeadlineOptions.map(function(h, i) { return (i + 1) + '. ' + (typeof h === 'string' ? h : (h.text || h.headline || '')); }).join('\n');
-  }
-  var offerLines = [];
-  if (p4.entryOffer) offerLines.push((p4.entryOffer.name || 'Entry') + ' (' + (p4.entryOffer.price || 'TBD') + '): ' + (p4.entryOffer.description || ''));
-  if (p4.coreOffer) offerLines.push((p4.coreOffer.name || 'Core') + ' (' + (p4.coreOffer.price || 'TBD') + '): ' + (p4.coreOffer.description || ''));
-  if (p4.coreOffer2) offerLines.push((p4.coreOffer2.name || 'Core+') + ' (' + (p4.coreOffer2.price || 'TBD') + '): ' + (p4.coreOffer2.description || ''));
-  if (p4.premiumOffer) offerLines.push((p4.premiumOffer.name || 'Premium') + ' (' + (p4.premiumOffer.price || 'TBD') + '): ' + (p4.premiumOffer.description || ''));
-  var heroHeadline = (Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) || (Array.isArray(p7.heroHeadlineOptions) && p7.heroHeadlineOptions[0]) || '';
-  if (typeof heroHeadline !== 'string') heroHeadline = heroHeadline.text || heroHeadline.headline || '';
-  var heroSub = p5.heroSubheadline || '';
-  var heroCTA = p5.heroCTA || 'Get Started';
-  var sections = '';
-  if (Array.isArray(p5.sections) && p5.sections.length) {
-    sections = p5.sections.map(function(s) { return (s.name || s.title || s.section || '') + ': ' + (s.content || s.description || s.copy || ''); }).join('\n');
-  }
-  var handoff = '## Design System\n\n' +
-    'Brand: ' + (brandName || 'My Brand') + '\n' +
-    'Niche: ' + nicheStatement + '\n\n' +
-    'Colors:\n' + (colors || '  Primary: #1D1D1F\n  Accent: #C4703F\n  Background: #FFFFFF') + '\n\n' +
-    'Typography:\n' +
-    '  Headlines: ' + (fonts[0] || 'Outfit') + ' 700\n' +
-    '  Body: ' + (fonts[1] || 'Inter') + ' 400\n' +
-    '  Emotional: Playfair Display Italic (quotes and taglines only)\n\n' +
-    'Aesthetic: ' + aesthetic + '\n' +
-    'Buttons: Dark fill (#1D1D1F), white text, pill shape (50px radius). No copper button fills.\n\n' +
-    '## Brand Foundation\n\n' +
-    (tagline ? 'Tagline: ' + tagline + '\n' : '') +
-    (brandVoice ? 'Brand Voice: ' + brandVoice + '\n' : '') +
-    (coreBrandPromise ? 'Core Promise: ' + coreBrandPromise + '\n' : '') +
-    '\n## Ideal Client\n\n' +
-    (wantToAchieve ? 'What they want: ' + wantToAchieve + '\n' : '') +
-    (whatStops ? 'What stops them: ' + whatStops + '\n' : '') +
-    (exactWords ? 'Their exact words: ' + exactWords + '\n' : '') +
-    '\n## Positioning\n\n' +
-    'Niche: ' + nicheStatement + '\n\n' +
-    'Headline Options:\n' + (headlines || 'None generated') + '\n\n' +
-    '## Offers\n\n' + (offerLines.join('\n') || 'None generated') + '\n\n' +
-    '## Website Blueprint\n\n' +
-    (heroHeadline ? 'Hero Headline: ' + heroHeadline + '\n' : '') +
-    (heroSub ? 'Hero Subheadline: ' + heroSub + '\n' : '') +
-    'Hero CTA: ' + heroCTA + '\n\n' +
-    (sections ? 'Page Sections:\n' + sections + '\n\n' : '') +
-    '## Instructions\n\n' +
-    'Build a complete personal brand website using this blueprint. Follow the design tokens exactly. Start with the hero section using the headline and CTA above, then build each page section in order. Use clean white (#FFFFFF) backgrounds, the specified fonts from Google Fonts, and the color palette above. No emojis. No gradients. No dark mode. No dashes in copy (use periods, commas, or em dashes instead). Buttons should be dark pill shapes, never copper/accent colored.\n\n' +
-    'Learn more about Deep Work Interview: jamesguldan.com/deep-work';
-  function showCopySuccess() {
-    var toast = document.getElementById('bpAiCopySuccess');
-    if (toast) {
-      toast.style.display = 'block';
-      setTimeout(function() { toast.style.display = ''; }, 3000);
-    }
-    fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ sessionId: '` + sid + `', eventType: 'ai_builder_copied' }) }).catch(function(){});
-  }
-  navigator.clipboard.writeText(handoff).then(function() {
-    showCopySuccess();
-  }).catch(function() {
-    var ta = document.createElement('textarea');
-    ta.value = handoff;
-    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch(_) {}
-    document.body.removeChild(ta);
-    showCopySuccess();
-  });
-}
 `;
 }
 __name(getBlueprintJS, "getBlueprintJS");
@@ -17447,11 +19249,11 @@ function gradeClass(g) {
 }
 __name(gradeClass, "gradeClass");
 function extractNicheLabel(bp) {
-  var mech = bp.part3 ? (bp.part3.uniqueMechanism || "") : "";
+  var mech = bp.part3 ? bp.part3.uniqueMechanism || "" : "";
   if (mech) {
     var afterDash = mech.indexOf(" \u2014 ");
     var afterHyphen = mech.indexOf(" - ");
-    var start = afterDash > 0 ? afterDash + 3 : (afterHyphen > 0 ? afterHyphen + 3 : -1);
+    var start = afterDash > 0 ? afterDash + 3 : afterHyphen > 0 ? afterHyphen + 3 : -1;
     if (start > 0) {
       var phrase = mech.substring(start);
       var stopPatterns = [" that ", " which ", " who ", " for ", " with ", " when ", " and ", ".", ","];
@@ -17462,10 +19264,12 @@ function extractNicheLabel(bp) {
       }
       phrase = phrase.substring(0, endIdx).trim();
       var words = phrase.split(" ").slice(0, 4);
-      return words.map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); }).join(" ");
+      return words.map(function(w) {
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      }).join(" ");
     }
   }
-  var industry = bp.leadIntel ? (bp.leadIntel.industry || "") : "";
+  var industry = bp.leadIntel ? bp.leadIntel.industry || "" : "";
   if (industry) return industry;
   return "";
 }
@@ -17497,22 +19301,11 @@ function renderChapter1(bp, firstName, messageCount) {
   }
   var keyInsight = letter.keyInsight || "";
   var nicheLabel = extractNicheLabel(bp);
-  var pillContent = nicheLabel ? escHtml(firstName) + " \u00B7 " + escHtml(nicheLabel) : escHtml(firstName);
+  var pillContent = nicheLabel ? escHtml(firstName) + " \xB7 " + escHtml(nicheLabel) : escHtml(firstName);
   var hasCount = typeof messageCount === "number" && messageCount > 0;
-  var heroHTML = '<section class="bp-hero-reveal">' +
-    '<div class="bp-hero-top-border"></div>' +
-    '<div class="bp-hero-inner">' +
-    '<div class="bp-hero-badge fade-up fade-up-d1">' + pillContent + '</div>' +
-    '<div class="bp-hero-name fade-up fade-up-d1">' + escHtml(firstName) + '</div>' +
-    (nicheLabel ? '<div class="bp-hero-niche fade-up fade-up-d2">' + escHtml(nicheLabel) + '</div>' : '') +
-    '<div class="bp-hero-divider fade-up fade-up-d2"></div>' +
-    '<div class="bp-hero-hook fade-up fade-up-d3">Here is what the world needs to hear from you.</div>' +
-    (hasCount ? '<div class="bp-hero-proof"><strong class="bp-hero-count">' + messageCount + '</strong> messages. Every word below was built from yours.</div>' : '') +
-    '</div>' +
-    '<div class="bp-hero-begin"><span class="bp-hero-begin-text">Begin Reading</span><div class="bp-hero-begin-line"></div></div>' +
-    '</section>';
+  var heroHTML = '<section class="bp-hero-reveal"><div class="bp-hero-top-border"></div><div class="bp-hero-brand-mark fade-up">Deep Work Interview</div><div class="bp-hero-inner"><div class="bp-hero-subtitle fade-up fade-up-d1">Your Brand Blueprint</div><div class="bp-hero-name fade-up fade-up-d1">' + escHtml(firstName) + "</div>" + (nicheLabel ? '<div class="bp-hero-niche fade-up fade-up-d2">' + escHtml(nicheLabel) + "</div>" : "") + '<div class="bp-hero-divider fade-up fade-up-d2"></div><div class="bp-hero-hook fade-up fade-up-d3">Here is what the world needs to hear from you.</div>' + (hasCount ? '<div class="bp-hero-proof"><strong class="bp-hero-count">' + messageCount + "</strong> messages. Every word below was built from yours.</div>" : "") + '</div><div class="bp-hero-begin"><span class="bp-hero-begin-text">Begin Reading</span><div class="bp-hero-begin-line"></div></div><div class="bp-hero-url">jamesguldan.com/deep-work</div></section>';
   var letterHTML = '<section class="bp-section" style="padding-top: 48px;" id="bp-debrief-letter"><div class="bp-letter-card"><div class="bp-letter-salutation">' + escHtml(salutation) + "</div>" + (italicOpening ? '<div class="bp-letter-italic">' + escHtml(italicOpening) + "</div>" : "") + '<div style="height:24px;"></div><div class="bp-letter-body">' + formatProse(proseBody, keyInsight) + '</div><div class="bp-letter-signoff"><div class="bp-letter-signoff-name">James Guldan</div><div class="bp-letter-signoff-studio">Deep Work Studio</div></div></div></section>';
-  return '<div data-chapter="1">' + heroHTML + letterHTML + '</div>';
+  return '<div data-chapter="1">' + heroHTML + letterHTML + "</div>";
 }
 __name(renderChapter1, "renderChapter1");
 function renderChapter2(bp) {
@@ -17532,7 +19325,7 @@ function renderChapter2(bp) {
       reframeLine: "Every gap below is a specific opportunity with a clear fix.",
       categories: bp.part6.credibilityGaps.map(function(gap, i) {
         var label = gap.length > 60 ? gap.substring(0, gap.indexOf(" ", 40)) || gap.substring(0, 60) : gap;
-        return { name: "Gap " + (i + 1), grade: "D+", explanation: gap, nextStep: (bp.part6.marketingOpportunities && bp.part6.marketingOpportunities[i]) || "" };
+        return { name: "Gap " + (i + 1), grade: "D+", explanation: gap, nextStep: bp.part6.marketingOpportunities && bp.part6.marketingOpportunities[i] || "" };
       })
     };
   }
@@ -17547,6 +19340,11 @@ function renderChapter2(bp) {
   var quotes = Array.isArray(ml.marketQuotes) ? ml.marketQuotes : [];
   var rawAdv = ml.competitiveAdvantage || bp.marketBrief || "";
   var advantage = typeof rawAdv === "string" ? rawAdv : "";
+  var categoryOfOne = typeof ml.categoryOfOne === "string" ? ml.categoryOfOne : "";
+  var beforePositioning = typeof ml.beforePositioning === "string" ? ml.beforePositioning : "";
+  var afterPositioning = typeof ml.afterPositioning === "string" ? ml.afterPositioning : "";
+  var whyItWorks = typeof ml.whyItWorks === "string" ? ml.whyItWorks : "";
+  var marketViability = typeof ml.marketViability === "string" ? ml.marketViability : "";
   var r = 96;
   var circumference = 2 * Math.PI * r;
   var categoryHTML = categories.map(function(cat) {
@@ -17558,7 +19356,7 @@ function renderChapter2(bp) {
   var quotesHTML = quotes.length ? quotes.map(function(q) {
     return '<div class="bp-quote-item"><div class="bp-quote-mark">\u201C</div><div class="bp-quote-text">' + escHtml(q.quote) + '</div><div class="bp-quote-descriptor">' + escHtml(q.descriptor) + "</div></div>";
   }).join("") : "";
-  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + "</div></section>" : "") + "</div>";
+  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-frame">This score is not an assessment of your worth. It is the distance between where you are and what you have already earned.</div><div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage || categoryOfOne || beforePositioning || afterPositioning || whyItWorks || marketViability ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (categoryOfOne ? '<div class="bp-category-one">' + escHtml(categoryOfOne) + '</div>' : '') + (beforePositioning && afterPositioning ? '<div class="bp-positioning-shift"><div class="bp-positioning-before"><div class="bp-positioning-label">Before</div><div class="bp-positioning-text">' + escHtml(beforePositioning) + '</div></div><div class="bp-positioning-arrow">\u2192</div><div class="bp-positioning-after"><div class="bp-positioning-label">After</div><div class="bp-positioning-text">' + escHtml(afterPositioning) + '</div><button class="bp-copy-btn" data-copy-text="' + escHtml(afterPositioning) + '" onclick="copyBpText(this)">Copy positioning</button></div></div>' : '') + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + (whyItWorks ? '<div class="bp-why-it-works"><div class="bp-landscape-subhead">Why This Works</div><p>' + escHtml(whyItWorks) + '</p></div>' : '') + (marketViability ? '<div class="bp-market-viability"><div class="bp-landscape-subhead">Market Viability</div><p>' + escHtml(marketViability) + '</p></div>' : '') + "</div></section>" : "") + "</div>";
 }
 __name(renderChapter2, "renderChapter2");
 function renderChapter3(bp) {
@@ -17654,78 +19452,12 @@ function renderChapter4(bp, sessionId, firstName) {
   var moveCards = moves.map(function(move, i) {
     return '<div class="bp-move-card"><div class="bp-move-num">0' + (i + 1) + "</div>" + (move.addressesGap ? '<div class="bp-move-gap-tag">Addresses: ' + escHtml(move.addressesGap) + "</div>" : "") + (move.title ? '<div class="bp-move-title">' + escHtml(move.title) + "</div>" : "") + (move.instruction ? '<div class="bp-move-instruction">' + escHtml(move.instruction) + "</div>" : "") + (move.copyContent ? '<div class="bp-copy-block" id="copy-block-' + i + '">' + escHtml(move.copyContent) + `</div><button class="btn-copy" onclick="copyBlock(this, document.getElementById('copy-block-` + i + `').textContent)">Copy</button>` : "") + (move.deadline ? '<div class="bp-move-deadline">' + escHtml(move.deadline) + "</div>" : "") + "</div>";
   }).join("");
-  var calendlyBase = (bp.part8 && bp.part8.guidedPath && bp.part8.guidedPath.calendlyUrl) || "https://calendly.com/james-jamesguldan/deep-work-review-consult";
+  var calendlyBase = bp.part8 && bp.part8.guidedPath && bp.part8.guidedPath.calendlyUrl || "https://calendly.com/james-jamesguldan/deep-work-review-consult";
   var calendlyParams = "utm_source=blueprint&utm_medium=footer&utm_campaign=dwi";
   if (firstName && firstName !== "Friend") calendlyParams += "&name=" + encodeURIComponent(firstName);
   var calendlyUrl = calendlyBase + (calendlyBase.indexOf("?") >= 0 ? "&" : "?") + calendlyParams;
-  var footerHTML = '<div class="bp-blueprint-footer">' +
-    '<div class="bp-footer-copper-divider"></div>' +
-    '<div class="bp-footer-content">' +
-    /* ── The Gap CTA ── */
-    '<div class="bp-gap-cta">' +
-    '<div class="bp-gap-top">' +
-    '<div class="bp-gap-eyebrow">YOUR BLUEPRINT IS READY. YOUR STRATEGY ISN\'T.</div>' +
-    '<div class="bp-gap-headline">You have the map.<br>Let\'s build the route.</div>' +
-    '<div class="bp-gap-sub">Your blueprint shows you what to build. A strategy call shows you what to build first, what to skip, and what will actually move the needle in the next 30 days.</div>' +
-    '</div>' +
-    '<div class="bp-gap-columns">' +
-    '<div class="bp-gap-col">' +
-    '<div class="bp-gap-col-label">WHAT YOUR BLUEPRINT GIVES YOU</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Brand positioning and voice</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Ideal client profile</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Offer suite and pricing</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Website structure and headlines</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Credibility gaps identified</div>' +
-    '</div>' +
-    '<div class="bp-gap-col">' +
-    '<div class="bp-gap-col-label">WHAT THE STRATEGY CALL ADDS</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Prioritized 90-day action plan</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Which offer to launch first (and why)</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Content strategy for your first 10 posts</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Tech stack recommendations for your budget</div>' +
-    '<div class="bp-gap-item"><div class="bp-gap-check">&#x2713;</div>Live review of your biggest credibility gap</div>' +
-    '</div>' +
-    '</div>' +
-    '<div class="bp-gap-bottom">' +
-    '<div class="bp-gap-prep">Before we talk, I will read through your complete blueprint. Your narrative brief, your positioning, your offer structure, your gap analysis. All of it.</div>' +
-    '<div class="bp-gap-prep">On the call we spend about an hour on three things: what I see from the outside that is hard to spot from inside your own brand, the specific gap between where you are and where you are headed, and the most impactful next move given what came up in your session.</div>' +
-    '<div class="bp-gap-prep">Some people leave with a clear plan they execute on their own. Some want ongoing support. Both are good outcomes.</div>' +
-    '<div class="bp-gap-pull-quote">This is not a sales call. It is a working session. Come ready to think.</div>' +
-    '<div class="bp-gap-price">$197</div>' +
-    '<div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div>' +
-    '<a class="bp-gap-book-btn" href="' + escHtml(calendlyUrl) + '" target="_blank" rel="noopener" onclick="fetch(\'/api/track\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({sessionId:\'' + escHtml(sessionId) + '\',eventType:\'cta_book_call\'})}).catch(function(){})">Book Your Strategy Call</a>' +
-    '<div class="bp-gap-guarantee">100% satisfaction guaranteed. If the call doesn\'t give you a clear next step, you pay nothing.</div>' +
-    '<div style="margin-top:16px;"><a class="bp-gap-reply" href="mailto:james@jamesguldan.com?subject=Deep Work Interview - Blueprint Question">or reply to James directly</a></div>' +
-    '</div>' +
-    '</div>' +
-    /* ── Build With AI ── */
-    '<div class="bp-ai-builder">' +
-    '<div class="bp-ai-builder-title">Build Your Site With AI</div>' +
-    '<div class="bp-ai-builder-desc">Copy your brand blueprint as a design spec and paste it into any AI website builder. Your colors, typography, voice, positioning, and headlines are all included.</div>' +
-    '<button style="display:inline-flex;align-items:center;gap:8px;font-family:\'Outfit\',sans-serif;font-weight:600;font-size:13px;color:white;background:#1D1D1F;padding:12px 28px;border-radius:50px;border:none;cursor:pointer;" onclick="copyBlueprintForAI()">' +
-    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="8" height="10" rx="1.5" stroke="white" stroke-width="1.2"/><path d="M5 3V2a1 1 0 011-1h6a1 1 0 011 1v8a1 1 0 01-1 1h-1" stroke="white" stroke-width="1.2"/></svg>' +
-    'Copy Blueprint for AI Builder</button>' +
-    '<div class="bp-ai-copy-success" id="bpAiCopySuccess">Copied. Paste into Lovable, Bolt, v0, or Cursor.</div>' +
-    '<div class="bp-ai-builder-tools">Works with Lovable, Bolt, v0, Cursor, Replit, and more</div>' +
-    '</div>' +
-    /* ── PDF Download ── */
-    '<div class="bp-pdf-section">' +
-    '<div class="bp-pdf-section-desc">Want to keep a copy? Download your full blueprint as a PDF to reference anytime.</div>' +
-    '<button style="display:inline-flex;align-items:center;gap:8px;font-family:\'Outfit\',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;" onclick="downloadBlueprintPDF()" id="bpPdfBtn">' +
-    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-    'Download Blueprint PDF</button>' +
-    '<div class="bp-pdf-footer-note">Your Deep Work Interview blueprint &mdash; <a href="https://jamesguldan.com/deep-work" target="_blank">jamesguldan.com/deep-work</a></div>' +
-    '</div>' +
-    /* ── Signature ── */
-    '<div class="bp-footer-signature">' +
-    '<div class="bp-footer-sig-copper"></div>' +
-    '<div class="bp-footer-sig-desc">Built from your words during a Deep Work Interview. Every insight was scored for depth and structured for you to build on.</div>' +
-    '<div class="bp-footer-sig-name">James Guldan</div>' +
-    '<div class="bp-footer-sig-role">Deep Work Studio &mdash; <a href="https://jamesguldan.com/deep-work" style="color:#C4703F;text-decoration:none;">jamesguldan.com/deep-work</a></div>' +
-    '</div>' +
-    '</div>' +
-    '</div>';
-  return '<div id="chapter4" data-chapter="4"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 4: The Action</span><div class="chapter-divider-sub">Three things to do this week that change everything.</div></div><section class="bp-section"><div class="bp-inner-wide">' + (moveCards ? '<div class="bp-moves-grid">' + moveCards + "</div>" : "") + (proj.current && proj.projected ? '<div class="bp-score-projection">Complete all 3 moves and your Credibility Score jumps from <span class="bp-projection-num">' + Number(proj.current) + '</span> to an estimated <span class="bp-projection-num">' + Number(proj.projected) + '</span> (<span class="bp-projection-num">' + escHtml(proj.projectedGrade || "") + "</span>).</div>" : "") + '</div></section><section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="bp-closing-line">' + escHtml(closingLine) + '</div>' + footerHTML + '<div class="bp-feedback"><div class="bp-feedback-label">One last thing.</div><div class="bp-feedback-question">Did this feel like it really understood you?</div><div class="bp-feedback-pills">' + ["Deeply", "Somewhat", "Not quite"].map(function(label) {
+  var footerHTML = `<div class="bp-blueprint-footer"><div class="bp-footer-copper-divider"></div><div class="bp-footer-content"><div class="bp-gap-cta"><div class="bp-gap-top"><div class="bp-gap-eyebrow">YOUR BLUEPRINT IS READY. YOUR STRATEGY ISN'T.</div><div class="bp-gap-headline">You have the map.<br>Let's build the route.</div></div><div class="bp-gap-bottom"><div class="bp-gap-prep">Most people read their blueprint once and file it. The ones who act on it usually do it within the week \u2014 and almost always with someone who can tell them what they're not seeing from inside their own brand.</div><div class="bp-gap-prep">Before we talk, I read your complete blueprint. Your narrative, your positioning, your offer structure, your gap analysis. All of it. So when we sit down together, we skip the recap and go straight to what matters.</div><div class="bp-gap-prep">The call is about three things: what I see from the outside that is hard to spot from where you're standing, the specific gap between where you are and where you want to go, and the one move worth doing first given everything that came up in your session.</div><div class="bp-gap-pull-quote">This is not a sales call. It is a working session. Come ready to think.</div><div class="bp-gap-price">$197</div><div class="bp-gap-price-note">60-minute 1:1 strategy call with James</div><a class="bp-gap-book-btn" href="` + escHtml(calendlyUrl) + `" target="_blank" rel="noopener" onclick="fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'` + escHtml(sessionId) + `',eventType:'cta_book_call'})}).catch(function(){})">Book Your Strategy Call</a><div class="bp-gap-guarantee">100% satisfaction guaranteed. If the call doesn't give you a clear next step, you pay nothing.</div></div></div><div class="bp-ai-builder"><div class="bp-ai-builder-title">Build Your Site With AI</div><div class="bp-ai-builder-desc">Copy your brand blueprint as a design spec and paste it into any AI website builder. Your colors, typography, voice, positioning, and headlines are all included.</div><button style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:white;background:#1D1D1F;padding:12px 28px;border-radius:50px;border:none;cursor:pointer;" onclick="copyBlueprintForAI()"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="8" height="10" rx="1.5" stroke="white" stroke-width="1.2"/><path d="M5 3V2a1 1 0 011-1h6a1 1 0 011 1v8a1 1 0 01-1 1h-1" stroke="white" stroke-width="1.2"/></svg>Copy Blueprint for AI Builder</button><div class="bp-ai-copy-success" id="bpAiCopySuccess">Copied. Paste into Lovable, Bolt, v0, or Cursor.</div><div class="bp-ai-builder-tools">Works with Lovable, Bolt, v0, Cursor, Replit, and more</div></div><div class="bp-pdf-section"><div class="bp-pdf-section-desc">Want to keep a copy? Download your full blueprint as a PDF to reference anytime.</div><button style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1px solid #E8E8E8;cursor:pointer;" onclick="downloadBlueprintPDF()" id="bpPdfBtn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download Blueprint PDF</button></div><div class="bp-share-section"><div class="bp-share-inner"><div class="bp-share-eyebrow">Know someone who needs this?</div><div class="bp-share-headline">Share Your Blueprint</div><div class="bp-share-desc">Send this PDF to a friend, colleague, or anyone building something real. Every blueprint is unique to the person who took the interview.</div><div class="bp-share-cta-row"><a href="https://love.jamesguldan.com" class="bp-share-get-own">Get Your Own Blueprint</a></div><div class="bp-share-url">jamesguldan.com/deep-work</div></div></div><div class="bp-footer-signature"><div class="bp-footer-sig-copper"></div><div class="bp-footer-sig-desc">Built from your words during a Deep Work Interview. Every insight was scored for depth and structured for you to build on.</div><div class="bp-footer-sig-name">James Guldan</div><div class="bp-footer-sig-role">Deep Work Studio &mdash; <a href="https://jamesguldan.com/deep-work" style="color:#C4703F;text-decoration:none;">jamesguldan.com/deep-work</a></div></div></div></div>`;
+  return '<div id="chapter4" data-chapter="4"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 4: The Action</span><div class="chapter-divider-sub">Three things to do this week that change everything.</div></div><section class="bp-section"><div class="bp-inner-wide">' + (moveCards ? '<div class="bp-moves-grid">' + moveCards + "</div>" : "") + (proj.current && proj.projected ? '<div class="bp-score-projection">Complete all 3 moves and your Credibility Score jumps from <span class="bp-projection-num">' + Number(proj.current) + '</span> to an estimated <span class="bp-projection-num">' + Number(proj.projected) + '</span> (<span class="bp-projection-num">' + escHtml(proj.projectedGrade || "") + "</span>).</div>" : "") + '</div></section><section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="bp-closing-line">' + escHtml(closingLine) + "</div>" + footerHTML + '<div class="bp-feedback"><div class="bp-feedback-label">One last thing.</div><div class="bp-feedback-question">Did this feel like it really understood you?</div><div class="bp-feedback-pills">' + ["Deeply", "Somewhat", "Not quite"].map(function(label) {
     return `<button class="bp-feedback-pill" onclick="submitFeedback('` + escHtml(label) + `')">` + escHtml(label) + "</button>";
   }).join("") + '</div><div class="bp-feedback-response"></div></div></div></section></div>';
 }
@@ -17735,13 +19467,7 @@ function renderNicheSection(bp) {
   if (!p3) return "";
   var hasContent = p3.whoTheyServe || p3.whoTheyDoNotServe || p3.uniqueMechanism || p3.competitorGap;
   if (!hasContent) return "";
-  return '<section class="bp-section" style="border-top:1px solid var(--border); padding-top: 48px;"><div class="bp-inner">' +
-    '<div class="eyebrow" style="margin-bottom:24px;">Niche Positioning</div>' +
-    (p3.uniqueMechanism ? '<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1.6;margin-bottom:32px;text-align:center;">' + escHtml(p3.uniqueMechanism) + '</div>' : '') +
-    (p3.whoTheyServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Serve</span><div class="bp-client-text">' + escHtml(p3.whoTheyServe) + '</div></div>' : '') +
-    (p3.whoTheyDoNotServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Do Not Serve</span><div class="bp-client-text" style="color:var(--text2);">' + escHtml(p3.whoTheyDoNotServe) + '</div></div>' : '') +
-    (p3.competitorGap ? '<div class="bp-niche-block" style="margin-top:24px;padding:24px;background:var(--bg2);border-radius:var(--radius-sm);"><span class="bp-client-label">Your Competitive Gap</span><div class="bp-client-text">' + escHtml(p3.competitorGap) + '</div></div>' : '') +
-    '</div></section>';
+  return '<section class="bp-section" style="border-top:1px solid var(--border); padding-top: 48px;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Niche Positioning</div>' + (p3.uniqueMechanism ? `<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1.6;margin-bottom:32px;text-align:center;">` + escHtml(p3.uniqueMechanism) + "</div>" : "") + (p3.whoTheyServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Serve</span><div class="bp-client-text">' + escHtml(p3.whoTheyServe) + "</div></div>" : "") + (p3.whoTheyDoNotServe ? '<div class="bp-niche-block"><span class="bp-client-label">Who You Do Not Serve</span><div class="bp-client-text" style="color:var(--text2);">' + escHtml(p3.whoTheyDoNotServe) + "</div></div>" : "") + (p3.competitorGap ? '<div class="bp-niche-block" style="margin-top:24px;padding:24px;background:var(--bg2);border-radius:var(--radius-sm);"><span class="bp-client-label">Your Competitive Gap</span><div class="bp-client-text">' + escHtml(p3.competitorGap) + "</div></div>" : "") + "</div></section>";
 }
 __name(renderNicheSection, "renderNicheSection");
 function renderOfferSuite(bp) {
@@ -17756,48 +19482,36 @@ function renderOfferSuite(bp) {
   var tierLabels = ["Entry", "Core", "Core+", "Premium"];
   var offerCards = offers.map(function(o, i) {
     var isPremium = i === offers.length - 1 && offers.length > 1;
-    return '<div class="bp-offer-card' + (isPremium ? ' bp-offer-premium' : '') + '">' +
-      '<div class="bp-offer-tier">' + escHtml(tierLabels[i] || '') + '</div>' +
-      '<div class="bp-offer-name">' + escHtml(o.name || '') + '</div>' +
-      (o.price ? '<div class="bp-offer-price">' + escHtml(o.price) + '</div>' : '') +
-      (o.description ? '<div class="bp-offer-desc">' + escHtml(o.description) + '</div>' : '') +
-      (o.delivery ? '<div class="bp-offer-delivery">' + escHtml(o.delivery) + '</div>' : '') +
-      '</div>';
+    return '<div class="bp-offer-card' + (isPremium ? " bp-offer-premium" : "") + '"><div class="bp-offer-tier">' + escHtml(tierLabels[i] || "") + '</div><div class="bp-offer-name">' + escHtml(o.name || "") + "</div>" + (o.price ? '<div class="bp-offer-price">' + escHtml(o.price) + "</div>" : "") + (o.description ? '<div class="bp-offer-desc">' + escHtml(o.description) + "</div>" : "") + (o.delivery ? '<div class="bp-offer-delivery">' + escHtml(o.delivery) + "</div>" : "") + "</div>";
   }).join("");
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Offer Suite</span><div class="chapter-divider-sub">Four doors. Each one built for a different version of your ideal client.</div></div>' +
-    '<section class="bp-section"><div class="bp-inner-wide"><div class="bp-offers-grid">' + offerCards + '</div>' +
-    (p4.ascensionLogic ? '<div class="bp-ascension"><div class="eyebrow" style="margin-bottom:12px;">The Ascension Logic</div><div class="bp-client-text" style="font-style:italic;color:var(--text2);">' + escHtml(p4.ascensionLogic) + '</div></div>' : '') +
-    '</div></section>';
+  var offerCount = offers.length;
+  var offerSubtitle = offerCount === 1 ? "Your core offer, built for who you actually want to serve." : offerCount === 2 ? "Two doors. Each built for a different version of your ideal client." : offerCount === 3 ? "Three doors. Each built for a different version of your ideal client." : "Four doors. Each built for a different version of your ideal client.";
+  var gridStyle = offerCount === 1 ? ' style="max-width:480px;"' : "";
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Offer Suite</span><div class="chapter-divider-sub">' + offerSubtitle + '</div></div><section class="bp-section"><div class="bp-inner-wide"><div class="bp-offers-grid"' + gridStyle + ">" + offerCards + "</div>" + (p4.ascensionLogic ? '<div class="bp-ascension"><div class="eyebrow" style="margin-bottom:12px;">The Ascension Logic</div><div class="bp-client-text" style="font-style:italic;color:var(--text2);">' + escHtml(p4.ascensionLogic) + "</div></div>" : "") + "</div></section>";
 }
 __name(renderOfferSuite, "renderOfferSuite");
 function renderHeadlines(bp) {
   var p7 = bp.part7;
   if (!p7) return "";
-  var headlines = Array.isArray(p7.heroHeadlineOptions) ? p7.heroHeadlineOptions : [];
-  var taglines = Array.isArray(p7.taglineOptions) ? p7.taglineOptions : [];
+  var headlines = Array.isArray(p7.heroHeadlineOptions) ? p7.heroHeadlineOptions.filter(function(h, i, arr) {
+    return arr.indexOf(h) === i;
+  }) : [];
+  var taglines = Array.isArray(p7.taglineOptions) ? p7.taglineOptions.filter(function(t, i, arr) {
+    return arr.indexOf(t) === i;
+  }) : [];
   var pos = p7.positioningStatements || {};
   if (!headlines.length && !taglines.length && !pos.website) return "";
-  var headlineHTML = headlines.length ? '<div class="eyebrow" style="margin-bottom:16px;">Hero Headline Options</div><div class="bp-headlines-list">' +
-    headlines.map(function(h, i) {
-      return '<div class="bp-headline-option' + (i === 0 ? ' bp-headline-featured' : '') + '">' +
-        '<span class="bp-headline-num">0' + (i + 1) + '</span>' +
-        '<span class="bp-headline-text">' + escHtml(h) + '</span>' +
-        '</div>';
-    }).join("") + '</div>' : '';
-  var taglineHTML = taglines.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:32px;">Tagline Options</div><div class="bp-taglines-list">' +
-    taglines.map(function(t) {
-      return '<div class="bp-tagline-item">' + escHtml(t) + '</div>';
-    }).join("") + '</div>' : '';
-  var posHTML = '';
+  var headlineHTML = headlines.length ? '<div class="eyebrow" style="margin-bottom:16px;">Hero Headline Options</div><div class="bp-headlines-list">' + headlines.map(function(h, i) {
+    return '<div class="bp-headline-option' + (i === 0 ? " bp-headline-featured" : "") + '"><span class="bp-headline-num">0' + (i + 1) + '</span><span class="bp-headline-text">' + escHtml(h) + "</span></div>";
+  }).join("") + "</div>" : "";
+  var taglineHTML = taglines.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:32px;">Tagline Options</div><div class="bp-taglines-list">' + taglines.map(function(t) {
+    return '<div class="bp-tagline-item">' + escHtml(t) + "</div>";
+  }).join("") + "</div>" : "";
+  var posHTML = "";
   if (pos.website || pos.social || pos.inPerson) {
-    posHTML = '<div style="margin-top:40px;"><div class="eyebrow" style="margin-bottom:16px;">Positioning Statements</div><div class="bp-positioning-grid">' +
-      (pos.website ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Website</div><div class="bp-positioning-text">' + escHtml(pos.website) + '</div></div>' : '') +
-      (pos.social ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Social Media</div><div class="bp-positioning-text">' + escHtml(pos.social) + '</div></div>' : '') +
-      (pos.inPerson ? '<div class="bp-positioning-card"><div class="bp-positioning-context">In Person</div><div class="bp-positioning-text">' + escHtml(pos.inPerson) + '</div></div>' : '') +
-      '</div></div>';
+    posHTML = '<div style="margin-top:40px;"><div class="eyebrow" style="margin-bottom:16px;">Positioning Statements</div><div class="bp-positioning-grid">' + (pos.website ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Website</div><div class="bp-positioning-text">' + escHtml(pos.website) + "</div></div>" : "") + (pos.social ? '<div class="bp-positioning-card"><div class="bp-positioning-context">Social Media</div><div class="bp-positioning-text">' + escHtml(pos.social) + "</div></div>" : "") + (pos.inPerson ? '<div class="bp-positioning-card"><div class="bp-positioning-context">In Person</div><div class="bp-positioning-text">' + escHtml(pos.inPerson) + "</div></div>" : "") + "</div></div>";
   }
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Headlines &amp; Positioning</span><div class="chapter-divider-sub">The exact words that make the right person stop scrolling.</div></div>' +
-    '<section class="bp-section"><div class="bp-inner">' + headlineHTML + taglineHTML + posHTML + '</div></section>';
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Headlines &amp; Positioning</span><div class="chapter-divider-sub">The exact words that make the right person stop scrolling.</div></div><section class="bp-section"><div class="bp-inner">' + headlineHTML + taglineHTML + posHTML + "</div></section>";
 }
 __name(renderHeadlines, "renderHeadlines");
 function renderWebsiteBlueprint(bp) {
@@ -17807,60 +19521,400 @@ function renderWebsiteBlueprint(bp) {
   var heroHeadlines = Array.isArray(p5.heroHeadlines) ? p5.heroHeadlines : [];
   var proofNumbers = Array.isArray(p5.proofNumbers) ? p5.proofNumbers : [];
   if (!sections.length && !heroHeadlines.length && !p5.pageNarrative) return "";
-  var narrativeHTML = p5.pageNarrative ? '<div style="font-family:\'Playfair Display\',serif;font-style:italic;font-size:18px;color:var(--text);line-height:1.7;margin-bottom:40px;padding:24px 32px;border-left:3px solid var(--gold);">' + escHtml(p5.pageNarrative) + '</div>' : '';
-  var heroHTML = '';
+  var narrativeHTML = p5.pageNarrative ? `<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--text);line-height:1.7;margin-bottom:40px;padding:24px 32px;border-left:3px solid var(--gold);">` + escHtml(p5.pageNarrative) + "</div>" : "";
+  var heroHTML = "";
   if (heroHeadlines.length || p5.heroSubheadline || p5.heroCTA) {
-    heroHTML = '<div class="bp-website-hero-preview"><div class="eyebrow" style="margin-bottom:12px;">Hero Section</div>' +
-      (heroHeadlines.length ? '<div class="bp-website-hero-headline">' + escHtml(heroHeadlines[0]) + '</div>' : '') +
-      (p5.heroSubheadline ? '<div class="bp-website-hero-sub">' + escHtml(p5.heroSubheadline) + '</div>' : '') +
-      (p5.heroCTA ? '<div class="bp-website-hero-cta">' + escHtml(p5.heroCTA) + '</div>' : '') +
-      (heroHeadlines.length > 1 ? '<div class="bp-alt-headlines"><span class="bp-client-label">Alternate Headlines</span>' + heroHeadlines.slice(1).map(function(h) { return '<div class="bp-alt-headline">' + escHtml(h) + '</div>'; }).join('') + '</div>' : '') +
-      '</div>';
+    heroHTML = '<div class="bp-website-hero-preview"><div class="eyebrow" style="margin-bottom:12px;">Hero Section</div>' + (heroHeadlines.length ? '<div class="bp-website-hero-headline">' + escHtml(heroHeadlines[0]) + "</div>" : "") + (p5.heroSubheadline ? '<div class="bp-website-hero-sub">' + escHtml(p5.heroSubheadline) + "</div>" : "") + (p5.heroCTA ? '<div class="bp-website-hero-cta">' + escHtml(p5.heroCTA) + "</div>" : "") + (heroHeadlines.length > 1 ? '<div class="bp-alt-headlines"><span class="bp-client-label">Alternate Headlines</span>' + heroHeadlines.slice(1).map(function(h) {
+      return '<div class="bp-alt-headline">' + escHtml(h) + "</div>";
+    }).join("") + "</div>" : "") + "</div>";
   }
-  var sectionsHTML = sections.length ? '<div class="eyebrow" style="margin-bottom:20px;margin-top:40px;">Page Sections</div><div class="bp-website-sections">' +
-    sections.map(function(s, i) {
-      return '<div class="bp-website-section-card ' + (s.visualMood === 'dark' ? 'bp-section-dark' : s.visualMood === 'accent' ? 'bp-section-accent' : '') + '">' +
-        '<div class="bp-website-section-num">0' + (i + 1) + '</div>' +
-        '<div class="bp-website-section-name">' + escHtml(s.name || '') + '</div>' +
-        (s.purpose ? '<div class="bp-website-section-purpose">' + escHtml(s.purpose) + '</div>' : '') +
-        (s.content ? '<div class="bp-website-section-content">' + escHtml(s.content) + '</div>' : '') +
-        (s.confidence ? '<div class="bp-website-section-conf">Confidence: ' + s.confidence + '%</div>' : '') +
-        '</div>';
-    }).join("") + '</div>' : '';
-  var proofHTML = proofNumbers.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:40px;">Proof Numbers</div><div class="bp-proof-strip">' +
-    proofNumbers.map(function(p) {
-      return '<div class="bp-proof-item"><div class="bp-proof-stat">' + escHtml(p.stat) + '</div><div class="bp-proof-label">' + escHtml(p.label) + '</div>' +
-        (p.context ? '<div class="bp-proof-context">' + escHtml(p.context) + '</div>' : '') + '</div>';
-    }).join("") + '</div>' : '';
-  var testimonialHTML = p5.bestTestimonial && p5.bestTestimonial.quote ? '<div class="bp-best-testimonial"><div class="bp-testimonial-mark">\u201C</div><div class="bp-testimonial-quote">' + escHtml(p5.bestTestimonial.quote) + '</div>' +
-    (p5.bestTestimonial.attribution ? '<div class="bp-testimonial-attr">' + escHtml(p5.bestTestimonial.attribution) + '</div>' : '') + '</div>' : '';
-  var contraryHTML = p5.contraryBelief ? '<div style="margin-top:40px;padding:28px;background:var(--bg2);border-radius:var(--radius-sm);"><div class="eyebrow" style="margin-bottom:12px;">Your Contrary Belief</div><div class="bp-client-text" style="font-style:italic;">' + escHtml(p5.contraryBelief) + '</div></div>' : '';
-  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Website Blueprint</span><div class="chapter-divider-sub">The page that turns a stranger into someone who says &ldquo;how did she know.&rdquo;</div></div>' +
-    '<section class="bp-section"><div class="bp-inner">' + narrativeHTML + heroHTML + sectionsHTML + proofHTML + testimonialHTML + contraryHTML + '</div></section>';
+  var sectionsHTML = sections.length ? '<div class="eyebrow" style="margin-bottom:20px;margin-top:40px;">Page Sections</div><div class="bp-website-sections">' + sections.map(function(s, i) {
+    return '<div class="bp-website-section-card ' + (s.visualMood === "dark" ? "bp-section-dark" : s.visualMood === "accent" ? "bp-section-accent" : "") + '"><div class="bp-website-section-num">0' + (i + 1) + '</div><div class="bp-website-section-name">' + escHtml(s.name || "") + "</div>" + (s.purpose ? '<div class="bp-website-section-purpose">' + escHtml(s.purpose) + "</div>" : "") + (s.content ? '<div class="bp-website-section-content">' + escHtml(s.content) + "</div>" : "") + (s.confidence ? '<div class="bp-website-section-conf">Confidence: ' + s.confidence + "%</div>" : "") + "</div>";
+  }).join("") + "</div>" : "";
+  var proofHTML = proofNumbers.length ? '<div class="eyebrow" style="margin-bottom:16px;margin-top:40px;">Proof Numbers</div><div class="bp-proof-strip">' + proofNumbers.map(function(p) {
+    return '<div class="bp-proof-item"><div class="bp-proof-stat">' + escHtml(p.stat) + '</div><div class="bp-proof-label">' + escHtml(p.label) + "</div>" + (p.context ? '<div class="bp-proof-context">' + escHtml(p.context) + "</div>" : "") + "</div>";
+  }).join("") + "</div>" : "";
+  var testimonialHTML = p5.bestTestimonial && p5.bestTestimonial.quote ? '<div class="bp-best-testimonial"><div class="bp-testimonial-mark">\u201C</div><div class="bp-testimonial-quote">' + escHtml(p5.bestTestimonial.quote) + "</div>" + (p5.bestTestimonial.attribution ? '<div class="bp-testimonial-attr">' + escHtml(p5.bestTestimonial.attribution) + "</div>" : "") + "</div>" : "";
+  var contraryHTML = p5.contraryBelief ? '<div style="margin-top:40px;padding:28px;background:var(--bg2);border-radius:var(--radius-sm);"><div class="eyebrow" style="margin-bottom:12px;">Your Contrary Belief</div><div class="bp-client-text" style="font-style:italic;">' + escHtml(p5.contraryBelief) + "</div></div>" : "";
+  return '<div class="chapter-divider"><span class="chapter-divider-label">Your Website Blueprint</span><div class="chapter-divider-sub">The page that turns a stranger into someone who says &ldquo;how did she know.&rdquo;</div></div><section class="bp-section"><div class="bp-inner">' + narrativeHTML + heroHTML + sectionsHTML + proofHTML + testimonialHTML + contraryHTML + "</div></section>";
 }
 __name(renderWebsiteBlueprint, "renderWebsiteBlueprint");
+// CLEANUP-2026-04-05: PDF export renderer — called by handleBlueprintPDF and handleBlueprintPDFDownload.
+// renderBlueprintV3 is the live interactive view; renderBlueprintResults is the static HTML used for PDF generation.
+// Both are active and serve different purposes — do NOT remove.
 function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   var firstName = (userName || "Friend").split(" ")[0];
   var sessionId = bp.sessionId || "";
   var bpDataJson = JSON.stringify(bp).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/\//g, "\\u002f");
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Your Deep Work Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + escHtml(firstName || "Your") + '&#39;s Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet"><style>' + getBlueprintCSS() + '</style></head><body><div id="bp-progress-bar">' + ["Opening", "Diagnosis", "Blueprint", "Action"].map(function(label) {
     return '<div class="bp-dot"><span class="bp-dot-label">' + escHtml(label) + "</span></div>";
   }).join("") + '</div><div class="bp-page">' + renderChapter1(bp, firstName, messageCount) + '<div style="text-align:center; padding: 8px 0 16px; font-size: 12px; color: #86868B; font-family: Inter, sans-serif; letter-spacing: 0.01em;">This blueprint was crafted by AI from your interview. Every insight is drawn from what you shared.</div>' + renderChapter2(bp) + renderChapter3(bp) + renderNicheSection(bp) + renderOfferSuite(bp) + renderHeadlines(bp) + renderWebsiteBlueprint(bp) + renderChapter4(bp, sessionId, firstName) + "</div><script>window.__blueprintData=" + bpDataJson + ";<\/script><script>" + getBlueprintJS(sessionId, firstName) + "<\/script></body></html>";
 }
 __name(renderBlueprintResults, "renderBlueprintResults");
+function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) {
+  const firstName = (userName || "Friend").split(" ")[0];
+  if (!bp.v3) {
+    const p1 = bp.part1 || {};
+    const p2 = bp.part2 || {};
+    const p3 = bp.part3 || {};
+    const p5 = bp.part5 || {};
+    const p7 = bp.part7 || {};
+    const deb = bp.debrief || {};
+    const ps = p7.positioningStatements || {};
+    // New-format field references — fall back to these when old-format parts are empty
+    const il = bp.idealClient || {};
+    const bf = bp.brandFoundation || {};
+    const ml = bp.marketLandscape || {};
+    const pl = bp.personalLetter || {};
+    bp.v3 = {
+      positioningStatement: ps.website || ps.social || (Array.isArray(p1.taglines) && p1.taglines[0]) || p1.coreBrandPromise || bf.positioningStatement || ml.afterPositioning || "",
+      clientStory: {
+        headline: p2.title || (p2.name ? "Meet " + p2.name : "") || (il.portrait ? il.portrait.split(".")[0] : ""),
+        body: p2.avatarStory || p2.lifeSituation || [il.fears, il.wants].filter(Boolean).join("\n\n") || "",
+        pullquote: (Array.isArray(p2.exactWords) ? p2.exactWords[0] : typeof p2.exactWords === "string" ? p2.exactWords : "") || il.exactWords || "",
+        tension: p2.whatIsStoppingThem || il.triedSolutions || ""
+      },
+      realProblem: {
+        headline: p3.title || "The Real Problem",
+        body: p3.nicheStatement || [ml.whyItWorks, il.triedSolutions].filter(Boolean).join("\n\n") || "",
+        insight: p3.uniqueMechanism || p3.competitorGap || ml.competitiveAdvantage || ml.categoryOfOne || "",
+        pullquote: ml.categoryOfOne || ""
+      },
+      vision: {
+        headline: deb.paragraph4_turn ? "The Turn" : "What Alignment Actually Feels Like",
+        body: deb.paragraph4_turn || [ml.categoryOfOne, bf.positioningStatement].filter(Boolean).join("\n\n") || "",
+        insight: deb.paragraph5_invitation || ml.afterPositioning || ""
+      },
+      mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
+      mirror_connection: deb.paragraph4_turn || il.connectionStatement || "",
+      arrogant_truth: deb.paragraph3_quote || "",
+      mission_statement: bf.missionStatement || "",
+      pricing_current: "",
+      pricing_gap_belief: "",
+      never_said_publicly: "",
+      futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : (pl.proseBody || ""),
+      loveLetter: ""
+    };
+    if (!bp.openingHook && Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) {
+      bp.openingHook = p5.heroHeadlines[0];
+    }
+    if (!bp.firstThreeMoves && bp.firstMoves) {
+      bp.firstThreeMoves = (bp.firstMoves || []).slice(0, 3).map(function(m) {
+        return { move: m.title || "", detail: m.exactAction || "", description: m.exactAction || "" };
+      });
+    }
+  }
+  const v3 = bp.v3 || {};
+  const depthScore = sessionMeta && sessionMeta.emotional_depth_score || 0;
+  const depthGrade = sessionMeta && sessionMeta.depth_grade || "";
+  const msgCount = sessionMeta && sessionMeta.message_count || 0;
+  const barPct = Math.min(100, Math.round(depthScore / 25 * 100));
+  const messages = sessionMeta && sessionMeta.messages || [];
+  const messagesLoaded = sessionMeta != null && Array.isArray(sessionMeta.messages);
+  const honestAnswers = computeHonestAnswerCount(messages);
+  const breakthroughs = computeBreakthroughCount(messages);
+  const tier = computeUserTier(depthScore) || { grade: "C", tier_title: "Took The First Swing" };
+  const positioningStatement = v3.positioningStatement || bp.openingHook || "Your unique positioning statement.";
+  const cs = v3.clientStory || {};
+  const rp = v3.realProblem || {};
+  const vis = v3.vision || {};
+  const csHeadline = cs.headline || "The Person Who Knows They Have More to Give";
+  const csBody = cs.body || "";
+  const csPullquote = cs.pullquote || "";
+  const csTension = cs.tension || "";
+  const rpHeadline = rp.headline || "Not a Skill Problem. A Clarity Problem.";
+  const rpBody = rp.body || "";
+  const rpInsight = rp.insight || "";
+  const rpPullquote = rp.pullquote || "";
+  const visHeadline = vis.headline || "What Alignment Actually Feels Like";
+  const visBody = vis.body || "";
+  const visInsight = vis.insight || "";
+  const mirrorObservation = v3.mirror_observation || "";
+  const mirrorConnection = v3.mirror_connection || "";
+  const arrogantTruth = v3.arrogant_truth || "";
+  const missionStatement = v3.mission_statement || "";
+  const pricingCurrent = v3.pricing_current || "";
+  const pricingGapBelief = v3.pricing_gap_belief || "";
+  const neverSaidPublicly = v3.never_said_publicly || "";
+  // Confidence scores (0-1) — fields without data get 0.0
+  const fieldConfidences = {
+    mirror_observation: mirrorObservation.length > 50 ? 0.9 : (mirrorObservation.length > 0 ? 0.5 : 0.0),
+    arrogant_truth: arrogantTruth.length > 10 ? 0.85 : (arrogantTruth.length > 0 ? 0.5 : 0.0),
+    mission_statement: missionStatement.length > 10 ? 0.85 : (missionStatement.length > 0 ? 0.5 : 0.0),
+    pricing_current: pricingCurrent.length > 2 ? 0.9 : 0.0,
+    pricing_gap_belief: pricingGapBelief.length > 10 ? 0.85 : 0.0,
+    never_said_publicly: neverSaidPublicly.length > 10 ? 0.9 : 0.0,
+    mirror_connection: mirrorConnection.length > 20 ? 0.85 : 0.0,
+    real_problem: rpBody.length > 100 ? 0.9 : (rpBody.length > 0 ? 0.6 : 0.0),
+    vision: visBody.length > 100 ? 0.9 : (visBody.length > 0 ? 0.6 : 0.0),
+    futureSelfLetter: (v3.futureSelfLetter || v3.marcusLetter || "").length > 100 ? 0.9 : 0.0
+  };
+  const confidenceValues = Object.values(fieldConfidences);
+  const avgConfidence = Math.round(confidenceValues.reduce((s, v) => s + v, 0) / confidenceValues.length * 100);
+  const futureSelfLetter = v3.futureSelfLetter || v3.marcusLetter || "";
+  function bodyParas(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p class="body-text">${escHtml(s)}</p>`).join("");
+  }
+  function loveParas(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${escHtml(s)}</p>`).join("");
+  }
+  function marcusParas(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${escHtml(s)}</p>`).join("");
+  }
+  const now = /* @__PURE__ */ new Date();
+  const dateStr = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const sessionShort = sessionId ? "DW-" + sessionId.slice(-6).toUpperCase() : "DW-0000";
+  let sessionMinutes = 0;
+  try {
+    const start = sessionMeta && sessionMeta.created_at ? new Date(sessionMeta.created_at) : null;
+    const end = sessionMeta && (sessionMeta.completed_at || sessionMeta.last_active_at) ? new Date(sessionMeta.completed_at || sessionMeta.last_active_at) : null;
+    if (start && end) sessionMinutes = Math.round((end - start) / 6e4);
+    if (sessionMinutes > 120 || sessionMinutes <= 0) {
+      sessionMinutes = msgCount > 0 ? Math.max(15, Math.round(msgCount * 0.75)) : 0;
+    }
+  } catch (_) {
+  }
+  const insightCount = sessionMeta && sessionMeta.insight_count || 0;
+  const beliefCount = sessionMeta && sessionMeta.belief_pattern_count || 0;
+  const moves = Array.isArray(bp.firstThreeMoves) ? bp.firstThreeMoves.slice(0, 3) : [];
+  let stepsHTML;
+  if (moves.length > 0) {
+    stepsHTML = '<div class="steps">' + moves.map((m, i) => {
+      const t = escHtml(m.move || m.title || m.step || "Step " + (i + 1));
+      const d = escHtml(m.detail || m.description || m.body || "Start here. This is the move that creates the most momentum with the least resistance.");
+      return `<div class="step"><div class="step-num">${i + 1}</div><div class="step-content"><div class="step-title">${t}</div>${d ? `<div class="step-body">${d}</div>` : ""}</div></div>`;
+    }).join("") + "</div>";
+  } else {
+    stepsHTML = `<div class="steps"><div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Name the Real Capability</div><div class="step-body">Not the job title. The actual thing you do that creates transformation for other people.</div></div></div><div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Build the System Around It</div><div class="step-body">Offer, pricing, positioning, delivery, and client selection. Everything restructured around what you actually do best.</div></div></div><div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Operate from the Center</div><div class="step-body">Once the system is aligned with your real capability, the work becomes lighter and more effective.</div></div></div></div>`;
+  }
+  const marcusDefault = "\u201CThe work you are doing is harder than most people can see. Not because of what it requires, but because of what it demands you let go of.\u201D\n\n\u201CWhen the path is unclear, return to what is most true about you. Build from there. Everything else will follow.\u201D";
+  const loveDefault = `Dear younger you,
 
-// src/routes/blueprint.js
+You didn\u2019t need to work so hard to prove yourself. The thing you were afraid wasn\u2019t enough\u2014it was always the best thing about you.
+
+Everything you\u2019ve built was pointing toward the same thing. You just needed someone to hold up a mirror.
+
+With everything,
+Your future self`;
+  const futureSelfRaw = (futureSelfLetter || marcusDefault).replace(/\s*Marcus Aurelius,?\s*Meditations\s*$/i, "").replace(/Three years from now,?\s*\/?\s*\[?\w+\]?\s*$/i, "").trim();
+  const futureSelfHTML = marcusParas(futureSelfRaw);
+  const loveLetterContent = v3.loveLetter || (() => {
+    const paras = [`Dear younger ${firstName},`];
+    if (arrogantTruth) {
+      paras.push(`The thing you almost didn\u2019t say \u2014 \u201C${arrogantTruth}\u201D \u2014 the people who need you most have been waiting for that version of you to show up.`);
+    } else {
+      paras.push(`You\u2019ve been doing this longer than you think. And it has never been about what you thought it was about.`);
+    }
+    if (positioningStatement && positioningStatement !== "Your unique positioning statement." && positioningStatement.length > 10) {
+      paras.push(`You\u2019ve known for a long time that you do something other people can\u2019t quite name. Here\u2019s how it sounds when said clearly: \u201C${positioningStatement}\u201D`);
+    }
+    paras.push(`Stop trying to earn permission to be who you already are.`);
+    paras.push(`With everything, \/ Your future self`);
+    return paras.join("\n\n");
+  })();
+  const loveHTML = loveParas(loveLetterContent);
+  const promptForJs = positioningStatement.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  const bfPalette = bp.brandFoundation && Array.isArray(bp.brandFoundation.colorPalette) ? bp.brandFoundation.colorPalette : bp.part1 && bp.part1.visualDirection && Array.isArray(bp.part1.visualDirection.colors) ? bp.part1.visualDirection.colors : bp.part8 && Array.isArray(bp.part8.brandColors) ? bp.part8.brandColors.map(function(h) {
+    return { hex: h };
+  }) : [];
+  const wpPrimary = (bfPalette[0] && bfPalette[0].hex || "#1D1D1F").replace(/'/g, "");
+  const wpAccent = (bfPalette[1] && bfPalette[1].hex || "#C4703F").replace(/'/g, "");
+  const firstNameJs = firstName.replace(/['"\\]/g, "");
+  const css = `
+#blueprint-body{--gold:#C4703F;--white:#FFFFFF;--off:#FAFAFA;--border:#F0F0F0;--text:#1D1D1F;--text2:#86868B;--dark:#0f0f0f;--warm:#FFF9F6;--radius:16px;background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
+#blueprint-body *{box-sizing:border-box;}
+#progress{position:fixed;top:0;left:0;width:0%;height:3px;background:var(--gold);z-index:1000;transition:width 0.1s;}
+.hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;overflow:hidden;background:#111;}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.45) 50%,rgba(0,0,0,0.15) 100%);}
+.hero-content{position:relative;z-index:2;padding:80px 64px;width:100%;max-width:1100px;margin:0 auto;}
+.hero-eyebrow{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#fff;margin-bottom:16px;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
+.hero-name{font-family:'Outfit',sans-serif;font-size:clamp(48px,6vw,80px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1;margin-bottom:16px;}
+.hero-tagline{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(18px,2.5vw,24px);color:rgba(255,255,255,0.92);line-height:1.6;max-width:640px;margin-bottom:40px;}
+.hero-depth{color:rgba(255,255,255,0.55);font-size:13px;line-height:1.6;}
+.hero-depth strong{color:#fff;display:block;font-size:14px;font-family:'Outfit',sans-serif;font-weight:600;}
+
+.hero-tier-badge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.tier-card{background:var(--off);border:1px solid #F0E8E0;border-radius:var(--radius);padding:36px 40px;margin:48px auto 0;max-width:720px;}
+.tier-card-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.tier-card-body{font-size:16px;line-height:1.75;color:#3a3a3a;}
+.glance{background:#fff;padding:64px 64px 48px;border-bottom:1px solid var(--border);}
+.glance-inner{max-width:900px;margin:0 auto;}
+.glance-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:28px;}
+.glance-stat{text-align:center;padding:24px 16px;background:var(--off);border-radius:12px;border:1px solid var(--border);}
+.glance-num{font-family:'Outfit',sans-serif;font-size:32px;font-weight:800;color:var(--text);letter-spacing:-0.02em;}
+.glance-num.gold{color:var(--gold);}
+.glance-label{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.4;}
+.glance-bar-track{width:100%;height:6px;background:var(--border);border-radius:4px;margin-top:12px;overflow:hidden;}
+.glance-bar-fill{height:100%;background:var(--gold);border-radius:4px;}
+.act-divider{position:relative;height:380px;overflow:hidden;background:#111;}
+.act-divider-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.35) 60%,rgba(0,0,0,0.1) 100%);}
+.act-label{position:absolute;bottom:0;left:0;right:0;padding:40px 64px;z-index:2;}
+.act-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
+.act-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;max-width:640px;text-shadow:0 2px 16px rgba(0,0,0,0.6);}
+.section{background:#fff;padding:80px 64px;}
+.section-inner{max-width:760px;margin:0 auto;}
+.eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
+.section-headline{font-family:'Outfit',sans-serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-0.02em;line-height:1.2;margin-bottom:20px;}
+.body-text{font-size:17px;line-height:1.85;color:#3a3a3a;margin-bottom:24px;max-width:680px;}
+.pullquote{font-family:'Outfit',sans-serif;font-weight:600;font-size:clamp(18px,2.2vw,22px);line-height:1.55;color:var(--text);border-left:3px solid var(--gold);padding-left:24px;margin:36px 0;}
+.insight-card{background:var(--off);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 12px 12px 0;margin:28px 0;}
+.insight-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:8px;}
+.insight-text{font-size:16px;line-height:1.65;}
+.steps{margin:32px 0;}
+.step{display:flex;gap:20px;margin-bottom:28px;align-items:flex-start;}
+.step-num{width:40px;height:40px;border-radius:50%;background:var(--gold);color:#fff;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-content{flex:1;}
+.step-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;}
+.step-body{font-size:15px;line-height:1.65;color:#555;}
+.prompt-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.prompt-inner{max-width:760px;margin:0 auto;text-align:center;}
+.prompt-card{background:#fff;border:2px solid var(--gold);border-radius:20px;padding:48px 56px;margin-top:24px;box-shadow:0 12px 48px rgba(196,112,63,0.15),0 0 0 1px rgba(196,112,63,0.08);}
+.prompt-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--gold);margin-bottom:20px;}
+.prompt-text{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.4;color:var(--text);margin-bottom:24px;}
+.prompt-context{font-size:14px;color:var(--text2);line-height:1.65;max-width:520px;margin:24px auto 0;padding-top:24px;border-top:1px solid var(--border);}
+.prompt-copy-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gold);color:#fff;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:20px;transition:transform 0.15s;}
+.prompt-copy-btn:hover{transform:scale(1.03);}
+.prompt-copied{color:var(--gold);font-size:13px;font-weight:600;margin-top:10px;opacity:0;transition:opacity 0.3s;}
+.prompt-copied.show{opacity:1;}
+.marcus-section{position:relative;background:var(--dark);padding:80px 64px;overflow:hidden;}
+.marcus-inner{position:relative;z-index:2;max-width:760px;margin:0 auto;}
+.marcus-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:20px;}
+.marcus-card{background:rgba(0,0,0,0.72);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius);padding:40px 48px;}
+.marcus-card p{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,19px);color:rgba(255,255,255,0.95);line-height:1.75;margin-bottom:20px;}
+.marcus-sig{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;}
+.love-section{background:var(--warm);padding:80px 64px;}
+.love-inner{max-width:760px;margin:0 auto;}
+.love-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:20px;}
+.love-card{background:#fff;border:1px solid #F0E8E0;border-radius:var(--radius);padding:40px 48px;box-shadow:0 4px 24px rgba(196,112,63,0.08);}
+.love-card p{font-size:17px;line-height:1.8;color:#3a3a3a;margin-bottom:18px;}
+.love-sig{font-family:'Outfit',sans-serif;font-weight:600;font-size:16px;color:var(--gold);}
+.vision-divider{position:relative;height:500px;overflow:hidden;background:#111;}
+.vision-divider-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.6) 100%);}
+.vision-label{position:absolute;bottom:0;left:0;right:0;padding:48px 64px;z-index:2;text-align:center;}
+.vision-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
+.vision-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;text-shadow:0 2px 20px rgba(0,0,0,0.7),0 0 40px rgba(0,0,0,0.4);}
+.forget-section{background:#fff;padding:80px 64px;border-top:1px solid var(--border);}
+.forget-inner{max-width:760px;margin:0 auto;text-align:center;}
+.forget-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px;}
+.forget-sub{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,20px);color:#555;line-height:1.6;max-width:560px;margin:0 auto 40px;}
+.forget-triggers{display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:left;margin-bottom:40px;}
+.forget-trigger{background:var(--off);border:1px solid var(--border);border-radius:12px;padding:24px 28px;}
+.forget-trigger-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:10px;}
+.forget-trigger-text{font-size:15px;line-height:1.65;color:var(--text);}
+.forget-trigger-action{font-size:13px;color:var(--text2);margin-top:8px;}
+.forget-timestamp{font-size:13px;color:var(--text2);margin-top:32px;font-family:'Outfit',sans-serif;}
+.wallpaper-section{background:#fff;padding:80px 64px;}
+.wallpaper-inner{max-width:1000px;margin:0 auto;}
+.wallpaper-card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
+.wallpaper-copy{padding:48px;display:flex;flex-direction:column;justify-content:center;}
+.wallpaper-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:14px;}
+.wallpaper-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,3.5vw,40px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:14px;}
+.wallpaper-sub{font-size:16px;line-height:1.65;color:var(--text2);margin-bottom:28px;}
+.wallpaper-phones{background:#1D1D1F;padding:48px;display:flex;align-items:center;justify-content:center;gap:16px;}
+.phone-frame{width:100px;height:180px;background:#111;border-radius:18px;border:2px solid rgba(255,255,255,0.12);overflow:hidden;}
+.phone-frame.main{width:120px;height:210px;border-radius:22px;border:2px solid rgba(196,112,63,0.5);}
+.phone-screen{width:100%;height:100%;background:linear-gradient(160deg,#1a1208 0%,#2d1f0e 40%,#1D1D1F 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center;}
+.phone-text{font-family:'Outfit',sans-serif;font-size:7px;font-weight:700;color:rgba(196,112,63,0.9);text-transform:uppercase;letter-spacing:0.1em;line-height:1.4;}
+.phone-text.main{font-size:8px;}
+.final-cta{background:#1D1D1F;padding:96px 64px;}
+.final-inner{max-width:880px;margin:0 auto;text-align:center;}
+.final-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:24px;}
+.final-headline{font-family:'Outfit',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;}
+.final-sub{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,20px);color:rgba(255,255,255,0.75);max-width:560px;margin:0 auto 40px;line-height:1.6;}
+.final-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:48px;text-align:left;margin-bottom:40px;}
+.final-card-title{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:20px;}
+.final-card-items{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.final-item{display:flex;gap:12px;align-items:flex-start;}
+.final-check{width:24px;height:24px;border-radius:50%;background:rgba(196,112,63,0.2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.final-item-text{font-size:15px;line-height:1.5;color:rgba(255,255,255,0.88);}
+.final-price{text-align:center;margin-bottom:32px;}
+.final-price-amount{font-family:'Outfit',sans-serif;font-size:48px;font-weight:800;color:#fff;letter-spacing:-0.03em;}
+.final-price-label{font-size:14px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.final-btn{display:inline-block;padding:18px 48px;background:var(--gold);color:#fff;border-radius:50px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;text-decoration:none;letter-spacing:0.02em;transition:transform 0.15s;}
+.final-btn:hover{transform:scale(1.03);}
+.final-guarantee{margin-top:20px;font-size:13px;color:rgba(255,255,255,0.55);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.55;}
+.final-testimonial{margin-top:40px;padding:28px 32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;text-align:center;}
+.final-testimonial p{font-family:'Inter',sans-serif;font-weight:400;font-size:16px;color:rgba(255,255,255,0.8);line-height:1.7;margin-bottom:12px;}
+.final-testimonial-author{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;}
+.saw-section{background:#fff;padding:64px 64px;border-bottom:1px solid var(--border);}
+.saw-inner{max-width:760px;margin:0 auto;border-left:4px solid var(--gold);padding-left:32px;}
+.saw-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:16px;}
+.saw-body{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(18px,2.2vw,22px);color:var(--text);line-height:1.7;}
+.arrogant-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.arrogant-inner{max-width:760px;margin:0 auto;text-align:center;}
+.arrogant-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:24px;}
+.arrogant-bar{width:40px;height:2px;background:var(--gold);margin:0 auto 32px;}
+.arrogant-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3vw,34px);color:var(--text);line-height:1.5;font-weight:400;}
+@media(max-width:768px){
+.hero-content{padding:48px 24px;}.hero-name{font-size:clamp(36px,10vw,52px);}
+.glance{padding:40px 24px 32px;}.glance-grid{grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.act-divider{height:280px;}.act-label{padding:24px 24px;}
+.section{padding:48px 24px;}.section-inner{max-width:100%;}
+.pullquote{padding-left:18px;margin:28px 0;}.step{gap:14px;}.step-num{width:34px;height:34px;font-size:14px;}
+.prompt-section{padding:48px 24px;}.prompt-card{padding:32px 24px;}
+.marcus-section{padding:48px 24px;}.marcus-card{padding:28px 24px;}
+.love-section{padding:48px 24px;}.love-card{padding:28px 24px;}
+.vision-divider{height:360px;}.vision-label{padding:32px 24px;}
+.forget-section{padding:48px 24px;}.forget-triggers{grid-template-columns:1fr;gap:14px;}
+.wallpaper-section{padding:48px 24px;}.wallpaper-card{grid-template-columns:1fr;}.wallpaper-copy{padding:32px 24px;}.wallpaper-phones{padding:32px 16px;}
+.final-cta{padding:56px 24px;}.final-card{padding:32px 24px;}.final-card-items{grid-template-columns:1fr;}.final-btn{padding:16px 36px;font-size:16px;}
+.saw-section{padding:40px 24px;}.arrogant-section{padding:56px 24px;}.arrogant-text{font-size:22px;}
+}
+@media(max-width:480px){
+.hero-name{font-size:36px;}.glance-grid{grid-template-columns:1fr 1fr;gap:12px;}.glance-stat{padding:16px 12px;}.glance-num{font-size:26px;}
+.act-divider{height:220px;}.prompt-text{font-size:22px;}.final-price-amount{font-size:40px;}
+}`;
+  const TIER_DESCRIPTIONS = {
+    "Didn't Flinch Once": "You went straight at every question that most people duck. No softening, no hedging. That capacity to name the real thing is the difference between a brand that attracts and one that blends in.",
+    "Sat With The Fire": "You didn't rush through the hard parts. When the interview asked you to name something uncomfortable, you stayed in it. That capacity to sit with what most people run from is the thing your clients feel when they work with you.",
+    "Named The Pattern": "You caught yourself doing the thing. That kind of self-awareness is rare. It means you can see the gap between where you are and where your work wants to take you, and that gap is where real positioning lives.",
+    "Told On Yourself": "You said the quiet part out loud. Not all of it, but enough to matter. The next version of this work is about staying in those moments a little longer. The clarity is on the other side of the discomfort.",
+    "Took The First Swing": "You showed up and answered the questions. That counts more than it feels like. Most people never get here. Come back when you have more space, more time, and fewer distractions. The deeper layer is waiting."
+  };
+  const tierDescription = TIER_DESCRIPTIONS[tier.tier_title] || '';
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escHtml(firstName)}\u2019s Deep Work Interview</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet"><style>${css}</style><script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","w22t78gnya");<\/script></head><body>
+<script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
+<div id="progress"></div>
+<div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div><div class="hero-tier-badge">${escHtml(tier.tier_title)}</div></div></div>
+${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">What I saw that you couldn\u2019t.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
+${mirrorConnection ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">The Mirror.</div><p class="saw-body">${escHtml(mirrorConnection)}</p></div></div>` : ""}
+${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
+<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 40)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))}</div><div class="glance-label">Honest Answers</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))) / 10 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${(messagesLoaded ? breakthroughs : Math.max(0, Math.round(msgCount / 15))) || "\u2014"}</div><div class="glance-label">Breakthrough Moments</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? breakthroughs : Math.round(msgCount / 15)) / 5 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : "\u2014"}</div><div class="glance-label">Belief Patterns Named</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num gold" style="font-size:16px;line-height:1.3;">${escHtml(tier.tier_title)}</div><div class="glance-label">Your Tier</div></div></div></div></div>
+<div class="section" style="padding:48px 64px;"><div class="glance-inner" style="max-width:720px;margin:0 auto;"><div class="tier-card"><div class="tier-card-title">${escHtml(tier.tier_title)}</div><p class="tier-card-body">${escHtml(tierDescription)}</p></div></div></div>
+<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201C${escHtml(csPullquote)}\u201D</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
+<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201C${escHtml(rpPullquote)}\u201D</div>` : ""}</div></div>
+<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}${pricingGapBelief ? `<div class="insight-card" style="margin-top:24px;"><div class="insight-label">Pricing Mindset Shift</div><div class="insight-text">${escHtml(pricingGapBelief)}</div></div>` : ""}${pricingCurrent ? `<div class="insight-card" style="margin-top:12px;"><div class="insight-label">Current Pricing Reality</div><div class="insight-text">${escHtml(pricingCurrent)}</div></div>` : ""}</div></div>
+${neverSaidPublicly && neverSaidPublicly !== arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you\u2019ve never said publicly.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(neverSaidPublicly)}\u201D</div></div></div>` : ""}
+${missionStatement ? `<div class="section"><div class="section-inner"><div class="eyebrow">Your Mission</div><div class="section-headline">Why This Work Matters</div><div class="insight-card"><div class="insight-label">In your own words</div><div class="insight-text">${escHtml(missionStatement)}</div></div></div></div>` : ""}
+<div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">The clearest version of what your work actually does.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
+<div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-card"><div class="marcus-eyebrow">A Letter from Your Future Self</div>${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
+<div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
+<div class="vision-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_vision_1.jpg');background-size:cover;background-position:center;"><div class="vision-divider-overlay"></div><div class="vision-label"><div class="vision-eyebrow">The After</div><div class="vision-title">${visHeadline ? escHtml(visHeadline) : "What the Right Life Actually Feels Like"}</div></div></div>
+<div class="section"><div class="section-inner"><div class="eyebrow">Your Vision</div><div class="section-headline">${visHeadline ? escHtml(visHeadline) : "Alignment Is a Daily Experience, Not a Destination"}</div>${bodyParas(visBody)}${visInsight ? `<div class="insight-card"><div class="insight-label">What Becomes Possible</div><div class="insight-text">${escHtml(visInsight)}</div></div>` : ""}</div></div>
+<div class="forget-section"><div class="forget-inner"><div class="eyebrow">Bookmark This</div><div class="forget-headline">On the days you forget who you are, come back here.</div><div class="forget-sub">Clarity isn\u2019t a one-time event. It\u2019s something you return to. These are the moments to reopen this blueprint.</div><div class="forget-triggers"><div class="forget-trigger"><div class="forget-trigger-label">When you undercharge</div><div class="forget-trigger-text">${positioningStatement !== "Your unique positioning statement." ? "Reread Your Prompt. You are not selling time. You are selling this: \u201C" + escHtml(positioningStatement.length > 80 ? positioningStatement.slice(0, 77) + "..." : positioningStatement) + "\u201D" : "Reread Act III. You are not selling time. You are selling the system that only you can build."}</div><div class="forget-trigger-action">Scroll to: Your Prompt</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you compare yourself</div><div class="forget-trigger-text">${arrogantTruth ? "Reread what you almost did not say: \u201C" + escHtml(arrogantTruth.length > 80 ? arrogantTruth.slice(0, 77) + "..." : arrogantTruth) + "\u201D Nobody else can say that." : "Reread Your Prompt. Nobody else does what you do the way you do it. That is the whole point."}</div><div class="forget-trigger-action">Scroll to: ${arrogantTruth ? "The thing you almost didn\u2019t say" : "Your Prompt"}</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you feel like a fraud</div><div class="forget-trigger-text">${v3.bookmark_fraud ? escHtml(v3.bookmark_fraud) : "Reread the Love Letter. You were enough before any of this. You are still enough now."}</div><div class="forget-trigger-action">Scroll to: A Letter to Your Younger Self</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you lose the thread</div><div class="forget-trigger-text">${v3.bookmark_thread ? escHtml(v3.bookmark_thread) : "Reread the letter from your future self. The clarity you need is already inside what you do best. Build from there."}</div><div class="forget-trigger-action">Scroll to: A Letter from Your Future Self</div></div></div><div class="forget-timestamp">Blueprint generated ${dateStr} &middot; Deep Work Interview &middot; Session #${sessionShort}</div></div></div>
+<div class="wallpaper-section"><div class="wallpaper-inner"><div class="wallpaper-card"><div class="wallpaper-copy"><div class="wallpaper-eyebrow">Take This With You</div><div class="wallpaper-headline">Always remember who you are.</div><div class="wallpaper-sub">Your positioning statement, with you everywhere you go.</div><button onclick="downloadPhoneWallpaper('${wpPrimary}','${wpAccent}','${promptForJs}','${firstNameJs}')" style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1.5px solid #E8E8E8;cursor:pointer;margin-top:8px;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Save as Phone Background</button></div><div class="wallpaper-phones"><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Deep Work Interview</div></div></div><div class="phone-frame main"><div class="phone-screen"><div class="phone-text main">${escHtml(positioningStatement.slice(0, 60))}${positioningStatement.length > 60 ? "\u2026" : ""}</div></div></div><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Always remember<br>who you are.</div></div></div></div></div></div></div>
+<div class="section" style="background:var(--warm);border-top:1px solid var(--border);padding:64px 64px;"><div class="section-inner" style="text-align:center;"><p class="body-text" style="font-size:19px;color:var(--text);max-width:600px;margin:0 auto;line-height:1.8;">You just spent ${sessionMinutes > 0 ? sessionMinutes : '60+'} minutes being more honest about your work than you have been in years. This blueprint is proof that someone was listening. What comes next is where listening becomes building.</p></div></div>
+<div class="final-cta"><div class="final-inner"><div class="final-eyebrow">What Comes Next</div><div class="final-headline">This blueprint is the map.<br>The call is where we build it.</div><div class="final-sub">60 minutes with James to turn this blueprint into a living system. Your offer, your positioning, your pricing, your client selection. All of it, restructured around what you\u2019re actually great at.</div><div class="final-card"><div class="final-card-title">What happens on the Strategy Call</div><div class="final-card-items"><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Walk through your blueprint together, live</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Name the one offer that should be your entire business</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Price it based on transformation, not time</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Build your client selection criteria</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Map the 90 day implementation path</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Leave with a system, not just a strategy</div></div></div></div><div class="final-price"><div class="final-price-amount">$297</div><div class="final-price-label">One session. One system. One clear direction forward.</div></div><a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" class="final-btn">Book Your Strategy Call</a><div class="final-guarantee">If you don\u2019t leave the call with a clearer direction than you walked in with, you don\u2019t pay. That\u2019s the deal.</div><div class="final-testimonial"><p>\u201CIt just gave me a very honest, objective mirror back at myself. It pointed out that my biggest case study was nowhere on my website and asked, why are you burying all the leads? I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career.\u201D</p><div class="final-testimonial-author">Chris Van Loan II &mdash; Founder, Luminary Media</div></div></div></div>
+<div style="text-align:center;padding:48px 24px;background:#FAFAFA;border-top:1px solid #F0F0F0;"><div style="max-width:600px;margin:0 auto;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:12px;">Take This Further</div><div style="font-size:20px;font-weight:700;color:#1D1D1F;margin-bottom:8px;">Download your interview transcript</div><div style="font-size:15px;color:#86868B;margin-bottom:24px;">Take it to your AI to keep building your brand strategy.</div><a href="/api/session/export-transcript?sessionId=${sessionId}${downloadToken ? "&dltoken=" + downloadToken : ""}" style="display:inline-block;background:#1D1D1F;color:#fff;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;">Download Transcript (.md)</a></div></div>
+<script>window.addEventListener('scroll',function(){if(!document.getElementById('blueprint-screen')?.classList.contains('active'))return;var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}if(typeof clarity==='function'){clarity('set','blueprint_viewed','true');clarity('set','session_id','${sessionId}');}document.addEventListener('DOMContentLoaded',function(){var ctaBtn=document.querySelector('.final-btn');if(ctaBtn){ctaBtn.addEventListener('click',function(){if(typeof clarity==='function'){clarity('set','strategy_cta_clicked','true');}});}});try{fetch('/api/event/tier-viewed',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'${sessionId}',tier:'${escHtml(tier.tier_title)}'})}).catch(function(){});}catch(e){} function downloadTranscript(sid){var btn=document.getElementById('transcriptBtn');if(btn)btn.textContent='Downloading\u2026';var token=(window.STATE&&STATE.sessionJwt)||localStorage.getItem('dw_session_jwt')||localStorage.getItem('dw_admin_token')||localStorage.getItem('dw_session')||'';var headers={};if(token)headers['Authorization']='Bearer '+token;fetch('/api/session/export-transcript?sessionId='+sid,{credentials:'include',headers:headers}).then(function(r){if(!r.ok)throw new Error('unauthorized');return r.blob();}).then(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='deep-work-transcript.md';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(btn)btn.textContent='Download Transcript (.md)';}).catch(function(){if(btn)btn.textContent='Download Transcript (.md)';alert('Could not download. Make sure you are logged in and try again.');});} function downloadPhoneWallpaper(primary,accent,statement,name){var c=document.createElement('canvas');c.width=1080;c.height=1920;var ctx=c.getContext('2d');var g=ctx.createLinearGradient(0,0,0,1920);g.addColorStop(0,primary||'#1D1D1F');g.addColorStop(1,_shade(primary||'#1D1D1F',-50));ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,1300,1080,620);ctx.fillStyle=accent||'#C4703F';ctx.font='500 32px Georgia,serif';ctx.textAlign='center';ctx.fillText('DEEP WORK INTERVIEW',540,260);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(180,300);ctx.lineTo(900,300);ctx.stroke();ctx.fillStyle='#FFFFFF';ctx.font='bold 74px Georgia,serif';ctx.textAlign='center';_wrap(ctx,statement||'Your positioning statement.',540,520,820,90);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=1;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(180,1560);ctx.lineTo(900,1560);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='32px Georgia,serif';ctx.fillText('Always remember who you are.',540,1630);ctx.fillStyle=accent||'#C4703F';ctx.font='600 26px sans-serif';ctx.fillText('jamesguldan.com/deep-work',540,1700);c.toBlob(function(blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=(name||'blueprint')+'-phone-wallpaper.png';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);},'image/png');} function _wrap(ctx,text,x,y,maxW,lh){var words=text.split(' '),line='';for(var i=0;i<words.length;i++){var t=line+words[i]+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lh;}else line=t;}ctx.fillText(line,x,y);} function _shade(hex,pct){var n=parseInt(hex.replace('#',''),16),a=Math.round(2.55*pct),R=Math.max(0,Math.min(255,(n>>16)+a)),G=Math.max(0,Math.min(255,(n>>8&255)+a)),B=Math.max(0,Math.min(255,(n&255)+a));return'#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);}<\/script></body></html>`;
+}
+__name(renderBlueprintV3, "renderBlueprintV3");
 init_resend();
 async function loadBlueprintForSession(env, sessionId) {
-  // Try fast cache first (bp_meta:sessionId), fall back to full session
   try {
     const metaRaw = await env.SESSIONS.get("bp_meta:" + sessionId);
     if (metaRaw) {
       const meta = JSON.parse(metaRaw);
       if (meta.blueprint) return meta;
     }
-  } catch(_) {}
-  // Fallback: load full session
+  } catch (_) {
+  }
   const raw = await env.SESSIONS.get(sessionId);
   if (!raw) return null;
   const session = JSON.parse(raw);
@@ -17874,7 +19928,16 @@ async function loadBlueprintForSession(env, sessionId) {
   };
 }
 __name(loadBlueprintForSession, "loadBlueprintForSession");
-
+async function handleEventTierViewed(request, env) {
+  try {
+    const { sessionId, tier } = await request.json();
+    if (sessionId) {
+      await logSessionEvent(env, sessionId, "tier_viewed", { tier });
+    }
+  } catch (_) {}
+  return json({ ok: true });
+}
+__name(handleEventTierViewed, "handleEventTierViewed");
 async function handleBlueprintRender(request, env) {
   const { sessionId } = await request.json();
   if (!sessionId)
@@ -17882,7 +19945,75 @@ async function handleBlueprintRender(request, env) {
   const meta = await loadBlueprintForSession(env, sessionId);
   if (!meta)
     return json({ error: "Blueprint not found" }, 404);
-  const html = renderBlueprintResults(meta.blueprint, meta.name, meta.apolloData, meta.messageCount);
+  let sessionMeta = null;
+  let userName = meta.name;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT s.emotional_depth_score, s.depth_grade, s.message_count, s.created_at, s.completed_at, s.last_active_at, u.name as user_name FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.id = ?"
+    ).bind(sessionId).first();
+    if (row) {
+      sessionMeta = row;
+      if (!userName && row.user_name) userName = row.user_name;
+    }
+  } catch (_) {
+  }
+  try {
+    const insightRow = await env.DB.prepare(
+      "SELECT COUNT(*) as total, SUM(CASE WHEN insight_type='contrarian_belief' THEN 1 ELSE 0 END) as belief_count FROM session_insights WHERE session_id = ?"
+    ).bind(sessionId).first();
+    if (insightRow && sessionMeta) {
+      sessionMeta.insight_count = insightRow.total || 0;
+      sessionMeta.belief_pattern_count = insightRow.belief_count || 0;
+    }
+  } catch (_) {
+  }
+  if (!userName) {
+    try {
+      const raw = await env.SESSIONS.get(sessionId);
+      if (raw) {
+        const session = JSON.parse(raw);
+        const messages = Array.isArray(session.messages) ? session.messages : [];
+        if (sessionMeta && !sessionMeta.messages) {
+          sessionMeta.messages = messages;
+        }
+        for (let i = 0; i < Math.min(messages.length - 1, 20); i++) {
+          const msg = messages[i];
+          const content = typeof msg.content === "string" ? msg.content : Array.isArray(msg.content) ? msg.content.map((c) => c.text || "").join(" ") : "";
+          if (msg.role === "assistant" && /first name|what.s your name|your name/i.test(content)) {
+            const next = messages[i + 1];
+            if (next && next.role === "user") {
+              const raw2 = typeof next.content === "string" ? next.content : Array.isArray(next.content) ? next.content.map((c) => c.text || "").join(" ") : "";
+              const cleaned = raw2.replace(/METADATA:\{[^}]*\}/g, "").trim().replace(/[.!?,]/g, "").trim();
+              const words = cleaned.split(/\s+/).filter(Boolean);
+              if (words.length >= 1 && words.length <= 3 && !/start|begin|interview|hello|hi|hey|yes|no|ok|sure|ready/i.test(cleaned)) {
+                userName = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+              }
+            }
+            break;
+          }
+        }
+      }
+    } catch (_) {
+    }
+  }
+  // Extract messages for metric computation when userName was already known (KV not fetched above)
+  try {
+    if (sessionMeta && !sessionMeta.messages) {
+      const raw = await env.SESSIONS.get(sessionId);
+      if (raw) {
+        const kv = JSON.parse(raw);
+        sessionMeta.messages = Array.isArray(kv.messages) ? kv.messages : [];
+      }
+    }
+  } catch (_) {
+  }
+  let downloadToken = "";
+  try {
+    downloadToken = crypto.randomUUID().replace(/-/g, "");
+    await env.SESSIONS.put("dltoken:" + downloadToken, sessionId, { expirationTtl: 7200 });
+  } catch (_) {
+  }
+  const html = renderBlueprintV3(meta.blueprint, userName, sessionId, sessionMeta, downloadToken);
   return new Response(html, {
     headers: { "Content-Type": "text/html; charset=utf-8", ...CORS }
   });
@@ -17901,6 +20032,87 @@ async function handleBlueprintPDF(request, env) {
   });
 }
 __name(handleBlueprintPDF, "handleBlueprintPDF");
+async function handleBlueprintPDFDownload(request, env) {
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId)
+      return json({ error: "Missing sessionId" }, 400);
+    const meta = await loadBlueprintForSession(env, sessionId);
+    if (!meta)
+      return json({ error: "Blueprint not found" }, 404);
+    const blueprintHtml = renderBlueprintResults(meta.blueprint, meta.name, meta.apolloData, meta.messageCount);
+    const cleanHtml = blueprintHtml.replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<button[\s\S]*?<\/button>/gi, "").replace(/<div[^>]*class="[^"]*bp-feedback[^"]*"[\s\S]*?<\/div>/gi, "");
+    const printStyles = `<style>
+      @page { margin: 0.6in 0.5in 0.85in 0.5in; }
+      /* Fix invisible content: animations leave opacity:0 in static PDF render */
+      .fade-up, .fade-up-d1, .fade-up-d2, .fade-up-d3 { opacity: 1 !important; animation: none !important; transform: none !important; }
+      /* Hero cover page */
+      .bp-hero-reveal { min-height: 90vh !important; padding: 80px 24px 60px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-hero-reveal { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 30%, #FFFFFF 70%) !important; }
+      .bp-hero-begin { display: none !important; }
+      .bp-hero-url { position: static !important; margin-top: 32px; }
+      /* Chapter dividers: compact, no forced page break, stay with following content */
+      .chapter-divider { page-break-before: auto !important; page-break-after: avoid !important; page-break-inside: avoid !important; padding: 20px 24px !important; background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      /* Sections: reduce padding, let flow naturally */
+      .bp-section { padding: 32px 24px !important; page-break-inside: auto !important; }
+      /* Keep cards together */
+      .bp-card, .bp-offer-card, .bp-move-card, .bp-website-section-card, .bp-letter-card, .bp-gap-cta { page-break-inside: avoid; }
+      /* Hide interactive/PDF-irrelevant elements */
+      .bp-cta-block, .no-print, .bp-feedback { display: none !important; }
+      .bp-pdf-section { display: none !important; }
+      .bp-ai-builder { display: none !important; }
+      #bp-progress-bar { display: none !important; }
+      .bp-page { max-width: 100% !important; padding: 0 !important; }
+      /* Color accuracy for dark/colored elements */
+      .bp-share-section { background: linear-gradient(180deg, #FDF9F5 0%, #FFFCFA 100%) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-share-get-own, .bp-offer-premium, .bp-headline-featured, .bp-gap-book-btn, .bp-footer-primary-btn, .bp-gap-col:last-child .bp-gap-check { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .bp-offers-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    </style>`;
+    const pdfHtml = cleanHtml.replace("</head>", printStyles + "</head>");
+    const brToken = env.BROWSER_RENDERING_TOKEN;
+    if (!brToken)
+      return json({ error: "PDF service not configured" }, 500);
+    const pdfResponse = await fetch(
+      "https://api.cloudflare.com/client/v4/accounts/bd13f1dff62d4ccbea47440e45b48ec2/browser-rendering/pdf",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + brToken,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          html: pdfHtml,
+          pdfOptions: {
+            printBackground: true,
+            format: "letter",
+            margin: { top: "0.6in", bottom: "0.85in", left: "0.5in", right: "0.5in" },
+            displayHeaderFooter: true,
+            headerTemplate: '<div style="width:100%;text-align:center;font-size:7px;font-family:Helvetica,Arial,sans-serif;color:#C4703F;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;padding-top:4px;">DEEP WORK INTERVIEW</div>',
+            footerTemplate: '<div style="width:100%;font-size:8px;font-family:Helvetica,Arial,sans-serif;color:#999;display:flex;justify-content:space-between;align-items:center;padding:0 0.5in;"><span style="color:#C4703F;font-weight:600;font-size:7px;letter-spacing:0.08em;">jamesguldan.com/deep-work</span><span><span class="pageNumber"></span> of <span class="totalPages"></span></span></div>'
+          },
+          gotoOptions: { waitUntil: "networkidle0", timeout: 3e4 }
+        })
+      }
+    );
+    if (!pdfResponse.ok) {
+      const errText = await pdfResponse.text();
+      console.error("Browser Rendering error:", errText);
+      return json({ error: "PDF generation failed" }, 500);
+    }
+    const firstName = (meta.name || "blueprint").split(" ")[0].toLowerCase().replace(/[^a-z0-9]/g, "") || "blueprint";
+    return new Response(pdfResponse.body, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${firstName}-deep-work-blueprint.pdf"`,
+        ...CORS
+      }
+    });
+  } catch (err) {
+    console.error("PDF download error:", err);
+    return json({ error: "PDF generation failed" }, 500);
+  }
+}
+__name(handleBlueprintPDFDownload, "handleBlueprintPDFDownload");
 async function handleBlueprintQA(request, env) {
   const { sessionId, question } = await request.json();
   if (!sessionId || !question)
@@ -17950,7 +20162,7 @@ async function handleBuildWithJames(request, env) {
   const name = bp?.name || session.name || "";
   if (phone) {
     session.phone = phone;
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     if (email) {
       await env.DB.prepare("UPDATE sessions SET phone = ? WHERE id = ?").bind(phone, sessionId).run().catch(() => {
       });
@@ -18123,8 +20335,6 @@ async function handleResonanceScore(request, env) {
   }
 }
 __name(handleResonanceScore, "handleResonanceScore");
-
-// src/routes/feedback.js
 async function handleFeedback(request, env) {
   const body = await request.json();
   const { sessionId, rating, mostValuable, whatWasOff } = body;
@@ -18164,16 +20374,22 @@ async function handleLogEvent(request, env) {
   return json({ ok: true });
 }
 __name(handleLogEvent, "handleLogEvent");
-
 async function handleTrack(request, env) {
-  // Client-side event tracking endpoint — never fails the caller
   try {
     const body = await request.json();
     const { sessionId, eventType, phase, data } = body;
-    const ALLOWED = new Set([
-      'blueprint_viewed', 'blueprint_generated', 'pdf_downloaded',
-      'cta_clicked', 'ai_builder_copied', 'tab_switched', 'phase_completed',
-      'cta_book_call', 'blueprint_tab_viewed', 'cta_upgrade', 'blueprint_scrolled'
+    const ALLOWED = /* @__PURE__ */ new Set([
+      "blueprint_viewed",
+      "blueprint_generated",
+      "pdf_downloaded",
+      "cta_clicked",
+      "ai_builder_copied",
+      "tab_switched",
+      "phase_completed",
+      "cta_book_call",
+      "blueprint_tab_viewed",
+      "cta_upgrade",
+      "blueprint_scrolled"
     ]);
     if (!sessionId || !ALLOWED.has(eventType)) return json({ ok: true });
     const d = data || {};
@@ -18185,12 +20401,11 @@ async function handleTrack(request, env) {
       label: d.label || null,
       value: d.value || null
     });
-  } catch (_) {}
+  } catch (_) {
+  }
   return json({ ok: true });
 }
 __name(handleTrack, "handleTrack");
-
-// src/routes/admin.js
 async function handleAdminStats(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18209,6 +20424,12 @@ async function handleAdminStats(request, env) {
         SUM(CASE WHEN created_at >= date('now','-30 days') THEN 1 ELSE 0 END) as month
       FROM sessions
     `).first().catch(() => ({ today: 0, week: 0, month: 0 }));
+    const recentRows = await env.DB.prepare(`
+      SELECT s.id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.tier, s.depth_grade,
+             COALESCE(u.name, u.email, s.email) as user_email
+      FROM sessions s LEFT JOIN users u ON s.user_id = u.id
+      ORDER BY s.created_at DESC LIMIT 10
+    `).all().catch(() => ({ results: [] }));
     return json({
       users: usersRow?.cnt || 0,
       sessions: sessionsRow?.cnt || 0,
@@ -18216,7 +20437,10 @@ async function handleAdminStats(request, env) {
       completed: completedRow?.cnt || 0,
       funnel: funnelRows,
       sessionsToday: funnelRows?.today || 0,
-      usersThisWeek: 0
+      usersThisWeek: 0,
+      recentSessions: (recentRows?.results || []).map(function(s) {
+        return { id: s.id, phase: s.phase, message_count: s.message_count, blueprint_generated: s.blueprint_generated, status: s.status, created_at: s.created_at, tier: s.tier || "blueprint", user_email: s.user_email, depth_grade: s.depth_grade };
+      })
     });
   } catch (e) {
     return json({ error: "Stats query failed", detail: e.message }, 500);
@@ -18308,21 +20532,26 @@ async function handleAdminMagicLink(request, env) {
   if (!admin)
     return json({ error: "Forbidden" }, 403);
   try {
-    const { userId, email, type, createIfMissing, tier } = await request.json();
+    const { userId, email, name, type, createIfMissing, tier } = await request.json();
     let user = null;
     if (userId) {
       user = await getUserById(env, userId);
     } else if (email) {
       user = await getUserByEmail(env, email);
       if (!user && createIfMissing) {
-        user = await createUser(env, { email, name: "", role: "user" });
+        user = await createUser(env, { email, name: name || "", role: "user" });
+        if (tier && user) {
+          await env.DB.prepare("UPDATE users SET tier = ? WHERE id = ?").bind(tier, user.id).run().catch(() => {
+          });
+        }
       }
     }
     if (!user)
       return json({ error: "User not found" }, 404);
     const token = generateMagicToken();
-    const linkType = type || (user.role === "admin" ? "admin_magic" : "magic_login");
-    await storeMagicToken(env, token, user.id, linkType, 72);
+    const linkType = type || "persistent_magic";
+    const expiryHours = linkType === "persistent_magic" ? 8760 : 72;
+    await storeMagicToken(env, token, user.id, linkType, expiryHours);
     const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     const magicLink = `${origin}/magic?token=${token}`;
     return json({ magicLink, url: magicLink, token, expires_in_hours: 72 });
@@ -18344,7 +20573,7 @@ async function handleAdminInjectDebrief(request, env) {
       return json({ error: "Session not found in KV" }, 404);
     const session = JSON.parse(raw);
     session.strategistDebrief = debrief;
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     return json({ ok: true, message: "Debrief injected successfully" });
   } catch (e) {
     return json({ error: "Failed to inject debrief", detail: e.message }, 500);
@@ -18369,13 +20598,892 @@ async function handleAdminGenerateDebrief(request, env) {
     if (!debrief)
       return json({ error: "Debrief generation failed" }, 500);
     session.strategistDebrief = debrief;
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     return json({ ok: true, debrief });
   } catch (e) {
     return json({ error: "Failed to generate debrief", detail: e.message }, 500);
   }
 }
 __name(handleAdminGenerateDebrief, "handleAdminGenerateDebrief");
+async function handleAdminForceGenerateBlueprint(request, env) {
+  const key = request.headers.get("X-Admin-Key");
+  if (key !== "dw-v3-generate-2026") {
+    const admin = await requireAdmin(request, env).catch(() => null);
+    if (!admin) return json({ error: "Forbidden" }, 403);
+  }
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: "Session not found in KV" }, 404);
+    const session = JSON.parse(kvData);
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const userMessages = messages.filter((m) => m.role === "user");
+    if (userMessages.length < 6) return json({ error: "Not enough messages to generate blueprint (" + userMessages.length + " user messages)" }, 400);
+    if (session.blueprintGenerated && session.blueprint) return json({ error: "Blueprint already exists for this session", hint: "Use generate-v3-fields to add V3 fields if missing" }, 400);
+    const triggerMessages = [
+      ...messages.slice(-60),
+      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." }
+    ];
+    const sysPrompt = session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT;
+    const bpAbort = new AbortController();
+    const bpTimeout = setTimeout(() => bpAbort.abort(), 3e5);
+    let res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        signal: bpAbort.signal,
+        headers: {
+          "x-api-key": env.ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          model: MODEL_OPUS,
+          max_tokens: 32768,
+          system: sysPrompt,
+          messages: triggerMessages
+        })
+      });
+    } catch (fetchErr) {
+      clearTimeout(bpTimeout);
+      return json({ error: "Anthropic fetch failed: " + fetchErr.message }, 500);
+    }
+    clearTimeout(bpTimeout);
+    if (!res.ok) {
+      const errText = await res.text();
+      return json({ error: "Anthropic API error " + res.status, detail: errText.slice(0, 500) }, 500);
+    }
+    const aiData = await res.json();
+    const fullContent = aiData.content?.[0]?.text || "";
+    if (!fullContent) return json({ error: "Anthropic returned empty response" }, 500);
+    const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
+    if (!blueprintMatch) {
+      return json({ error: "No blueprint JSON found in Anthropic response", preview: fullContent.slice(0, 1e3) }, 500);
+    }
+    let blueprint;
+    try {
+      blueprint = JSON.parse(blueprintMatch[1]);
+    } catch (parseErr) {
+      return json({ error: "Blueprint JSON parse failed: " + parseErr.message, raw: blueprintMatch[1].slice(0, 500) }, 500);
+    }
+    const bpValidation = validateBlueprint(blueprint);
+    if (!bpValidation.passed) {
+      const repaired = autoRepairBlueprint(blueprint);
+      blueprint = repaired.blueprint;
+    }
+    session.blueprint = blueprint;
+    session.blueprintGenerated = true;
+    session.phase = 7;
+    session.messages = [...messages, { role: "user", content: "I am ready. Please generate my complete brand blueprint now." }, { role: "assistant", content: fullContent }];
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+    env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
+      blueprint,
+      name: blueprint.name || session.userName || "",
+      apolloData: session.apolloData || null,
+      messageCount: session.messages.length
+    }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {
+    });
+    try {
+      await env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint));
+    } catch (r2Err) {
+      console.error("[ForceBlueprint] R2 store failed:", r2Err.message);
+    }
+    await env.DB.prepare(
+      "UPDATE sessions SET status = 'blueprint_complete', phase = 7, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
+    ).bind(sessionId).run();
+    try {
+      if (session.userId) {
+        const user = await getUserById(env, session.userId);
+        if (user?.email) {
+          const bp2 = blueprint?.blueprint || blueprint;
+          fireEventToDripWorker(env, user.email, "interview_completed", {
+            name: user.name || "",
+            phone: session.phone || "",
+            highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
+            niche_statement: bp2?.part3?.nicheStatement || "",
+            brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
+            next_step: "self_guided"
+          }).catch(() => {
+          });
+        }
+      }
+    } catch (_) {
+    }
+    return json({
+      ok: true,
+      sessionId,
+      message: "Blueprint generated and saved successfully",
+      blueprintKeys: Object.keys(blueprint),
+      inputTokens: aiData.usage?.input_tokens || 0,
+      outputTokens: aiData.usage?.output_tokens || 0
+    });
+  } catch (e) {
+    return json({ error: "Force-generate failed: " + e.message }, 500);
+  }
+}
+__name(handleAdminForceGenerateBlueprint, "handleAdminForceGenerateBlueprint");
+
+var INTERNAL_BP_TOKEN = "bp-internal-2026";
+
+// Helper: stream a single Anthropic request to completion with retry
+async function streamAnthropicCall(apiKey, body, retries) {
+  retries = retries || 3;
+  let lastErr;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, Math.pow(2, attempt) * 1000));
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({ ...body, stream: true })
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        lastErr = new Error("Anthropic " + res.status + ": " + errText.slice(0, 200));
+        if (res.status !== 529 && res.status !== 503) throw lastErr;
+        continue;
+      }
+      let fullContent = "";
+      let outputTokens = 0;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const d = line.slice(6).trim();
+            if (d === "[DONE]") continue;
+            try {
+              const ev = JSON.parse(d);
+              if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") fullContent += ev.delta.text;
+              else if (ev.type === "message_delta" && ev.usage) outputTokens = ev.usage.output_tokens || outputTokens;
+            } catch (_) {}
+          }
+        }
+      } finally { reader.releaseLock(); }
+      return { fullContent, outputTokens };
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error("streamAnthropicCall failed after retries");
+}
+__name(streamAnthropicCall, "streamAnthropicCall");
+
+async function handleInternalGenerateBlueprint(request, env) {
+  if (request.headers.get("X-Internal-Token") !== INTERNAL_BP_TOKEN) {
+    return json({ error: "Forbidden" }, 403);
+  }
+  try {
+    const body = await request.json();
+    const { sessionId, force, jobId } = body;
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    await runBlueprintJob(sessionId, jobId || null, !!force, env);
+    return json({ ok: true, sessionId });
+  } catch (e) {
+    console.error("[InternalBP] Fatal:", e.message);
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleInternalGenerateBlueprint, "handleInternalGenerateBlueprint");
+
+// Core blueprint generation logic — shared by handleInternalGenerateBlueprint and handleBlueprintStart
+async function runBlueprintJob(sessionId, jobId, force, env) {
+  const updateJobKV = async (updates) => {
+    if (!jobId) return;
+    try {
+      const existing = await env.SESSIONS.get("bp_job:" + jobId, { type: "json" }).catch(() => null) || {};
+      await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ ...existing, ...updates }), { expirationTtl: 60 * 60 * 24 * 7 });
+    } catch (_) {}
+  };
+
+  await updateJobKV({ status: "generating", progress: 10 });
+
+  const kvData = await env.SESSIONS.get(sessionId);
+  if (!kvData) { await updateJobKV({ status: "failed", error: "Session not found" }); return; }
+
+  let session;
+  try { session = JSON.parse(kvData); } catch (_) {
+    const sanitized = kvData.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    session = JSON.parse(sanitized);
+  }
+
+  if (!force && session.blueprintGenerated && session.blueprint) {
+    await updateJobKV({ status: "complete", progress: 100, blueprint: session.blueprint });
+    return;
+  }
+
+  // Race condition guard: check D1 first (authoritative) before starting generation.
+  // Two concurrent calls can both see blueprintGenerated:false in KV if they read
+  // before either has written back. D1 is the canonical source.
+  if (!force) {
+    try {
+      const d1Row = await env.DB.prepare("SELECT blueprint_generated FROM sessions WHERE id = ?").bind(sessionId).first();
+      if (d1Row && d1Row.blueprint_generated === 1) {
+        console.log("[runBlueprintJob] D1 gate: blueprint already generated for session=" + sessionId + " — skipping duplicate");
+        await updateJobKV({ status: "complete", progress: 100 });
+        return;
+      }
+    } catch (_) {}
+
+    // KV mutex: prevent two concurrent jobs for the same session.
+    const genLockKey = "bp_generating:" + sessionId;
+    const lockExists = await env.SESSIONS.get(genLockKey).catch(() => null);
+    if (lockExists) {
+      console.log("[runBlueprintJob] KV lock: another generation already in-flight for session=" + sessionId + " — skipping");
+      await updateJobKV({ status: "skipped", error: "Duplicate — another generation in flight" });
+      return;
+    }
+    await env.SESSIONS.put(genLockKey, "1", { expirationTtl: 600 }).catch(() => {});
+  }
+
+  const rawMessages = Array.isArray(session.messages) ? session.messages : [];
+  // Strip empty assistant messages, then deduplicate consecutive identical messages
+  const filteredMessages = rawMessages.filter((m) => m.content && m.content.trim().length > 0);
+  const messages = filteredMessages.filter((m, i) => i === 0 || m.content !== filteredMessages[i - 1].content || m.role !== filteredMessages[i - 1].role);
+  const cleanMessages = messages.filter((msg) => !msg.content || !msg.content.includes("```json"));
+  const recentMessages = cleanMessages.slice(-60);
+
+  const transcript = recentMessages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => `${m.role.toUpperCase()}: ${(m.content || "").replace(/METADATA:\{[^\n]*\}/g, "").replace(/```json[\s\S]*?```/g, "").trim()}`)
+    .slice(-40).join("\n\n").substring(0, 6000);
+
+  console.log("[runBlueprintJob] session=" + sessionId + " turns=" + messages.length + " jobId=" + (jobId || "none"));
+  await updateJobKV({ status: "generating", progress: 15 });
+
+  const triggerA = [
+    ...recentMessages,
+    { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh. Begin your response with ```json and end with ```. The debrief paragraphs and futureSelfLetter must be fully written." }
+  ];
+
+  const proseSysPrompt = `You are a brand strategist writing personalized prose sections for a brand blueprint. Use second person ("you") for mirror_observation. Use first person from James Guldan for futureSelfLetter and arrogant_truth. Be specific — reference what was actually said in the interview. No generic language. Tone: warm, direct, confident. No dashes in the copy. Return only valid JSON — no markdown fences, no explanation.`;
+  const proseUserPrompt = `Based on the interview transcript below, write detailed prose for six specific sections of a brand blueprint.
+
+INTERVIEW TRANSCRIPT:
+${transcript}
+
+Return ONLY a valid JSON object with these fields (no markdown fences):
+{
+  "debrief": {
+    "paragraph1_validation": "2-3 sentences acknowledging what they did and that this interview asked for honesty.",
+    "paragraph2_mirror": "2-3 sentences reflecting their specific situation back using their language.",
+    "paragraph3_quote": "1 sentence — direct quote from the interview, the most emotionally resonant thing they said.",
+    "paragraph4_turn": "2-3 sentences reframing their struggle as strategic advantage.",
+    "paragraph5_invitation": "1-2 sentences transitioning to the blueprint."
+  },
+  "real_problem": {
+    "body": "3-4 paragraphs separated by double newlines. Root cause of why their ideal clients are stuck.",
+    "insight": "One direct sentence naming the mechanism behind the problem.",
+    "pullquote": "One sentence the ideal client says to themselves — in their voice."
+  },
+  "vision": {
+    "body": "3-4 paragraphs separated by double newlines. What becomes possible when the ideal client works with this person.",
+    "insight": "One concrete sentence about what becomes possible."
+  },
+  "mirror_observation": "2 to 3 paragraphs in second person. Do NOT summarize what happened in the interview. Instead, name the one thing you noticed them doing repeatedly that they could not see themselves doing. The deflection pattern. The moment they answered a question about themselves by talking about their clients. The way they qualified every achievement the moment they said it. Name the specific pattern, give 2 to 3 specific examples from the transcript, and then name what it means. This should read like a therapist's note that is warm but precise. The reader should feel slightly exposed. Not judged. Seen.",
+  "mirror_connection": "2-3 sentences connecting the origin wound or formative experience they described to the exact struggle their ideal client is going through right now. Make the line explicit.",
+  "arrogant_truth": "One sentence starting with I can... or naming a specific capability with a specific outcome. Max 30 words. No hedging. Pull from Phase 7 answer if available.",
+  "mission_statement": "One sentence. What this person would do even if no one paid them. Pull directly from Phase 8 answer if available.",
+  "pricing_current": "What they charge right now. Pull from Phase 7 answer. Be specific — exact number or range.",
+  "pricing_gap_belief": "The internalized voice that stops them from raising prices. Pull from Phase 7 answer about whose voice they hear. One to two sentences.",
+  "never_said_publicly": "The thing they named in this interview for the first time. Pull from Phase 8 answer if available. One sentence in their voice.",
+  "futureSelfLetter": "Full letter 200-300 words from James Guldan to the client. Warm, honest, direct. References specific things from the interview.",
+  "loveLetter": "A letter from the client to their younger self. 150 to 200 words. Reference the specific childhood moment or formative wound revealed in the interview. This is a letter of forgiveness and recognition. The younger self needs to hear that the thing they were ashamed of or punished for is the exact thing that made them extraordinary. Do not use generic language. Name the specific moment, the specific person, the specific feeling. End with a line that connects who they were then to who they are now. Start with 'Dear younger you,' — do not use their name.",
+  "bookmark_fraud": "One sentence. When they feel like a fraud, what specific moment from this interview proves they are not? Reference a real achievement or capability they named. Max 30 words.",
+  "bookmark_thread": "One sentence. When they lose direction, what was the single clearest statement of purpose from this interview? Reference it directly. Max 30 words."
+}`;
+
+  const [callAResult, callBResult] = await Promise.all([
+    streamAnthropicCall(env.ANTHROPIC_API_KEY, {
+      model: MODEL_OPUS,
+      max_tokens: 24000,
+      system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
+      messages: triggerA
+    }).then((r) => { updateJobKV({ progress: 60 }).catch(() => {}); return r; }),
+    streamAnthropicCall(env.ANTHROPIC_API_KEY, {
+      model: MODEL_OPUS,
+      max_tokens: 8000,
+      system: proseSysPrompt,
+      messages: [{ role: "user", content: proseUserPrompt }]
+    }).then((r) => { updateJobKV({ progress: 80 }).catch(() => {}); return r; })
+  ]);
+
+  await updateJobKV({ progress: 85 });
+
+  if (!callAResult.fullContent) throw new Error("Empty response from blueprint Call A");
+  const blueprintMatch = callAResult.fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || callAResult.fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
+  if (!blueprintMatch) throw new Error("No blueprint JSON in Call A response");
+
+  let blueprint = JSON.parse(blueprintMatch[1]);
+
+  try {
+    const proseText = callBResult.fullContent || "";
+    const proseMatch = proseText.match(/\{[\s\S]*\}/);
+    if (proseMatch) {
+      const prose = JSON.parse(proseMatch[0]);
+      if (prose.debrief) blueprint.debrief = { ...(blueprint.debrief || {}), ...prose.debrief };
+      if (!blueprint.v3) blueprint.v3 = {};
+      if (prose.real_problem) blueprint.v3.realProblem = { ...(blueprint.v3.realProblem || {}), ...prose.real_problem };
+      if (prose.vision) blueprint.v3.vision = { ...(blueprint.v3.vision || {}), ...prose.vision };
+      if (prose.mirror_observation) blueprint.v3.mirror_observation = prose.mirror_observation;
+      if (prose.mirror_connection) blueprint.v3.mirror_connection = prose.mirror_connection;
+      if (prose.arrogant_truth) blueprint.v3.arrogant_truth = prose.arrogant_truth;
+      if (prose.mission_statement) blueprint.v3.mission_statement = prose.mission_statement;
+      if (prose.pricing_current) blueprint.v3.pricing_current = prose.pricing_current;
+      if (prose.pricing_gap_belief) blueprint.v3.pricing_gap_belief = prose.pricing_gap_belief;
+      if (prose.never_said_publicly) blueprint.v3.never_said_publicly = prose.never_said_publicly;
+      if (prose.futureSelfLetter) blueprint.v3.futureSelfLetter = prose.futureSelfLetter;
+      if (prose.loveLetter) blueprint.v3.loveLetter = prose.loveLetter;
+      if (prose.bookmark_fraud) blueprint.v3.bookmark_fraud = prose.bookmark_fraud;
+      if (prose.bookmark_thread) blueprint.v3.bookmark_thread = prose.bookmark_thread;
+      if (prose.real_problem?.body && !blueprint.part3?.nicheStatement) {
+        if (!blueprint.part3) blueprint.part3 = {};
+        blueprint.part3.nicheStatement = prose.real_problem.body;
+        blueprint.part3.uniqueMechanism = prose.real_problem.insight || "";
+        blueprint.part3._realProblem = prose.real_problem;
+      }
+      if (prose.vision?.body && !blueprint.debrief?.paragraph4_turn) {
+        if (!blueprint.debrief) blueprint.debrief = {};
+        blueprint.debrief.paragraph4_turn = prose.vision.body;
+        blueprint.debrief.paragraph5_invitation = prose.vision.insight || "";
+        blueprint.debrief._vision = prose.vision;
+      }
+      console.log("[runBlueprintJob] Prose extension merged");
+    }
+  } catch (proseErr) {
+    console.warn("[runBlueprintJob] Prose merge failed (non-fatal):", proseErr.message);
+  }
+
+  const bpValidation = validateBlueprint(blueprint);
+  if (!bpValidation.passed) {
+    const repaired = autoRepairBlueprint(blueprint);
+    blueprint = repaired.blueprint;
+    if (repaired.repairCount > 0) console.log("[runBlueprintJob] Repaired " + repaired.repairCount + " issues");
+  }
+
+  await updateJobKV({ progress: 90 });
+
+  session.blueprint = blueprint;
+  session.blueprintGenerated = true;
+  session.phase = Math.max(Number(session.phase) || 1, 8);
+  session.messages = [
+    ...messages,
+    { role: "user", content: "I am ready. Please generate my complete brand blueprint now.", system: true },
+    { role: "assistant", content: callAResult.fullContent, system: true }
+  ];
+
+  try {
+    const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+    if (debrief) session.strategistDebrief = debrief;
+  } catch (debriefErr) {
+    console.error("[runBlueprintJob] Debrief failed:", debriefErr.message);
+  }
+
+  await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
+  env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify({
+    blueprint,
+    name: blueprint.name || session.userName || "",
+    apolloData: session.apolloData || null,
+    messageCount: session.messages.length
+  }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
+  env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
+
+  await env.DB.prepare(
+    "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
+  ).bind(session.phase, sessionId).run().catch((e) => console.error("[runBlueprintJob] D1 update failed:", e.message));
+
+  try {
+    const sessionRow = await env.DB.prepare("SELECT emotional_depth_score FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+    const emotionalScore = sessionRow?.emotional_depth_score ?? null;
+    const tier = computeUserTier(emotionalScore);
+    await logSessionEvent(env, sessionId, "tier_computed", { tier_title: tier?.tier_title, grade: tier?.grade, score: emotionalScore });
+  } catch (tierLogErr) {
+    console.error("[runBlueprintJob] tier_computed log failed:", tierLogErr.message);
+  }
+
+  await updateJobKV({ status: "complete", progress: 100, blueprint, completedAt: new Date().toISOString() });
+
+  try {
+    if (session.userId) {
+      const user = await getUserById(env, session.userId);
+      if (user?.email) {
+        const bp2 = blueprint?.blueprint || blueprint;
+        fireEventToDripWorker(env, user.email, "interview_completed", {
+          name: user.name || "",
+          phone: session.phone || "",
+          highlight_quote: bp2?.debrief?.paragraph3_quote || bp2?.leadIntel?.notableQuotes?.[0] || "",
+          niche_statement: bp2?.part3?.nicheStatement || "",
+          brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
+          next_step: bp2?.part8?.recommendation || "self_guided"
+        }).catch(() => {});
+      }
+    }
+  } catch (_) {}
+
+  saveToRAG(env, session, blueprint).catch(() => {});
+  extractSessionInsights(env, sessionId, session).catch(() => {});
+  const li = blueprint?.leadIntel;
+  if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
+  // Release KV mutex lock now that D1 is committed.
+  env.SESSIONS.delete("bp_generating:" + sessionId).catch(() => {});
+  console.log("[runBlueprintJob] Done session=" + sessionId + " tokens=" + (callAResult.outputTokens + callBResult.outputTokens));
+}
+__name(runBlueprintJob, "runBlueprintJob");
+
+// POST /api/blueprint/start — returns 202 + jobId immediately, runs generation async
+async function handleBlueprintStart(request, env, ctx) {
+  const user = await requireAuth(request, env);
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  let sessionId;
+  try { sessionId = (await request.json()).sessionId; } catch (_) {}
+  if (!sessionId) return json({ error: "sessionId required" }, 400);
+
+  // Verify session belongs to user (or admin)
+  const sessionRow = await env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+  if (!sessionRow) return json({ error: "Session not found" }, 404);
+  if (sessionRow.user_id !== user.id && user.role !== "admin") return json({ error: "Forbidden" }, 403);
+
+  const jobId = "bpj_" + crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const jobData = {
+    jobId,
+    sessionId,
+    status: "pending",
+    progress: 0,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    blueprint: null,
+    error: null
+  };
+  await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify(jobData), { expirationTtl: 60 * 60 * 24 * 7 });
+
+  // Run generation inline in ctx.waitUntil — avoids self-fetch subrequest KV propagation issues
+  ctx.waitUntil(runBlueprintJob(sessionId, jobId, false, env).catch((e) => {
+    console.error("[BPStart] runBlueprintJob error:", e.message);
+    env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ jobId, sessionId, status: "failed", error: e.message, progress: 0 }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+  }));
+
+  return new Response(JSON.stringify({ jobId, status: "pending" }), {
+    status: 202,
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  });
+}
+__name(handleBlueprintStart, "handleBlueprintStart");
+
+// GET /api/blueprint/status/:jobId
+async function handleBlueprintStatusPoll(request, env, path) {
+  const user = await requireAuth(request, env);
+  if (!user) return json({ error: "Unauthorized" }, 401);
+  const parts = path.split("/"); // ["", "api", "blueprint", "status", "bpj_xxx"]
+  const jobId = parts[4];
+  if (!jobId) return json({ error: "jobId required" }, 400);
+  const jobData = await env.SESSIONS.get("bp_job:" + jobId, { type: "json" }).catch(() => null);
+  if (!jobData) return json({ error: "Job not found" }, 404);
+  // Strip full blueprint from poll response to keep it small; client gets it via session fetch
+  const { blueprint, ...rest } = jobData;
+  return json({ ...rest, hasBlueprint: !!blueprint });
+}
+__name(handleBlueprintStatusPoll, "handleBlueprintStatusPoll");
+
+async function handleAdminGenerateV3Fields(request, env) {
+  const key = request.headers.get("X-Admin-Key");
+  if (key !== "dw-v3-generate-2026") return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: "Session not found" }, 404);
+    const session = JSON.parse(kvData);
+    if (!session.blueprint) return json({ error: "No blueprint in session" }, 400);
+    const bp = session.blueprint;
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const transcript = messages.filter((m) => m.role === "user" || m.role === "assistant").map((m) => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map((c) => typeof c === "object" ? c.text || "" : c).join(" ");
+      return m.role.toUpperCase() + ": " + String(content);
+    }).join("\n\n");
+    const idealClient = JSON.stringify(bp.idealClient || bp.part2 || {});
+    const positioning = JSON.stringify((bp.part7 || {}).positioningStatements || {});
+    const closingLine = bp.closingLine || "";
+    const personalLetter = JSON.stringify(bp.personalLetter || bp.debrief || {});
+    const moves = (bp.firstThreeMoves || []).map((m) => m.title || m.instruction || "").join(", ");
+    const prompt = `You are reading a complete Deep Work Interview transcript. Your job is to generate the most emotionally precise, hyper-personal blueprint content possible. This person just spent 90 minutes being deeply honest. Honor that by writing content that could ONLY have been written for them.
+
+CRITICAL RULES FOR ALL FIELDS:
+- Use SPECIFIC details, quotes, moments, and language from the interview. Not generalities.
+- Reference the actual things they said, the actual patterns you observed, the actual origin story they shared.
+- If they mentioned their father, their childhood, a specific fear, a specific moment \u2014 USE IT.
+- Every sentence should make the reader think "how did they know that about me?"
+- Do NOT write anything that could apply to a generic entrepreneur. Write ONLY what is true for this exact person.
+- The emotional target: this should feel like being truly seen for the first time.
+
+EXISTING BLUEPRINT CONTEXT:
+- Closing Line: ${closingLine}
+- Ideal Client: ${idealClient.slice(0, 600)}
+- Personal Letter: ${personalLetter.slice(0, 600)}
+- First Moves: ${moves}
+- Current Positioning: ${positioning}
+
+FULL INTERVIEW TRANSCRIPT:
+${transcript.slice(0, 55e3)}
+
+Generate the following as valid JSON only (no markdown, no explanation):
+{
+  "positioningStatement": "One powerful sentence that captures the truth of what this person does. Not a tagline. The sentence that would make someone who knows them say 'that is exactly right.' Use their actual language from the interview if possible.",
+  "clientStory": {
+    "headline": "A headline so specific to their ideal client that it feels like reading their private journal. Reference the exact type of person described in the interview.",
+    "body": "2-3 long paragraphs. Paint the portrait of their ideal client using the specific details from the interview. Reference the exact patterns, behaviors, and inner monologue that came up. Use second person (you). Do not hedge. Do not soften. Write like you are sitting across from this client and saying out loud what they have never said to anyone. Include details about what they have tried, what keeps failing, the specific flavor of their suffering. Use concrete images and sensory details, not abstract concepts.",
+    "pullquote": "The exact sentence their ideal client says to themselves at 2am. Use the emotional language and specific fears that came up in the interview. Not generic.",
+    "tension": "One sentence naming the specific gap this person identified. Use their words if they named it. Be precise about what is broken and why."
+  },
+  "realProblem": {
+    "headline": "Name the actual root cause using the specific pattern you identified in the interview. Not 'a clarity problem' \u2014 the SPECIFIC clarity problem.",
+    "body": "2-3 long paragraphs. Go deep into what is actually happening. Reference the specific survival patterns, origin story details, childhood dynamics, or relationship patterns that came up in the interview. Connect those patterns to the business problems. Be direct and unflinching. This should feel like the person is reading their own internal diagnosis for the first time.",
+    "insight": "One sentence for the insight card. The most important reframe from the interview. The thing that shifts everything.",
+    "pullquote": "A sentence that captures the specific experience of being stuck in this pattern. Use imagery or language from the interview."
+  },
+  "vision": {
+    "headline": "What their specific life looks and feels like when the work is done. Not abstract alignment \u2014 the concrete daily experience.",
+    "body": "2-3 long paragraphs. Paint a vivid picture of their aligned life using details from the interview. What their mornings look like. How their relationship with their child changes. How they feel in their body. How their business operates differently. Be concrete and sensory. This should feel like a preview of a life they can almost taste.",
+    "insight": "One concrete sentence about what becomes possible when this specific person stops running their survival pattern."
+  },
+  "mirror_observation": "1-2 paragraphs written in first person from the interviewer's perspective. Start with 'You answered every question about...' or a similar observation pattern. Name the single most striking behavioral or emotional pattern you observed across the entire interview \u2014 something they did not say directly but that showed up repeatedly. Be specific. Use their actual words and patterns. This should feel like being seen by someone who was paying close attention. Do not soften it. It should be slightly uncomfortable because it is true.",
+  "arrogant_truth": "A single sentence \u2014 the boldest, most direct claim this person could make about their capability. The thing they said or almost said that made them hesitate because it sounded arrogant. It is not arrogant. It is accurate. Pull it directly from what they described in the interview. It should start with 'I can...' or name a specific capability with a specific timeframe or outcome. Max 30 words. No hedging.",
+  "futureSelfLetter": "4-5 paragraphs from this person's FUTURE SELF writing to their PRESENT self (not younger self \u2014 to who they are right now, today). CRITICAL: Use their first name. Reference the specific fears they are carrying RIGHT NOW \u2014 the specific business decision, relationship dynamic, or identity question they are wrestling with today. Name what the future version knows that the present version cannot yet see. Be specific about what changed and how. Reference their child, their marriage, their specific context if mentioned. Warm but direct. End with: Three years from now, / [First Name]. Do NOT write 'Dear [name]' as an opening \u2014 start immediately with the content.",
+  "loveLetter": "5-7 paragraphs from this person's FUTURE SELF writing to their YOUNGER self. CRITICAL: This is the most important piece. Use their name. Reference SPECIFIC biographical details \u2014 their father, their childhood, what they were carrying, the specific moments they described. Tell the younger version what was already true about them that they could not see. Reference their child by name if mentioned. Reference their marriage. Reference the specific wounds. Be raw. Be compassionate. Do not hold back. This should make them cry. End with: With everything, / Your future self"
+}`;
+    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-opus-4-6",
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const aiData = await aiResp.json();
+    const rawText = aiData.content?.[0]?.text || "";
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return json({ error: "AI did not return valid JSON", raw: rawText.slice(0, 500) }, 500);
+    const v3Fields = JSON.parse(jsonMatch[0]);
+    session.blueprint = { ...bp, v3: v3Fields };
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 60 });
+    try {
+      const metaRaw = await env.SESSIONS.get("bp_meta:" + sessionId);
+      if (metaRaw) {
+        const meta = JSON.parse(metaRaw);
+        if (meta.blueprint) {
+          meta.blueprint.v3 = v3Fields;
+          await env.SESSIONS.put("bp_meta:" + sessionId, JSON.stringify(meta), { expirationTtl: 60 * 60 * 24 * 60 });
+        }
+      }
+    } catch (_) {
+    }
+    return json({ ok: true, v3: v3Fields });
+  } catch (e) {
+    return json({ error: "Failed to generate v3 fields", detail: e.message }, 500);
+  }
+}
+__name(handleAdminGenerateV3Fields, "handleAdminGenerateV3Fields");
+async function handleAdminBackfillLandscape(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId } = await request.json();
+    if (!sessionId) return json({ error: "sessionId required" }, 400);
+    const kvData = await env.SESSIONS.get(sessionId);
+    if (!kvData) return json({ error: "Session not found in KV" }, 404);
+    const session = JSON.parse(kvData);
+    if (!session.blueprint) return json({ error: "No blueprint in session" }, 400);
+    const bp = session.blueprint?.blueprint || session.blueprint;
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const transcript = messages.filter(function(m) { return m.role === "user" || m.role === "assistant"; }).map(function(m) {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c) { return typeof c === "object" ? c.text || "" : c; }).join(" ");
+      return m.role.toUpperCase() + ": " + String(content);
+    }).join("\n\n");
+    const brandName = bp.brandName || (bp.part1 || {}).brandName || "";
+    const niche = bp.niche || (bp.part1 || {}).niche || "";
+    const positioningStatement = (bp.v3 || {}).positioningStatement || "";
+    const idealClient = JSON.stringify(bp.idealClient || bp.part2 || {}).slice(0, 600);
+    const prompt = `You are reading a complete Deep Work Interview transcript. Generate the Market Landscape section of this person's blueprint — analyzing where they stand in their market and positioning them as a category of one.
+
+CONTEXT:
+- Brand/Name: ${brandName}
+- Niche: ${niche}
+- Current Positioning: ${positioningStatement}
+- Ideal Client: ${idealClient}
+
+FULL INTERVIEW TRANSCRIPT:
+${transcript.slice(0, 55000)}
+
+Generate the complete market landscape analysis as valid JSON only (no markdown, no explanation):
+{
+  "beforePositioning": "The generic thing they were saying before this conversation — their old website copy, their old elevator pitch. Be specific, quote what they described.",
+  "afterPositioning": "The new, specific positioning statement they should use. Niched down, uncatchable, category of one.",
+  "whyItWorks": "2-3 sentences explaining why this positioning shift is dramatically better. Connect it to market opportunity, client psychology, and competitive differentiation.",
+  "marketViability": "2-3 sentences on niche size and viability. Address the fear that niching down means a smaller market. Show why the opposite is true for this specific person.",
+  "categoryOfOne": "One powerful sentence — why nobody can compete with them in this specific space. Hero callout. Bold, direct. Max 25 words.",
+  "competitors": [
+    {"name": "Generic competitor type in their space", "positioning": "What that competitor typically says", "gap": "What they are missing that this person has"},
+    {"name": "Second competitor type", "positioning": "Their positioning", "gap": "Their gap"}
+  ],
+  "marketQuotes": [
+    {"quote": "Something their ideal client says about their frustration with the market", "descriptor": "Frustrated entrepreneur"},
+    {"quote": "A second market insight from the interview", "descriptor": "Your ideal client"}
+  ],
+  "competitiveAdvantage": "One paragraph — the specific, unchallengeable competitive advantage this person has based on their story, niche, and what emerged in this interview."
+}`;
+    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model: "claude-opus-4-6", max_tokens: 3000, messages: [{ role: "user", content: prompt }] })
+    });
+    const aiData = await aiResp.json();
+    const rawText = aiData.content?.[0]?.text || "";
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return json({ error: "AI did not return valid JSON", raw: rawText.slice(0, 500) }, 500);
+    const landscapeFields = JSON.parse(jsonMatch[0]);
+    if (session.blueprint?.blueprint) {
+      session.blueprint.blueprint = { ...session.blueprint.blueprint, marketLandscape: landscapeFields };
+    } else {
+      session.blueprint = { ...session.blueprint, marketLandscape: landscapeFields };
+    }
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 60 });
+    return json({ ok: true, sessionId, landscape: landscapeFields });
+  } catch (e) {
+    return json({ error: "Failed to generate landscape", detail: e.message }, 500);
+  }
+}
+__name(handleAdminBackfillLandscape, "handleAdminBackfillLandscape");
+async function handleAdminBulkV3(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    const rows = await env.DB.prepare(
+      "SELECT s.id FROM sessions s WHERE s.blueprint_generated = 1 AND s.status IN ('completed','blueprint_complete') ORDER BY s.created_at DESC LIMIT 50"
+    ).all();
+    const sessions = rows?.results || [];
+    const results = [];
+    for (const row of sessions) {
+      const sid = row.id;
+      try {
+        const kvData = await env.SESSIONS.get(sid);
+        if (!kvData) {
+          results.push({ id: sid, status: "skipped", reason: "no KV data" });
+          continue;
+        }
+        const sess = JSON.parse(kvData);
+        const bp = sess.blueprint;
+        if (!bp) {
+          results.push({ id: sid, status: "skipped", reason: "no blueprint" });
+          continue;
+        }
+        if (bp.v3 && bp.v3.positioningStatement && bp.v3.mirror_observation) {
+          results.push({ id: sid, status: "skipped", reason: "v3 already complete" });
+          continue;
+        }
+        results.push({ id: sid, status: "needs_v3", hasV3: !!bp.v3, missingNew: !bp.v3?.mirror_observation });
+      } catch (e) {
+        results.push({ id: sid, status: "error", reason: e.message });
+      }
+    }
+    const needsV3 = results.filter(function(r) {
+      return r.status === "needs_v3";
+    });
+    return json({ total: sessions.length, needs_v3: needsV3.length, skipped: results.filter(function(r) {
+      return r.status === "skipped";
+    }).length, sessions: needsV3.map(function(r) {
+      return r.id;
+    }) });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminBulkV3, "handleAdminBulkV3");
+async function handleAdminResendBlueprint(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    const { sessionId, email } = await request.json();
+    if (!sessionId || !email) return json({ error: "sessionId and email required" }, 400);
+    const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+    const blueprintUrl = origin + "/app?session=" + sessionId;
+    const name = email.split("@")[0];
+    const emailBody = '<!DOCTYPE html><html><body style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:40px 20px;color:#1D1D1F"><div style="text-align:center;margin-bottom:32px"><div style="font-family:Outfit,sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:8px">Deep Work Interview</div><div style="font-size:24px;font-weight:800;font-family:Outfit,sans-serif">Your Results Are Ready</div></div><p style="font-size:16px;line-height:1.65;color:#3a3a3a">Hey ' + escHtml(name) + ',</p><p style="font-size:16px;line-height:1.65;color:#3a3a3a">Your Deep Work Interview results are ready to view. Click below to see them.</p><div style="text-align:center;margin:32px 0"><a href="' + blueprintUrl + '" style="display:inline-block;padding:16px 40px;background:#C4703F;color:#fff;border-radius:50px;font-family:Outfit,sans-serif;font-size:16px;font-weight:700;text-decoration:none">View My Blueprint</a></div><p style="font-size:13px;color:#86868B;margin-top:32px">If the button does not work, copy and paste this link: ' + blueprintUrl + "</p></body></html>";
+    const resendKey = env.RESEND_API_KEY;
+    if (!resendKey) return json({ error: "RESEND_API_KEY not configured" }, 500);
+    const sendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + resendKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: "James Guldan <james@jamesguldan.com>",
+        to: [email],
+        subject: "Your Deep Work Interview Results Are Ready",
+        html: emailBody
+      })
+    });
+    const sendData = await sendRes.json();
+    if (sendData.id) return json({ ok: true, emailId: sendData.id, sentTo: email });
+    return json({ error: "Send failed", detail: sendData }, 500);
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminResendBlueprint, "handleAdminResendBlueprint");
+async function handleAdminPeopleSearch(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  const url = new URL(request.url);
+  const q = (url.searchParams.get("q") || "").trim();
+  const buyingTemp = (url.searchParams.get("buying_temp") || "").trim();
+  const blueprintOnly = url.searchParams.get("blueprint") || "";
+  let conditions = [];
+  let binds = [];
+  if (q) {
+    conditions.push("(LOWER(COALESCE(u.email, s.email, '')) LIKE LOWER(?) OR LOWER(COALESCE(u.name, '')) LIKE LOWER(?))");
+    binds.push(`%${q}%`, `%${q}%`);
+  }
+  if (buyingTemp) {
+    conditions.push("LOWER(li.buying_temperature) LIKE LOWER(?)");
+    binds.push(`%${buyingTemp}%`);
+  }
+  if (blueprintOnly === "1") {
+    conditions.push("s.blueprint_generated = 1");
+  } else if (blueprintOnly === "0") {
+    conditions.push("(s.blueprint_generated IS NULL OR s.blueprint_generated = 0)");
+  }
+  const where = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
+  const query = `SELECT s.id as session_id, COALESCE(u.name, s.email) as name, COALESCE(u.email, s.email) as email, s.created_at, s.blueprint_generated, s.phase, s.message_count, s.depth_grade, li.buying_temperature, li.industry, li.best_fit_service, li.follow_up_angle, li.biggest_pain_point, li.budget_signals FROM sessions s LEFT JOIN users u ON s.user_id = u.id LEFT JOIN lead_intel li ON li.session_id = s.id ${where} ORDER BY s.created_at DESC LIMIT 100`;
+  try {
+    const results = await env.DB.prepare(query).bind(...binds).all();
+    return json({ people: results.results || [] });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminPeopleSearch, "handleAdminPeopleSearch");
+async function handleAdminPersonDetail(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  const parts = path.split("/");
+  const sessionId = parts[4];
+  if (!sessionId) return json({ error: "Missing sessionId" }, 400);
+  const session = await env.DB.prepare(`
+    SELECT s.id, COALESCE(u.name, s.email) as name, COALESCE(u.email, s.email) as email,
+           s.created_at, s.blueprint_generated, s.phase, s.message_count, s.depth_grade, s.status
+    FROM sessions s LEFT JOIN users u ON s.user_id = u.id
+    WHERE s.id = ?
+  `).bind(sessionId).first().catch(() => null);
+  if (!session) return json({ error: "Session not found" }, 404);
+  const intel = await env.DB.prepare("SELECT * FROM lead_intel WHERE session_id = ?").bind(sessionId).first().catch(() => null);
+  let quotes = [];
+  if (intel?.notable_quotes) {
+    try {
+      quotes = JSON.parse(intel.notable_quotes);
+    } catch (_) {
+    }
+  }
+  let messages = [];
+  try {
+    const kvData = await env.SESSIONS.get(sessionId, "json");
+    if (kvData?.messages) messages = kvData.messages;
+  } catch (_) {
+  }
+  return json({
+    session: { id: session.id, name: session.name, email: session.email, created_at: session.created_at, blueprint_generated: session.blueprint_generated, phase: session.phase, message_count: session.message_count, depth_grade: session.depth_grade, status: session.status },
+    intel: intel ? { buying_temperature: intel.buying_temperature, industry: intel.industry, estimated_revenue: intel.estimated_revenue, years_in_business: intel.years_in_business, team_size: intel.team_size, brand_maturity: intel.brand_maturity, biggest_pain_point: intel.biggest_pain_point, budget_signals: intel.budget_signals, best_fit_service: intel.best_fit_service, best_fit_reason: intel.best_fit_reason, follow_up_angle: intel.follow_up_angle, recommendation: intel.recommendation } : null,
+    quotes,
+    messageCount: messages.length,
+    messages: messages.map((m) => ({ role: m.role, content: m.content, phase: m.phase }))
+  });
+}
+__name(handleAdminPersonDetail, "handleAdminPersonDetail");
+async function handleAdminHealthDashboard(request, env) {
+  await requireAdmin(request, env);
+  const now = new Date();
+
+  const [healthCounts, recentCompletions, activeInterviews, nudgeQueue, errorPulse] = await Promise.all([
+    env.DB.prepare("SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health ORDER BY cnt DESC").all(),
+    env.DB.prepare("SELECT s.id, s.created_at, s.last_active_at, u.email, s.tier_title, s.depth_grade FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.blueprint_generated=1 AND s.last_active_at > datetime('now', '-7 days') ORDER BY s.last_active_at DESC LIMIT 20").all(),
+    env.DB.prepare("SELECT s.id, s.phase, s.message_count, s.created_at, u.email FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.status='active' AND s.last_active_at > datetime('now', '-24 hours') ORDER BY s.message_count DESC LIMIT 20").all(),
+    env.DB.prepare("SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IN ('cold_abandoned','mid_drop') AND status='active' GROUP BY session_health").all(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')").first()
+  ]);
+
+  const healthRows = healthCounts.results || [];
+  const completionRows = recentCompletions.results || [];
+  const activeRows = activeInterviews.results || [];
+  const nudgeRows = nudgeQueue.results || [];
+  const recentErrors = errorPulse?.cnt || 0;
+
+  const healthTable = healthRows.map((r) =>
+    `<tr><td>${escHtml(r.session_health || "")}</td><td><strong>${r.cnt}</strong></td></tr>`
+  ).join("") || "<tr><td colspan='2'>No data</td></tr>";
+
+  const completionTable = completionRows.map((r) =>
+    `<tr><td>${escHtml(r.email || "\u2014")}</td><td>${escHtml(r.tier_title || "\u2014")}</td><td>${escHtml(r.depth_grade || "\u2014")}</td><td>${r.last_active_at ? r.last_active_at.slice(0, 10) : "\u2014"}</td></tr>`
+  ).join("") || "<tr><td colspan='4'>No completions this week</td></tr>";
+
+  const activeTable = activeRows.map((r) =>
+    `<tr><td>${escHtml(r.email || "\u2014")}</td><td>${r.phase || "?"}</td><td>${r.message_count || 0}</td><td>${r.created_at ? r.created_at.slice(0, 10) : "\u2014"}</td></tr>`
+  ).join("") || "<tr><td colspan='4'>No active interviews</td></tr>";
+
+  const nudgeSummary = nudgeRows.map((r) => `${r.session_health}: ${r.cnt}`).join(", ") || "0 candidates";
+  const errorColor = recentErrors > 5 ? "#c00" : recentErrors > 0 ? "#c60" : "#090";
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>DWI Health Dashboard</title>
+<meta http-equiv="refresh" content="30">
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f8f8f8;margin:0;padding:24px;color:#1d1d1f;}
+h1{font-size:22px;margin-bottom:4px;}
+.ts{color:#666;font-size:13px;margin-bottom:24px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+.panel{background:#fff;border:1px solid #e5e5e5;border-radius:10px;padding:20px;}
+.panel h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#666;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;color:#666;font-weight:500;border-bottom:1px solid #e5e5e5;padding:6px 8px;}
+td{padding:6px 8px;border-bottom:1px solid #f0f0f0;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;}
+.pulse{font-size:28px;font-weight:700;}
+.full{grid-column:1/-1;}
+</style>
+</head><body>
+<h1>DWI Health Dashboard</h1>
+<div class="ts">Last updated: ${now.toISOString()} \u2014 auto-refreshes every 30s</div>
+<div class="grid">
+  <div class="panel">
+    <h2>Session Health States</h2>
+    <table><thead><tr><th>State</th><th>Count</th></tr></thead><tbody>${healthTable}</tbody></table>
+  </div>
+  <div class="panel">
+    <h2>Error Pulse (last 1h)</h2>
+    <div class="pulse" style="color:${errorColor}">${recentErrors}</div>
+    <p style="font-size:13px;color:#666;margin-top:8px;">${recentErrors === 0 ? "All clear" : `${recentErrors} error${recentErrors !== 1 ? "s" : ""} in the last hour`}</p>
+    <h2 style="margin-top:20px;">Nudge Queue</h2>
+    <p style="font-size:13px;">${nudgeSummary}</p>
+  </div>
+  <div class="panel full">
+    <h2>Recent Completions (7d)</h2>
+    <table><thead><tr><th>Email</th><th>Tier</th><th>Grade</th><th>Completed</th></tr></thead><tbody>${completionTable}</tbody></table>
+  </div>
+  <div class="panel full">
+    <h2>Active Interviews (24h)</h2>
+    <table><thead><tr><th>Email</th><th>Phase</th><th>Messages</th><th>Started</th></tr></thead><tbody>${activeTable}</tbody></table>
+  </div>
+</div>
+</body></html>`;
+
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+__name(handleAdminHealthDashboard, "handleAdminHealthDashboard");
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -18428,9 +21536,9 @@ async function handleAdminTestBlueprint(request, env) {
         max_tokens: 8e3,
         messages: [{
           role: "user",
-          content: `Generate a complete brand blueprint JSON for a person named "${brandName}" in the niche "${niche}". The blueprint should be realistic and detailed with all 8 parts filled out. Follow this exact JSON structure:
+          content: `Generate a complete brand blueprint JSON for a person named "${brandName}" in the niche "${niche}". The blueprint should be realistic and detailed with all 7 parts filled out. Follow this exact JSON structure:
 
-{"blueprint":{"name":"Full Name","generatedAt":"${(/* @__PURE__ */ new Date()).toISOString()}","part1":{"title":"Brand Foundation","brandNames":["Name 1","Name 2","Name 3"],"taglines":["Tag 1","Tag 2","Tag 3"],"visualDirection":{"colors":[{"name":"Primary","hex":"#1B3A4B"},{"name":"Secondary","hex":"#C17F3E"},{"name":"Accent","hex":"#E8B86D"},{"name":"Background","hex":"#F8F5F0"},{"name":"Text","hex":"#1A1A1A"}],"fonts":{"heading":"Playfair Display","body":"Inter"},"aesthetic":"2 sentences"},"brandVoice":{"descriptors":["word1","word2","word3","word4","word5"],"doSay":["ex1","ex2","ex3"],"neverSay":["ex1","ex2","ex3"]},"coreBrandPromise":"One sentence"},"part2":{"title":"Ideal Customer Avatar","name":"First name","ageRange":"range","lifeSituation":"2 sentences","tryingToAchieve":"goal","whatIsStoppingThem":"obstacle","exactWords":["phrase1","phrase2","phrase3"],"alreadyTried":["thing1","thing2"],"whyItDidNotWork":"pattern"},"part3":{"title":"Niche Positioning","nicheStatement":"I help X do Y without Z","whoTheyServe":"desc","whoTheyDoNotServe":"desc","uniqueMechanism":"methodology name","competitorGap":"differentiation"},"part4":{"title":"Offer Suite","entryOffer":{"name":"","description":"","price":"","delivery":""},"coreOffer":{"name":"","description":"","price":"","delivery":""},"premiumOffer":{"name":"","description":"","price":"","delivery":""},"ascensionLogic":"how each leads to next"},"part5":{"title":"Website Blueprint","pageNarrative":"2-3 sentences","heroHeadlines":["1","2","3"],"heroSubheadline":"one line","heroCTA":"button text","heroImageTheme":"specific evocative image description","sections":[{"name":"Section","purpose":"purpose","content":"content","rationale":"why","confidence":85,"imageTheme":"desc","visualMood":"light"}],"testimonialFraming":"approach"},"part6":{"title":"Gap Analysis","credibilityGaps":["gap1","gap2","gap3"],"marketingOpportunities":["opp1","opp2","opp3"],"firstMove":"most important first step"},"part7":{"title":"Headlines and Positioning Statements","heroHeadlineOptions":["1","2","3","4","5","6","7","8","9","10"],"taglineOptions":["1","2","3","4","5"],"positioningStatements":{"website":"for homepage","social":"for bios","inPerson":"for introductions"}},"part8":{"title":"Your Recommended Next Step","recommendation":"site_in_sixty","headline":"compelling one liner","personalizedMessage":"3 to 5 sentences","whyNow":"1 to 2 sentences","specificBenefit":"concrete benefit"},"leadIntel":{"estimatedRevenue":"100K to 500K","industry":"${niche}","yearsInBusiness":"1 to 3","teamSize":"Solo","hasExistingBrand":false,"hasExistingWebsite":false,"hasInternalTeam":false,"brandMaturity":"Starting fresh","buyingTemperature":"Hot","biggestPainPoint":"main pain","budgetSignals":"signal","bestFitService":"site_in_sixty","bestFitReason":"1 sentence","notableQuotes":["quote1","quote2","quote3"],"followUpAngle":"angle"}}}
+{"blueprint":{"name":"Full Name","generatedAt":"${(/* @__PURE__ */ new Date()).toISOString()}","part1":{"title":"Brand Foundation","brandNames":["Name 1","Name 2","Name 3"],"taglines":["Tag 1","Tag 2","Tag 3"],"visualDirection":{"colors":[{"name":"Primary","hex":"#1B3A4B"},{"name":"Secondary","hex":"#C17F3E"},{"name":"Accent","hex":"#E8B86D"},{"name":"Background","hex":"#F8F5F0"},{"name":"Text","hex":"#1A1A1A"}],"fonts":{"heading":"Playfair Display","body":"Inter"},"aesthetic":"2 sentences"},"brandVoice":{"descriptors":["word1","word2","word3","word4","word5"],"doSay":["ex1","ex2","ex3"],"neverSay":["ex1","ex2","ex3"]},"coreBrandPromise":"One sentence"},"part2":{"title":"Ideal Customer Avatar","name":"First name","ageRange":"range","lifeSituation":"2 sentences","tryingToAchieve":"goal","whatIsStoppingThem":"obstacle","exactWords":["phrase1","phrase2","phrase3"],"alreadyTried":["thing1","thing2"],"whyItDidNotWork":"pattern"},"part3":{"title":"Niche Positioning","nicheStatement":"I help X do Y without Z","whoTheyServe":"desc","whoTheyDoNotServe":"desc","uniqueMechanism":"methodology name","competitorGap":"differentiation"},"part4":{"title":"Offer Suite","entryOffer":{"name":"","description":"","price":"","delivery":""},"coreOffer":{"name":"","description":"","price":"","delivery":""},"premiumOffer":{"name":"","description":"","price":"","delivery":""},"ascensionLogic":"how each leads to next"},"part5":{"title":"Website Blueprint","pageNarrative":"2-3 sentences","heroHeadlines":["1","2","3"],"heroSubheadline":"one line","heroCTA":"button text","heroImageTheme":"specific evocative image description","sections":[{"name":"Section","purpose":"purpose","content":"content","rationale":"why","confidence":85,"imageTheme":"desc","visualMood":"light"}],"testimonialFraming":"approach"},"part6":{"title":"Gap Analysis","credibilityGaps":["gap1","gap2","gap3"],"marketingOpportunities":["opp1","opp2","opp3"],"firstMove":"most important first step"},"part7":{"title":"Headlines and Positioning Statements","heroHeadlineOptions":["1","2","3","4","5","6","7","8","9","10"],"taglineOptions":["1","2","3","4","5"],"positioningStatements":{"website":"for homepage","social":"for bios","inPerson":"for introductions"}},"leadIntel":{"estimatedRevenue":"100K to 500K","industry":"${niche}","yearsInBusiness":"1 to 3","teamSize":"Solo","hasExistingBrand":false,"hasExistingWebsite":false,"hasInternalTeam":false,"brandMaturity":"Starting fresh","buyingTemperature":"Hot","biggestPainPoint":"main pain","budgetSignals":"signal","bestFitService":"site_in_sixty","bestFitReason":"1 sentence","notableQuotes":["quote1","quote2","quote3"],"followUpAngle":"angle"}}}
 
 Return ONLY the JSON, no other text.`
         }]
@@ -18455,7 +21563,7 @@ Return ONLY the JSON, no other text.`
     }
     session.blueprint = blueprint;
     session.blueprintGenerated = true;
-    session.phase = 8;
+    session.phase = 7;
     try {
       const b = blueprint?.blueprint || {};
       const debriefRes = await fetch("https://api.anthropic.com/v1/messages", {
@@ -18493,7 +21601,7 @@ Now write the strategist debrief as a personal letter to this person. Return ONL
     } catch (_debriefErr) {
       console.error("Test debrief generation failed, continuing without debrief");
     }
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
     await env.DB.prepare("UPDATE sessions SET status = ?, phase = ?, blueprint_generated = 1 WHERE id = ?").bind("blueprint_complete", 8, sessionId).run();
     const token = generateMagicToken();
@@ -18557,7 +21665,7 @@ async function handleAdminQuickTestSession(request, env) {
         const blueprint = JSON.parse(match[1]);
         session.blueprint = blueprint;
         session.blueprintGenerated = true;
-        session.phase = 8;
+        session.phase = 7;
         hasBlueprint = true;
         await env.UPLOADS.put(`sessions/${sessionId}/blueprint.json`, JSON.stringify(blueprint));
         try {
@@ -18597,7 +21705,7 @@ async function handleAdminQuickTestSession(request, env) {
       } catch (_) {
       }
     }
-    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 30 });
+    await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
     const now = (/* @__PURE__ */ new Date()).toISOString();
     await env.DB.prepare("INSERT INTO sessions (id, user_id, tier, phase, status, email, created_at, message_count) VALUES (?,?,?,?,?,?,?,?)").bind(sessionId, user.id, tier || "blueprint", hasBlueprint ? 8 : 1, hasBlueprint ? "blueprint_complete" : "active", email, now, 0).run();
     const magicToken = generateMagicToken();
@@ -18640,6 +21748,8 @@ async function handleAdminSaveSettings(request, env) {
   }
 }
 __name(handleAdminSaveSettings, "handleAdminSaveSettings");
+// CLEANUP-2026-04-05: prompt_versions table is active. Used by admin prompt editor to read/save custom system prompts.
+// 1 row as of 2026-04-05, last written 2026-03-25. Fallback to hardcoded DEEP_WORK_SYSTEM_PROMPT if table is empty. Keep.
 async function handleAdminGetPrompt(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -19324,20 +22434,17 @@ async function handleAdminCreateWeeklySnapshot(request, env) {
   }
 }
 __name(handleAdminCreateWeeklySnapshot, "handleAdminCreateWeeklySnapshot");
-
-// ── Server-rendered admin dashboard ──
-
 function escA(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-
 function adminLayout(title, content, navExtra) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escA(title)} — DWI Admin</title>
+<title>${escA(title)} \u2014 DWI Admin</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>\u{1F9E0}</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
 <style>
@@ -19422,7 +22529,8 @@ a:hover{opacity:.7}
 <nav class="adm-nav">
   <span class="adm-nav-brand">DWI Admin</span>
   <a class="adm-nav-link" href="/admin">Dashboard</a>
-  <a class="adm-nav-link" href="/admin/export-all">Export CSV</a>
+  <a class="adm-nav-link" href="/admin/people">People</a>
+  <a class="adm-nav-link" href="/admin/settings">Settings</a>
   <span class="adm-nav-right"><a class="adm-nav-link" href="/logout" style="font-size:12px">Sign out</a></span>
 </nav>
 <div class="adm-body">
@@ -19430,43 +22538,54 @@ ${content}
 </div>
 <script>
 if(window.location.pathname==='/admin'){setTimeout(function(){location.reload()},30000);}
-</script>
+function bulkV3(){
+  if(!confirm('Run bulk V3 generation for all sessions missing v3 fields?'))return;
+  var btn=event.target;btn.disabled=true;btn.textContent='Running...';
+  fetch('/api/admin/bulk-v3',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dryRun:false})})
+  .then(function(r){return r.json()})
+  .then(function(d){alert('Bulk V3: '+d.needs_v3+' sessions queued for generation');btn.textContent='Done';})
+  .catch(function(e){alert('Error: '+e.message);btn.disabled=false;btn.textContent='Bulk Generate V3';});
+}
+<\/script>
 </body>
 </html>`;
 }
-
 function timeSince(dateStr) {
-  if (!dateStr) return 'never';
-  var d = new Date(dateStr.includes('T') ? dateStr : dateStr + 'Z');
-  var sec = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (sec < 60) return sec + 's ago';
-  if (sec < 3600) return Math.floor(sec/60) + 'm ago';
-  if (sec < 86400) return Math.floor(sec/3600) + 'h ago';
-  return Math.floor(sec/86400) + 'd ago';
+  if (!dateStr) return "never";
+  var d = new Date(dateStr.includes("T") ? dateStr : dateStr + "Z");
+  var sec = Math.floor((Date.now() - d.getTime()) / 1e3);
+  if (sec < 60) return sec + "s ago";
+  if (sec < 3600) return Math.floor(sec / 60) + "m ago";
+  if (sec < 86400) return Math.floor(sec / 3600) + "h ago";
+  return Math.floor(sec / 86400) + "d ago";
 }
-
 function liveColor(dateStr) {
-  if (!dateStr) return 'adm-live-dot-red';
-  var sec = Math.floor((Date.now() - new Date(dateStr.includes('T') ? dateStr : dateStr + 'Z').getTime()) / 1000);
-  if (sec < 300) return 'adm-live-dot-green';
-  if (sec < 900) return 'adm-live-dot-yellow';
-  return 'adm-live-dot-red';
+  if (!dateStr) return "adm-live-dot-red";
+  var sec = Math.floor((Date.now() - new Date(dateStr.includes("T") ? dateStr : dateStr + "Z").getTime()) / 1e3);
+  if (sec < 300) return "adm-live-dot-green";
+  if (sec < 900) return "adm-live-dot-yellow";
+  return "adm-live-dot-red";
 }
-
 function phaseBar(phase) {
-  var pct = Math.round((Math.min(phase || 0, 8) / 8) * 100);
+  var pct = Math.round(Math.min(phase || 0, 7) / 7 * 100);
   return '<div class="adm-progress"><div class="adm-progress-fill" style="width:' + pct + '%"></div></div>';
 }
-
 async function handleAdminDashboard(request, env) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return Response.redirect('/app', 302);
+  if (!admin) {
+    // Don't clear the cookie — SPA will re-auth via localStorage and /api/auth/me will re-set it
+    // Clearing it was causing a cycle where the SSR admin could never load
+    return handleAdmin(request, env);
+  }
+  var searchQ = new URL(request.url).searchParams.get('q') || '';
   try {
-    var [statsRow, completedRow, costRow, avgMsgRow] = await Promise.all([
-      env.DB.prepare('SELECT COUNT(*) as total FROM sessions').first(),
-      env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE blueprint_generated=1").first(),
+    var [statsRow, completedRow, costRow, avgMsgRow, revenueRow, usersRow] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) as total FROM sessions WHERE status != 'restarted'").first(),
+      env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE blueprint_generated=1 AND status != 'restarted'").first(),
       env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total, COUNT(*) as calls FROM api_costs").first().catch(()=>({total:0,calls:0})),
-      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE blueprint_generated=1").first().catch(()=>({avg:0}))
+      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE blueprint_generated=1").first().catch(()=>({avg:0})),
+      env.DB.prepare("SELECT COALESCE(SUM(amount),0) as total, COUNT(*) as cnt FROM payments WHERE status='succeeded'").first().catch(()=>({total:0,cnt:0})),
+      env.DB.prepare("SELECT COUNT(*) as total FROM users WHERE role != 'admin'").first().catch(()=>({total:0}))
     ]);
     var total = statsRow?.total || 0;
     var completed = completedRow?.cnt || 0;
@@ -19474,9 +22593,12 @@ async function handleAdminDashboard(request, env) {
     var totalCost = parseFloat(costRow?.total || 0).toFixed(2);
     var avgCostPerSession = total > 0 ? (parseFloat(costRow?.total || 0) / total).toFixed(3) : '0.000';
     var avgMsgs = avgMsgRow?.avg ? Math.round(avgMsgRow.avg) : 0;
+    var totalRevenue = (parseFloat(revenueRow?.total||0)/100).toFixed(0);
+    var paymentCount = revenueRow?.cnt || 0;
+    var totalUsers = usersRow?.total || 0;
 
     // Phase 1 dropoff
-    var phase1Row = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE phase <= 1").first().catch(()=>({cnt:0}));
+    var phase1Row = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE phase <= 1 AND status != 'restarted'").first().catch(()=>({cnt:0}));
     var phase1Pct = total > 0 ? Math.round((phase1Row.cnt/total)*100) : 0;
 
     // Live sessions (last 30 min)
@@ -19536,23 +22658,101 @@ async function handleAdminDashboard(request, env) {
       return '<tr><td>' + escA(r.model||'unknown') + '</td><td>' + (r.calls||0) + '</td><td>$' + parseFloat(r.total||0).toFixed(3) + '</td><td>$' + (r.calls>0 ? (parseFloat(r.total||0)/r.calls).toFixed(4) : '0') + '</td></tr>';
     }).join('');
 
-    // Recent 20 sessions
-    var recentRows = await env.DB.prepare(`
-      SELECT s.id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
-             u.name, u.email
-      FROM sessions s LEFT JOIN users u ON s.user_id=u.id
-      ORDER BY s.created_at DESC LIMIT 20
-    `).all().catch(()=>({results:[]}));
+    // Session Health
+    var [v3CoverageRow, noBpRow, stalledRows, lowDepthRows] = await Promise.all([
+      env.DB.prepare(`
+        SELECT
+          COUNT(*) as total_completed,
+          SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as with_bp,
+          SUM(CASE WHEN depth_grade IS NOT NULL THEN 1 ELSE 0 END) as with_depth
+        FROM sessions WHERE status='completed' OR blueprint_generated=1
+      `).first().catch(()=>({total_completed:0,with_bp:0,with_depth:0})),
+      env.DB.prepare(`
+        SELECT s.id, u.name, u.email, s.phase, s.message_count, s.created_at
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE (s.status='completed' OR s.phase>=7) AND s.blueprint_generated=0
+        ORDER BY s.created_at DESC LIMIT 10
+      `).all().catch(()=>({results:[]})),
+      env.DB.prepare(`
+        SELECT s.id, u.name, u.email, s.phase, s.message_count, s.last_active_at
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE s.status='active' AND s.phase > 1 AND s.last_active_at < datetime('now','-24 hours')
+        ORDER BY s.last_active_at DESC LIMIT 10
+      `).all().catch(()=>({results:[]})),
+      env.DB.prepare(`
+        SELECT s.id, u.name, u.email, s.depth_grade, s.depth_score, s.phase
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE s.blueprint_generated=1 AND s.depth_score IS NOT NULL AND s.depth_score < 12
+        ORDER BY s.depth_score ASC LIMIT 10
+      `).all().catch(()=>({results:[]}))
+    ]);
+    var totalCompleted2 = v3CoverageRow?.total_completed || 0;
+    var withBp = v3CoverageRow?.with_bp || 0;
+    var withDepth = v3CoverageRow?.with_depth || 0;
+    var bpPct = totalCompleted2 > 0 ? Math.round((withBp/totalCompleted2)*100) : 0;
+    var depthPct = totalCompleted2 > 0 ? Math.round((withDepth/totalCompleted2)*100) : 0;
+
+    var noBpList = (noBpRow?.results||[]);
+    var stalledList = (stalledRows?.results||[]);
+    var lowDepthList = (lowDepthRows?.results||[]);
+    var attentionCount = noBpList.length + stalledList.length + lowDepthList.length;
+
+    var healthIssuesHTML = '';
+    if (noBpList.length > 0) {
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#991B1B;margin-bottom:6px">Missing Blueprint (' + noBpList.length + ')</div>';
+      noBpList.forEach(function(r) {
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-gray">Phase ' + (r.phase||'?') + '</span><span class="badge bg-gray">' + (r.message_count||0) + ' msgs</span><span style="color:#86868B">' + timeSince(r.created_at) + '</span></div>';
+      });
+      healthIssuesHTML += '</div>';
+    }
+    if (stalledList.length > 0) {
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#856404;margin-bottom:6px">Stalled 24h+ (' + stalledList.length + ')</div>';
+      stalledList.forEach(function(r) {
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-yellow">Phase ' + (r.phase||'?') + '</span><span class="badge bg-gray">' + (r.message_count||0) + ' msgs</span><span style="color:#86868B">Last active ' + timeSince(r.last_active_at) + '</span></div>';
+      });
+      healthIssuesHTML += '</div>';
+    }
+    if (lowDepthList.length > 0) {
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#C4703F;margin-bottom:6px">Low Depth Score (' + lowDepthList.length + ')</div>';
+      lowDepthList.forEach(function(r) {
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-red">' + escA(r.depth_grade||'?') + ' (' + (r.depth_score||0) + '/25)</span></div>';
+      });
+      healthIssuesHTML += '</div>';
+    }
+    if (!healthIssuesHTML) healthIssuesHTML = '<div style="font-size:12px;color:#86868B;padding:8px 0">All sessions healthy</div>';
+
+    // Recent sessions (filtered if search query present)
+    var recentRows;
+    if (searchQ.trim()) {
+      var sq = '%' + searchQ.trim() + '%';
+      recentRows = await env.DB.prepare(`
+        SELECT s.id, s.user_id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
+               u.name, u.email
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE (u.email LIKE ?1 OR u.name LIKE ?1 OR s.id LIKE ?1) AND s.status != 'restarted'
+        ORDER BY s.created_at DESC LIMIT 50
+      `).bind(sq).all().catch(()=>({results:[]}));
+    } else {
+      recentRows = await env.DB.prepare(`
+        SELECT s.id, s.user_id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
+               u.name, u.email
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id
+        WHERE s.status != 'restarted'
+        ORDER BY s.created_at DESC LIMIT 20
+      `).all().catch(()=>({results:[]}));
+    }
     var recentTableRows = (recentRows?.results||[]).map(function(r) {
       var statusBadge = r.status==='active' ? 'bg-green' : r.status==='completed'||r.blueprint_generated ? 'bg-copper' : 'bg-gray';
       var bpBadge = r.blueprint_generated ? '<span class="badge bg-copper">Blueprint</span>' : '';
-      var grade = r.depth_grade ? '<span class="badge bg-gray">' + escA(r.depth_grade) + '</span>' : '';
+      var gradeColor2 = r.depth_grade?(r.depth_grade[0]==='A'?'#27ae60':r.depth_grade[0]==='B'?'#2980b9':r.depth_grade[0]==='C'?'#e67e22':'#e74c3c'):'#86868B';
+      var grade = r.depth_grade ? '<span style="font-weight:700;color:'+gradeColor2+'">'+escA(r.depth_grade)+'</span>' : '';
+      var userLink = r.user_id ? '<a href="/admin/people/' + escA(r.user_id) + '" style="font-weight:600;color:#1D1D1F">' + escA(r.name||r.email||'Anon') + '</a>' : '<span style="font-weight:600">' + escA(r.name||r.email||'Anon') + '</span>';
       return '<tr>' +
-        '<td><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><div style="font-size:11px;color:#86868B">' + escA(r.email||r.id.slice(0,8)) + '</div></td>' +
+        '<td>'+userLink+'<div style="font-size:11px;color:#86868B">' + escA(r.email||r.id.slice(0,8)) + '</div></td>' +
         '<td><span class="badge ' + statusBadge + '">' + escA(r.status||'?') + '</span></td>' +
         '<td>' + (r.phase||1) + '/8</td>' +
         '<td>' + (r.message_count||0) + '</td>' +
-        '<td>' + bpBadge + ' ' + grade + '</td>' +
+        '<td>' + bpBadge + (r.depth_grade?' '+grade:'') + '</td>' +
         '<td style="color:#86868B">' + timeSince(r.created_at) + '</td>' +
         '<td><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + r.id + '">View</a> <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export/' + r.id + '">Export</a></td>' +
       '</tr>';
@@ -19560,12 +22760,23 @@ async function handleAdminDashboard(request, env) {
 
     var html = '<h1 class="adm-page-title">Dashboard</h1>' +
 
+      '<div style="margin-bottom:24px;display:flex;align-items:center;gap:12px">' +
+        '<form method="GET" action="/admin" style="display:flex;align-items:center;gap:8px;margin:0;flex:1;max-width:500px">' +
+          '<input type="text" name="q" placeholder="Search people by name or email..." value="' + escA(searchQ) + '" style="flex:1;padding:10px 16px;border:1px solid #D1D1D6;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff" />' +
+          '<button type="submit" class="adm-btn adm-btn-sm" style="padding:8px 18px;font-size:14px">Search</button>' +
+          (searchQ ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin">Clear</a>' : '') +
+        '</form>' +
+      '</div>' +
+
+      (searchQ ? '<div style="margin-bottom:20px;font-size:13px;color:#86868B">' + (recentRows?.results?.length||0) + ' result(s) for "<strong>' + escA(searchQ) + '</strong>"</div>' : '') +
+
       '<div class="adm-stats">' +
-        '<div class="adm-stat"><div class="adm-stat-label">Total Sessions</div><div class="adm-stat-value">' + total + '</div></div>' +
-        '<div class="adm-stat"><div class="adm-stat-label">Blueprints</div><div class="adm-stat-value">' + completed + '</div><div class="adm-stat-sub">' + completionRate + '% completion</div></div>' +
-        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">Phase 1 Dropoff</div><div class="adm-stat-value">' + phase1Pct + '%</div><div class="adm-stat-sub">' + phase1Row.cnt + ' stuck at phase 1</div></div>' +
-        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">API Spend</div><div class="adm-stat-value">$' + totalCost + '</div><div class="adm-stat-sub">$' + avgCostPerSession + '/session avg</div></div>' +
+        '<div class="adm-stat" style="background:linear-gradient(135deg,#F0FFF4,#E8F5E9)"><div class="adm-stat-label">Revenue</div><div class="adm-stat-value" style="color:#27ae60">$' + totalRevenue + '</div><div class="adm-stat-sub">' + paymentCount + ' payment' + (paymentCount===1?'':'s') + '</div></div>' +
+        '<div class="adm-stat"><div class="adm-stat-label">People</div><div class="adm-stat-value">' + totalUsers + '</div><div class="adm-stat-sub">' + paymentCount + ' paid</div></div>' +
+        '<div class="adm-stat"><div class="adm-stat-label">Interviews</div><div class="adm-stat-value">' + total + '</div><div class="adm-stat-sub">' + completed + ' blueprints (' + completionRate + '%)</div></div>' +
+        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">Phase 1 Dropoff</div><div class="adm-stat-value">' + phase1Pct + '%</div><div class="adm-stat-sub">' + phase1Row.cnt + ' stuck at start</div></div>' +
         '<div class="adm-stat"><div class="adm-stat-label">Avg Msgs</div><div class="adm-stat-value">' + avgMsgs + '</div><div class="adm-stat-sub">per completed session</div></div>' +
+        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">API Spend</div><div class="adm-stat-value">$' + totalCost + '</div><div class="adm-stat-sub">$' + avgCostPerSession + '/session</div></div>' +
         '<div class="adm-stat"><div class="adm-stat-label">Live Now</div><div class="adm-stat-value">' + (liveRows?.results?.length||0) + '</div><div class="adm-stat-sub">last 30 min</div></div>' +
       '</div>' +
 
@@ -19579,10 +22790,24 @@ async function handleAdminDashboard(request, env) {
         '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Cost by Model</div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Model</th><th>Calls</th><th>Total</th><th>Per Call</th></tr></thead><tbody>' + (costTableRows||'<tr><td colspan="4" class="adm-empty">No data</td></tr>') + '</tbody></table></div></div>' +
       '</div>' +
 
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px">' +
+        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Session Health</div>' +
+          '<div class="adm-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">' +
+            '<div class="adm-stat"><div class="adm-stat-label">Blueprint Coverage</div><div class="adm-stat-value">' + bpPct + '%</div><div class="adm-stat-sub">' + withBp + '/' + totalCompleted2 + ' completed</div></div>' +
+            '<div class="adm-stat"><div class="adm-stat-label">Depth Scored</div><div class="adm-stat-value">' + depthPct + '%</div><div class="adm-stat-sub">' + withDepth + '/' + totalCompleted2 + '</div></div>' +
+            '<div class="adm-stat' + (attentionCount > 0 ? ' adm-stat-warn' : '') + '"><div class="adm-stat-label">Need Attention</div><div class="adm-stat-value">' + attentionCount + '</div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Issues <button class="adm-btn adm-btn-sm" onclick="bulkV3()" style="margin-left:8px">Bulk Generate V3</button></div>' +
+          '<div class="adm-panel" style="max-height:280px;overflow-y:auto">' + healthIssuesHTML + '</div>' +
+        '</div>' +
+      '</div>' +
+
       '<div class="adm-section">' +
-        '<div class="adm-section-hd">Recent Sessions <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div>' +
+        '<div class="adm-section-hd">' + (searchQ ? 'Search Results' : 'Recent Sessions') + ' <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div>' +
         '<div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>User</th><th>Status</th><th>Phase</th><th>Msgs</th><th>Blueprint</th><th>Created</th><th>Actions</th></tr></thead><tbody>' +
         (recentTableRows||'<tr><td colspan="7" class="adm-empty">No sessions</td></tr>') +
+
         '</tbody></table></div>' +
       '</div>';
 
@@ -19592,137 +22817,853 @@ async function handleAdminDashboard(request, env) {
   }
 }
 
+async function handleAdminPeople(request, env) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return handleAdmin(request, env);
+  var url2 = new URL(request.url);
+  var searchQ = url2.searchParams.get('q') || '';
+  var filterVal = url2.searchParams.get('filter') || 'all';
+  try {
+    var baseSQL = `
+      SELECT u.id, u.email, u.name, u.tier, u.role, u.created_at, u.last_login,
+             s.id as session_id, s.status as session_status, s.message_count, s.phase,
+             s.depth_grade, s.blueprint_generated,
+             (SELECT token FROM auth_tokens a WHERE a.user_id = u.id AND (a.type = 'persistent_magic' OR a.type = 'magic_login') AND a.used = 0 AND a.expires_at > datetime('now') ORDER BY a.expires_at DESC LIMIT 1) as magic_token
+      FROM users u
+      LEFT JOIN sessions s ON s.id = (SELECT id FROM sessions WHERE user_id = u.id AND status != 'restarted' ORDER BY created_at DESC LIMIT 1)
+      WHERE u.role != 'admin'
+    `;
+    var params = [];
+    if (searchQ.trim()) {
+      var sq = '%' + searchQ.trim() + '%';
+      baseSQL += " AND (u.email LIKE ?1 OR u.name LIKE ?1)";
+      params.push(sq);
+    }
+    if (filterVal === 'blueprint') {
+      baseSQL += ' AND s.blueprint_generated = 1';
+    } else if (filterVal === 'in_progress') {
+      baseSQL += ' AND s.id IS NOT NULL AND s.message_count > 0 AND COALESCE(s.blueprint_generated, 0) = 0';
+    } else if (filterVal === 'not_started') {
+      baseSQL += ' AND (s.id IS NULL OR s.message_count = 0)';
+    }
+    baseSQL += ' ORDER BY CASE WHEN s.blueprint_generated = 1 THEN 0 WHEN s.message_count > 0 THEN 1 ELSE 2 END, s.message_count DESC, u.created_at DESC LIMIT 100';
+
+    var usersRows;
+    if (params.length > 0) {
+      usersRows = await env.DB.prepare(baseSQL).bind(params[0]).all().catch(()=>({results:[]}));
+    } else {
+      usersRows = await env.DB.prepare(baseSQL).all().catch(()=>({results:[]}));
+    }
+    var users = usersRows?.results || [];
+    var origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
+
+    var tableRows = users.map(function(u) {
+      var magicLink = u.magic_token ? origin + '/magic?token=' + u.magic_token : '';
+      var statusBadge, statusColor;
+      if (u.blueprint_generated === 1) {
+        statusBadge = 'Blueprint \u2713'; statusColor = 'background:#E8F5E9;color:#2E7D32';
+      } else if (u.session_id && u.message_count > 0) {
+        statusBadge = 'In Progress'; statusColor = 'background:#FFF3E0;color:#E65100';
+      } else {
+        statusBadge = 'Not Started'; statusColor = 'background:#F5F5F5;color:#86868B';
+      }
+      var phaseStr = u.session_id ? (u.phase || 1) + '/8' : '\u2014';
+      var msgStr = u.message_count || 0;
+      var gradeStr = u.depth_grade || '\u2014';
+      var gradeColor = u.depth_grade === 'A' ? '#2E7D32' : u.depth_grade === 'B+' ? '#558B2F' : u.depth_grade === 'B' ? '#F57F17' : u.depth_grade === 'C' ? '#E65100' : '#86868B';
+      return '<tr>' +
+        '<td><a href="/admin/people/' + escA(u.id) + '" style="text-decoration:none;color:inherit"><strong>' + escA(u.name || '(no name)') + '</strong><div style="font-size:11px;color:#86868B">' + escA(u.email) + '</div></a></td>' +
+        '<td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;' + statusColor + '">' + statusBadge + '</span></td>' +
+        '<td style="text-align:center">' + phaseStr + '</td>' +
+        '<td style="text-align:center">' + msgStr + '</td>' +
+        '<td style="text-align:center;font-weight:600;color:' + gradeColor + '">' + gradeStr + '</td>' +
+        '<td>' +
+          (magicLink
+            ? '<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="copyLink(this,\'' + escA(magicLink) + '\')">Copy Link</button>'
+            : '<button class="adm-btn adm-btn-sm" onclick="genLink(this,\'' + escA(u.id) + '\')">Generate</button>') +
+        '</td>' +
+        '<td><button class="adm-btn adm-btn-sm adm-btn-danger" onclick="deleteUser(\'' + escA(u.id) + '\',\'' + escA((u.name || u.email).replace(/'/g, '')) + '\')">Delete</button></td>' +
+      '</tr>';
+    }).join('');
+
+    var html = '<h1 class="adm-page-title">People</h1>' +
+
+      '<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:flex-start">' +
+
+        '<form method="GET" action="/admin/people" id="people-form" style="display:flex;align-items:center;gap:8px;margin:0;flex:1;max-width:600px">' +
+          '<input type="text" name="q" placeholder="Search by name or email..." value="' + escA(searchQ) + '" style="flex:1;padding:10px 16px;border:1px solid #D1D1D6;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff" />' +
+          '<select name="filter" onchange="document.getElementById(\'people-form\').submit()" style="padding:10px 12px;border:1px solid #D1D1D6;border-radius:10px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer">' +
+            '<option value="all"' + (filterVal === 'all' ? ' selected' : '') + '>All People</option>' +
+            '<option value="blueprint"' + (filterVal === 'blueprint' ? ' selected' : '') + '>Blueprint Done</option>' +
+            '<option value="in_progress"' + (filterVal === 'in_progress' ? ' selected' : '') + '>In Progress</option>' +
+            '<option value="not_started"' + (filterVal === 'not_started' ? ' selected' : '') + '>Not Started</option>' +
+          '</select>' +
+          '<button type="submit" class="adm-btn adm-btn-sm" style="padding:8px 18px;font-size:14px">Search</button>' +
+          ((searchQ || filterVal !== 'all') ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/people">Clear</a>' : '') +
+        '</form>' +
+
+        '<button class="adm-btn" onclick="document.getElementById(\'add-person-form\').style.display=document.getElementById(\'add-person-form\').style.display===\'none\'?\'block\':\'none\'">+ Add Person</button>' +
+
+      '</div>' +
+
+      ((searchQ || filterVal !== 'all') ? '<div style="margin-bottom:16px;font-size:13px;color:#86868B">' + users.length + ' result(s)' + (searchQ ? ' for "<strong>' + escA(searchQ) + '</strong>"' : '') + (filterVal !== 'all' ? ' &middot; Filter: <strong>' + escA(filterVal === 'blueprint' ? 'Blueprint Done' : filterVal === 'in_progress' ? 'In Progress' : 'Not Started') + '</strong>' : '') + '</div>' : '') +
+
+      '<div id="add-person-form" style="display:none;margin-bottom:24px;padding:20px;background:#fff;border:1px solid #F0F0F0;border-radius:12px">' +
+        '<div style="font-weight:600;margin-bottom:12px">Add New Person</div>' +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">' +
+          '<div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Email *</label><input id="new-email" type="email" placeholder="name@example.com" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;width:240px;font-family:inherit" /></div>' +
+          '<div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Name</label><input id="new-name" type="text" placeholder="First name" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;width:160px;font-family:inherit" /></div>' +
+          '<div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Tier</label><select id="new-tier" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;font-family:inherit;background:#fff"><option value="blueprint">Blueprint</option><option value="site">Site</option><option value="done_for_you">Done for You</option></select></div>' +
+          '<button class="adm-btn" onclick="addPerson()">Create Account</button>' +
+          '<span id="add-status" style="font-size:13px;margin-left:8px"></span>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="adm-section">' +
+        '<div class="adm-section-hd">' + (searchQ ? 'Search Results' : 'All People') + ' <span style="font-size:12px;color:#86868B;font-weight:400">(' + users.length + ')</span></div>' +
+        '<div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Person</th><th>Status</th><th style="text-align:center">Phase</th><th style="text-align:center">Messages</th><th style="text-align:center">Grade</th><th>Magic Link</th><th></th></tr></thead><tbody>' +
+        (tableRows || '<tr><td colspan="7" class="adm-empty">No people found</td></tr>') +
+        '</tbody></table></div>' +
+      '</div>';
+
+    var pageScript = `
+<script>
+function copyLink(btn, link) {
+  navigator.clipboard.writeText(link).then(function() {
+    btn.textContent = 'Copied!';
+    btn.style.background = '#E8F5E9';
+    setTimeout(function() { btn.textContent = 'Copy Link'; btn.style.background = ''; }, 2000);
+  });
+}
+function genLink(btn, userId) {
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  fetch('/api/admin/magic-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: userId })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.magicLink) {
+      navigator.clipboard.writeText(d.magicLink).then(function() {
+        btn.textContent = 'Copied!';
+        btn.className = 'adm-btn adm-btn-sm adm-btn-outline';
+        btn.style.background = '#E8F5E9';
+      });
+    } else {
+      btn.textContent = 'Error';
+      btn.disabled = false;
+    }
+  })
+  .catch(function() { btn.textContent = 'Error'; btn.disabled = false; });
+}
+function addPerson() {
+  var email = document.getElementById('new-email').value.trim();
+  var name = document.getElementById('new-name').value.trim();
+  var tier = document.getElementById('new-tier').value;
+  var status = document.getElementById('add-status');
+  if (!email) { status.textContent = 'Email required'; status.style.color = '#FF3B30'; return; }
+  status.textContent = 'Creating...'; status.style.color = '#86868B';
+  fetch('/api/admin/magic-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, createIfMissing: true, tier: tier })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.magicLink) {
+      navigator.clipboard.writeText(d.magicLink).then(function() {
+        status.textContent = 'Created! Link copied to clipboard.';
+        status.style.color = '#34C759';
+        document.getElementById('new-email').value = '';
+        document.getElementById('new-name').value = '';
+        setTimeout(function() { location.reload(); }, 1500);
+      });
+    } else {
+      status.textContent = d.error || 'Error creating account';
+      status.style.color = '#FF3B30';
+    }
+  })
+  .catch(function(e) { status.textContent = 'Error: ' + e.message; status.style.color = '#FF3B30'; });
+}
+function deleteUser(userId, name) {
+  if (!confirm('Are you sure you want to delete ' + name + '?')) return;
+  if (!confirm('This will permanently remove ALL their data: sessions, blueprints, conversation history, everything. Continue?')) return;
+  if (!confirm('Last chance. Delete ' + name + ' forever?')) return;
+  fetch('/admin/delete-user/' + userId + '?confirm=DELETE', { method: 'POST' })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    if (d.ok || d.success) {
+      alert(name + ' has been deleted.');
+      location.reload();
+    } else {
+      alert('Error: ' + (d.error || 'Unknown error'));
+    }
+  })
+
+}
+</script>`;
+
+    return new Response(adminLayout('People', html) .replace('</body>', pageScript + '</body>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+  } catch(e) {
+    return new Response('Admin error: ' + e.message, { status:500, headers:{'Content-Type':'text/plain'} });
+  }
+}
+
+async function handleAdminPersonProfile(request, env, path) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return handleAdmin(request, env);
+  var userId = path.replace('/admin/people/', '');
+  if (!userId) return new Response('Missing user ID', { status: 400 });
+  try {
+    var origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
+
+    // User info + magic token in parallel (prefer persistent_magic so the link is reusable)
+    var [user, tokenRow] = await Promise.all([
+      env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first(),
+      env.DB.prepare(`SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'persistent_magic' AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1`).bind(userId).first().catch(()=>null)
+    ]);
+    if (!user) return new Response(adminLayout('Not Found', '<div class="adm-empty">User not found</div>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+    // Auto-generate a reusable persistent_magic token if none exists
+    if (!tokenRow) {
+      try {
+        var newPmToken = generateMagicToken();
+        await storeMagicToken(env, newPmToken, userId, 'persistent_magic', 8760);
+        tokenRow = { token: newPmToken };
+      } catch(_) {}
+    }
+    var magicLink = tokenRow ? origin + '/magic?token=' + tokenRow.token : '';
+
+    // Sessions + cost in parallel
+    var [sessionsRes, costRow] = await Promise.all([
+      env.DB.prepare(`SELECT id, phase, message_count, blueprint_generated, status, created_at, last_active_at, depth_grade, emotional_depth_score, depth_breakdown, industry, niche FROM sessions WHERE user_id = ? AND status != 'restarted' ORDER BY created_at DESC LIMIT 10`).bind(userId).all().catch(()=>({results:[]})),
+      env.DB.prepare(`SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE session_id IN (SELECT id FROM sessions WHERE user_id = ?)`).bind(userId).first().catch(()=>({total:0}))
+    ]);
+    var sessions = sessionsRes?.results || [];
+    var session = sessions[0] || null;
+    var sessionId = session?.id || null;
+
+    // Depth breakdown
+    var depthBreakdown = null;
+    if (session?.depth_breakdown) { try { depthBreakdown = JSON.parse(session.depth_breakdown); } catch(_){} }
+
+    // Phase scores + insights in parallel (for primary session)
+    var phaseScores = [], insightRows = [], kvMessages = [], bp = null;
+    if (sessionId) {
+      var [psRes, insRes] = await Promise.all([
+        env.DB.prepare('SELECT * FROM phase_scores WHERE session_id = ? ORDER BY phase').bind(sessionId).all().catch(()=>({results:[]})),
+        env.DB.prepare('SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id = ? ORDER BY confidence DESC').bind(sessionId).all().catch(()=>({results:[]}))
+      ]);
+      phaseScores = psRes?.results || [];
+      insightRows = insRes?.results || [];
+      // KV: messages + blueprint
+      try {
+        var sessRaw = await env.SESSIONS.get(sessionId);
+        if (sessRaw) {
+          var kvSession = JSON.parse(sessRaw);
+          bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
+          if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
+        }
+      } catch(_){}
+      if (!bp) { try { var bpRaw = await env.SESSIONS.get('blueprint:'+sessionId); if(bpRaw) bp=JSON.parse(bpRaw); }catch(_){} }
+    }
+
+    var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
+    var hasLandscape = !!(bp && bp.marketLandscape && bp.marketLandscape.categoryOfOne);
+    var positioningStatement = hasV3 ? bp.v3.positioningStatement : null;
+
+    // Apollo data
+    var apolloTitle = '', apolloCompany = '', apolloLinkedin = '';
+    if (user.apollo_data) {
+      try {
+        var ap = JSON.parse(user.apollo_data);
+        var apJob = ((ap.person||{}).employment_history||[])[0]||{};
+        apolloTitle = apJob.title||''; apolloCompany = apJob.organization_name||''; apolloLinkedin = (ap.person||{}).linkedin_url||'';
+      } catch(_){}
+    }
+
+    // Clarity scores from depth_breakdown (each dim is /5; map to /10)
+    var clarityScores = null;
+    if (depthBreakdown) {
+      var _ii = depthBreakdown.inciting_incident||0, _bs = depthBreakdown.belief_specificity||0;
+      var _cap = depthBreakdown.client_avatar_precision||0, _ps = depthBreakdown.personal_stakes||0, _mm = depthBreakdown.mirror_moment||0;
+      clarityScores = { story: _ii+_ps, beliefs: _bs*2, positioning: _cap+_mm, d:{ii:_ii,bs:_bs,cap:_cap,ps:_ps,mm:_mm} };
+    }
+
+    function clarityCard(label, score, why, interp) {
+      var c = score>=8?'#27ae60':score>=6?'#2980b9':score>=4?'#e67e22':'#e74c3c';
+      var cid = 'cc'+label.replace(/\W/g,'').toLowerCase();
+      return '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:12px;padding:16px;text-align:center">' +
+        '<div style="font-family:Outfit,sans-serif;font-size:40px;font-weight:700;color:'+c+';line-height:1">'+score+'</div>' +
+        '<div style="font-size:10px;color:#86868B;margin:2px 0 6px">/10</div>' +
+        '<div style="font-size:12px;font-weight:600;color:#1D1D1F">'+escA(label)+'</div>' +
+        '<div style="font-size:11px;color:#86868B;margin:4px 0 8px;font-style:italic;line-height:1.4">'+escA(interp)+'</div>' +
+        '<button onclick="var e=document.getElementById(\''+cid+'\');e.style.display=e.style.display===\'none\'?\'block\':\'none\'" style="background:none;border:1px solid #D1D1D6;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;color:#86868B">Why?</button>' +
+        '<div id="'+cid+'" style="display:none;font-size:11px;color:#555;margin-top:8px;text-align:left;background:#F9F9F9;padding:8px;border-radius:6px;line-height:1.5">'+escA(why)+'</div>' +
+      '</div>';
+    }
+
+    // Depth dimension bars
+    var dimLabels = {inciting_incident:'Inciting Incident',belief_specificity:'Belief Specificity',client_avatar_precision:'Client Avatar',personal_stakes:'Personal Stakes',mirror_moment:'Mirror Moment'};
+    var dimBarHTML = depthBreakdown ? Object.entries(depthBreakdown).map(function(e2){
+      var label2=dimLabels[e2[0]]||e2[0].replace(/_/g,' '), val2=e2[1], pct2=Math.round((val2/5)*100);
+      var col2=val2<2?'#e74c3c':val2<4?'#e67e22':'#27ae60';
+      return '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:2px"><span>'+escA(label2)+'</span><span style="font-weight:600;color:'+col2+'">'+val2+'/5</span></div><div style="background:#F0F0F0;height:5px;border-radius:3px"><div style="width:'+pct2+'%;height:100%;background:'+col2+';border-radius:3px"></div></div></div>';
+    }).join('') : '';
+
+    // Grade info
+    var gradeColor = session?.depth_grade?(session.depth_grade[0]==='A'?'#27ae60':session.depth_grade[0]==='B'?'#2980b9':session.depth_grade[0]==='C'?'#e67e22':'#e74c3c'):'#86868B';
+    var gradeExplanation = '';
+    var g2 = session?.depth_grade||'';
+    if (g2==='A') gradeExplanation='Exceptional. Raw story, specific beliefs, clear client avatar, defined personal stakes, and mirror moment all fully explored.';
+    else if (g2==='B+') gradeExplanation='Strong depth. Most dimensions well-explored with minor gaps. Blueprint will be rich and specific.';
+    else if (g2==='B') gradeExplanation='Good depth. Key themes surfaced but some areas stayed surface-level. Blueprint will be solid.';
+    else if (g2==='C') gradeExplanation='Moderate depth. Interview moved through phases without fully mining core material.';
+    else if (g2) gradeExplanation='Below average. Core emotional material was not reached in this session.';
+
+    // Health signals
+    var flags = [];
+    if (!session) { flags.push({t:'gray',m:'No session created yet'}); }
+    else if (session.blueprint_generated) { flags.push({t:hasV3?'green':'yellow', m:hasV3?'Blueprint complete — all fields present':'Blueprint done but V3 fields missing'}); }
+    else if (session.message_count > 0) { flags.push({t:'yellow', m:'Interview in progress — Phase '+(session.phase||1)+'/8 · '+session.message_count+' messages'}); }
+    else { flags.push({t:'gray', m:'Account created — interview not started'}); }
+    var fBg={green:'#E8F8ED',yellow:'#FFF3E0',red:'#FEE2E2',gray:'#F5F5F5'}, fTx={green:'#1A7F3C',yellow:'#E65100',red:'#991B1B',gray:'#86868B'}, fDot={green:'🟢',yellow:'🟡',red:'🔴',gray:'⚪'};
+    var flagsHTML = flags.map(function(f){return '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:'+fBg[f.t]+';margin-bottom:6px"><span>'+fDot[f.t]+'</span><span style="font-size:12px;color:'+fTx[f.t]+'">'+escA(f.m)+'</span></div>';}).join('');
+
+    // Status chip
+    var statusChip = session?.blueprint_generated
+      ? '<span style="background:#E8F5E9;color:#2E7D32;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">Blueprint Done</span>'
+      : session?.message_count>0
+        ? '<span style="background:#FFF3E0;color:#E65100;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">In Progress — Phase '+(session.phase||1)+'/8</span>'
+        : '<span style="background:#F5F5F5;color:#86868B;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">Not Started</span>';
+
+    // Psychology Brief from phase_scores
+    function renderBPValuePP(val) {
+      if (typeof val==='string') return '<p style="line-height:1.6">'+escA(val)+'</p>';
+      if (Array.isArray(val)) return val.map(function(v){
+        if (typeof v==='object'&&v!==null) return '<div style="padding:8px 0;border-bottom:1px solid #F5F5F7">'+Object.entries(v).map(function(e3){return '<div style="display:flex;gap:8px"><span style="color:#86868B;min-width:120px;font-size:11px">'+escA(e3[0])+'</span><span>'+escA(String(e3[1]||''))+'</span></div>';}).join('')+'</div>';
+        return '<div style="padding:4px 0;border-bottom:1px solid #F5F5F7">'+escA(String(v))+'</div>';
+      }).join('');
+      if (typeof val==='object'&&val!==null) return Object.entries(val).map(function(e4){return '<div style="padding:4px 0"><span style="color:#86868B;font-size:11px;display:inline-block;min-width:140px">'+escA(e4[0])+'</span> '+escA(String(e4[1]||''))+'</div>';}).join('');
+      return '<p>'+escA(String(val||''))+'</p>';
+    }
+
+    var psychCards = phaseScores.filter(function(ps){return ps.phase_summary;}).map(function(ps){
+      var quotes=[]; try{quotes=JSON.parse(ps.key_quotes||'[]');}catch(_){}
+      var rfArr=[]; try{rfArr=JSON.parse(ps.red_flags||'[]');}catch(_){}
+      var yfArr=[]; try{yfArr=JSON.parse(ps.yellow_flags||'[]');}catch(_){}
+      var depthCol=ps.emotional_depth>=7?'#E8F5E9;color:#2E7D32':ps.emotional_depth>=4?'#FFF3E0;color:#E65100':'#FEE2E2;color:#991B1B';
+      var engCol=ps.engagement==='high'?'#27ae60':ps.engagement==='medium'?'#e67e22':'#e74c3c';
+      return '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:12px;padding:16px;margin-bottom:12px">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">'+
+          '<span style="background:#F5F5F7;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">Phase '+ps.phase+'</span>'+
+          '<span style="background:'+depthCol+';padding:3px 8px;border-radius:20px;font-size:11px">Depth: '+(ps.emotional_depth||'?')+'/10</span>'+
+          '<span style="font-size:11px;color:'+engCol+';font-weight:500">'+escA(ps.engagement||'')+' engagement</span>'+
+        '</div>'+
+        '<div style="font-size:13px;color:#1D1D1F;line-height:1.6;margin-bottom:10px">'+escA(ps.phase_summary||'')+'</div>'+
+        (quotes.length?'<div style="border-left:3px solid #C4703F;padding-left:12px;margin-bottom:8px">'+quotes.slice(0,2).map(function(q){return '<div style="font-size:12px;font-style:italic;color:#444;margin-bottom:6px;line-height:1.5">\u201c'+escA(q)+'\u201d</div>';}).join('')+'</div>':'')+
+        (rfArr.length?'<div style="font-size:11px;color:#991B1B;background:#FEE2E2;padding:6px 10px;border-radius:6px;margin-bottom:4px">\uD83D\uDD34 '+escA(rfArr[0])+'</div>':'')+
+        (yfArr.length?'<div style="font-size:11px;color:#856404;background:#FFF3CD;padding:6px 10px;border-radius:6px">'+escA(yfArr[0])+'</div>':'')+
+      '</div>';
+    }).join('');
+
+    // Transcript
+    var displayMessages = kvMessages.map(function(m,i){
+      var c=m.content; if(Array.isArray(c))c=c.map(function(x){return typeof x==='object'?(x.text||''):x;}).join(' '); c=String(c||'').replace(/\s*METADATA:\{[^}]*\}/g,'').trim();
+      return {role:m.role,content:c,idx:i};
+    }).filter(function(m){return m.content;});
+    var transcriptHTML = displayMessages.map(function(m){
+      var isUser=m.role==='user';
+      return '<div style="margin-bottom:14px">'+
+        '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#86868B;margin-bottom:4px">'+(isUser?escA(user.name||'User'):'Claude')+'</div>'+
+        '<div style="background:'+(isUser?'#F5F5F7':'#FDF0E8')+';padding:10px 14px;border-radius:'+(isUser?'12px 12px 4px 12px':'12px 12px 12px 4px')+';font-size:13px;line-height:1.6;white-space:pre-wrap">'+escA(m.content)+'</div>'+
+      '</div>';
+    }).join('');
+
+    // Blueprint
+    var blueprintHTML = bp
+      ? Object.entries(bp).map(function(e5){return '<div style="margin-bottom:16px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden"><div style="background:#F5F5F7;padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C4703F">'+escA(e5[0])+'</div><div style="padding:12px 14px;font-size:13px">'+renderBPValuePP(e5[1])+'</div></div>';}).join('')
+      : '<div style="color:#86868B;padding:24px;text-align:center">No blueprint generated yet.</div>';
+
+    // Insights
+    var insightsHTML = insightRows.length
+      ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">'+insightRows.map(function(r){return '<div style="background:#F5F5F7;padding:10px 14px;border-radius:8px;font-size:12px;border-left:3px solid #C4703F"><div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'+escA(r.insight_type)+' <span style="color:#86868B;font-weight:400">('+Math.round(r.confidence*100)+'%)</span></div><div>'+escA(String(r.insight_value||'').slice(0,200))+'</div></div>';}).join('')+'</div>'
+      : '<div style="color:#86868B;padding:24px;text-align:center">No insights extracted yet.</div>';
+
+    // Tier badge
+    var tierBadge = user.tier==='done_for_you'?'bg-copper':user.tier==='blueprint'?'bg-green':'bg-gray';
+
+    // ─── BUILD HTML ───────────────────────────────────────────────────────────
+    var html = '<style>'+
+      '.qa-tab{background:none;border:none;padding:10px 18px;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;color:#86868B;border-bottom:2px solid transparent;margin-bottom:-1px}'+
+      '.qa-tab:hover{color:#1D1D1F}.qa-tab-active{color:#C4703F;border-bottom-color:#C4703F;font-weight:500}'+
+    '</style>'+
+    '<a class="adm-back" href="/admin/people">&larr; All People</a>'+
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap">'+
+      '<h1 class="adm-page-title" style="margin:0">'+escA(user.name||user.email)+'</h1>'+
+      statusChip+
+    '</div>'+
+    ((apolloTitle||apolloCompany)?'<div style="font-size:13px;color:#86868B;margin-bottom:20px">'+escA(apolloTitle+(apolloCompany?' at '+apolloCompany:''))+(apolloLinkedin?' &middot; <a href="'+escA(apolloLinkedin)+'" target="_blank" style="color:#C4703F">LinkedIn</a>':'')+'</div>':'<div style="margin-bottom:20px"></div>')+
+
+    // ROW 1: 3 columns
+    '<div style="display:grid;grid-template-columns:280px 1fr 240px;gap:16px;margin-bottom:20px">'+
+
+      // Col 1: Profile + Quick Actions stacked
+      '<div style="display:flex;flex-direction:column;gap:12px">'+
+        '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px">'+
+          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Profile</div>'+
+          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Email</div><div style="font-size:13px;margin-bottom:10px;word-break:break-all">'+escA(user.email)+'</div>'+
+          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Tier</div><div style="margin-bottom:10px"><span class="badge '+tierBadge+'">'+escA(user.tier||'free')+'</span></div>'+
+          (user.phone?'<div style="font-size:12px;color:#86868B;margin-bottom:1px">Phone</div><div style="font-size:13px;margin-bottom:10px">'+escA(user.phone)+'</div>':'')+
+          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Member since</div><div style="font-size:13px;margin-bottom:10px">'+escA((user.created_at||'').slice(0,10))+'</div>'+
+          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Last login</div><div style="font-size:13px">'+timeSince(user.last_login)+'</div>'+
+        '</div>'+
+        '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px">'+
+          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Quick Actions</div>'+
+          '<div style="margin-bottom:10px">'+
+            '<div style="font-size:11px;color:#86868B;margin-bottom:5px">Magic Link</div>'+
+            (magicLink
+              ?'<div style="display:flex;gap:6px"><input id="magic-url" type="text" readonly value="'+escA(magicLink)+'" onclick="navigator.clipboard.writeText(this.value);this.style.background=\'#E8F5E9\'" style="flex:1;padding:6px 8px;border:1px solid #D1D1D6;border-radius:7px;font-size:11px;font-family:monospace;background:#F9F7F4;cursor:pointer;min-width:0" title="Click to copy" /><button class="adm-btn adm-btn-sm" onclick="copyMagicLink()">Copy</button></div>'
+              :'<button class="adm-btn adm-btn-sm" id="gen-link-btn" onclick="genProfileLink(\''+escA(userId)+'\')">Generate Link</button><span id="gen-link-status" style="font-size:11px;margin-left:6px"></span>'
+            )+
+          '</div>'+
+          (magicLink?'<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="'+escA(magicLink)+'" target="_blank" style="display:block;text-align:center">Open Their View &rarr;</a></div>':'')+
+          (sessionId&&session?.blueprint_generated?'<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session='+escA(sessionId)+'" target="_blank" style="display:block;text-align:center;background:#C4703F;color:#fff">Preview Blueprint</a></div>':'')+
+          (sessionId&&session?.blueprint_generated&&!hasLandscape?'<div style="margin-bottom:8px"><button class="adm-btn adm-btn-sm adm-btn-outline" id="backfill-landscape-btn" onclick="backfillLandscape(\''+escA(sessionId)+'\')" style="display:block;width:100%;text-align:center">Backfill Landscape</button><div id="backfill-landscape-status" style="font-size:11px;color:#86868B;margin-top:4px;text-align:center"></div></div>':'')+
+          '<div style="font-size:11px;color:#86868B;padding-top:8px;border-top:1px solid #F5F5F5">'+sessions.length+' session &middot; $'+parseFloat(costRow?.total||0).toFixed(2)+' API cost</div>'+
+        '</div>'+
+      '</div>'+
+
+      // Col 2: Interview Depth
+      '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:20px">'+
+        '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:16px">Interview Depth</div>'+
+        (session
+          ?'<div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:16px">'+
+              '<div style="text-align:center;flex-shrink:0">'+
+                '<div style="font-family:Outfit,sans-serif;font-size:56px;font-weight:700;color:'+gradeColor+';line-height:1">'+escA(session.depth_grade||'—')+'</div>'+
+                '<div style="font-size:11px;color:#86868B;margin-top:4px">'+(session.emotional_depth_score?session.emotional_depth_score+'/25':'depth')+'</div>'+
+              '</div>'+
+              '<div style="flex:1">'+
+                (gradeExplanation?'<div style="font-size:12px;color:#444;line-height:1.6;margin-bottom:12px">'+escA(gradeExplanation)+'</div>':'')+
+                '<div style="font-size:11px;color:#86868B;margin-bottom:5px">Phase '+(session.phase||1)+' of 8</div>'+
+                phaseBar(session.phase)+
+                '<div style="font-size:11px;color:#86868B;margin-top:6px">'+kvMessages.length+' messages</div>'+
+              '</div>'+
+            '</div>'+
+            (dimBarHTML?'<div style="border-top:1px solid #F5F5F5;padding-top:14px">'+dimBarHTML+'</div>':'')
+          :'<div style="color:#86868B;font-size:13px;padding:12px 0">No interview data yet.</div>'
+        )+
+      '</div>'+
+
+      // Col 3: Health + Danger
+      '<div style="display:flex;flex-direction:column;gap:12px">'+
+        '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px">'+
+          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Health</div>'+
+          flagsHTML+
+        '</div>'+
+        '<div style="background:#fff;border:1px solid #FFE0E0;border-radius:14px;padding:18px">'+
+          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#FF3B30;margin-bottom:10px">Danger Zone</div>'+
+          '<button class="adm-btn adm-btn-sm adm-btn-danger" onclick="deleteUser(\''+escA(userId)+'\',\''+escA((user.name||user.email).replace(/'/g,''))+'\')">Delete User</button>'+
+        '</div>'+
+      '</div>'+
+
+    '</div>'+
+
+    // Positioning Statement — full width callout
+    (positioningStatement
+      ?'<div style="background:linear-gradient(135deg,#FDF0E8,#FFF8F0);border:1px solid #E8D5C0;border-radius:14px;padding:24px 28px;margin-bottom:20px">'+
+          '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#C4703F;margin-bottom:10px">One-Sentence Positioning Statement</div>'+
+          '<div style="font-family:Outfit,sans-serif;font-size:20px;font-weight:600;color:#1D1D1F;line-height:1.4">\u201c'+escA(positioningStatement)+'\u201d</div>'+
+        '</div>'
+      :''
+    )+
+
+    // Clarity Scores
+    (clarityScores
+      ?'<div style="margin-bottom:20px">'+
+          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Clarity Scores</div>'+
+          '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'+
+            clarityCard('Story Clarity',clarityScores.story,
+              'Inciting incident ('+clarityScores.d.ii+'/5) + personal stakes ('+clarityScores.d.ps+'/5). Measures how raw and specific the foundational story was.',
+              clarityScores.story>=8?'Crystal clear story with defined stakes.':clarityScores.story>=6?'Good story foundation with room for depth.':clarityScores.story>=4?'Story surfaced but needs more specificity.':'Core story not fully mined.')+
+            clarityCard('Beliefs Clarity',clarityScores.beliefs,
+              'Belief specificity ('+clarityScores.d.bs+'/5 \u00d7 2). Measures how ownable and specific the belief system is vs generic.',
+              clarityScores.beliefs>=8?'Specific, ownable beliefs that differentiate.':clarityScores.beliefs>=6?'Good beliefs with some specificity.':clarityScores.beliefs>=4?'Beliefs stated but could be sharper.':'Belief system not fully articulated.')+
+            clarityCard('Positioning Clarity',clarityScores.positioning,
+              'Client avatar precision ('+clarityScores.d.cap+'/5) + mirror moment ('+clarityScores.d.mm+'/5). Measures how clearly they know who they serve and why.',
+              clarityScores.positioning>=8?'Crystal clear on who they serve and why.':clarityScores.positioning>=6?'Good client clarity with minor gaps.':clarityScores.positioning>=4?'Client picture forming but not yet sharp.':'Avatar needs significant development.')+
+          '</div>'+
+        '</div>'
+      :''
+    )+
+
+    // Psychology Brief
+    (psychCards
+      ?'<div style="background:#F9F7F4;border:1px solid #E8E0D8;border-radius:14px;padding:20px;margin-bottom:20px">'+
+          '<div style="font-family:Outfit,sans-serif;font-weight:700;font-size:14px;color:#C4703F;margin-bottom:2px">Psychology Brief</div>'+
+          '<div style="font-size:11px;color:#86868B;margin-bottom:16px">Phase-by-phase analysis extracted during the interview</div>'+
+          psychCards+
+        '</div>'
+      :''
+    )+
+
+    // Tabbed: Transcript | Blueprint | Insights
+    (sessionId
+      ?'<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;overflow:hidden;margin-bottom:20px">'+
+          '<div style="display:flex;border-bottom:1px solid #F0F0F0;background:#FAFAFA">'+
+            '<button class="qa-tab qa-tab-active" onclick="switchTab(this,\'transcript\')">Transcript ('+displayMessages.length+')</button>'+
+            '<button class="qa-tab" onclick="switchTab(this,\'blueprint\')">Blueprint'+(bp?' ('+Object.keys(bp).length+'p)':'')+'</button>'+
+            '<button class="qa-tab" onclick="switchTab(this,\'insights\')">Insights ('+insightRows.length+')</button>'+
+          '</div>'+
+          '<div style="padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #F0F0F0;display:flex;gap:8px;flex-wrap:wrap">'+
+            '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+escA(sessionId)+'/transcript.txt">\u2193 Transcript</a>'+
+            '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+escA(sessionId)+'">Full Session Detail &rarr;</a>'+
+            (bp?'<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+escA(sessionId)+'/blueprint.json">\u2193 Blueprint JSON</a>':'')+
+          '</div>'+
+          '<div id="tab-transcript" class="qa-tab-panel" style="padding:20px;max-height:600px;overflow-y:auto">'+(transcriptHTML||'<div style="color:#86868B;text-align:center;padding:24px">No messages yet</div>')+'</div>'+
+          '<div id="tab-blueprint" class="qa-tab-panel" style="display:none;padding:20px;max-height:600px;overflow-y:auto">'+blueprintHTML+'</div>'+
+          '<div id="tab-insights" class="qa-tab-panel" style="display:none;padding:20px;max-height:600px;overflow-y:auto">'+insightsHTML+'</div>'+
+        '</div>'
+      :''
+    );
+
+    var pageScript = '<script>'+
+      'function switchTab(btn,name){document.querySelectorAll(".qa-tab-panel").forEach(function(p){p.style.display="none"});document.getElementById("tab-"+name).style.display="block";document.querySelectorAll(".qa-tab").forEach(function(t){t.classList.remove("qa-tab-active")});btn.classList.add("qa-tab-active");}'+
+      'function copyMagicLink(){var v=document.getElementById("magic-url").value;navigator.clipboard.writeText(v).then(function(){var b=document.querySelector("[onclick=\'copyMagicLink()\']");b.textContent="Copied!";setTimeout(function(){b.textContent="Copy";},2000);});}'+
+      'function genProfileLink(uid){var btn=document.getElementById("gen-link-btn");btn.disabled=true;btn.textContent="Generating...";fetch("/api/admin/magic-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:uid})}).then(function(r){return r.json();}).then(function(d){if(d.magicLink){navigator.clipboard.writeText(d.magicLink);location.reload();}else{btn.textContent="Error";btn.disabled=false;}}).catch(function(){btn.textContent="Error";btn.disabled=false;});}'+
+      'function deleteUser(uid,name){if(!confirm("Delete "+name+"? This removes ALL their data. Cannot be undone."))return;if(!confirm("Are you absolutely sure?"))return;fetch("/admin/delete-user/"+uid+"?confirm=DELETE",{method:"POST"}).then(function(r){return r.json();}).then(function(d){if(d.ok||d.success){alert("User deleted.");window.location.href="/admin/people";}else{alert("Error: "+(d.error||"Unknown"));}}).catch(function(e){alert("Error: "+e.message);});}'+
+      'function backfillLandscape(sid){var btn=document.getElementById("backfill-landscape-btn");var st=document.getElementById("backfill-landscape-status");btn.disabled=true;btn.textContent="Generating...";st.textContent="This may take 30 seconds...";fetch("/api/admin/backfill-landscape",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:sid})}).then(function(r){return r.json();}).then(function(d){if(d.ok){st.textContent="Done! Refresh to see blueprint.";st.style.color="#27ae60";btn.textContent="Done";}else{st.textContent="Error: "+(d.error||"Unknown");st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";}}).catch(function(e){st.textContent="Error: "+e.message;st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";});}'+
+    '<\/script>';
+
+    return new Response(adminLayout(user.name || user.email, html).replace('</body>', pageScript + '</body>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+  } catch(e) {
+    return new Response('Admin error: ' + e.message, { status:500, headers:{'Content-Type':'text/plain'} });
+  }
+}
+
+
 async function handleAdminSessionDetail(request, env, path) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return Response.redirect('/app', 302);
-  var sessionId = path.split('/')[3];
-  if (!sessionId) return new Response('Missing session ID', { status:400 });
+  if (!admin) return handleAdmin(request, env);
+  var sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing session ID", { status: 400 });
   try {
-    var [sessionRow, eventsRes, costsRow] = await Promise.all([
+    var [sessionRow, eventsRes, costsRow, insRes] = await Promise.all([
       env.DB.prepare(`
         SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier, u.role, u.created_at as user_created_at
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?
       `).bind(sessionId).first(),
-      env.DB.prepare('SELECT * FROM session_events WHERE session_id=? ORDER BY created_at ASC LIMIT 500').bind(sessionId).all(),
-      env.DB.prepare('SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?').bind(sessionId).first().catch(()=>({total:0,calls:0}))
+      env.DB.prepare("SELECT * FROM session_events WHERE session_id=? ORDER BY created_at ASC LIMIT 500").bind(sessionId).all(),
+      env.DB.prepare("SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?").bind(sessionId).first().catch(() => ({ total: 0, calls: 0 })),
+      env.DB.prepare("SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id=? ORDER BY confidence DESC").bind(sessionId).all().catch(() => ({ results: [] }))
     ]);
-    if (!sessionRow) return new Response('Session not found', {status:404, headers:{'Content-Type':'text/plain'}});
-
+    if (!sessionRow) return new Response("Session not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+    var userMagicToken = null;
+    if (sessionRow.user_id) {
+      var mtRow = await env.DB.prepare(`
+        SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'persistent_magic' AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1
+      `).bind(sessionRow.user_id).first().catch(() => null);
+      if (!mtRow) {
+        try {
+          var pmTok = generateMagicToken();
+          await storeMagicToken(env, pmTok, sessionRow.user_id, 'persistent_magic', 8760);
+          mtRow = { token: pmTok };
+        } catch(_) {}
+      }
+      if (mtRow) userMagicToken = mtRow.token;
+    }
+    // Embed the specific session ID in the redirect so "View as User" opens this exact session
+    var userMagicLink = userMagicToken ? (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/magic?token=" + userMagicToken + "&redirect=" + encodeURIComponent("/app?resumeSession=" + sessionId) : "";
     var events = eventsRes?.results || [];
-    var messages = events.filter(function(e){ return e.event_type==='message_sent'||e.event_type==='message_received'; });
-
-    var apollo = null;
-    try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
-
-    // Blueprint from KV
-    var bp = null;
+    var insightRows = insRes?.results || [];
+    var bp = null, kvMessages = [], kvSession = null;
     try {
-      var bpRaw = await env.SESSIONS.get('blueprint:' + sessionId);
-      if (bpRaw) bp = JSON.parse(bpRaw);
-    } catch(_){}
-    if (!bp && sessionRow.blueprint_generated) {
-      // try session KV key
+      var sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        kvSession = JSON.parse(sessRaw);
+        bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
+        if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
+      }
+    } catch (_) {
+    }
+    if (!bp) {
       try {
-        var sessRaw = await env.SESSIONS.get('sess_' + sessionId);
-        if (sessRaw) { var sess = JSON.parse(sessRaw); bp = sess.blueprint?.blueprint || sess.blueprint; }
-      } catch(_){}
+        var bpRaw = await env.SESSIONS.get("blueprint:" + sessionId);
+        if (bpRaw) bp = JSON.parse(bpRaw);
+      } catch (_) {
+      }
     }
-
-    var userBlock = '<div class="adm-panel"><div class="adm-panel-title">User Profile</div>' +
-      '<div class="adm-field"><div class="adm-field-label">Name</div><div class="adm-field-value">' + escA(sessionRow.name||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Email</div><div class="adm-field-value">' + escA(sessionRow.email||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Phone</div><div class="adm-field-value">' + escA(sessionRow.phone||sessionRow.user_phone||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Tier</div><div class="adm-field-value">' + escA(sessionRow.tier||'free') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Member Since</div><div class="adm-field-value">' + escA(sessionRow.user_created_at||'—') + '</div></div>' +
-      (apollo?.person?.employment_history?.[0] ? '<div class="adm-field"><div class="adm-field-label">Current Role</div><div class="adm-field-value">' + escA((apollo.person.employment_history[0].title||'') + ' @ ' + (apollo.person.employment_history[0].organization_name||'')) + '</div></div>' : '') +
-      '<div style="margin-top:12px"><a class="adm-btn adm-btn-sm" href="/admin/export/' + sessionId + '">Export JSON</a></div>' +
-    '</div>';
-
-    var sessionBlock = '<div class="adm-panel"><div class="adm-panel-title">Session</div>' +
-      '<div class="adm-field"><div class="adm-field-label">Session ID</div><div class="adm-field-value" style="font-family:monospace;font-size:11px">' + escA(sessionRow.id) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Phase</div><div class="adm-field-value">' + (sessionRow.phase||1) + '/8 ' + phaseBar(sessionRow.phase) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Messages</div><div class="adm-field-value">' + (sessionRow.message_count||0) + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Status</div><div class="adm-field-value"><span class="badge ' + (sessionRow.status==='active'?'bg-green':'bg-gray') + '">' + escA(sessionRow.status||'?') + '</span></div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Blueprint</div><div class="adm-field-value">' + (sessionRow.blueprint_generated ? '<span class="badge bg-copper">Generated</span>' : '<span class="badge bg-gray">None</span>') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Depth Grade</div><div class="adm-field-value">' + escA(sessionRow.depth_grade||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Resonance Score</div><div class="adm-field-value">' + (sessionRow.resonance_score||'—') + '</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">API Cost</div><div class="adm-field-value">$' + parseFloat(costsRow?.total||0).toFixed(4) + ' (' + (costsRow?.calls||0) + ' calls)</div></div>' +
-      '<div class="adm-field"><div class="adm-field-label">Created</div><div class="adm-field-value">' + escA(sessionRow.created_at||'—') + '</div></div>' +
-    '</div>';
-
-    var timelineHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Event Timeline (' + events.length + ' events)</div>' +
-      '<ul class="adm-timeline">' +
-      events.slice(0,100).map(function(e) {
-        var dataStr = '';
-        try { if(e.data) { var d=JSON.parse(e.data); dataStr = d.phase?'phase '+d.phase:d.event_type||JSON.stringify(d).slice(0,60); } } catch(_){}
-        return '<li class="adm-tl-row"><span class="adm-tl-type">' + escA(e.event_type||'?') + '</span><span class="adm-tl-data">' + escA(dataStr) + '</span><span class="adm-tl-time">' + (e.created_at?e.created_at.slice(11,19):'') + '</span></li>';
-      }).join('') +
-      (events.length>100?'<li class="adm-tl-row" style="color:#86868B">+ '+(events.length-100)+' more events...</li>':'') +
-      '</ul></div>';
-
-    var transcriptHTML = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Conversation (' + messages.length + ' messages)</div><div class="adm-msg-wrap">' +
-      messages.map(function(e) {
-        var content = '';
-        try { var d=JSON.parse(e.data||'{}'); content = d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
-        var isUser = e.event_type==='message_sent';
-        return '<div class="adm-msg ' + (isUser?'adm-msg-user':'adm-msg-ai') + '"><div class="adm-msg-label">' + (isUser?'User':'Claude') + (e.created_at?' · '+e.created_at.slice(11,16):'') + '</div>' + escA(String(content).slice(0,500)) + (String(content).length>500?'…':'') + '</div>';
-      }).join('') +
-      '</div></div>';
-
-    var bpBlock = '';
+    var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
+    var v3Fields = hasV3 ? Object.keys(bp.v3) : [];
+    var v3NewFields = ["mirror_observation", "arrogant_truth", "futureSelfLetter"];
+    var missingV3New = v3NewFields.filter(function(f) {
+      return !bp?.v3?.[f];
+    });
+    var depthBreakdown = null;
+    try {
+      if (sessionRow.depth_breakdown) depthBreakdown = JSON.parse(sessionRow.depth_breakdown);
+    } catch (_) {
+    }
+    var duration = "";
+    if (events.length >= 2) {
+      var first = new Date(events[0].created_at).getTime();
+      var last = new Date(events[events.length - 1].created_at).getTime();
+      var mins = Math.round((last - first) / 6e4);
+      if (mins > 0) duration = mins + " min";
+    }
+    var flags = [];
+    var phaseMessageCounts = {};
+    events.forEach(function(e) {
+      var ph = null;
+      try {
+        ph = JSON.parse(e.data || "{}").phase;
+      } catch (_) {
+      }
+      if (ph) {
+        phaseMessageCounts[ph] = (phaseMessageCounts[ph] || 0) + 1;
+      }
+    });
+    Object.entries(phaseMessageCounts).forEach(function(entry) {
+      if (entry[1] > 20) flags.push({ type: "red", msg: "Phase " + entry[0] + " had " + entry[1] + " messages (possible loop)" });
+    });
+    if (depthBreakdown) {
+      Object.entries(depthBreakdown).forEach(function(entry) {
+        if (entry[1] < 2) flags.push({ type: "red", msg: entry[0].replace(/_/g, " ") + " depth low (" + entry[1] + "/5)" });
+      });
+    }
+    if (bp && !hasV3) flags.push({ type: "yellow", msg: "Blueprint generated but V3 fields missing" });
+    if (hasV3 && missingV3New.length) flags.push({ type: "yellow", msg: "V3 missing: " + missingV3New.join(", ") });
+    if (sessionRow.status === "completed" && hasV3 && !flags.length) flags.push({ type: "green", msg: "Completed \u2014 all fields present" });
+    if (!flags.length && sessionRow.status !== "completed") flags.push({ type: "gray", msg: "In progress" });
+    var highlights = [];
+    var EMOTIONAL_KEYWORDS = ["afraid", "fear", "never", "always", "truth", "real", "wound", "core", "pain", "hurt", "shame", "guilt", "alone", "abandon", "trust", "worth", "enough", "belong", "lost", "broken"];
+    var phaseByMsgIndex = {};
+    var currentPhase = 1;
+    var msgEventIdx = 0;
+    events.forEach(function(e) {
+      var d = null;
+      try {
+        d = JSON.parse(e.data || "{}");
+      } catch (_) {
+      }
+      if (d && d.phase && d.phase !== currentPhase) {
+        phaseByMsgIndex[msgEventIdx] = d.phase;
+        currentPhase = d.phase;
+      }
+      if (e.event_type === "message_sent" || e.event_type === "message_received") msgEventIdx++;
+    });
+    kvMessages.forEach(function(m, i) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c) {
+        return typeof c === "object" ? c.text || "" : c;
+      }).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      if (phaseByMsgIndex[i]) {
+        highlights.push({ type: "transition", label: "Phase " + phaseByMsgIndex[i] + " began", excerpt: content.slice(0, 120), idx: i });
+      }
+      if (m.role === "user" && content.length > 200) {
+        var lower = content.toLowerCase();
+        var found = EMOTIONAL_KEYWORDS.filter(function(k) {
+          return lower.indexOf(k) > -1;
+        });
+        if (found.length >= 2) highlights.push({ type: "breakthrough", label: "Breakthrough moment", excerpt: content.slice(0, 120), idx: i });
+      }
+      if (m.role === "assistant" && content.indexOf("?") > -1) {
+        var prev = kvMessages[i - 1];
+        if (prev && prev.role === "user") {
+          var prevContent = String(Array.isArray(prev.content) ? prev.content.map(function(c) {
+            return typeof c === "object" ? c.text || "" : c;
+          }).join(" ") : prev.content || "").trim();
+          if (prevContent.length > 80) highlights.push({ type: "probe", label: "Deep probe", excerpt: content.slice(0, 120), idx: i });
+        }
+      }
+      if (m.role === "assistant" && phaseByMsgIndex[i]) {
+        var prevUser = kvMessages[i - 1];
+        if (prevUser && prevUser.role === "user") {
+          var prevC = String(Array.isArray(prevUser.content) ? prevUser.content.map(function(c) {
+            return typeof c === "object" ? c.text || "" : c;
+          }).join(" ") : prevUser.content || "").trim();
+          if (prevC.length < 30) highlights.push({ type: "skipped", label: "Possible skipped surface", excerpt: prevC.slice(0, 80) + " \u2192 moved to next phase", idx: i });
+        }
+      }
+    });
+    var seenIdx = {};
+    highlights = highlights.filter(function(h) {
+      if (seenIdx[h.idx]) return false;
+      seenIdx[h.idx] = true;
+      return true;
+    }).slice(0, 12);
+    var displayMessages = kvMessages.map(function(m, i) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c) {
+        return typeof c === "object" ? c.text || "" : c;
+      }).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      var highlightType = null;
+      highlights.forEach(function(h) {
+        if (h.idx === i) highlightType = h.type;
+      });
+      return { role: m.role, content, timestamp: m.timestamp || null, highlightType, phaseChange: phaseByMsgIndex[i] || null, idx: i };
+    });
+    var flagColors = { red: "#FEE2E2", yellow: "#FFF3CD", green: "#E8F8ED", gray: "#F0F0F0" };
+    var flagTextColors = { red: "#991B1B", yellow: "#856404", green: "#1A7F3C", gray: "#86868B" };
+    var flagEmoji = { red: "\u{1F534}", yellow: "\u{1F7E1}", green: "\u{1F7E2}", gray: "\u26AA" };
+    var flagsHTML = flags.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;background:' + flagColors[f.type] + ';margin-bottom:4px"><span>' + flagEmoji[f.type] + '</span><span style="font-size:12px;color:' + flagTextColors[f.type] + '">' + escA(f.msg) + "</span></div>";
+    }).join("");
+    var dimBarHTML = "";
+    if (depthBreakdown) {
+      dimBarHTML = '<div style="margin-top:10px">' + Object.entries(depthBreakdown).map(function(entry) {
+        var pct = Math.round(entry[1] / 5 * 100);
+        var color = entry[1] < 2 ? "#e74c3c" : entry[1] < 4 ? "#e67e22" : "#27ae60";
+        return '<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:2px"><span>' + escA(entry[0].replace(/_/g, " ")) + '</span><span style="font-weight:600;color:' + color + '">' + entry[1] + '/5</span></div><div style="background:#F0F0F0;height:4px;border-radius:2px"><div style="width:' + pct + "%;height:100%;background:" + color + ';border-radius:2px"></div></div></div>';
+      }).join("") + "</div>";
+    }
+    var gradeColor = sessionRow.depth_grade ? sessionRow.depth_grade[0] === "A" ? "#27ae60" : sessionRow.depth_grade[0] === "B" ? "#2980b9" : sessionRow.depth_grade[0] === "C" ? "#e67e22" : "#e74c3c" : "#86868B";
+    var scorecard = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:24px;margin-bottom:20px;display:grid;grid-template-columns:1fr 2fr 1fr;gap:24px"><div><div style="font-family:Outfit,sans-serif;font-weight:700;font-size:18px;margin-bottom:4px">' + escA(sessionRow.name || "Anonymous") + '</div><div style="color:#86868B;font-size:13px;margin-bottom:8px">' + escA(sessionRow.email || "\u2014") + '</div><span class="badge bg-copper" style="margin-right:6px">' + escA(sessionRow.tier || "free") + "</span>" + (sessionRow.status === "completed" ? '<span class="badge bg-green">completed</span>' : '<span class="badge bg-yellow">' + escA(sessionRow.status || "active") + "</span>") + '<div style="margin-top:12px;font-size:11px;color:#86868B">Member since ' + escA((sessionRow.user_created_at || "").slice(0, 10)) + "</div>" + (duration ? '<div style="font-size:11px;color:#86868B">Duration: ' + escA(duration) + "</div>" : "") + '<div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">' + (sessionRow.user_id ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/people/' + escA(sessionRow.user_id) + '">Profile</a>' : "") + '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export/' + sessionId + '">Export</a>' + (userMagicLink ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="' + escA(userMagicLink) + '" target="_blank">View as User</a>' : "") + "</div>" + (userMagicLink ? '<div style="margin-top:8px"><input type="text" readonly value="' + escA(userMagicLink) + `" onclick="navigator.clipboard.writeText(this.value);this.style.background='#E8F5E9'" style="width:100%;padding:6px 8px;border:1px solid #D1D1D6;border-radius:6px;font-size:10px;font-family:monospace;color:#666;background:#F9F7F4;cursor:pointer" title="Click to copy magic link" /></div>` : "") + '</div><div><div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><div style="text-align:center"><div style="font-family:Outfit,sans-serif;font-size:42px;font-weight:700;color:' + gradeColor + ';line-height:1">' + escA(sessionRow.depth_grade || "\u2014") + '</div><div style="font-size:11px;color:#86868B">' + (sessionRow.emotional_depth_score ? sessionRow.emotional_depth_score + "/25 = " + Math.round(sessionRow.emotional_depth_score / 25 * 100) + "%" : "depth") + '</div></div><div style="flex:1"><div style="font-size:12px;color:#86868B;margin-bottom:4px">Phase ' + escA(String(sessionRow.phase || 1)) + " of 7</div>" + phaseBar(sessionRow.phase) + '<div style="font-size:11px;color:#86868B;margin-top:6px">' + kvMessages.length + " messages \xB7 $" + parseFloat(costsRow?.total || 0).toFixed(4) + " API cost</div></div></div>" + dimBarHTML + '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' + (sessionRow.blueprint_generated ? '<a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session=' + sessionId + '" target="_blank">\u{1F50D} Preview Blueprint</a>' : "") + (!hasV3 && bp ? `<button class="adm-btn adm-btn-sm" style="background:#C4703F;color:#fff" onclick="generateV3('` + sessionId + `')">Generate V3</button>` : "") + (sessionRow.email && sessionRow.blueprint_generated ? `<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="resendBlueprint('` + sessionId + "','" + escA(sessionRow.email) + `')">\u2709 Resend Email</button>` : "") + '</div></div><div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:8px">Health Signals</div>' + flagsHTML + "</div></div>";
+    var hlTypeStyle = {
+      transition: { bg: "#EEF2FF", border: "#818CF8", label: "Phase Transition", color: "#3730A3" },
+      breakthrough: { bg: "#FDF0E8", border: "#C4703F", label: "Breakthrough", color: "#C4703F" },
+      probe: { bg: "#E8F8ED", border: "#27ae60", label: "Deep Probe", color: "#27ae60" },
+      skipped: { bg: "#FEE2E2", border: "#e74c3c", label: "Skipped Surface", color: "#e74c3c" }
+    };
+    var highlightsHTML = "";
+    if (highlights.length) {
+      var cards = highlights.map(function(h) {
+        var s = hlTypeStyle[h.type] || hlTypeStyle.probe;
+        return '<div style="flex-shrink:0;width:260px;background:' + s.bg + ";border:1px solid " + s.border + ';border-radius:10px;padding:12px 14px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:' + s.color + ';margin-bottom:6px">' + escA(s.label) + '</div><div style="font-size:12px;color:#1D1D1F;line-height:1.5;margin-bottom:8px">' + escA(h.excerpt) + (h.excerpt.length === 120 ? "\u2026" : "") + '</div><a href="#msg-' + h.idx + '" style="font-size:11px;color:' + s.color + ';font-weight:500">Jump to \u2193</a></div>';
+      }).join("");
+      highlightsHTML = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:20px;margin-bottom:20px"><div style="font-family:Outfit,sans-serif;font-weight:700;font-size:13px;margin-bottom:12px">Depth Highlights (' + highlights.length + ')</div><div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px">' + cards + "</div></div>";
+    } else {
+      highlightsHTML = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:16px 20px;margin-bottom:20px;color:#86868B;font-size:13px">No significant depth moments detected.</div>';
+    }
+    var downloadBar = '<div style="background:#fff;border-bottom:1px solid #F0F0F0;padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-right:4px">Download:</span><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + sessionId + '/transcript.txt">\u2193 Transcript .txt</a><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + sessionId + '/transcript-formatted" target="_blank">\u2193 Transcript PDF</a>' + (bp ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + sessionId + '/blueprint.json">\u2193 Blueprint .json</a>' : "") + (bp ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + sessionId + '/blueprint-formatted" target="_blank">\u2193 Blueprint Formatted</a>' : "") + "</div>";
+    var hlColorMap = { transition: "#818CF8", breakthrough: "#C4703F", probe: "#27ae60", skipped: "#e74c3c" };
+    var transcriptHTML = displayMessages.map(function(m) {
+      if (!m.content) return "";
+      var isUser = m.role === "user";
+      var ts = m.timestamp ? String(m.timestamp).slice(11, 16) : "";
+      var borderStyle = m.highlightType ? "border-left:3px solid " + hlColorMap[m.highlightType] + ";padding-left:10px;" : "";
+      var phaseMarker = m.phaseChange ? '<div style="text-align:center;font-size:11px;color:#86868B;padding:8px 0;border-top:1px dashed #F0F0F0;border-bottom:1px dashed #F0F0F0;margin:8px 0">\u2500\u2500 Phase ' + m.phaseChange + " began \u2500\u2500</div>" : "";
+      return phaseMarker + '<div id="msg-' + m.idx + '" style="margin-bottom:14px;' + borderStyle + '"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#86868B;margin-bottom:4px">' + (isUser ? escA(sessionRow.name || "User") : "Claude") + (ts ? " \xB7 " + ts : "") + '</div><div style="background:' + (isUser ? "#F5F5F7" : "#FDF0E8") + ";padding:10px 14px;border-radius:" + (isUser ? "12px 12px 4px 12px" : "12px 12px 12px 4px") + ';font-size:13px;line-height:1.6;white-space:pre-wrap">' + escA(m.content) + "</div></div>";
+    }).join("");
+    var blueprintHTML = "";
     if (bp) {
-      var bpKeys = Object.keys(bp);
-      bpBlock = '<div class="adm-panel" style="grid-column:1/-1"><div class="adm-panel-title">Blueprint (' + bpKeys.length + ' parts)</div>' +
-        '<pre style="font-size:11px;overflow:auto;max-height:400px;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap">' + escA(JSON.stringify(bp, null, 2).slice(0,8000)) + (JSON.stringify(bp).length>8000?'\n... (truncated)':'') + '</pre></div>';
+      let renderBPValue = function(val) {
+        if (typeof val === "string") return '<p style="line-height:1.6">' + escA(val) + "</p>";
+        if (Array.isArray(val)) return val.map(function(v) {
+          if (typeof v === "object" && v !== null) return '<div style="padding:8px 0;border-bottom:1px solid #F5F5F7">' + Object.entries(v).map(function(e) {
+            return '<div style="display:flex;gap:8px"><span style="color:#86868B;min-width:120px;font-size:11px">' + escA(e[0]) + "</span><span>" + escA(String(e[1] || "")) + "</span></div>";
+          }).join("") + "</div>";
+          return '<div style="padding:4px 0;border-bottom:1px solid #F5F5F7">' + escA(String(v)) + "</div>";
+        }).join("");
+        if (typeof val === "object" && val !== null) return Object.entries(val).map(function(e) {
+          return '<div style="padding:4px 0"><span style="color:#86868B;font-size:11px;display:inline-block;min-width:140px">' + escA(e[0]) + "</span> " + escA(String(e[1] || "")) + "</div>";
+        }).join("");
+        return "<p>" + escA(String(val || "")) + "</p>";
+      };
+      blueprintHTML = Object.entries(bp).map(function(entry) {
+        return '<div style="margin-bottom:16px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden"><div style="background:#F5F5F7;padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C4703F">' + escA(entry[0]) + '</div><div style="padding:12px 14px;font-size:13px">' + renderBPValue(entry[1]) + "</div></div>";
+      }).join("") + '<details style="margin-top:16px"><summary style="cursor:pointer;font-size:12px;color:#86868B;padding:8px">Show raw JSON</summary><pre style="font-size:11px;overflow:auto;background:#F5F5F7;padding:12px;border-radius:8px;white-space:pre-wrap;margin-top:8px">' + escA(JSON.stringify(bp, null, 2).slice(0, 12e3)) + (JSON.stringify(bp).length > 12e3 ? "\n...(truncated)" : "") + "</pre></details>";
+    } else {
+      blueprintHTML = '<div style="color:#86868B;padding:24px;text-align:center">No blueprint generated yet.</div>';
     }
-
-    var html = '<a class="adm-back" href="/admin">&larr; Dashboard</a>' +
-      '<h1 class="adm-page-title">' + escA(sessionRow.name||sessionRow.email||'Anonymous') + '</h1>' +
-      '<div class="adm-2col" style="margin-bottom:16px">' + userBlock + sessionBlock + '</div>' +
-      '<div class="adm-2col">' + timelineHTML + transcriptHTML + bpBlock + '</div>';
-
-    return new Response(adminLayout('Session: ' + (sessionRow.name||sessionRow.email||sessionId), html), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
-  } catch(e) {
-    return new Response('Error: ' + e.message, {status:500, headers:{'Content-Type':'text/plain'}});
+    var insightsTabHTML = insightRows.length ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px">' + insightRows.map(function(r) {
+      return '<div style="background:#F5F5F7;padding:10px 14px;border-radius:8px;font-size:12px;border-left:3px solid #C4703F"><div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">' + escA(r.insight_type) + ' <span style="color:#86868B;font-weight:400">(' + Math.round(r.confidence * 100) + '%)</span></div><div style="color:#1D1D1F;line-height:1.5">' + escA(String(r.insight_value || "").slice(0, 200)) + "</div></div>";
+    }).join("") + "</div>" : '<div style="color:#86868B;padding:24px;text-align:center">No insights extracted yet.</div>';
+    var timelineTabHTML = '<details><summary style="cursor:pointer;font-size:12px;color:#86868B;padding:4px 0">Show full event log (' + events.length + ' events)</summary><ul style="list-style:none;margin-top:8px">' + events.slice(0, 200).map(function(e) {
+      var dataStr = "";
+      try {
+        if (e.data) {
+          var d = JSON.parse(e.data);
+          dataStr = d.phase ? "phase " + d.phase : d.event_type || "";
+        }
+      } catch (_) {
+      }
+      return '<li style="display:flex;gap:12px;padding:3px 0;font-size:12px;border-bottom:1px solid #F5F5F7"><span style="color:#86868B;min-width:180px">' + escA(e.event_type || "?") + '</span><span style="color:#86868B;min-width:60px">' + escA(dataStr) + '</span><span style="color:#86868B;font-family:monospace">' + escA(e.created_at ? e.created_at.slice(11, 19) : "") + "</span></li>";
+    }).join("") + (events.length > 200 ? '<li style="color:#86868B;font-size:11px;padding:8px 0">+ ' + (events.length - 200) + " more...</li>" : "") + "</ul></details>";
+    var tabbedArea = '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;overflow:hidden">' + downloadBar + `<div><div style="display:flex;border-bottom:1px solid #F0F0F0;background:#FAFAFA"><button class="qa-tab qa-tab-active" onclick="switchTab(this,'transcript')">Transcript (` + displayMessages.filter(function(m) {
+      return m.content;
+    }).length + `)</button><button class="qa-tab" onclick="switchTab(this,'blueprint')">Blueprint` + (bp ? " (" + Object.keys(bp).length + "p)" : "") + `</button><button class="qa-tab" onclick="switchTab(this,'insights')">Insights (` + insightRows.length + `)</button><button class="qa-tab" onclick="switchTab(this,'timeline')">Timeline</button></div><div id="tab-transcript" class="qa-tab-panel" style="padding:20px;max-height:700px;overflow-y:auto">` + transcriptHTML + '</div><div id="tab-blueprint" class="qa-tab-panel" style="display:none;padding:20px;max-height:700px;overflow-y:auto">' + blueprintHTML + '</div><div id="tab-insights" class="qa-tab-panel" style="display:none;padding:20px;max-height:700px;overflow-y:auto">' + insightsTabHTML + '</div><div id="tab-timeline" class="qa-tab-panel" style="display:none;padding:20px;max-height:700px;overflow-y:auto">' + timelineTabHTML + "</div></div></div>";
+    var html = '<style>.qa-tab{background:none;border:none;padding:10px 18px;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;color:#86868B;border-bottom:2px solid transparent;margin-bottom:-1px}.qa-tab:hover{color:#1D1D1F}.qa-tab-active{color:#C4703F;border-bottom-color:#C4703F;font-weight:500}</style><a class="adm-back" href="/admin">&larr; Dashboard</a><h1 class="adm-page-title">' + escA(sessionRow.name || sessionRow.email || "Anonymous") + "</h1>" + scorecard + highlightsHTML + tabbedArea + '<script>function switchTab(btn,name){document.querySelectorAll(".qa-tab-panel").forEach(function(p){p.style.display="none"});document.getElementById("tab-"+name).style.display="block";document.querySelectorAll(".qa-tab").forEach(function(t){t.classList.remove("qa-tab-active")});btn.classList.add("qa-tab-active");}function generateV3(sid){if(!confirm("Generate V3 fields? This calls Claude Opus (~$0.50).")) return;var btn=event.target;btn.textContent="Generating...";btn.disabled=true;fetch("/api/admin/generate-v3-fields",{method:"POST",headers:{"Content-Type":"application/json","X-Admin-Key":"dw-v3-generate-2026"},body:JSON.stringify({sessionId:sid})}).then(function(r){return r.json()}).then(function(d){if(d.ok){alert("V3 generated! Refreshing...");location.reload();}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}}).catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});}function resendBlueprint(sid,email){if(!confirm("Resend blueprint link to "+email+"?")) return;var btn=event.target;btn.textContent="Sending...";btn.disabled=true;fetch("/api/admin/resend-blueprint",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(document.cookie.match(/dw_session=([^;]+)/)||[])[1]},body:JSON.stringify({sessionId:sid,email:email})}).then(function(r){return r.json()}).then(function(d){if(d.ok){alert("Blueprint email sent to "+email);btn.textContent="Sent \u2714";btn.disabled=true;}else{alert("Error: "+(d.error||"Unknown"));btn.textContent="Retry";btn.disabled=false;}}).catch(function(e){alert("Failed: "+e.message);btn.textContent="Retry";btn.disabled=false;});}<\/script>';
+    return new Response(adminLayout("Session: " + (sessionRow.name || sessionRow.email || sessionId), html), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    return new Response("Error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
   }
 }
-
 async function handleAdminExportSession(request, env, path) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return new Response('Forbidden', {status:403});
-  var sessionId = path.split('/')[3];
-  if (!sessionId) return new Response('Missing ID', {status:400});
+  if (!admin) return new Response("Forbidden", { status: 403 });
+  var sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing ID", { status: 400 });
   try {
     var [sessionRow, eventsRes, costsRow] = await Promise.all([
-      env.DB.prepare('SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?').bind(sessionId).first(),
+      env.DB.prepare("SELECT s.*, u.name, u.email, u.apollo_data, u.phone as user_phone, u.tier FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?").bind(sessionId).first(),
       env.DB.prepare("SELECT * FROM session_events WHERE session_id=? AND event_type IN ('message_sent','message_received') ORDER BY created_at ASC").bind(sessionId).all(),
-      env.DB.prepare('SELECT SUM(cost_usd) as total FROM api_costs WHERE session_id=?').bind(sessionId).first().catch(()=>({total:0}))
+      env.DB.prepare("SELECT SUM(cost_usd) as total FROM api_costs WHERE session_id=?").bind(sessionId).first().catch(() => ({ total: 0 }))
     ]);
-    if (!sessionRow) return new Response('Not found', {status:404});
-
+    if (!sessionRow) return new Response("Not found", { status: 404 });
     var bp = null;
+    var kvSession = null;
     try {
-      var sessRaw = await env.SESSIONS.get('sess_' + sessionId);
-      if (sessRaw) { var sess = JSON.parse(sessRaw); bp = sess.blueprint?.blueprint || sess.blueprint; }
-    } catch(_){}
-
-    var conversation = (eventsRes?.results||[]).map(function(e) {
-      var content = '';
-      try { var d=JSON.parse(e.data||'{}'); content=d.content||d.message||d.text||''; } catch(_){content=e.data||'';}
-      return { role: e.event_type==='message_sent'?'user':'assistant', content: String(content), timestamp: e.created_at };
-    });
-
+      var sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        kvSession = JSON.parse(sessRaw);
+        bp = kvSession.blueprint?.blueprint || kvSession.blueprint;
+      }
+    } catch (_) {
+    }
+    if (!bp) {
+      try {
+        var bpMetaRaw = await env.SESSIONS.get("bp_meta:" + sessionId);
+        if (bpMetaRaw) {
+          var bpMeta = JSON.parse(bpMetaRaw);
+          bp = bpMeta.blueprint || null;
+        }
+      } catch (_) {
+      }
+    }
+    if (!bp) {
+      try {
+        var bpKeyRaw = await env.SESSIONS.get("blueprint:" + sessionId);
+        if (bpKeyRaw) bp = JSON.parse(bpKeyRaw);
+      } catch (_) {
+      }
+    }
+    var conversation = [];
+    if (kvSession && Array.isArray(kvSession.messages) && kvSession.messages.length > 0) {
+      conversation = kvSession.messages.map(function(m, i) {
+        var content = m.content;
+        if (Array.isArray(content)) content = content.map(function(c) {
+          return typeof c === "object" ? c.text || "" : c;
+        }).join(" ");
+        return { role: m.role, content: String(content || ""), timestamp: m.timestamp || null };
+      });
+    } else {
+      conversation = (eventsRes?.results || []).map(function(e) {
+        var content = "";
+        try {
+          var d = JSON.parse(e.data || "{}");
+          content = d.content || d.message || d.text || "";
+        } catch (_) {
+          content = e.data || "";
+        }
+        return { role: e.event_type === "message_sent" ? "user" : "assistant", content: String(content), timestamp: e.created_at };
+      });
+    }
     var apollo = null;
-    try { if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data); } catch(_){}
-
-    var exportName = (sessionRow.name||sessionRow.email||'session').replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
-
+    try {
+      if (sessionRow.apollo_data) apollo = JSON.parse(sessionRow.apollo_data);
+    } catch (_) {
+    }
+    var exportName = (sessionRow.name || sessionRow.email || "session").replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
     var output = {
-      export_date: new Date().toISOString().slice(0,10),
+      export_date: (/* @__PURE__ */ new Date()).toISOString().slice(0, 10),
       user: {
         name: sessionRow.name,
         email: sessionRow.email,
-        phone: sessionRow.phone||sessionRow.user_phone,
+        phone: sessionRow.phone || sessionRow.user_phone,
         tier: sessionRow.tier,
         user_id: sessionRow.user_id
       },
@@ -19738,35 +23679,33 @@ async function handleAdminExportSession(request, env, path) {
         niche: sessionRow.niche,
         created_at: sessionRow.created_at,
         updated_at: sessionRow.updated_at,
-        api_cost_usd: parseFloat(costsRow?.total||0).toFixed(4)
+        api_cost_usd: parseFloat(costsRow?.total || 0).toFixed(4)
       },
       blueprint: bp,
-      conversation: conversation,
+      conversation,
       enrichment: apollo,
       design_tokens: {
-        background: '#FFFFFF',
-        text_primary: '#1D1D1F',
-        text_secondary: '#86868B',
-        accent: '#C4703F',
-        fonts: { headlines: 'Outfit, sans-serif', body: 'Inter, sans-serif', emotional: 'Playfair Display, serif' }
+        background: "#FFFFFF",
+        text_primary: "#1D1D1F",
+        text_secondary: "#86868B",
+        accent: "#C4703F",
+        fonts: { headlines: "Outfit, sans-serif", body: "Inter, sans-serif", emotional: "Playfair Display, serif" }
       },
-      ai_builder_handoff: bp ? '# Brand Blueprint for ' + (sessionRow.name||'Client') + '\n\nBuild a personal brand website using these specifications. Follow design tokens exactly.\n\nIndustry: ' + (sessionRow.industry||'N/A') + '\nNiche: ' + (sessionRow.niche||'N/A') + '\n\nBlueprint data included in this export.' : null
+      ai_builder_handoff: bp ? "# Brand Blueprint for " + (sessionRow.name || "Client") + "\n\nBuild a personal brand website using these specifications. Follow design tokens exactly.\n\nIndustry: " + (sessionRow.industry || "N/A") + "\nNiche: " + (sessionRow.niche || "N/A") + "\n\nBlueprint data included in this export." : null
     };
-
     return new Response(JSON.stringify(output, null, 2), {
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': 'attachment; filename="' + exportName + '-blueprint-export.json"'
+        "Content-Type": "application/json",
+        "Content-Disposition": 'attachment; filename="' + exportName + '-blueprint-export.json"'
       }
     });
-  } catch(e) {
-    return new Response('Export error: ' + e.message, {status:500});
+  } catch (e) {
+    return new Response("Export error: " + e.message, { status: 500 });
   }
 }
-
 async function handleAdminExportAll(request, env) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return new Response('Forbidden', {status:403});
+  if (!admin) return new Response("Forbidden", { status: 403 });
   try {
     var rows = await env.DB.prepare(`
       SELECT u.email, u.name, u.tier, u.created_at as user_created_at, u.last_login,
@@ -19782,77 +23721,690 @@ async function handleAdminExportAll(request, env) {
       ORDER BY u.created_at DESC
     `).all();
     var data = rows?.results || [];
-    var header = ['email','name','tier','sessions_count','last_status','max_phase','max_messages','has_blueprint','industry','niche','best_resonance','user_created_at','last_login'];
-    var csv = header.join(',') + '\n' + data.map(function(r) {
+    var header = ["email", "name", "tier", "sessions_count", "last_status", "max_phase", "max_messages", "has_blueprint", "industry", "niche", "best_resonance", "user_created_at", "last_login"];
+    var csv = header.join(",") + "\n" + data.map(function(r) {
       return header.map(function(k) {
         var v = r[k];
-        if (v === null || v === undefined) return '';
-        return '"' + String(v).replace(/"/g,'""') + '"';
-      }).join(',');
-    }).join('\n');
+        if (v === null || v === void 0) return "";
+        return '"' + String(v).replace(/"/g, '""') + '"';
+      }).join(",");
+    }).join("\n");
     return new Response(csv, {
       headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="dwi-users-' + new Date().toISOString().slice(0,10) + '.csv"'
+        "Content-Type": "text/csv",
+        "Content-Disposition": 'attachment; filename="dwi-users-' + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) + '.csv"'
       }
     });
-  } catch(e) {
-    return new Response('CSV error: ' + e.message, {status:500});
+  } catch (e) {
+    return new Response("CSV error: " + e.message, { status: 500 });
   }
 }
+async function handleAdminRunChecks(request, env) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
 
+  var origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+  var checks = [];
+
+  async function check(name, fn) {
+    var start = Date.now();
+    try {
+      var result = await fn();
+      checks.push({ name, pass: result.pass, detail: result.detail, ms: Date.now() - start });
+    } catch (e) {
+      checks.push({ name, pass: false, detail: e.message || "Error", ms: Date.now() - start });
+    }
+  }
+
+  await Promise.allSettled([
+    // Page health
+    check("Homepage (GET /)", async () => {
+      var r = await fetch(origin + "/", { signal: AbortSignal.timeout(8000) });
+      return { pass: r.status === 200, detail: "HTTP " + r.status };
+    }),
+    check("App page (GET /app)", async () => {
+      var r = await fetch(origin + "/app", { signal: AbortSignal.timeout(8000) });
+      return { pass: r.status === 200, detail: "HTTP " + r.status };
+    }),
+
+    // API contracts
+    check("Chat rejects empty body", async () => {
+      var r = await fetch(origin + "/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status + (r.status === 400 ? " (correct)" : "") };
+    }),
+    check("Webhook rejects invalid payload", async () => {
+      var r = await fetch(origin + "/api/webhook", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status + (r.status === 400 ? " (correct)" : "") };
+    }),
+    check("Session start responds", async () => {
+      var r = await fetch(origin + "/api/session/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status };
+    }),
+    check("Blueprint render responds", async () => {
+      var r = await fetch(origin + "/api/blueprint/render", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status };
+    }),
+
+    // External API keys
+    check("Anthropic API key", async () => {
+      if (!env.ANTHROPIC_API_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 5, messages: [{ role: "user", content: "Reply OK" }] }),
+        signal: AbortSignal.timeout(10000)
+      });
+      return { pass: r.status === 200 || r.status === 201, detail: r.status === 200 ? "OK — key valid" : "HTTP " + r.status };
+    }),
+    check("Stripe API key", async () => {
+      if (!env.STRIPE_SECRET_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.stripe.com/v1/balance", {
+        headers: { "Authorization": "Bearer " + env.STRIPE_SECRET_KEY },
+        signal: AbortSignal.timeout(8000)
+      });
+      return { pass: r.status === 200, detail: r.status === 200 ? "OK — key valid, mode: " + (env.STRIPE_MODE || "unknown") : "HTTP " + r.status };
+    }),
+    check("Resend API key", async () => {
+      if (!env.RESEND_API_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.resend.com/domains", {
+        headers: { "Authorization": "Bearer " + env.RESEND_API_KEY },
+        signal: AbortSignal.timeout(8000)
+      });
+      var d = await r.json().catch(() => null);
+      var verified = d && d.data ? d.data.filter(x => x.status === "verified").length : 0;
+      return { pass: r.status === 200, detail: r.status === 200 ? verified + " verified domain(s)" : "HTTP " + r.status };
+    }),
+    check("Apollo API key", async () => {
+      if (!env.APOLLO_API_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.apollo.io/api/v1/auth/health", {
+        headers: { "Cache-Control": "no-cache", "Content-Type": "application/json", "X-Api-Key": env.APOLLO_API_KEY },
+        signal: AbortSignal.timeout(8000)
+      });
+      var remaining = r.headers.get("x-monthly-usage-remaining");
+      return { pass: r.status === 200, detail: r.status === 200 ? (remaining ? remaining + " credits remaining" : "OK") : "HTTP " + r.status };
+    }),
+  ]);
+
+  var passed = checks.filter(c => c.pass).length;
+  return json({ checks, passed, total: checks.length, timestamp: new Date().toISOString() });
+}
+__name(handleAdminRunChecks, "handleAdminRunChecks");
+
+async function handleAdminSettings(request, env) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return new Response("Forbidden", { status: 403 });
+
+  function maskKey(val) {
+    if (!val) return '<span style="color:#FF3B30">NOT SET</span>';
+    var s = String(val);
+    if (s.length <= 8) return "••••••••";
+    return s.slice(0, 4) + "••••••••" + s.slice(-4);
+  }
+  function keyBadge(val) {
+    return val ? '<span class="badge bg-green">Set</span>' : '<span class="badge bg-red">Missing</span>';
+  }
+
+  // Live checks — fire in parallel, fail gracefully
+  var apolloCredits = null, apolloLimit = null, resendDomains = null, stripeMode = null;
+  await Promise.allSettled([
+    // Apollo: check credits
+    env.APOLLO_API_KEY ? fetch("https://api.apollo.io/api/v1/auth/health", {
+      headers: { "Cache-Control": "no-cache", "Content-Type": "application/json", "X-Api-Key": env.APOLLO_API_KEY }
+    }).then(async r => {
+      var remaining = r.headers.get("x-monthly-usage-remaining");
+      var limit = r.headers.get("x-monthly-limit");
+      if (remaining !== null) apolloCredits = parseInt(remaining);
+      if (limit !== null) apolloLimit = parseInt(limit);
+    }).catch(() => {}) : Promise.resolve(),
+
+    // Resend: check domains
+    env.RESEND_API_KEY ? fetch("https://api.resend.com/domains", {
+      headers: { "Authorization": "Bearer " + env.RESEND_API_KEY }
+    }).then(async r => {
+      var d = await r.json().catch(() => null);
+      if (d && d.data) resendDomains = d.data;
+    }).catch(() => {}) : Promise.resolve(),
+
+    // Stripe mode from env var
+    Promise.resolve(stripeMode = env.STRIPE_MODE || "unknown")
+  ]);
+
+  // Apollo credit bar color
+  var apolloColor = "#34C759";
+  if (apolloCredits !== null && apolloLimit) {
+    var pct = apolloCredits / apolloLimit;
+    if (pct < 0.1) apolloColor = "#FF3B30";
+    else if (pct < 0.25) apolloColor = "#FF9500";
+  }
+
+  var apis = [
+    { name: "Anthropic", icon: "🤖", envKey: "ANTHROPIC_API_KEY", val: env.ANTHROPIC_API_KEY, use: "Interview AI + blueprint generation (Call A + Call B)", extra: "" },
+    { name: "Apollo.io", icon: "🔍", envKey: "APOLLO_API_KEY", val: env.APOLLO_API_KEY, use: "Email enrichment on session start (role, company, industry)", extra: apolloCredits !== null ? `<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:4px"><span>Monthly credits remaining</span><span style="color:${apolloColor};font-weight:600">${apolloCredits}${apolloLimit ? " / " + apolloLimit : ""}</span></div><div class="adm-progress"><div class="adm-progress-fill" style="width:${apolloLimit ? Math.round(apolloCredits/apolloLimit*100) : 100}%;background:${apolloColor}"></div></div>${apolloCredits <= 15 ? '<div style="font-size:11px;color:#FF3B30;margin-top:4px">⚠ Below warning threshold (15)</div>' : ""}</div>` : "" },
+    { name: "Resend", icon: "📧", envKey: "RESEND_API_KEY", val: env.RESEND_API_KEY, use: "Magic links, blueprint delivery, admin alerts, daily digest", extra: resendDomains ? resendDomains.map(d => `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px"><span class="badge ${d.status === "verified" ? "bg-green" : "bg-yellow"}">${d.status}</span><span>${d.name}</span></div>`).join("") : "" },
+    { name: "Stripe", icon: "💳", envKey: "STRIPE_SECRET_KEY", val: env.STRIPE_SECRET_KEY, use: "Checkout, payment webhooks, customer lookup", extra: `<div style="margin-top:6px;font-size:12px">Mode: <span class="badge ${stripeMode === "live" ? "bg-green" : "bg-yellow"}">${stripeMode}</span></div>` },
+    { name: "Calendly", icon: "📅", envKey: "CALENDLY_API_KEY", val: env.CALENDLY_API_KEY, use: "Strategy call booking link in blueprint CTA", extra: "" },
+    { name: "PhotoRoom", icon: "🖼", envKey: "PHOTOROOM_API_KEY", val: env.PHOTOROOM_API_KEY, use: "Background removal for uploaded photos", extra: "" },
+    { name: "Gemini Proxy", icon: "🎨", envKey: "GEMINI_PROXY_TOKEN", val: env.GEMINI_PROXY_TOKEN, use: "Brand image generation via Imagen proxy", extra: "" },
+    { name: "Browser Rendering", icon: "🌐", envKey: "BROWSER_RENDERING_TOKEN", val: env.BROWSER_RENDERING_TOKEN, use: "Website screenshot capture for site-in-sixty flow", extra: "" },
+  ];
+
+  var apiRows = apis.map(a => `
+    <tr>
+      <td><span style="font-size:16px;margin-right:6px">${a.icon}</span><strong>${a.name}</strong><div style="font-size:11px;color:#86868B;margin-top:2px">${a.envKey}</div></td>
+      <td>${keyBadge(a.val)}</td>
+      <td style="font-family:monospace;font-size:12px;color:#86868B">${maskKey(a.val)}</td>
+      <td style="font-size:12px;color:#86868B">${a.use}</td>
+      <td>${a.extra}</td>
+    </tr>
+  `).join("");
+
+  var envVars = [
+    { name: "APP_ORIGIN", val: env.APP_ORIGIN },
+    { name: "STRIPE_MODE", val: env.STRIPE_MODE },
+    { name: "FLAG_NUDGES_ENABLED", val: env.FLAG_NUDGES_ENABLED },
+  ];
+  var envRows = envVars.map(e => `
+    <tr>
+      <td style="font-family:monospace;font-size:12px">${e.name}</td>
+      <td style="font-family:monospace;font-size:12px;color:#C4703F">${e.val || '<span style="color:#86868B">not set</span>'}</td>
+    </tr>
+  `).join("");
+
+  var content = `
+    <div class="adm-page-title">Settings</div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">API Keys &amp; Integrations</div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr><th>Service</th><th>Status</th><th>Key (masked)</th><th>Used For</th><th>Live Status</th></tr></thead>
+          <tbody>${apiRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">Environment Variables</div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+          <tbody>${envRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">System Health Check <button class="adm-btn adm-btn-sm" id="run-checks-btn" onclick="runHealthChecks()" style="margin-left:8px">Run Checks</button></div>
+      <div class="adm-panel">
+        <div style="font-size:12px;color:#86868B;margin-bottom:12px">Verifies all API keys are live, external integrations respond, and critical endpoints return correct status codes. Takes ~10 seconds.</div>
+        <div id="health-results" style="display:none">
+          <div id="health-summary" style="font-weight:600;font-size:13px;margin-bottom:10px"></div>
+          <table class="adm-table" style="margin-top:0">
+            <thead><tr><th>Check</th><th>Result</th><th>Detail</th><th>ms</th></tr></thead>
+            <tbody id="health-rows"></tbody>
+          </table>
+          <div id="health-ts" style="font-size:11px;color:#86868B;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">Export</div>
+      <div class="adm-panel" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600;font-size:13px">Export all users as CSV</div>
+          <div style="font-size:12px;color:#86868B;margin-top:2px">Name, email, tier, phase, blueprint status, resonance score</div>
+        </div>
+        <a href="/admin/export-all" class="adm-btn adm-btn-outline adm-btn-sm">Download CSV</a>
+      </div>
+    </div>
+  `;
+
+  var settingsScript = `<script>
+function runHealthChecks(){
+  var btn=document.getElementById('run-checks-btn');
+  var results=document.getElementById('health-results');
+  var summary=document.getElementById('health-summary');
+  var rows=document.getElementById('health-rows');
+  var ts=document.getElementById('health-ts');
+  btn.disabled=true;btn.textContent='Running...';
+  results.style.display='none';
+  fetch('/api/admin/run-checks',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    rows.innerHTML=d.checks.map(function(c){
+      return '<tr>'
+        +'<td style="font-size:12px">'+c.name+'</td>'
+        +'<td><span class="badge '+(c.pass?'bg-green':'bg-red')+'" style="font-size:11px">'+(c.pass?'PASS':'FAIL')+'</span></td>'
+        +'<td style="font-size:12px;color:#86868B">'+c.detail+'</td>'
+        +'<td style="font-size:11px;color:#86868B;font-family:monospace">'+c.ms+'ms</td>'
+        +'</tr>';
+    }).join('');
+    var allPass=d.passed===d.total;
+    summary.innerHTML=(allPass?'<span style="color:#34C759">&#10003;</span>':'<span style="color:#FF3B30">&#10007;</span>')+' '+d.passed+'/'+d.total+' checks passed'+(allPass?' \u2014 all systems go':'');
+    summary.style.color=allPass?'#34C759':'#FF3B30';
+    ts.textContent='Run at '+new Date(d.timestamp).toLocaleTimeString();
+    results.style.display='block';
+    btn.disabled=false;btn.textContent='Run Checks';
+  })
+  .catch(function(e){
+    summary.textContent='Error: '+e.message;
+    summary.style.color='#FF3B30';
+    results.style.display='block';
+    btn.disabled=false;btn.textContent='Run Checks';
+  });
+}
+<\/script>`;
+
+  return new Response(adminLayout("Settings", content).replace('</body>', settingsScript + '</body>'), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+}
 async function handleAdminDeleteUser(request, env, path, url) {
   var admin = await requireAdmin(request, env);
-  if (!admin) return new Response(JSON.stringify({error:'Forbidden'}), {status:403, headers:{'Content-Type':'application/json'}});
-  if (request.method !== 'POST') return new Response(JSON.stringify({error:'POST required'}), {status:405, headers:{'Content-Type':'application/json'}});
-  var confirm = url.searchParams.get('confirm');
-  if (confirm !== 'DELETE') return new Response(JSON.stringify({error:'Must pass ?confirm=DELETE'}), {status:400, headers:{'Content-Type':'application/json'}});
-  var userId = path.split('/')[3];
-  if (!userId) return new Response(JSON.stringify({error:'Missing userId'}), {status:400, headers:{'Content-Type':'application/json'}});
+  if (!admin) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { "Content-Type": "application/json" } });
+  if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST required" }), { status: 405, headers: { "Content-Type": "application/json" } });
+  var confirm = url.searchParams.get("confirm");
+  if (confirm !== "DELETE") return new Response(JSON.stringify({ error: "Must pass ?confirm=DELETE" }), { status: 400, headers: { "Content-Type": "application/json" } });
+  var userId = path.split("/")[3];
+  if (!userId) return new Response(JSON.stringify({ error: "Missing userId" }), { status: 400, headers: { "Content-Type": "application/json" } });
   try {
-    var userRow = await env.DB.prepare('SELECT id, email FROM users WHERE id=?').bind(userId).first();
-    if (!userRow) return new Response(JSON.stringify({error:'User not found'}), {status:404, headers:{'Content-Type':'application/json'}});
-    if (userRow.email === admin.email) return new Response(JSON.stringify({error:'Cannot delete your own account'}), {status:400, headers:{'Content-Type':'application/json'}});
-
-    // Log the deletion first
+    var userRow = await env.DB.prepare("SELECT id, email FROM users WHERE id=?").bind(userId).first();
+    if (!userRow) return new Response(JSON.stringify({ error: "User not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+    if (userRow.email === admin.email) return new Response(JSON.stringify({ error: "Cannot delete your own account" }), { status: 400, headers: { "Content-Type": "application/json" } });
     try {
-      await env.DB.prepare("INSERT INTO event_log (id, type, action, email, detail, created_at) VALUES (?, 'gdpr_deletion', 'user_deleted', ?, ?, datetime('now'))").bind(crypto.randomUUID(), userRow.email, 'All user data removed per GDPR request').run();
-    } catch(_){}
-
-    // Get all sessions for KV cleanup
-    var sessRows = await env.DB.prepare('SELECT id FROM sessions WHERE user_id=?').bind(userId).all().catch(()=>({results:[]}));
-    for (var sr of (sessRows?.results||[])) {
-      try { await env.SESSIONS.delete('sess_' + sr.id); } catch(_){}
-      try { await env.SESSIONS.delete('blueprint:' + sr.id); } catch(_){}
-      try { await env.SESSIONS.delete('enrichment:' + sr.id); } catch(_){}
+      await env.DB.prepare("INSERT INTO event_log (id, type, action, email, detail, created_at) VALUES (?, 'gdpr_deletion', 'user_deleted', ?, ?, datetime('now'))").bind(crypto.randomUUID(), userRow.email, "All user data removed per GDPR request").run();
+    } catch (_) {
     }
-
-    // Delete from all tables
-    var tables = ['session_events','auth_tokens','api_costs','token_usage'];
+    var sessRows = await env.DB.prepare("SELECT id FROM sessions WHERE user_id=?").bind(userId).all().catch(() => ({ results: [] }));
+    for (var sr of sessRows?.results || []) {
+      try {
+        await env.SESSIONS.delete(sr.id);
+      } catch (_) {
+      }
+      try {
+        await env.SESSIONS.delete("blueprint:" + sr.id);
+      } catch (_) {
+      }
+      try {
+        await env.SESSIONS.delete("enrichment:" + sr.id);
+      } catch (_) {
+      }
+    }
+    var tables = ["session_events", "auth_tokens", "api_costs", "token_usage"];
     for (var tbl of tables) {
       try {
-        if (tbl === 'session_events' || tbl === 'api_costs') {
-          var sids = (sessRows?.results||[]).map(function(r){return r.id;});
+        if (tbl === "session_events" || tbl === "api_costs") {
+          var sids = (sessRows?.results || []).map(function(r) {
+            return r.id;
+          });
           if (sids.length > 0) {
-            var placeholders = sids.map(function(){return '?';}).join(',');
-            await env.DB.prepare('DELETE FROM ' + tbl + ' WHERE session_id IN (' + placeholders + ')').bind(...sids).run();
+            var placeholders = sids.map(function() {
+              return "?";
+            }).join(",");
+            await env.DB.prepare("DELETE FROM " + tbl + " WHERE session_id IN (" + placeholders + ")").bind(...sids).run();
           }
         } else {
-          await env.DB.prepare('DELETE FROM ' + tbl + ' WHERE user_id=?').bind(userId).run();
+          await env.DB.prepare("DELETE FROM " + tbl + " WHERE user_id=?").bind(userId).run();
         }
-      } catch(_){}
+      } catch (_) {
+      }
     }
-    try { await env.DB.prepare('DELETE FROM sessions WHERE user_id=?').bind(userId).run(); } catch(_){}
-    try { await env.DB.prepare("DELETE FROM event_log WHERE email=? AND action != 'user_deleted'").bind(userRow.email).run(); } catch(_){}
-    await env.DB.prepare('DELETE FROM users WHERE id=?').bind(userId).run();
-
-    return new Response(JSON.stringify({ok:true, deleted: userRow.email}), {headers:{'Content-Type':'application/json'}});
-  } catch(e) {
-    return new Response(JSON.stringify({error:e.message}), {status:500, headers:{'Content-Type':'application/json'}});
+    try {
+      await env.DB.prepare("DELETE FROM sessions WHERE user_id=?").bind(userId).run();
+    } catch (_) {
+    }
+    try {
+      await env.DB.prepare("DELETE FROM event_log WHERE email=? AND action != 'user_deleted'").bind(userRow.email).run();
+    } catch (_) {
+    }
+    await env.DB.prepare("DELETE FROM users WHERE id=?").bind(userId).run();
+    return new Response(JSON.stringify({ ok: true, deleted: userRow.email }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
+async function handleSessionExportTranscript(request, env) {
+  const url = new URL(request.url);
+  const sessionId = url.searchParams.get("sessionId");
+  if (!sessionId) return new Response("Missing sessionId", { status: 400 });
+  let authorized = false;
+  const dltoken = url.searchParams.get("dltoken");
+  if (dltoken) {
+    try {
+      const storedSessionId = await env.SESSIONS.get("dltoken:" + dltoken);
+      if (storedSessionId === sessionId) {
+        authorized = true;
+        env.SESSIONS.delete("dltoken:" + dltoken).catch(() => {
+        });
+      }
+    } catch (_) {
+    }
+  }
+  try {
+    const user = await getAuthenticatedUser(request, env);
+    if (user) {
+      const row = await env.DB.prepare("SELECT user_id FROM sessions WHERE id = ?").bind(sessionId).first().catch(() => null);
+      if (row && row.user_id === user.id) authorized = true;
+    }
+  } catch (_) {
+  }
+  if (!authorized) {
+    try {
+      const admin = await requireAdmin(request, env);
+      if (admin) authorized = true;
+    } catch (_) {
+    }
+  }
+  if (!authorized) {
+    try {
+      const sessionToken = getCookieValue(request, "dw_session");
+      if (sessionToken) {
+        const decoded = await verifyJWT(sessionToken, getJWTSecret(env));
+        if (decoded && decoded.sessionId === sessionId) authorized = true;
+      }
+    } catch (_) {
+    }
+  }
+  if (!authorized) return new Response("Unauthorized", { status: 401 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      "SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?"
+    ).bind(sessionId).first();
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch (_) {
+    }
+    const name = sessionRow && (sessionRow.name || sessionRow.email) || "Anonymous";
+    const firstName = name.split(" ")[0];
+    const date = sessionRow ? (sessionRow.created_at || "").slice(0, 10) : (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    const PHASE_LABELS = {
+      1: "Who You Are",
+      2: "Your Ideal Client",
+      3: "Your Offer",
+      4: "Your Positioning",
+      5: "Your Story",
+      6: "Your Voice",
+      7: "Your Strategy",
+      8: "Your Blueprint"
+    };
+    let md = `# Deep Work Interview \u2014 ${name}
+`;
+    md += `**Date:** ${date}  |  **Session:** ${sessionId}
 
-// src/router.js
+`;
+    md += `> Paste this into ChatGPT, Claude, or any AI to continue building your brand strategy from where we left off.
+`;
+    md += `> Tell it: *"Here is my Deep Work Interview transcript. Help me [your goal]."*
+
+`;
+    md += `---
+
+`;
+    let currentPhase = 0;
+    kvMessages.forEach((m) => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map((c) => typeof c === "object" ? c.text || "" : c).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      if (!content) return;
+      const phaseMeta = String(m.content || "").match(/"phase":(\d)/);
+      const msgPhase = phaseMeta ? parseInt(phaseMeta[1]) : 0;
+      if (msgPhase && msgPhase !== currentPhase) {
+        currentPhase = msgPhase;
+        md += `## Phase ${currentPhase} \u2014 ${PHASE_LABELS[currentPhase] || "Interview"}
+
+`;
+      } else if (currentPhase === 0 && m.role === "assistant") {
+        currentPhase = 1;
+        md += `## Phase 1 \u2014 Who You Are
+
+`;
+      }
+      const speaker = m.role === "user" ? `**${firstName}:**` : `**James (AI):**`;
+      md += `${speaker} ${content}
+
+`;
+    });
+    md += `---
+
+*Generated by Deep Work Interview \u2014 love.jamesguldan.com*
+`;
+    const filename = firstName.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-deep-work-transcript.md";
+    return new Response(md, {
+      headers: {
+        ...CORS,
+        "Content-Type": "text/markdown;charset=UTF-8",
+        "Content-Disposition": `attachment; filename="${filename}"`
+      }
+    });
+  } catch (e) {
+    return new Response("Export error: " + e.message, { status: 500 });
+  }
+}
+__name(handleSessionExportTranscript, "handleSessionExportTranscript");
+async function handleAdminTranscriptTxt(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response("Forbidden", { status: 403 });
+  const sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing session ID", { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      "SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?"
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response("Session not found", { status: 404 });
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch (_) {
+    }
+    const name = sessionRow.name || sessionRow.email || "Anonymous";
+    const date = (sessionRow.created_at || "").slice(0, 10);
+    let txt = `Deep Work Interview \u2014 ${name}
+Date: ${date}
+Session: ${sessionId}
+
+${"=".repeat(60)}
+
+`;
+    kvMessages.forEach((m, i) => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map((c) => typeof c === "object" ? c.text || "" : c).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      if (!content) return;
+      const role = m.role === "user" ? name : "Claude";
+      const ts = m.timestamp ? String(m.timestamp).slice(11, 16) : "";
+      txt += `[${role}${ts ? " \xB7 " + ts : ""}]
+${content}
+
+`;
+    });
+    const filename = name.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase() + "-transcript.txt";
+    return new Response(txt, {
+      headers: {
+        "Content-Type": "text/plain;charset=UTF-8",
+        "Content-Disposition": `attachment; filename="${filename}"`
+      }
+    });
+  } catch (e) {
+    return new Response("Export error: " + e.message, { status: 500 });
+  }
+}
+async function handleAdminTranscriptFormatted(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response("Forbidden", { status: 403 });
+  const sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing session ID", { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      "SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?"
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response("Session not found", { status: 404 });
+    let kvMessages = [];
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        if (Array.isArray(kv.messages)) kvMessages = kv.messages;
+      }
+    } catch (_) {
+    }
+    const name = sessionRow.name || sessionRow.email || "Anonymous";
+    const date = (sessionRow.created_at || "").slice(0, 10);
+    const msgHTML = kvMessages.map((m) => {
+      let content = m.content;
+      if (Array.isArray(content)) content = content.map((c) => typeof c === "object" ? c.text || "" : c).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      if (!content) return "";
+      const isUser = m.role === "user";
+      const role = isUser ? name : "Claude";
+      const ts = m.timestamp ? String(m.timestamp).slice(11, 16) : "";
+      const esc2 = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return `<div class="msg ${isUser ? "user" : "ai"}">
+        <div class="label">${esc2(role)}${ts ? ' <span class="ts">\xB7 ' + ts + "</span>" : ""}</div>
+        <div class="bubble">${esc2(content).replace(/\n/g, "<br>")}</div>
+      </div>`;
+    }).join("");
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${name} \u2014 Deep Work Interview Transcript</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#fff;max-width:800px;margin:0 auto;padding:40px 24px}
+h1{font-family:'Outfit',sans-serif;font-size:22px;margin-bottom:4px}
+.meta{color:#86868B;font-size:12px;margin-bottom:32px}
+.msg{margin-bottom:20px}
+.msg.user .bubble{background:#F5F5F7;border-radius:12px 12px 4px 12px}
+.msg.ai .bubble{background:#FDF0E8;border-radius:12px 12px 12px 4px}
+.label{font-size:11px;font-weight:600;color:#86868B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.ts{font-weight:400;text-transform:none;letter-spacing:0}
+.bubble{padding:12px 16px;line-height:1.6}
+@media print{body{padding:20px}h1{font-size:18px}}
+</style>
+</head><body>
+<h1>${name}</h1>
+<div class="meta">Deep Work Interview \xB7 ${date} \xB7 ${kvMessages.length} messages</div>
+${msgHTML}
+</body></html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    return new Response("Export error: " + e.message, { status: 500 });
+  }
+}
+async function handleAdminBlueprintJson(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response("Forbidden", { status: 403 });
+  const sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing session ID", { status: 400 });
+  try {
+    const sessionRow = await env.DB.prepare(
+      "SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?"
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response("Session not found", { status: 404 });
+    let bp = null;
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        bp = kv.blueprint?.blueprint || kv.blueprint || null;
+      }
+    } catch (_) {
+    }
+    if (!bp) {
+      try {
+        const r = await env.SESSIONS.get("blueprint:" + sessionId);
+        if (r) bp = JSON.parse(r);
+      } catch (_) {
+      }
+    }
+    if (!bp) return new Response(JSON.stringify({ error: "No blueprint found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+    const name = (sessionRow.name || sessionRow.email || "session").replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+    return new Response(JSON.stringify(bp, null, 2), {
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="${name}-blueprint.json"`
+      }
+    });
+  } catch (e) {
+    return new Response("Export error: " + e.message, { status: 500 });
+  }
+}
+async function handleAdminBlueprintFormatted(request, env, path) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return new Response("Forbidden", { status: 403 });
+  const sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing session ID", { status: 400 });
+  try {
+    let renderValue = function(val) {
+      if (typeof val === "string") return `<p>${esc2(val)}</p>`;
+      if (Array.isArray(val)) return val.map(
+        (v) => typeof v === "object" ? `<div class="item">${Object.entries(v).map(([k, vv]) => `<div><strong>${esc2(k)}:</strong> ${esc2(String(vv || ""))}</div>`).join("")}</div>` : `<div class="item">${esc2(String(v))}</div>`
+      ).join("");
+      if (typeof val === "object" && val !== null) return Object.entries(val).map(
+        ([k, v]) => `<div class="subfield"><div class="subkey">${esc2(k)}</div><div class="subval">${esc2(String(v || ""))}</div></div>`
+      ).join("");
+      return `<p>${esc2(String(val || ""))}</p>`;
+    };
+    const sessionRow = await env.DB.prepare(
+      "SELECT s.*, u.name, u.email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?"
+    ).bind(sessionId).first();
+    if (!sessionRow) return new Response("Session not found", { status: 404 });
+    let bp = null;
+    try {
+      const sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        const kv = JSON.parse(sessRaw);
+        bp = kv.blueprint?.blueprint || kv.blueprint || null;
+      }
+    } catch (_) {
+    }
+    if (!bp) {
+      try {
+        const r = await env.SESSIONS.get("blueprint:" + sessionId);
+        if (r) bp = JSON.parse(r);
+      } catch (_) {
+      }
+    }
+    if (!bp) return new Response("<h1>No blueprint found</h1>", { status: 404, headers: { "Content-Type": "text/html" } });
+    const name = sessionRow.name || sessionRow.email || "Anonymous";
+    const esc2 = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const sections = Object.entries(bp).map(([key, val]) => `
+      <div class="section">
+        <div class="section-key">${esc2(key)}</div>
+        <div class="section-val">${renderValue(val)}</div>
+      </div>`).join("");
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${esc2(name)} \u2014 Brand Blueprint</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Outfit:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:13px;color:#1D1D1F;background:#fff;max-width:900px;margin:0 auto;padding:40px 24px}
+h1{font-family:'Outfit',sans-serif;font-size:24px;margin-bottom:4px}
+.meta{color:#86868B;font-size:12px;margin-bottom:36px}
+.section{margin-bottom:24px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden}
+.section-key{background:#F5F5F7;padding:8px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#C4703F}
+.section-val{padding:14px 16px;line-height:1.6}
+.section-val p{margin-bottom:8px}.section-val p:last-child{margin-bottom:0}
+.item{padding:8px 0;border-bottom:1px solid #F5F5F7}.item:last-child{border-bottom:none}
+.subfield{display:flex;gap:12px;padding:4px 0}.subkey{font-weight:600;min-width:160px;color:#86868B;font-size:12px}.subval{flex:1}
+@media print{body{padding:20px}.section{break-inside:avoid}}
+</style>
+</head><body>
+<h1>${esc2(name)}</h1>
+<div class="meta">Brand Blueprint \xB7 ${(sessionRow.created_at || "").slice(0, 10)}</div>
+${sections}
+</body></html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    return new Response("Export error: " + e.message, { status: 500 });
+  }
+}
 async function routeRequest(request, env, ctx) {
   const url = new URL(request.url);
   const path = url.pathname;
@@ -19864,14 +24416,32 @@ async function routeRequest(request, env, ctx) {
       return handleRoot(request, env);
     if (path === "/app")
       return handleApp(request, env);
-    if (path === "/admin")
+    if (path === "/admin" || path === "/admin/")
       return handleAdminDashboard(request, env);
+    if (path.match(/^\/admin\/session\/[^/]+\/transcript\.txt$/) && request.method === "GET")
+      return handleAdminTranscriptTxt(request, env, path);
+    if (path.match(/^\/admin\/session\/[^/]+\/transcript-formatted$/) && request.method === "GET")
+      return handleAdminTranscriptFormatted(request, env, path);
+    if (path.match(/^\/admin\/session\/[^/]+\/blueprint\.json$/) && request.method === "GET")
+      return handleAdminBlueprintJson(request, env, path);
+    if (path.match(/^\/admin\/session\/[^/]+\/blueprint-formatted$/) && request.method === "GET")
+      return handleAdminBlueprintFormatted(request, env, path);
+    if (path === "/admin/health")
+      return handleAdminHealthDashboard(request, env);
+    if (path === "/admin/people")
+      return handleAdminPeople(request, env);
+    if (path.startsWith("/admin/people/") && path !== "/admin/people")
+      return handleAdminPersonProfile(request, env, path);
     if (path.startsWith("/admin/session/") && request.method === "GET")
       return handleAdminSessionDetail(request, env, path);
-    if (path.startsWith("/admin/export/") && !path.includes('export-all') && request.method === "GET")
+    if (path.startsWith("/admin/export/") && !path.includes("export-all") && request.method === "GET")
       return handleAdminExportSession(request, env, path);
     if (path === "/admin/export-all" && request.method === "GET")
       return handleAdminExportAll(request, env);
+    if (path === "/admin/settings" && request.method === "GET")
+      return handleAdminSettings(request, env);
+    if (path === "/api/admin/run-checks" && request.method === "POST")
+      return handleAdminRunChecks(request, env);
     if (path.startsWith("/admin/delete-user/") && request.method === "POST")
       return handleAdminDeleteUser(request, env, path, url);
     if (path === "/logout")
@@ -19906,6 +24476,8 @@ async function routeRequest(request, env, ctx) {
       return handleFastResume(request, env);
     if (path === "/api/auth/set-password" && request.method === "POST")
       return handleSetPassword(request, env);
+    if (path === "/api/session/export-transcript" && request.method === "GET")
+      return handleSessionExportTranscript(request, env);
     if (path === "/api/session/start" && request.method === "POST")
       return handleSessionStart(request, env, ctx);
     if (path === "/api/session/claim" && request.method === "POST")
@@ -19973,8 +24545,14 @@ async function routeRequest(request, env, ctx) {
       return handleExport(request, env);
     if (path === "/api/export-site" && request.method === "GET")
       return handleExportSite(request, env);
+    if (path === "/api/blueprint/start" && request.method === "POST")
+      return handleBlueprintStart(request, env, ctx);
+    if (path.startsWith("/api/blueprint/status/") && request.method === "GET")
+      return handleBlueprintStatusPoll(request, env, path);
     if (path === "/api/blueprint/pdf" && request.method === "POST")
       return handleBlueprintPDF(request, env);
+    if (path === "/api/blueprint/pdf-download" && request.method === "POST")
+      return handleBlueprintPDFDownload(request, env);
     if (path === "/api/blueprint/render" && request.method === "POST")
       return handleBlueprintRender(request, env);
     if (path === "/api/blueprint/qa" && request.method === "POST")
@@ -19987,12 +24565,16 @@ async function routeRequest(request, env, ctx) {
       return handleResonanceScore(request, env);
     if (path === "/api/blueprint/testimonial-capture" && request.method === "POST")
       return handleTestimonialCapture(request, env);
+    if (path === "/api/event/tier-viewed" && request.method === "POST")
+      return handleEventTierViewed(request, env);
     if (path === "/api/feedback" && request.method === "POST")
       return handleFeedback(request, env);
     if (path === "/api/log-event" && request.method === "POST")
       return handleLogEvent(request, env);
     if (path === "/api/track" && request.method === "POST")
       return handleTrack(request, env);
+    if (path === "/api/unsubscribe" && request.method === "GET")
+      return handleUnsubscribe(request, env);
     if (path === "/api/create-payment-intent" && request.method === "POST")
       return handleCreatePaymentIntent(request, env);
     if (path === "/api/fulfill-payment" && request.method === "POST")
@@ -20025,6 +24607,14 @@ async function routeRequest(request, env, ctx) {
       return handleAdminSavePrompt(request, env);
     if (path === "/api/admin/generate-debrief" && request.method === "POST")
       return handleAdminGenerateDebrief(request, env);
+    if (path === "/api/admin/force-generate-blueprint" && request.method === "POST")
+      return handleAdminForceGenerateBlueprint(request, env);
+    if (path === "/api/admin/generate-v3-fields" && request.method === "POST")
+      return handleAdminGenerateV3Fields(request, env);
+    if (path === "/api/admin/backfill-landscape" && request.method === "POST")
+      return handleAdminBackfillLandscape(request, env);
+    if (path === "/api/internal/generate-blueprint" && request.method === "POST")
+      return handleInternalGenerateBlueprint(request, env);
     if (path === "/api/admin/inject-debrief" && request.method === "POST")
       return handleAdminInjectDebrief(request, env);
     if (path === "/api/admin/generate-test-blueprint" && request.method === "POST")
@@ -20067,6 +24657,21 @@ async function routeRequest(request, env, ctx) {
       return handleAdminCreateWeeklySnapshot(request, env);
     if (path === "/api/admin/backfill" && request.method === "POST")
       return handleAdminBackfill(request, env);
+    if (path === "/api/admin/backfill-health" && request.method === "POST")
+      return handleAdminBackfillHealth(request, env);
+    if (path === "/api/admin/bulk-v3" && request.method === "POST")
+      return handleAdminBulkV3(request, env);
+    if (path === "/api/admin/resend-blueprint" && request.method === "POST")
+      return handleAdminResendBlueprint(request, env);
+    if (path === "/api/admin/people/search" && request.method === "GET")
+      return handleAdminPeopleSearch(request, env);
+    if (path.startsWith("/api/admin/people/") && path.endsWith("/detail") && request.method === "GET")
+      return handleAdminPersonDetail(request, env, path);
+    if (path === "/api/admin/test-digest" && request.method === "POST") {
+      await requireAdmin(request, env);
+      await runConditionalDigest(env);
+      return json({ ok: true, message: "Digest triggered" });
+    }
     return new Response(getErrorPageHTML(404, "Page Not Found", ERROR_PAGES[404].message), {
       status: 404,
       headers: htmlHeaders()
@@ -20103,18 +24708,114 @@ async function routeRequest(request, env, ctx) {
 }
 __name(routeRequest, "routeRequest");
 
-// src/index.js
+// === Phase A: Nudge scanner ===
+// Cron: Find sessions stuck at phase 8 with no blueprint and fire async generation.
+// Catches users who reached phase 8 but stopped messaging before blueprint triggered.
+async function runPhase8AutoComplete(env) {
+  try {
+    const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+    const stuck = await env.DB.prepare(`
+      SELECT id, phase, message_count, last_active_at
+      FROM sessions
+      WHERE phase >= 8
+        AND blueprint_generated = 0
+        AND (status = 'active' OR status IS NULL)
+        AND last_active_at < datetime('now', '-1 hour')
+        AND last_active_at > datetime('now', '-7 days')
+      LIMIT 10
+    `).all();
+    const rows = stuck.results || [];
+    let triggered = 0;
+    for (const row of rows) {
+      try {
+        // Skip if a generation is already in-flight
+        const lockExists = await env.SESSIONS.get("bp_generating:" + row.id).catch(() => null);
+        if (lockExists) continue;
+        // Only generate if there are enough messages in KV
+        const kvRaw = await env.SESSIONS.get(row.id);
+        if (!kvRaw) continue;
+        let kvSession;
+        try { kvSession = JSON.parse(kvRaw); } catch (_) { continue; }
+        if (!kvSession.messages || kvSession.messages.length < 15) continue;
+        if (kvSession.blueprintGenerated) continue;
+        const jobId = "bpj_auto8_" + crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+        await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ jobId, sessionId: row.id, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+        await fetch(appOrigin + "/api/internal/generate-blueprint", {
+          method: "POST",
+          headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: row.id, jobId })
+        }).catch((e) => console.error("[Phase8AutoComplete] fetch error:", e.message));
+        triggered++;
+        console.log("[Phase8AutoComplete] Triggered async blueprint for stuck session=" + row.id + " phase=" + row.phase + " msgs=" + kvSession.messages.length);
+      } catch (e) {
+        console.error("[Phase8AutoComplete] Error for session=" + row.id + ":", e.message);
+      }
+    }
+    console.log("[Phase8AutoComplete] scanned=" + rows.length + " triggered=" + triggered);
+  } catch (e) {
+    console.error("[Phase8AutoComplete] Fatal:", e.message);
+  }
+}
+__name(runPhase8AutoComplete, "runPhase8AutoComplete");
+
+async function scanAndSendNudges(env) {
+  const FLAG = env.FLAG_NUDGES_ENABLED || "off"; // "off" | "dry_run" | "live"
+  if (FLAG === "off") return;
+  const dryRun = FLAG !== "live";
+  const now = new Date();
+
+  // Fetch sessions that are candidates (active, with session_health set, last active >1h ago)
+  const rows = await env.DB.prepare(`
+    SELECT s.id, s.user_id, s.session_health, s.created_at, s.last_active_at, s.phase,
+           s.message_count, u.email as user_email,
+           u.name as user_name, u.nudges_opted_out
+    FROM sessions s
+    LEFT JOIN users u ON s.user_id = u.id
+    WHERE s.session_health IN ('cold_abandoned', 'mid_drop')
+    AND s.status = 'active'
+    AND s.last_active_at < datetime('now', '-1 hour')
+    LIMIT 50
+  `).all();
+
+  for (const session of rows.results || []) {
+    try {
+      const nudgeRows = await env.DB.prepare(
+        "SELECT nudge_type, sent_at FROM nudges WHERE session_id = ? ORDER BY sent_at ASC"
+      ).bind(session.id).all();
+      const next = computeNextNudge(session, nudgeRows.results || [], now);
+      if (next && now >= next.send_after) {
+        await sendNudge(env, session, next.nudge_type, dryRun);
+      }
+    } catch (e) {
+      console.error("[scanAndSendNudges] error for session", session.id, ":", e.message);
+    }
+  }
+  console.log("[scanAndSendNudges] FLAG=" + FLAG + " scanned=" + (rows.results || []).length + " candidates");
+}
+__name(scanAndSendNudges, "scanAndSendNudges");
+// === End Phase A: Nudge scanner ===
+
 var src_default = {
   // Cron triggers:
-  //   Every 2 hours — abandonment check
+  //   Every 15 min — nudge scanner
+  //   Every hour — hourly health snapshot
+  //   Every hour — abandonment check
   //   Daily at 9am UTC — full system health check
   //   Every Monday 1pm UTC (8am CT) — weekly snapshot + email report
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try {
+        if (event.cron === "*/15 * * * *") {
+          await scanAndSendNudges(env);
+        }
+        if (event.cron === "0 * * * *") {
+          await runHourlySnapshot(env);
+          await runPhase8AutoComplete(env);
+        }
         await runAbandonmentCheck(env);
         if (event.cron === "0 9 * * *") {
           await runDailyHealthCheck(env);
+          await runConditionalDigest(env); // NEW: conditional issues-only digest
         }
         if (event.cron === "0 13 * * 1") {
           await runWeeklySnapshot(env);
@@ -20131,3 +24832,4 @@ var src_default = {
 export {
   src_default as default
 };
+

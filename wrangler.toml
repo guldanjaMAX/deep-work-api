@@ -18,7 +18,19 @@ database_id = "92121f3b-dcfb-4fa8-8482-b827224b611d"
 
 [vars]
 APP_ORIGIN = "https://love.jamesguldan.com"
-STRIPE_MODE = "test"
+STRIPE_MODE = "live"
+FLAG_NUDGES_ENABLED = "dry_run"
 
 [triggers]
-crons = ["0 13 * * 1"]
+crons = ["*/15 * * * *", "0 * * * *", "0 9 * * *", "0 13 * * 1"]
+
+[observability]
+enabled = true
+
+[observability.traces]
+enabled = true
+destinations = ["sentry-traces"]
+
+[observability.logs]
+enabled = true
+destinations = ["sentry-logs"]
