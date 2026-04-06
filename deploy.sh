@@ -134,6 +134,28 @@ else
   log "  No active user sessions in the last hour. Safe to deploy."
 fi
 
+# --- Step 2.5: E2E Tests (gate — blocks deploy on failure) ---
+log "Step 2.5: Running E2E test suite..."
+
+if [ -z "${DWI_MAGIC_TOKEN:-}" ]; then
+  warn "DWI_MAGIC_TOKEN not set — skipping E2E gate."
+  warn "Set it to run the full suite: export DWI_MAGIC_TOKEN=<token>"
+  warn "Or run manually: DWI_MAGIC_TOKEN=<token> npm run test:e2e"
+else
+  E2E_EXIT=0
+  DWI_MAGIC_TOKEN="$DWI_MAGIC_TOKEN" \
+  DWI_STRIPE_WEBHOOK_SECRET="${DWI_STRIPE_WEBHOOK_SECRET:-}" \
+  PATH="/usr/local/bin:/opt/homebrew/bin:$PATH" \
+    npm run test:e2e 2>&1 || E2E_EXIT=$?
+
+  if [ "$E2E_EXIT" -ne 0 ]; then
+    echo ""
+    fail "E2E tests FAILED (exit $E2E_EXIT). Deploy aborted — fix the tests before deploying."
+  fi
+
+  log "  E2E tests passed. Proceeding with deploy."
+fi
+
 # --- Step 3: Build ---
 log "Step 3: Building bundle with esbuild..."
 npx esbuild@latest src/index.js \

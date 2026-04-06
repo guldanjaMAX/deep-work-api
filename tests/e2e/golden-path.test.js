@@ -145,6 +145,33 @@ describe('Golden Path E2E', { timeout: 120000 }, () => {
       expect(deltas.length).toBeGreaterThan(0);
     }, 60000);
 
+    it('lock releases after stream ends — second sequential message gets 200 not 429', async () => {
+      // THIS IS THE REGRESSION TEST FOR THE STUCK-LOCK BUG.
+      // The previous test drained the full SSE stream. If the KV concurrency lock was not
+      // properly released (e.g. fire-and-forget delete killed before CF Worker terminates),
+      // this message would get a 429 request_in_flight instead of 200.
+      if (!sessionJwt || !testSessionIdVal) return;
+
+      const res = await fetch(`${BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionJwt}`,
+        },
+        body: JSON.stringify({
+          sessionId: testSessionIdVal,
+          message: 'Follow-up: what should I focus on first?',
+        }),
+      });
+
+      // Must be 200, not 429. A 429 here means the lock from the previous message
+      // was not released — the ctx.waitUntil + await delete fix handles this.
+      expect(res.status).toBe(200);
+
+      // Drain the stream so the lock is released for subsequent tests
+      if (res.status === 200) await readSSEStream(res);
+    }, 60000);
+
     it('rejects messages with no content', async () => {
       if (!sessionJwt || !testSessionIdVal) return;
 
