@@ -275,7 +275,7 @@ export async function handleAdminTestBlueprint(request, env) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5-20251001",
-        max_tokens: 8e3,
+        max_tokens: 16000,
         messages: [{
           role: "user",
           content: `Generate a complete brand blueprint JSON for a person named "${brandName}" in the niche "${niche}". The blueprint should be realistic and detailed with all 8 parts filled out. Follow this exact JSON structure:\n\n{"blueprint":{"name":"Full Name","generatedAt":"${(new Date()).toISOString()}","part1":{"title":"Brand Foundation","brandNames":["Name 1","Name 2","Name 3"],"taglines":["Tag 1","Tag 2","Tag 3"],"visualDirection":{"colors":[{"name":"Primary","hex":"#1B3A4B"},{"name":"Secondary","hex":"#C17F3E"},{"name":"Accent","hex":"#E8B86D"},{"name":"Background","hex":"#F8F5F0"},{"name":"Text","hex":"#1A1A1A"}],"fonts":{"heading":"Playfair Display","body":"Inter"},"aesthetic":"2 sentences"},"brandVoice":{"descriptors":["word1","word2","word3","word4","word5"],"doSay":["ex1","ex2","ex3"],"neverSay":["ex1","ex2","ex3"]},"coreBrandPromise":"One sentence"},"part2":{"title":"Ideal Customer Avatar","name":"First name","ageRange":"range","lifeSituation":"2 sentences","tryingToAchieve":"goal","whatIsStoppingThem":"obstacle","exactWords":["phrase1","phrase2","phrase3"],"alreadyTried":["thing1","thing2"],"whyItDidNotWork":"pattern"},"part3":{"title":"Niche Positioning","nicheStatement":"I help X do Y without Z","whoTheyServe":"desc","whoTheyDoNotServe":"desc","uniqueMechanism":"methodology name","competitorGap":"differentiation"},"part4":{"title":"Offer Suite","entryOffer":{"name":"","description":"","price":"","delivery":""},"coreOffer":{"name":"","description":"","price":"","delivery":""},"premiumOffer":{"name":"","description":"","price":"","delivery":""},"ascensionLogic":"how each leads to next"},"part5":{"title":"Website Blueprint","pageNarrative":"2-3 sentences","heroHeadlines":["1","2","3"],"heroSubheadline":"one line","heroCTA":"button text","heroImageTheme":"specific evocative image description","sections":[{"name":"Section","purpose":"purpose","content":"content","rationale":"why","confidence":85,"imageTheme":"desc","visualMood":"light"}],"testimonialFraming":"approach"},"part6":{"title":"Gap Analysis","credibilityGaps":["gap1","gap2","gap3"],"marketingOpportunities":["opp1","opp2","opp3"],"firstMove":"most important first step"},"part7":{"title":"Headlines and Positioning Statements","heroHeadlineOptions":["1","2","3","4","5","6","7","8","9","10"],"taglineOptions":["1","2","3","4","5"],"positioningStatements":{"website":"for homepage","social":"for bios","inPerson":"for introductions"}},"part8":{"title":"Your Recommended Next Step","recommendation":"site_in_sixty","headline":"compelling one liner","personalizedMessage":"3 to 5 sentences","whyNow":"1 to 2 sentences","specificBenefit":"concrete benefit"},"leadIntel":{"estimatedRevenue":"100K to 500K","industry":"${niche}","yearsInBusiness":"1 to 3","teamSize":"Solo","hasExistingBrand":false,"hasExistingWebsite":false,"hasInternalTeam":false,"brandMaturity":"Starting fresh","buyingTemperature":"Hot","biggestPainPoint":"main pain","budgetSignals":"signal","bestFitService":"site_in_sixty","bestFitReason":"1 sentence","notableQuotes":["quote1","quote2","quote3"],"followUpAngle":"angle"}}}\n\nReturn ONLY the JSON, no other text.`
@@ -286,8 +286,18 @@ export async function handleAdminTestBlueprint(request, env) {
     let blueprintText = bpData.content?.[0]?.text || "";
     let blueprint;
     try {
-      const jsonMatch = blueprintText.match(/```(?:json)?\n?([\s\S]*?)\n?```/) || [null, blueprintText];
-      blueprint = JSON.parse(jsonMatch[1]);
+      // Robust JSON extraction: try direct parse, then code block, then brace extraction
+      let parsed = false;
+      const t = blueprintText.trim();
+      const strategies = [
+        () => JSON.parse(t),
+        () => { const m = t.match(/```(?:json)?\s*([\s\S]+?)\s*```/); if (m) return JSON.parse(m[1]); throw new Error('no match'); },
+        () => { const s = t.indexOf('{'), e = t.lastIndexOf('}'); if (s !== -1 && e > s) return JSON.parse(t.slice(s, e + 1)); throw new Error('no braces'); }
+      ];
+      for (const strategy of strategies) {
+        try { blueprint = strategy(); parsed = true; break; } catch (_) {}
+      }
+      if (!parsed) throw new Error('All extraction strategies failed');
     } catch (parseErr) {
       return json({ error: "Failed to parse generated blueprint JSON", detail: blueprintText.slice(0, 500) }, 500);
     }
@@ -387,7 +397,7 @@ export async function handleAdminQuickTestSession(request, env) {
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 8e3,
+          max_tokens: 16000,
           messages: [{
             role: "user",
             content: 'Generate a complete brand blueprint JSON for a fictional executive coaching business. The person is "Alex Rivera" who helps mid-level tech managers become better leaders. Return ONLY valid JSON matching the standard blueprint structure.'
@@ -397,8 +407,16 @@ export async function handleAdminQuickTestSession(request, env) {
       const bpData = await bpRes.json();
       let bpText = bpData.content?.[0]?.text || "";
       try {
-        const match = bpText.match(/```(?:json)?\n?([\s\S]*?)\n?```/) || [null, bpText];
-        const blueprint = JSON.parse(match[1]);
+        // Robust JSON extraction
+      let blueprint;
+      const _t = bpText.trim();
+      const _strategies = [
+        () => JSON.parse(_t),
+        () => { const m = _t.match(/```(?:json)?\s*([\s\S]+?)\s*```/); if (m) return JSON.parse(m[1]); throw new Error('no match'); },
+        () => { const s = _t.indexOf('{'), e = _t.lastIndexOf('}'); if (s !== -1 && e > s) return JSON.parse(_t.slice(s, e + 1)); throw new Error('no braces'); }
+      ];
+      for (const _s of _strategies) { try { blueprint = _s(); break; } catch (_) {} }
+      if (!blueprint) throw new Error('JSON extraction failed');
         session.blueprint = blueprint;
         session.blueprintGenerated = true;
         session.phase = 8;
