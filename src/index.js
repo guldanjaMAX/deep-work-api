@@ -16321,10 +16321,16 @@ Use this to skip surface-level questions. Go deeper faster.` });
       } catch (_) {
       }
     } finally {
-      // Always release the concurrency lock when streaming ends
-      env.SESSIONS.delete(lockKey).catch(() => {});
+      // Always release the concurrency lock when streaming ends.
+      // MUST be awaited — fire-and-forget is silently cancelled when CF kills the Worker
+      // after writer.close(), leaving the lock permanently set until the 120s TTL expires.
+      try { await env.SESSIONS.delete(lockKey); } catch (_) {}
     }
   })();
+  // Keep the Worker alive until streamPromise (including the lock deletion) fully completes.
+  // Without this, CF may terminate the Worker immediately after the response is returned,
+  // cancelling the in-flight KV delete and leaving the lock stuck.
+  if (ctx) ctx.waitUntil(streamPromise);
   return new Response(readable, {
     headers: {
       "Content-Type": "text/event-stream",
