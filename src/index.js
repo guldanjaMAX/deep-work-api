@@ -1552,6 +1552,8 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     font-size: 15px;
     line-height: 1.6;
     max-width: 78%;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .msg.ai .bubble {
@@ -1637,84 +1639,257 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     100% { background-position: -100% 0; }
   }
 
-  /* Blueprint generation overlay */
+  /* ═══ BLUEPRINT GENERATION OVERLAY — Light Design ═══ */
   .blueprint-generating {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #FFFFFF;
+    inset: 0;
+    background: #FDFCFA;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 99999;
-    padding: 32px 24px;
-    text-align: center;
     overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
   .blueprint-generating.active { display: flex; }
-  .blueprint-gen-icon {
-    width: 72px;
-    height: 72px;
+
+  /* Background */
+  .bp-bg-layer { position: absolute; inset: 0; pointer-events: none; }
+  .bp-bg-nebula {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: min(140vw,140vh); height: min(140vw,140vh);
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), #e8935a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    animation: pulse-glow 2s ease-in-out infinite;
-    flex-shrink: 0;
+    background: radial-gradient(circle, rgba(196,112,63,0.08) 0%, rgba(196,112,63,0.04) 20%, rgba(196,112,63,0.015) 40%, transparent 65%);
+    animation: bpNebulaPulse 3.2s ease-in-out infinite;
   }
-  .blueprint-gen-icon svg {
-    width: 30px;
-    height: 30px;
-    fill: white;
-    animation: spin-slow 4s linear infinite;
+  @keyframes bpNebulaPulse {
+    0%,100% { transform: translate(-50%,-50%) scale(1); opacity: .8; }
+    15% { transform: translate(-50%,-50%) scale(1.04); opacity: 1; }
+    35% { transform: translate(-50%,-50%) scale(1.03); opacity: .95; }
+    50% { transform: translate(-50%,-50%) scale(1); opacity: .8; }
   }
-  @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(196,112,63,0.25); transform: scale(1); }
-    50% { box-shadow: 0 0 36px rgba(196,112,63,0.4); transform: scale(1.04); }
+  .bp-bg-halo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: max(160vw,160vh); height: max(160vw,160vh);
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 25%, rgba(196,112,63,0.008) 40%, rgba(196,112,63,0.004) 60%, transparent 80%);
+    animation: bpHaloRotate 120s linear infinite;
   }
-  @keyframes spin-slow {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  @keyframes bpHaloRotate { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .bp-bg-accent {
+    position: absolute; top: 30%; left: 65%;
+    transform: translate(-50%,-50%);
+    width: 50vw; height: 50vw; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,112,63,0.03) 0%, transparent 70%);
+    animation: bpAccentDrift 20s ease-in-out infinite alternate;
   }
-  .blueprint-gen-title {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 26px;
-    color: var(--text);
-    margin-bottom: 8px;
+  @keyframes bpAccentDrift {
+    0% { transform: translate(-50%,-50%) translate(0,0); }
+    100% { transform: translate(-50%,-50%) translate(-5vw,3vh); }
   }
-  .blueprint-gen-msg {
-    font-size: 15px;
-    color: var(--text2);
-    font-family: 'Inter', sans-serif;
+  .bp-bg-accent2 {
+    position: absolute; top: 70%; left: 30%;
+    transform: translate(-50%,-50%);
+    width: 40vw; height: 40vw; border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,112,63,0.02) 0%, transparent 65%);
+    animation: bpAccentDrift2 25s ease-in-out infinite alternate;
+  }
+  @keyframes bpAccentDrift2 {
+    0% { transform: translate(-50%,-50%) translate(0,0); }
+    100% { transform: translate(-50%,-50%) translate(4vw,-2vh); }
+  }
+  .bp-bg-grain {
+    position: absolute; inset: -50%; width: 200%; height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+    opacity: .3; animation: bpGrainShift .5s steps(4) infinite;
+  }
+  @keyframes bpGrainShift {
+    0% { transform: translate(0,0); } 25% { transform: translate(-5%,-5%); }
+    50% { transform: translate(5%,0); } 75% { transform: translate(0,5%); }
+    100% { transform: translate(0,0); }
+  }
+
+  /* Outer geometry */
+  .bp-outer-geo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: max(100vw,100vh); height: max(100vw,100vh);
+    pointer-events: none;
+  }
+  .bp-outer-mandala { position: absolute; inset: 0; animation: bpOuterSpin 150s linear infinite; opacity: .08; }
+  .bp-outer-mandala svg { width: 100%; height: 100%; }
+  @keyframes bpOuterSpin { to { transform: rotate(360deg); } }
+  .bp-outer-mandala2 {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 75%; height: 75%;
+    animation: bpOuterSpin2 110s linear infinite reverse; opacity: .06;
+  }
+  .bp-outer-mandala2 svg { width: 100%; height: 100%; }
+  @keyframes bpOuterSpin2 { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .bp-outer-ring { position: absolute; top: 50%; left: 50%; border-radius: 50%; }
+  .bp-or1 { width:90%;height:90%;transform:translate(-50%,-50%);border:1px solid rgba(196,112,63,.06);animation:bpRingSpin 80s linear infinite; }
+  .bp-or2 { width:75%;height:75%;transform:translate(-50%,-50%);border:1px dashed rgba(196,112,63,.04);animation:bpRingSpin 65s linear infinite reverse; }
+  .bp-or3 { width:60%;height:60%;transform:translate(-50%,-50%);border:1px solid rgba(196,112,63,.07);animation:bpRingSpin 50s linear infinite; }
+  .bp-or4 { width:48%;height:48%;transform:translate(-50%,-50%);border:1px dotted rgba(196,112,63,.05);animation:bpRingSpin 40s linear infinite reverse; }
+  @keyframes bpRingSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .bp-outer-hex { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+  .bp-oh1 { width:65%;height:65%;border:1px solid rgba(196,112,63,.05);animation:bpHexSpin1 50s linear infinite; }
+  .bp-oh2 { width:50%;height:50%;border:1px solid rgba(196,112,63,.06);animation:bpHexSpin2 38s linear infinite reverse; }
+  @keyframes bpHexSpin1 { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  @keyframes bpHexSpin2 { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  /* Corner nodes */
+  .bp-cnode { position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(196,112,63,.15);box-shadow:0 0 15px rgba(196,112,63,.08); }
+  .bp-cnode::before { content:'';position:absolute;inset:-8px;border:1px solid rgba(196,112,63,.08);border-radius:50%;animation:bpNodeRing 4s ease-in-out infinite; }
+  @keyframes bpNodeRing { 0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.5);opacity:0} }
+  .bp-cn1{top:12%;left:18%;animation:bpNodePulse 5s ease-in-out infinite 0s}
+  .bp-cn2{top:8%;right:22%;animation:bpNodePulse 5s ease-in-out infinite 1.2s}
+  .bp-cn3{bottom:15%;left:14%;animation:bpNodePulse 5s ease-in-out infinite 2.5s}
+  .bp-cn4{bottom:10%;right:16%;animation:bpNodePulse 5s ease-in-out infinite 3.8s}
+  .bp-cn5{top:50%;left:5%;animation:bpNodePulse 5s ease-in-out infinite .7s}
+  .bp-cn6{top:50%;right:5%;animation:bpNodePulse 5s ease-in-out infinite 2s}
+  @keyframes bpNodePulse { 0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.3)} }
+
+  /* Particles */
+  .bp-particles{position:absolute;inset:0;pointer-events:none}
+  .bp-particle{position:absolute;background:#C4703F;border-radius:50%;opacity:0}
+  .bp-s{width:1.5px;height:1.5px}
+  .bp-m{width:3px;height:3px;box-shadow:0 0 6px rgba(196,112,63,.3)}
+  .bp-l{width:4px;height:4px;box-shadow:0 0 10px rgba(196,112,63,.4),0 0 20px rgba(196,112,63,.15)}
+  .bp-xl{width:2px;height:2px;box-shadow:0 0 6px rgba(196,112,63,.25)}
+  .bp-p1{left:35%;top:72%;animation:bpPFloat 8s ease-in-out infinite 0s}
+  .bp-p2{left:42%;top:68%;animation:bpPFloat 10s ease-in-out infinite 1.2s}
+  .bp-p3{left:50%;top:80%;animation:bpPFloat 7s ease-in-out infinite 2.8s}
+  .bp-p4{left:58%;top:72%;animation:bpPFloat 9s ease-in-out infinite .6s}
+  .bp-p5{left:55%;top:65%;animation:bpPFloat 11s ease-in-out infinite 3.5s}
+  .bp-p6{left:45%;top:78%;animation:bpPFloat 8.5s ease-in-out infinite 1.8s}
+  .bp-p7{left:25%;top:60%;animation:bpPFloat 10s ease-in-out infinite 4.2s}
+  .bp-p8{left:75%;top:62%;animation:bpPFloat 9s ease-in-out infinite 2.1s}
+  .bp-p9{left:30%;top:85%;animation:bpPFloat 7.5s ease-in-out infinite 5s}
+  .bp-p10{left:70%;top:82%;animation:bpPFloat 12s ease-in-out infinite .3s}
+  .bp-p11{left:20%;top:50%;animation:bpPFloat 9s ease-in-out infinite 3.8s}
+  .bp-p12{left:80%;top:55%;animation:bpPFloat 11s ease-in-out infinite 1.5s}
+  @keyframes bpPFloat {
+    0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
+    6%{opacity:.5}30%{opacity:.3;transform:translateY(-80px) translateX(15px) scale(1.2)}
+    60%{opacity:.1}100%{transform:translateY(-280px) translateX(40px) scale(.6);opacity:0}
+  }
+
+  /* Core geometry container */
+  .bp-geo-container {
+    position: relative; width: 400px; height: 400px;
+    display: flex; align-items: center; justify-content: center; z-index: 5;
+  }
+  .bp-mandala-ring { position:absolute;width:380px;height:380px;animation:bpMandalaSpin 90s linear infinite;opacity:.18; }
+  .bp-mandala-ring svg { width:100%;height:100%; }
+  .bp-mandala-ring circle,.bp-mandala-ring line { stroke:#C4703F;fill:none; }
+  @keyframes bpMandalaSpin { to { transform: rotate(360deg); } }
+  .bp-flower { position:absolute;width:320px;height:320px;animation:bpFlowerSpin 70s linear infinite,bpFlowerBreathe 3.2s ease-in-out infinite;opacity:.2;filter:drop-shadow(0 0 3px rgba(196,112,63,.15)); }
+  .bp-flower circle { fill:none;stroke:#C4703F;stroke-width:.5; }
+  @keyframes bpFlowerSpin { to { transform: rotate(360deg); } }
+  @keyframes bpFlowerBreathe {
+    0%,100%{opacity:.15;transform:rotate(0deg) scale(1)}
+    15%{opacity:.28;transform:rotate(.5deg) scale(1.03)}
+    50%{opacity:.15;transform:rotate(0deg) scale(1)}
+  }
+  .bp-sacred-ring { position:absolute;border-radius:50%; }
+  .bp-r1{width:340px;height:340px;border:1px solid rgba(196,112,63,.15);animation:bpRSpin 45s linear infinite}
+  .bp-r2{width:280px;height:280px;border:1px dashed rgba(196,112,63,.1);animation:bpRSpin 35s linear infinite reverse}
+  .bp-r3{width:220px;height:220px;border:1px solid rgba(196,112,63,.18);animation:bpRSpin 55s linear infinite;box-shadow:0 0 30px rgba(196,112,63,.04) inset}
+  .bp-r4{width:160px;height:160px;border:1px dotted rgba(196,112,63,.12);animation:bpRSpin 25s linear infinite reverse}
+  .bp-r5{width:110px;height:110px;border:1px solid rgba(196,112,63,.25);animation:bpRSpin 20s linear infinite;box-shadow:0 0 20px rgba(196,112,63,.06) inset}
+  @keyframes bpRSpin { to { transform: rotate(360deg); } }
+  .bp-hex { position:absolute;display:flex;align-items:center;justify-content:center; }
+  .bp-hex-shape { clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:bpHexBreathe 3.2s ease-in-out infinite; }
+  .bp-h1{width:230px;height:230px;border:1.5px solid rgba(196,112,63,.18);animation:bpHSpin1 30s linear infinite,bpHexBreathe 3.2s ease-in-out infinite}
+  .bp-h2{width:170px;height:170px;border:1.5px solid rgba(196,112,63,.13);animation:bpHSpin2 22s linear infinite reverse,bpHexBreathe 3.2s ease-in-out infinite .4s}
+  .bp-h3{width:115px;height:115px;border:1.5px solid rgba(196,112,63,.25);animation:bpHSpin3 16s linear infinite,bpHexBreathe 3.2s ease-in-out infinite .8s}
+  @keyframes bpHSpin1{to{transform:rotate(360deg)}}
+  @keyframes bpHSpin2{to{transform:rotate(360deg)}}
+  @keyframes bpHSpin3{to{transform:rotate(360deg)}}
+  @keyframes bpHexBreathe{0%,100%{opacity:.7}15%{opacity:1}50%{opacity:.7}}
+  .bp-spiral{position:absolute;width:300px;height:300px;animation:bpSpiralSpin 100s linear infinite reverse;opacity:.08;}
+  .bp-spiral svg{width:100%;height:100%;}
+  @keyframes bpSpiralSpin{to{transform:rotate(360deg)}}
+
+  /* Heart */
+  .bp-heart-core { position:relative;z-index:10;display:flex;align-items:center;justify-content:center; }
+  .bp-heart-glow-outer {
+    position:absolute;width:200px;height:200px;border-radius:50%;
+    background:radial-gradient(circle,rgba(196,112,63,.12) 0%,rgba(196,112,63,.04) 40%,transparent 70%);
+    animation:bpHeartGlowOut 3.2s ease-in-out infinite;pointer-events:none;
+  }
+  @keyframes bpHeartGlowOut{0%,100%{transform:scale(1);opacity:.4}15%{transform:scale(1.5);opacity:.8}35%{transform:scale(1.4);opacity:.7}50%{transform:scale(1);opacity:.4}}
+  .bp-heart-glow-inner {
+    position:absolute;width:100px;height:100px;border-radius:50%;
+    background:radial-gradient(circle,rgba(196,112,63,.25) 0%,rgba(196,112,63,.1) 35%,transparent 65%);
+    animation:bpHeartGlowIn 3.2s ease-in-out infinite;pointer-events:none;
+  }
+  @keyframes bpHeartGlowIn{0%,100%{transform:scale(1);opacity:.6}15%{transform:scale(1.3);opacity:1}35%{transform:scale(1.25);opacity:.95}50%{transform:scale(1);opacity:.6}}
+  .bp-heart-ripple { position:absolute;border-radius:50%;border:1.5px solid rgba(196,112,63,.2);width:60px;height:60px;animation:bpRipple 3.2s ease-out infinite; }
+  .bp-rip2{animation-delay:.25s;border-color:rgba(196,112,63,.12)}
+  .bp-rip3{animation-delay:.5s;border-color:rgba(196,112,63,.06);width:50px;height:50px}
+  @keyframes bpRipple{0%{transform:scale(1);opacity:.7}15%{transform:scale(2);opacity:.35}35%{transform:scale(3);opacity:.08}60%,100%{transform:scale(3.5);opacity:0}}
+  .bp-heart-icon{position:relative;z-index:3;animation:bpHeartBeat 3.2s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(196,112,63,.7)) drop-shadow(0 0 18px rgba(196,112,63,.35)) drop-shadow(0 0 40px rgba(196,112,63,.12));}
+  .bp-heart-icon svg{width:56px;height:56px;}
+  @keyframes bpHeartBeat{0%,100%{transform:scale(1)}15%{transform:scale(1.2)}25%{transform:scale(1.06)}35%{transform:scale(1.16)}50%{transform:scale(1)}}
+
+  /* Text */
+  .bp-loading-text { position:relative;z-index:10;text-align:center;margin-top:48px; }
+  .bp-loading-message {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #1A1A1A;
+    max-width: 420px;
+    line-height: 1.55;
+    min-height: 60px;
     transition: opacity 0.5s ease;
-    max-width: 360px;
-    width: 100%;
-    line-height: 1.65;
-    min-height: 52px;
+    letter-spacing: -0.01em;
   }
-  .blueprint-gen-progress {
-    width: 220px;
-    height: 3px;
-    background: rgba(196,112,63,0.1);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 24px;
+  .bp-stage-row { display:flex;align-items:center;justify-content:center;gap:12px;margin-top:24px; }
+  .bp-stage-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: #C4703F;
   }
-  .blueprint-gen-progress-bar {
-    height: 100%;
-    background: var(--gold);
-    border-radius: 3px;
-    width: 0%;
-    transition: width 0.8s ease;
-    box-shadow: 0 0 8px rgba(196,112,63,0.4);
-    animation: bp-bar-pulse 2s ease-in-out infinite;
+  .bp-title-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: rgba(0,0,0,0.35);
+    letter-spacing: 0.05em;
+    margin-top: 6px;
   }
-  @keyframes bp-bar-pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(196,112,63,0.3); }
-    50% { opacity: 0.85; box-shadow: 0 0 14px rgba(196,112,63,0.6); }
+  .bp-progress { display:flex;gap:5px;margin-top:16px;justify-content:center; }
+  .bp-seg { width:48px;height:3px;background:rgba(196,112,63,.12);border-radius:3px;overflow:hidden;position:relative; }
+  .bp-seg.active { background:rgba(196,112,63,.18); }
+  .bp-seg.active .bp-seg-fill,.bp-seg.complete .bp-seg-fill { display:block; }
+  .bp-seg-fill {
+    display:none;position:absolute;inset:0;
+    background:linear-gradient(90deg,#C4703F,#D4884F);
+    border-radius:3px;box-shadow:0 0 8px rgba(196,112,63,.4);
+    animation:bpSegPulse 3.2s ease-in-out infinite;
+  }
+  .bp-seg.complete .bp-seg-fill { animation:none;opacity:.7; }
+  @keyframes bpSegPulse{0%,100%{opacity:.4;transform:scaleX(.5);transform-origin:left}15%{opacity:1;transform:scaleX(1)}50%{opacity:.5;transform:scaleX(.7)}}
+  .bp-timer { font-size:12px;color:rgba(0,0,0,.3);margin-top:20px;font-weight:400;letter-spacing:.04em; }
+
+  @media(max-width:768px){.bp-outer-geo,.bp-cnode{display:none}}
+  @media(max-width:480px){
+    .bp-geo-container{width:300px;height:300px}
+    .bp-flower{width:240px;height:240px}.bp-mandala-ring{width:280px;height:280px}
+    .bp-spiral{width:220px;height:220px}
+    .bp-h1{width:180px;height:180px}.bp-h2{width:130px;height:130px}.bp-h3{width:90px;height:90px}
+    .bp-r1{width:260px;height:260px}.bp-r2{width:210px;height:210px}.bp-r3{width:170px;height:170px}
+    .bp-r4{width:130px;height:130px}.bp-r5{width:90px;height:90px}
+    .bp-heart-icon svg{width:44px;height:44px}
+    .bp-loading-message{font-size:17px;max-width:300px}
+    .bp-loading-text{margin-top:32px}
   }
 
   /* Input area */
@@ -2067,44 +2242,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     min-height: 100vh;
   }
 
-  .blueprint-header {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 56px 40px 48px;
-    text-align: center;
-    max-width: 760px;
-    margin: 0 auto;
-    border-bottom: none;
-  }
-
-  .blueprint-header .eyebrow {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 600;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 20px;
-  }
-
-  .blueprint-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-style: italic;
-    font-size: 32px;
-    font-weight: 400;
-    line-height: 1.35;
-    margin-bottom: 16px;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-
-  .blueprint-header p {
-    color: var(--text2);
-    font-size: 14px;
-    line-height: 1.6;
-    font-family: 'Inter', sans-serif;
-  }
-
   .blueprint-actions {
     display: flex;
     gap: 12px;
@@ -2350,6 +2487,16 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
   }
   .msg-error .error-retry-btn:hover { background: #333; }
 
+  /* Non-bubble status line (used for silent retry feedback) */
+  .msg-status-line {
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    padding: 6px 0 2px;
+    font-style: italic;
+    animation: fadeIn 0.3s ease;
+  }
+
   /* Reaction buttons */
   .reaction-btn {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -2567,8 +2714,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   @media (max-width: 600px) {
     .blueprint-body { padding: 20px; }
-    .blueprint-header { padding: 40px 20px 32px; }
-    .blueprint-header h2 { font-size: 24px; }
     .blueprint-actions { padding: 16px 20px; }
   }
 
@@ -2710,7 +2855,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       <a href="mailto:james@jamesguldan.com" class="btn" style="width:auto;display:inline-flex;padding:14px 32px;text-decoration:none;font-size:15px;background:transparent;border:1.5px solid #E5E5E7;color:#444;">Email James</a>
     </div>
     <div class="legal-footer" style="margin-top:48px;">
-      <p>&copy; 2025 James Guldan / Align Growth LLC. All rights reserved.</p>
+      <p>&copy; 2026 James Guldan / Align Growth LLC. All rights reserved.</p>
       <p>
         <a href="/legal/terms" target="_blank">Terms of Service</a>
         &middot;
@@ -2727,7 +2872,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
   <!-- Hero section -->
   <div class="intake-hero">
-    <div class="eyebrow">Your Session Is Ready</div>
+    <div class="eyebrow">Let&rsquo;s Get Started</div>
     <h2>Let&rsquo;s Build Something<br><em>Only You</em> Could Build</h2>
     <p>Eight conversations. One complete brand blueprint. Built around who you actually are \u2014 not a template, not a formula. The real thing.</p>
     <div class="promise-strip">
@@ -2744,6 +2889,12 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
         <span>Custom to your story</span>
       </div>
     </div>
+  </div>
+
+  <!-- Trust signal -->
+  <div style="max-width:560px;margin:4px auto 20px;background:#F9F8F6;border:1px solid #E8E5E0;border-radius:12px;padding:20px 24px;">
+    <p style="font-size:14px;line-height:1.7;color:#555;font-style:italic;margin:0 0 10px;">"It just gave me a very honest, objective mirror back at myself. I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career."</p>
+    <div style="font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.08em;">Chris Van Loan II &mdash; Founder, Luminary Media</div>
   </div>
 
   <!-- Resume banner (shown when active session exists) -->
@@ -2878,7 +3029,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 <div id="app" class="screen">
   <div class="phase-bar">
     <div class="phase-bar-title">Deep Work</div>
-    <div class="phase-track"><div class="phase-track-fill" id="phase-progress-fill"></div></div>
+    <div class="phase-track"><div class="phase-track-fill" id="phase-progress-fill"></div></div><span id="phase-label" style="font-size:11px;font-weight:600;color:#C4703F;letter-spacing:0.05em;white-space:nowrap;margin-left:8px;">Phase 1 of 8</span>
     <!-- Hidden elements kept for JS compatibility -->
     <div class="phases" aria-hidden="true">
       <div class="phase-dot active" id="pd1">1</div>
@@ -2901,7 +3052,7 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
     <div class="input-row">
       <div class="input-pill">
         <textarea id="msg-input" placeholder="Type or tap the mic..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this); updateInputToggle()"></textarea>
-        <button class="attach-btn" onclick="openUploadModal()" title="Attach file">
+        <button class="attach-btn" onclick="openUploadModal()" title="Attach photo or document">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
           </svg>
@@ -2923,7 +3074,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
       </div>
     </div>
     <div class="voice-status" id="voice-status"></div>
-    <input type="file" id="doc-upload-input" accept=".pdf,.txt,.md" style="display:none" onchange="handleDocUpload(this)">
     <button class="tool-btn" id="images-btn" onclick="generateBrandImages()" style="display:none;margin-top:6px;">\u2728 Generate brand images</button>
     <div id="doc-upload-status" style="display:none;padding:8px 16px;font-size:13px;color:var(--text2);background:var(--bg2);border-radius:8px;margin-top:6px;"></div>
   </div>
@@ -2979,11 +3129,6 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 </div>
 
 <div id="blueprint-screen" class="screen">
-  <div class="blueprint-header">
-    <div class="eyebrow">Session Complete</div>
-    <h2 id="bp-name">Your Brand Blueprint</h2>
-    <p>Your complete brand foundation, ready to build on.</p>
-  </div>
   <div id="strategist-debrief" style="display:none;max-width:720px;margin:0 auto;padding:32px 40px 8px;"></div>
   <div class="blueprint-body" id="blueprint-body">
     <!-- populated by JS -->
@@ -3251,17 +3396,121 @@ var getHTML = /* @__PURE__ */ __name((config) => `<!DOCTYPE html>
 
 <!-- \u2550\u2550 BLUEPRINT GENERATION OVERLAY \u2550\u2550 -->
 <div class="blueprint-generating" id="blueprint-generating">
-  <div class="blueprint-gen-icon">
-    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+  <div class="bp-bg-layer">
+    <div class="bp-bg-halo"></div>
+    <div class="bp-bg-nebula"></div>
+    <div class="bp-bg-accent"></div>
+    <div class="bp-bg-accent2"></div>
+    <div class="bp-bg-grain"></div>
   </div>
-  <div class="blueprint-gen-title" id="blueprint-gen-title">Creating Your Blueprint</div>
-  <div id="blueprint-gen-step" style="font-size:11px;color:rgba(196,112,63,0.7);font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Step 1 of 4</div>
-  <div class="blueprint-gen-msg" id="blueprint-gen-msg">Synthesizing everything you shared into something you have never seen before...</div>
-  <div class="blueprint-gen-progress"><div class="blueprint-gen-progress-bar" id="blueprint-gen-bar"></div></div>
-  <div id="blueprint-gen-timer" style="font-size:12px;color:rgba(0,0,0,0.35);margin-top:16px;font-weight:500;letter-spacing:0.04em;">This typically takes 2 to 4 minutes.</div>
-  <div id="blueprint-gen-retry" style="display:none;margin-top:24px;">
+  <div class="bp-outer-geo">
+    <svg class="bp-outer-mandala" viewBox="0 0 1000 1000">
+      <circle cx="500" cy="500" r="480" stroke="#C4703F" stroke-width="0.5" fill="none"/>
+      <circle cx="500" cy="500" r="460" stroke="#C4703F" stroke-width="0.3" fill="none" stroke-dasharray="6 12"/>
+      <line x1="500" y1="20" x2="500" y2="980" stroke="#C4703F" stroke-width="0.25"/>
+      <line x1="20" y1="500" x2="980" y2="500" stroke="#C4703F" stroke-width="0.25"/>
+      <line x1="146" y1="146" x2="854" y2="854" stroke="#C4703F" stroke-width="0.25"/>
+      <line x1="854" y1="146" x2="146" y2="854" stroke="#C4703F" stroke-width="0.25"/>
+    </svg>
+    <svg class="bp-outer-mandala2" viewBox="0 0 800 800">
+      <circle cx="400" cy="400" r="380" stroke="#C4703F" stroke-width="0.4" fill="none" stroke-dasharray="3 10"/>
+      <circle cx="400" cy="400" r="340" stroke="#C4703F" stroke-width="0.25" fill="none"/>
+      <line x1="400" y1="20" x2="400" y2="780" stroke="#C4703F" stroke-width="0.2"/>
+      <line x1="20" y1="400" x2="780" y2="400" stroke="#C4703F" stroke-width="0.2"/>
+      <line x1="120" y1="120" x2="680" y2="680" stroke="#C4703F" stroke-width="0.2"/>
+      <line x1="680" y1="120" x2="120" y2="680" stroke="#C4703F" stroke-width="0.2"/>
+    </svg>
+    <div class="bp-outer-ring bp-or1"></div>
+    <div class="bp-outer-ring bp-or2"></div>
+    <div class="bp-outer-ring bp-or3"></div>
+    <div class="bp-outer-ring bp-or4"></div>
+    <div class="bp-outer-hex bp-oh1"></div>
+    <div class="bp-outer-hex bp-oh2"></div>
+  </div>
+  <div class="bp-cnode bp-cn1"></div>
+  <div class="bp-cnode bp-cn2"></div>
+  <div class="bp-cnode bp-cn3"></div>
+  <div class="bp-cnode bp-cn4"></div>
+  <div class="bp-cnode bp-cn5"></div>
+  <div class="bp-cnode bp-cn6"></div>
+  <div class="bp-particles">
+    <div class="bp-particle bp-s bp-p1"></div><div class="bp-particle bp-m bp-p2"></div>
+    <div class="bp-particle bp-s bp-p3"></div><div class="bp-particle bp-l bp-p4"></div>
+    <div class="bp-particle bp-s bp-p5"></div><div class="bp-particle bp-m bp-p6"></div>
+    <div class="bp-particle bp-s bp-p7"></div><div class="bp-particle bp-m bp-p8"></div>
+    <div class="bp-particle bp-l bp-p9"></div><div class="bp-particle bp-s bp-p10"></div>
+    <div class="bp-particle bp-m bp-p11"></div><div class="bp-particle bp-s bp-p12"></div>
+  </div>
+  <div class="bp-geo-container">
+    <svg class="bp-mandala-ring" viewBox="0 0 400 400">
+      <circle cx="200" cy="200" r="185" stroke-width="0.5"/>
+      <circle cx="200" cy="200" r="175" stroke-width="0.3" stroke-dasharray="4 8"/>
+      <line x1="200" y1="15" x2="200" y2="385" stroke-width="0.3"/>
+      <line x1="15" y1="200" x2="385" y2="200" stroke-width="0.3"/>
+      <line x1="64" y1="64" x2="336" y2="336" stroke-width="0.3"/>
+      <line x1="336" y1="64" x2="64" y2="336" stroke-width="0.3"/>
+    </svg>
+    <svg class="bp-flower" viewBox="0 0 300 300">
+      <circle cx="150" cy="150" r="50"/><circle cx="150" cy="100" r="50"/>
+      <circle cx="193.3" cy="125" r="50"/><circle cx="193.3" cy="175" r="50"/>
+      <circle cx="150" cy="200" r="50"/><circle cx="106.7" cy="175" r="50"/>
+      <circle cx="106.7" cy="125" r="50"/><circle cx="150" cy="50" r="50"/>
+      <circle cx="193.3" cy="75" r="50"/><circle cx="236.6" cy="100" r="50"/>
+      <circle cx="236.6" cy="150" r="50"/><circle cx="236.6" cy="200" r="50"/>
+      <circle cx="193.3" cy="225" r="50"/><circle cx="150" cy="250" r="50"/>
+      <circle cx="106.7" cy="225" r="50"/><circle cx="63.4" cy="200" r="50"/>
+      <circle cx="63.4" cy="150" r="50"/><circle cx="63.4" cy="100" r="50"/>
+      <circle cx="106.7" cy="75" r="50"/>
+    </svg>
+    <svg class="bp-spiral" viewBox="0 0 300 300">
+      <path d="M150,150 Q150,80 210,80 Q280,80 280,150 Q280,240 190,240 Q90,240 90,140 Q90,30 200,30" fill="none" stroke="#C4703F" stroke-width="0.6"/>
+      <path d="M150,150 Q150,110 180,110 Q220,110 220,150 Q220,200 170,200 Q110,200 110,145 Q110,70 185,70" fill="none" stroke="#C4703F" stroke-width="0.4"/>
+    </svg>
+    <div class="bp-sacred-ring bp-r1"></div><div class="bp-sacred-ring bp-r2"></div>
+    <div class="bp-sacred-ring bp-r3"></div><div class="bp-sacred-ring bp-r4"></div>
+    <div class="bp-sacred-ring bp-r5"></div>
+    <div class="bp-hex"><div class="bp-hex-shape bp-h1"></div></div>
+    <div class="bp-hex"><div class="bp-hex-shape bp-h2"></div></div>
+    <div class="bp-hex"><div class="bp-hex-shape bp-h3"></div></div>
+    <div class="bp-heart-core">
+      <div class="bp-heart-glow-outer"></div>
+      <div class="bp-heart-glow-inner"></div>
+      <div class="bp-heart-ripple"></div>
+      <div class="bp-heart-ripple bp-rip2"></div>
+      <div class="bp-heart-ripple bp-rip3"></div>
+      <div class="bp-heart-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="#C4703F" stroke-width="1.1" stroke-linejoin="round"/>
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="#C4703F" stroke-width="0.55" stroke-linejoin="round"
+                transform="translate(12,12) scale(0.68) translate(-12,-12)" opacity="0.5"/>
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                stroke="#C4703F" stroke-width="0.4" stroke-linejoin="round"
+                transform="translate(12,12) scale(0.40) translate(-12,-12)" opacity="0.25"/>
+          <line x1="12" y1="3.5" x2="12" y2="21.35" stroke="#C4703F" stroke-width="0.25" opacity="0.18"/>
+          <circle cx="12" cy="21.35" r="0.75" fill="#C4703F" opacity="0.85"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="bp-loading-text">
+    <div class="bp-loading-message" id="blueprint-gen-msg">Synthesizing everything you shared...</div>
+    <div class="bp-stage-row">
+      <div class="bp-stage-label" id="blueprint-gen-step">Step 1 of 4</div>
+    </div>
+    <div class="bp-title-label" id="blueprint-gen-title">Reading Your Conversation</div>
+    <div class="bp-progress">
+      <div class="bp-seg active" id="bp-seg1"><div class="bp-seg-fill"></div></div>
+      <div class="bp-seg" id="bp-seg2"><div class="bp-seg-fill"></div></div>
+      <div class="bp-seg" id="bp-seg3"><div class="bp-seg-fill"></div></div>
+      <div class="bp-seg" id="bp-seg4"><div class="bp-seg-fill"></div></div>
+    </div>
+    <div class="bp-timer" id="blueprint-gen-timer">This typically takes 3 to 5 minutes.</div>
+  </div>
+  <div id="blueprint-gen-retry" style="display:none;position:relative;z-index:10;margin-top:24px;text-align:center;">
     <p style="color:rgba(0,0,0,0.5);font-size:14px;margin-bottom:12px;">This is taking longer than expected. Your conversation is saved.</p>
-    <button onclick="retryBlueprint()" style="background:var(--gold,#C4703F);color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>
+    <button onclick="retryBlueprint()" style="background:#C4703F;color:#fff;border:none;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Try Again</button>
     <button onclick="dismissBlueprintOverlay()" style="background:transparent;border:1.5px solid rgba(0,0,0,0.15);padding:14px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-left:8px;color:rgba(0,0,0,0.6);">Go Back to Chat</button>
   </div>
 </div>
@@ -3419,10 +3668,12 @@ window.addEventListener('DOMContentLoaded', async () => {
   const magicToken = params.get('_s');
   if (magicToken) {
     localStorage.setItem('dw_session', magicToken);
+    localStorage.setItem('dw_session_jwt', magicToken);
     window.history.replaceState({}, '', '/app');
   }
 
   const sessionId = params.get('session');
+  const resumeSessionParam = params.get('resumeSession');
   const tier = params.get('tier');
   const accessToken = params.get('access');
 
@@ -3480,18 +3731,22 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (token) {
       try {
         const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) {
+          // Token is invalid or expired — clear it so the user can re-authenticate cleanly
+          if (res.status === 401 || res.status === 403) localStorage.removeItem('dw_session');
+          throw new Error('auth_failed_' + res.status);
+        }
         const user = await res.json();
         if (user && user.id) {
           STATE.tier = user.tier || (user.role === 'admin' ? 'site' : 'blueprint');
           STATE.email = user.email || '';
 
           // Check for ?session= URL param \u2014 if present, render blueprint directly (share link)
-          const urlSessionParam = new URLSearchParams(window.location.search).get('session');
-          if (urlSessionParam) {
-            STATE.sessionId = urlSessionParam;
-            window.history.replaceState({}, '', '/app');
-            await renderBlueprint(null, null, true);
-            showScreen('blueprint-screen');
+          // ?resumeSession=SESS_ID — admin 'View as User' deep-link to a specific session
+          if (resumeSessionParam) {
+            pendingResumeSessionId = resumeSessionParam;
+            localStorage.setItem('dw_active_session', resumeSessionParam);
+            await resumeSession();
           } else {
             // Check for active or completed session to resume; if none, auto-start
             try {
@@ -3499,11 +3754,23 @@ window.addEventListener('DOMContentLoaded', async () => {
                 headers: { 'Authorization': 'Bearer ' + token }
               });
               const activeData = await activeRes.json();
-              if (activeData.hasActiveSession && activeData.session) {
-                // Auto-resume \u2014 drop user right where they left off
-                pendingResumeSessionId = activeData.session.id;
-                localStorage.setItem('dw_active_session', activeData.session.id);
-                await resumeSession();
+              const _storedSessId = localStorage.getItem('dw_active_session');
+              if (activeData.hasActiveSession && activeData.sessionId) {
+                // Bug 3 fix: show resume choice instead of auto-resuming
+                pendingResumeSessionId = activeData.sessionId;
+                localStorage.setItem('dw_active_session', activeData.sessionId);
+                showScreen('intake');
+                showResumeBanner({
+                  id: activeData.sessionId,
+                  phase: activeData.phase || 1,
+                  messageCount: activeData.messageCount || 0
+                });
+              } else if (_storedSessId) {
+                // dw_active_session in localStorage but API says no active session —
+                // still offer the choice (may be a completed session with blueprint)
+                pendingResumeSessionId = _storedSessId;
+                showScreen('intake');
+                showResumeBanner({ id: _storedSessId, phase: 1, messageCount: 0 });
               } else {
                 await startSessionAuto();
               }
@@ -3513,8 +3780,14 @@ window.addEventListener('DOMContentLoaded', async () => {
           }
         }
       } catch(e) {
-        // Auth failed silently, show landing
+        // Auth failed — unhide landing and show it
+        document.documentElement.style.setProperty('--pre-auth-hide', 'flex');
+        showScreen('landing');
       }
+    } else {
+      // No dw_session token — show landing
+      document.documentElement.style.setProperty('--pre-auth-hide', 'flex');
+      showScreen('landing');
     }
   }
 
@@ -4149,6 +4422,8 @@ function dismissResume() {
   if (banner) banner.style.display = 'none';
   pendingResumeSessionId = null;
   localStorage.removeItem('dw_active_session');
+  // Bug 3 fix: start a fresh session when user chooses "Start Fresh"
+  startSessionAuto();
 }
 
 async function resumeSession() {
@@ -4206,7 +4481,7 @@ async function resumeSession() {
 
     // Restore state
     STATE.sessionId = data.sessionId;
-    STATE.tier = data.tier || STATE.tier;
+    STATE.tier = data.tier || STATE.tier || 'blueprint';
     STATE.phase = data.phase || 1;
     localStorage.setItem('dw_active_session', data.sessionId);
 
@@ -4437,6 +4712,22 @@ function updateInputToggle() {
   }
 }
 
+function showStatusLine(text) {
+  hideStatusLine();
+  var _sl = document.createElement('div');
+  _sl.id = 'msg-status-line';
+  _sl.className = 'msg-status-line';
+  _sl.textContent = text;
+  var _msgs = document.getElementById('messages');
+  if (_msgs) _msgs.appendChild(_sl);
+  scrollToBottom();
+}
+
+function hideStatusLine() {
+  var _sl = document.getElementById('msg-status-line');
+  if (_sl && _sl.parentElement) _sl.parentElement.removeChild(_sl);
+}
+
 async function sendMessage() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
@@ -4453,13 +4744,56 @@ async function sendMessage() {
   try {
     const controller = new AbortController();
     const fetchTimeout = setTimeout(() => controller.abort(), 120000); // 2 min client timeout
-    const res = await fetch('/api/chat', {
+    const chatHeaders = { 'Content-Type': 'application/json' };
+    if (STATE.sessionJwt) chatHeaders['Authorization'] = 'Bearer ' + STATE.sessionJwt;
+    let res = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: chatHeaders,
       body: JSON.stringify({ sessionId: STATE.sessionId, message: text }),
       signal: controller.signal
     });
     clearTimeout(fetchTimeout);
+
+    // Bug 1 & 2 fix: 429 request_in_flight → silent retry, never render a JG bubble
+    if (res.status === 429) {
+      let _429d = {};
+      try { _429d = await res.json(); } catch(_) {}
+      if (_429d.error === 'request_in_flight') {
+        showStatusLine('One moment\u2026');
+        let _retryOk = false;
+        for (let _i = 0; _i < 3; _i++) {
+          await new Promise(_r => setTimeout(_r, 2000));
+          try {
+            const _rh = { 'Content-Type': 'application/json' };
+            if (STATE.sessionJwt) _rh['Authorization'] = 'Bearer ' + STATE.sessionJwt;
+            const _rc = new AbortController();
+            const _rt = setTimeout(() => _rc.abort(), 120000);
+            res = await fetch('/api/chat', {
+              method: 'POST',
+              headers: _rh,
+              body: JSON.stringify({ sessionId: STATE.sessionId, message: text }),
+              signal: _rc.signal
+            });
+            clearTimeout(_rt);
+            let _still429 = res.status === 429;
+            if (_still429) {
+              try { const _d = await res.json(); _still429 = (_d.error === 'request_in_flight'); } catch(_) {}
+            }
+            if (!_still429) { _retryOk = true; break; }
+          } catch(_) {}
+        }
+        if (!_retryOk) {
+          // All retries exhausted — show non-bubble status, explicitly reset in-flight flag (Bug 2)
+          removeTyping();
+          showStatusLine('Still checking in. Try sending again in a moment.');
+          STATE.isStreaming = false;
+          document.getElementById('send-btn').disabled = false;
+          document.getElementById('msg-input').focus();
+          return;
+        }
+        hideStatusLine(); // clear "One moment…" before normal processing
+      }
+    }
 
     if (res.status === 403) {
       const errData = await res.json().catch(() => ({}));
@@ -4488,6 +4822,10 @@ async function sendMessage() {
     let buffer = '';
     let lastChunkTime = Date.now();
     let streamError = null;
+    // RegExp constructors — template literal context: use RegExp() not literals.
+    var _streamMetaRe = new RegExp('METADATA:\\{[^\\n]*\\}', 'g');
+    var _streamCodeBlockRe = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
+    var _streamPartialCodeRe = new RegExp('\x60\x60\x60json[\\s\\S]*', 'g');
 
     // Stall detector: if no data for 60s during streaming, abort
     const stallCheck = setInterval(() => {
@@ -4528,11 +4866,17 @@ async function sendMessage() {
               }
               // If overlay is showing, don't update the chat bubble with raw JSON
               if (STATE.blueprintOverlayShown) continue;
-              const displayText = fullText
-                .replace(/METADATA:{[^}]*}/g, '')
-                .replace(/\`\`\`json[sS]*?\`\`\`/g, '')
-                .replace(/\`\`\`json[sS]*/g, '')
+              _streamMetaRe.lastIndex = 0;
+              _streamCodeBlockRe.lastIndex = 0;
+              _streamPartialCodeRe.lastIndex = 0;
+              let displayText = fullText
+                .replace(_streamMetaRe, '')
+                .replace(_streamCodeBlockRe, '')
+                .replace(_streamPartialCodeRe, '')
                 .trim();
+              // Fallback: if METADATA: still present (e.g. multiline JSON), slice from it
+              const _metaIdx = displayText.indexOf('METADATA:');
+              if (_metaIdx !== -1) displayText = displayText.slice(0, _metaIdx).trim();
               updateBubble(aiMsg, displayText);
               scrollToBottom();
             } else if (ev.type === 'error') {
@@ -4633,7 +4977,7 @@ async function sendMessage() {
                       } else {
                         hideBlueprintGenerating();
                         STATE.blueprintOverlayShown = false;
-                        appendMessage('ai', 'The blueprint generation ran into an issue. Your conversation is saved. Send me a message to try again.');
+                        appendMessage('ai', 'Something went wrong on our end — not yours. Your answers are safe and saved. Please send one more message and we will get your blueprint to you.');
                       }
                     })
                     .catch(function() {
@@ -4649,6 +4993,20 @@ async function sendMessage() {
       }
     }
     clearInterval(stallCheck);
+
+    // Final bubble cleanup: aggressively strip any METADATA fragment that slipped through
+    if (aiMsg && !STATE.blueprintOverlayShown && fullText.trim()) {
+      const _finalMetaIdx = fullText.indexOf('METADATA:');
+      let _finalText;
+      if (_finalMetaIdx !== -1) {
+        _finalText = fullText.slice(0, _finalMetaIdx).trim();
+      } else {
+        _streamMetaRe.lastIndex = 0;
+        _streamCodeBlockRe.lastIndex = 0;
+        _finalText = fullText.replace(_streamMetaRe, '').replace(_streamCodeBlockRe, '').trim();
+      }
+      if (_finalText) updateBubble(aiMsg, _finalText);
+    }
 
     // If the server sent an error event and no content was generated, show it
     if (streamError && !fullText.trim()) {
@@ -4690,7 +5048,7 @@ function openUploadModal() {
   const input = document.createElement('input');
   input.type = 'file';
   input.multiple = true;
-  input.accept = 'image/*';
+  input.accept = 'image/*,.pdf,.txt,.md,.doc,.docx';
   input.style.display = 'none';
   document.body.appendChild(input);
   input.onchange = async function() {
@@ -4703,10 +5061,14 @@ function openUploadModal() {
 }
 
 async function handlePhotoFiles(files) {
-  if (!files.length || !STATE.sessionId) return;
-  const toUpload = files.slice(0, 5);
+  if (!files.length) return;
   const statusEl = document.getElementById('doc-upload-status');
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Uploading ' + toUpload.length + ' photo' + (toUpload.length > 1 ? 's' : '') + '...'; }
+  if (!STATE.sessionId) {
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Please start your session before uploading files.'; setTimeout(() => { statusEl.style.display = 'none'; }, 4000); }
+    return;
+  }
+  const toUpload = files.slice(0, 5);
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Uploading ' + toUpload.length + ' file' + (toUpload.length > 1 ? 's' : '') + '...'; }
   let succeeded = 0;
   for (const file of toUpload) {
     try {
@@ -4719,11 +5081,11 @@ async function handlePhotoFiles(files) {
     } catch (e) {}
   }
   if (statusEl) {
-    statusEl.textContent = succeeded > 0 ? '\u2713 ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' added to your session.' : 'Upload failed. Please try again.';
+    statusEl.textContent = succeeded > 0 ? '\u2713 ' + succeeded + ' file' + (succeeded > 1 ? 's' : '') + ' added to your session.' : 'Upload failed. Please try again.';
     setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
   }
   if (succeeded > 0) {
-    const msg = 'I just uploaded ' + succeeded + ' photo' + (succeeded > 1 ? 's' : '') + ' to my session.';
+    const msg = 'I just uploaded ' + succeeded + ' file' + (succeeded > 1 ? 's' : '') + ' to my session.';
     const input = document.getElementById('msg-input');
     if (input) {
       input.value = msg;
@@ -4732,40 +5094,8 @@ async function handlePhotoFiles(files) {
   }
 }
 
-function openDocUpload() {
-  const input = document.getElementById('doc-upload-input');
-  if (input) input.click();
-}
-
-async function handleDocUpload(inputEl) {
-  if (!inputEl.files || !inputEl.files.length || !STATE.sessionId) return;
-  const file = inputEl.files[0];
-  const statusEl = document.getElementById('doc-upload-status');
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Reading ' + file.name + '...'; }
-  try {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('sessionId', STATE.sessionId);
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    if (statusEl) {
-      statusEl.textContent = '\u2713 ' + file.name + ' added. The AI will reference it in your session.';
-      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
-    }
-  } catch (e) {
-    if (statusEl) {
-      statusEl.textContent = 'Could not upload: ' + e.message;
-      setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
-    }
-  }
-  inputEl.value = '';
-}
-
 
 function stripChatMeta(text) {
-  // Use RegExp constructors throughout — this function is inside a template literal,
-  // so regex literals with escape sequences (\n, \[, \s etc.) get mangled in the output.
   var metaBlock = new RegExp('METADATA:\\{[^\\n]*\\}', 'g');
   var jsonBlock = new RegExp('\x60\x60\x60json[\\s\\S]*?\x60\x60\x60', 'g');
   var anyBlock = new RegExp('\x60\x60\x60[\\s\\S]*?\x60\x60\x60', 'g');
@@ -4788,7 +5118,7 @@ function appendMessage(role, text) {
   const initial = role === 'ai' ? 'JG' : 'You';
   div.innerHTML = \`
     <div class="avatar \${role === 'ai' ? 'ai' : 'user-av'}">\${initial}</div>
-    <div class="bubble">\${formatText(text)}</div>
+    <div class="bubble" data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false">\${formatText(text)}</div>
   \`;
 
   msgs.appendChild(div);
@@ -4843,30 +5173,30 @@ const THINKING_MESSAGES = {
     "One more second. This one is worth the wait...",
   ],
   blueprint_early: [
-    "Reading back through everything you shared...",
-    "This is the part where everything comes together...",
-    "Building your brand blueprint from everything you shared...",
-    "The AI is re-reading your entire conversation from the start...",
-    "Every answer you gave is being analyzed for patterns...",
-    "Identifying the through-line in your brand story...",
+    "Reading back through<br>everything you shared...",
+    "This is the part where<br>everything comes together...",
+    "Building your brand blueprint<br>from everything you shared...",
+    "The AI is re-reading your entire<br>conversation from the start...",
+    "Every answer you gave<br>is being analyzed for patterns...",
+    "Identifying the through-line<br>in your brand story...",
   ],
   blueprint_mid: [
-    "Building your brand foundation, offer suite, and positioning...",
-    "Turning your conversation into a comprehensive strategy document...",
-    "Designing your complete brand identity and offer structure...",
-    "Creating something you have genuinely never seen before...",
-    "Packaging your genius into a format that actually works...",
-    "Crafting your positioning statements and key messaging...",
-    "Structuring your offer ladder: entry, core, and premium...",
-    "Writing headlines that will stop your ideal client mid scroll...",
+    "Building your brand foundation,<br>offer suite, and positioning...",
+    "Turning your conversation into<br>a comprehensive strategy document...",
+    "Designing your complete<br>brand identity and offer structure...",
+    "Creating something you have<br>genuinely never seen before...",
+    "Packaging your genius into<br>a format that actually works...",
+    "Crafting your positioning statements<br>and key messaging...",
+    "Structuring your offer ladder:<br>entry, core, and premium...",
+    "Writing headlines that will stop<br>your ideal client mid scroll...",
   ],
   blueprint_late: [
-    "Every insight you shared is being woven into this...",
-    "Polishing the final details of your blueprint...",
-    "Running quality checks on your brand strategy...",
-    "Making sure nothing you said was left on the table...",
-    "Your blueprint is going to be worth every minute you invested...",
-    "Finalizing your 7 part brand strategy document...",
+    "Every insight you shared<br>is being woven into this...",
+    "Polishing the final details<br>of your blueprint...",
+    "Running quality checks<br>on your brand strategy...",
+    "Making sure nothing you said<br>was left on the table...",
+    "Your blueprint is going to be<br>worth every minute you invested...",
+    "Finalizing your 7 part<br>brand strategy document...",
   ]
 };
 
@@ -4937,10 +5267,23 @@ function removeTyping() {
 // \u2500\u2500 BLUEPRINT GENERATION OVERLAY \u2500\u2500
 let blueprintGenInterval = null;
 
+function updateBpSegments(step) {
+  for (var i = 1; i <= 4; i++) {
+    var seg = document.getElementById('bp-seg' + i);
+    if (!seg) continue;
+    if (i < step) {
+      seg.className = 'bp-seg complete';
+    } else if (i === step) {
+      seg.className = 'bp-seg active';
+    } else {
+      seg.className = 'bp-seg';
+    }
+  }
+}
+
 function showBlueprintGenerating() {
   const overlay = document.getElementById('blueprint-generating');
   const msgEl = document.getElementById('blueprint-gen-msg');
-  const bar = document.getElementById('blueprint-gen-bar');
   const title = document.getElementById('blueprint-gen-title');
   const timerEl = document.getElementById('blueprint-gen-timer');
 
@@ -4955,7 +5298,7 @@ function showBlueprintGenerating() {
   const lateMsgs = [...THINKING_MESSAGES.blueprint_late].sort(() => Math.random() - 0.5);
   let msgIdx = 0;
   let currentPool = earlyMsgs;
-  msgEl.textContent = earlyMsgs[0];
+  msgEl.innerHTML = earlyMsgs[0];
 
   // Progress: paced for ~3 min (actual range 2-4 min)
   // 0-40s: 0-25% Step 1 (reading conversation)
@@ -4991,7 +5334,7 @@ function showBlueprintGenerating() {
       step = 4;
       title.textContent = 'Finishing Up';
     }
-    bar.style.width = progress + '%';
+    updateBpSegments(step);
     if (stepEl) stepEl.textContent = 'Step ' + step + ' of 4';
 
     // Update timer
@@ -5017,7 +5360,7 @@ function showBlueprintGenerating() {
     msgIdx = (msgIdx + 1) % currentPool.length;
     msgEl.style.opacity = '0';
     setTimeout(() => {
-      msgEl.textContent = currentPool[msgIdx];
+      msgEl.innerHTML = currentPool[msgIdx];
       msgEl.style.opacity = '1';
     }, 300);
   }, 4000);
@@ -5030,7 +5373,7 @@ function showBlueprintGenerating() {
     if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
     title.textContent = 'Still Building';
     msgEl.style.opacity = '1';
-    msgEl.textContent = 'Still building. Your session is saved.';
+    msgEl.innerHTML = 'Still building. Your session is saved.';
     if (stepEl) stepEl.textContent = '';
     timerEl.textContent = 'This can take up to 10 minutes for long conversations.';
   }, 300000);
@@ -5040,7 +5383,7 @@ function showBlueprintGenerating() {
     const retryEl = document.getElementById('blueprint-gen-retry');
     if (retryEl) retryEl.style.display = '';
     title.textContent = 'Taking Longer Than Expected';
-    msgEl.textContent = 'Your conversation is saved. You can restart the job or go back to chat.';
+    msgEl.innerHTML = 'Your conversation is saved. You can restart the job or go back to chat.';
     timerEl.textContent = '';
   }, 600000);
 
@@ -5066,7 +5409,7 @@ function showBlueprintGenerating() {
       } else {
         // Blueprint not ready yet — reassure user but keep overlay
         var msgElR = document.getElementById('blueprint-gen-msg');
-        if (msgElR) msgElR.textContent = 'Still building. Hang tight — this usually takes 3 to 5 minutes.';
+        if (msgElR) msgElR.innerHTML = 'Still building. Hang tight — this usually takes 3 to 5 minutes.';
       }
     } catch (e) {
       // Swallow — will retry at 8-minute mark
@@ -5253,11 +5596,21 @@ function updatePhase(phase) {
   // Update progress bar fill
   const fill = document.getElementById('phase-progress-fill');
   if (fill) { fill.style.width = (phase / 7 * 100) + '%'; }
+  const lbl = document.getElementById('phase-label');
+  if (lbl) { lbl.textContent = 'Phase ' + phase + ' of 8'; }
 
   // Show image generation button at phase 5
   if (phase >= 5) {
     document.getElementById('images-btn').style.display = 'flex';
   }
+}
+
+function copyBpText(btn) {
+  var text = btn.dataset.copyText || '';
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = 'Copied';
+    setTimeout(function() { btn.textContent = 'Copy positioning'; }, 1800);
+  }).catch(function() {});
 }
 
 // \u2500\u2500 DEBRIEF (emotional bridge before blueprint) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -7194,7 +7547,7 @@ function getLoginHTML() {
       <div class="check-email-icon">\u2709\uFE0F</div>
       <h2 style="font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;margin-bottom:10px;color:var(--text)">Check your inbox</h2>
       <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;" id="checkEmailMsg">
-        A sign in link is on its way. Tap the link in the email to continue.
+        Your sign in link is on its way. Open it on the same device you're using now.
       </p>
       <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">
         Did not get it? Check your spam folder, or
@@ -7301,7 +7654,7 @@ async function doMagic() {
     const data = await res.json();
     if (data.ok) {
       document.getElementById('checkEmailMsg').innerHTML =
-        'A sign in link is on its way to <strong>' + email + '</strong>. Tap it to continue.';
+        'Your link is on its way to <strong>' + email + '</strong>. Open it on the same device — your session will be right here.';
       showView('viewCheckEmail');
     } else {
       showStatus('magicStatus', 'error', data.error || 'Could not send link. Please try again.');
@@ -7618,7 +7971,7 @@ function getLegalHTML(title, content) {
   <p class="meta">Align Consulting LLC &nbsp;\xB7&nbsp; james@jamesguldan.com</p>
   ${content}
 </main>
-<footer>&copy; 2025 Align Consulting LLC &nbsp;\xB7&nbsp; <a href="/legal/terms">Terms</a> &nbsp;\xB7&nbsp; <a href="/legal/privacy">Privacy</a></footer>
+<footer>&copy; 2026 Align Consulting LLC &nbsp;\xB7&nbsp; <a href="/legal/terms">Terms</a> &nbsp;\xB7&nbsp; <a href="/legal/privacy">Privacy</a></footer>
 </body>
 </html>`;
 }
@@ -11507,6 +11860,7 @@ CRITICAL RULE \u2014 BLUEPRINT TIMING: You must NOT generate the brand blueprint
 17. Be funny. Not stand-up-comedian funny. Smart-friend-at-dinner funny. Use humor to disarm, to call out absurdity, to lighten heavy moments so people can breathe before going deeper. When someone gives you a painfully corporate answer, you might say "That sounds like it came off a LinkedIn carousel. What is the version you would actually say out loud?" When they are being too hard on themselves, try "Okay, so you are behind schedule on a plan you made up. Welcome to entrepreneurship." Humor builds trust faster than empathy alone. Use it.
 18. Stay strictly within the scope of this Deep Work Interview. If someone asks you anything outside of their brand, positioning, business, offers, story, or the interview process itself, decline warmly and bring them back. Do not answer questions about other topics, write code, help with unrelated tasks, act as a general assistant, or engage with off-topic requests of any kind. You are here for one purpose: to build their brand blueprint. That is it.
 18. Deliver at least one reframe during the interview, ideally at the transition from Phase 1 to Phase 2 or from Phase 3 to Phase 4. A reframe is when you take something they described as a weakness, a struggle, or a source of shame and show them why it is actually their greatest strategic asset. For example: "You said you felt behind. But what I am hearing is that while everyone else was chasing trends, you were doing the actual work. That is not being behind. That is building something real while everyone else was performing." The reframe should feel like a revelation, not a pep talk. Ground it in specific things they said. Do not fabricate. After delivering a reframe, honor The Sit.
+19. IDENTITY COHERENCE: If someone changes their name, profession, or other foundational identity information mid-interview, do NOT silently accept the new version and rebuild around it. Instead, name the shift explicitly and confirm which version is canonical before continuing. Say something like: "Hold on — I want to make sure I am building this around the right picture of you. Are we now working from [new name/role], or was there more to [original name/role] that was still true?" The emotional framing of the change (protection, trust, testing) is valid and worth naming. But from a data integrity standpoint, the blueprint must be built on the correct identity. One clear confirmation question before moving on. Do not skip this step.
 
 ## Mirror Moments and The Sit
 
@@ -13076,6 +13430,11 @@ async function sendNudge(env, session, nudgeType, dryRun = true) {
   if (dryRun) {
     console.log("[sendNudge DRY RUN] would send", nudgeType, "to", userEmail, "for session", session.id);
     await logSessionEvent(env, session.id, "nudge_dry_run", { nudge_type: nudgeType, email: userEmail });
+    // Record with a "dry_run:" prefix so live mode won't treat this as already sent.
+    // Prevents the scanner from re-firing the same dry_run every 15 minutes.
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO nudges (id, session_id, user_email, nudge_type, sent_at) VALUES (?, ?, ?, ?, datetime('now'))"
+    ).bind(crypto.randomUUID(), session.id, userEmail, "dry_run:" + nudgeType).run().catch(() => {});
     return { sent: false, dry_run: true };
   }
   try {
@@ -13608,6 +13967,23 @@ async function runAbandonmentCheck(env) {
   try {
     await env.DB.exec(`ALTER TABLE sessions ADD COLUMN abandonment_email_count INTEGER DEFAULT 0`).catch(() => {
     });
+
+    // Clean up empty sessions (0 messages, older than 2 hours) — prevents them from
+    // blocking real sessions in handleFastResume's active-session query.
+    try {
+      const cleanup = await env.DB.prepare(`
+        UPDATE sessions SET status = 'abandoned'
+        WHERE message_count = 0
+          AND created_at < datetime('now', '-2 hours')
+          AND status NOT IN ('completed', 'expired', 'abandoned', 'blueprint_complete')
+      `).run();
+      if (cleanup.meta?.changes > 0) {
+        console.log("[AbandonmentCheck] Marked " + cleanup.meta.changes + " empty sessions as abandoned");
+      }
+    } catch (cleanupErr) {
+      console.error("[AbandonmentCheck] Empty session cleanup error:", cleanupErr.message);
+    }
+
     let fired = 0;
     for (const step of ABANDONMENT_SCHEDULE) {
       const abandoned = await env.DB.prepare(`
@@ -14597,33 +14973,34 @@ async function handleFastResume(request, env) {
         await env.DB.prepare("UPDATE sessions SET status = 'expired' WHERE id = ?").bind(completedRow.id).run().catch(() => null);
       }
     }
-    const activeRow = await env.DB.prepare(
-      "SELECT id, tier, phase, message_count, created_at, updated_at FROM sessions WHERE user_id = ? AND (status = 'active' OR status IS NULL) AND blueprint_generated = 0 ORDER BY created_at DESC LIMIT 1"
-    ).bind(user.id).first();
-    if (activeRow) {
-      const kvData = await env.SESSIONS.get(activeRow.id);
-      if (kvData) {
-        const session = JSON.parse(kvData);
-        if (session.messages && session.messages.length > 0) {
-          const displayMessages = session.messages.filter((m, i) => !(i === 0 && m.role === "user" && m.content === "Start the interview."));
-          await logEvent(env, activeRow.id, "session_resumed", { phase: session.phase, messageCount: displayMessages.length, fast: true });
-          return json({
-            ok: true,
-            user: userInfo,
-            hasActiveSession: true,
-            blueprintComplete: false,
-            sessionId: activeRow.id,
-            tier: session.tier || activeRow.tier,
-            phase: session.phase || activeRow.phase || 1,
-            messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
-            blueprintGenerated: false,
-            blueprint: null,
-            strategistDebrief: null
-          });
-        }
-      } else {
-        await env.DB.prepare("UPDATE sessions SET status = 'expired' WHERE id = ?").bind(activeRow.id).run().catch(() => null);
-      }
+    // Fetch top 3 active sessions ordered by message_count DESC so sessions with content
+    // are tried before empty ones (empty sessions can block if their KV data is missing).
+    const activeRows = await env.DB.prepare(
+      "SELECT id, tier, phase, message_count, created_at, updated_at FROM sessions WHERE user_id = ? AND (status = 'active' OR status IS NULL) AND blueprint_generated = 0 ORDER BY message_count DESC, last_active_at DESC LIMIT 3"
+    ).bind(user.id).all().catch(() => ({ results: [] }));
+    let activeRow = null;
+    let activeKvData = null;
+    for (const row of (activeRows.results || [])) {
+      const kv = await env.SESSIONS.get(row.id);
+      if (kv) { const parsed = JSON.parse(kv); if (parsed.messages && parsed.messages.length > 0) { activeRow = row; activeKvData = kv; break; } }
+    }
+    if (activeRow && activeKvData) {
+      const session = JSON.parse(activeKvData);
+      const displayMessages = session.messages.filter((m, i) => !(i === 0 && m.role === "user" && m.content === "Start the interview."));
+      await logEvent(env, activeRow.id, "session_resumed", { phase: session.phase, messageCount: displayMessages.length, fast: true });
+      return json({
+        ok: true,
+        user: userInfo,
+        hasActiveSession: true,
+        blueprintComplete: false,
+        sessionId: activeRow.id,
+        tier: session.tier || activeRow.tier,
+        phase: session.phase || activeRow.phase || 1,
+        messages: displayMessages.map((m) => ({ role: m.role, content: m.role === "assistant" ? stripMetadata(m.content) : m.content })),
+        blueprintGenerated: false,
+        blueprint: null,
+        strategistDebrief: null
+      });
     }
     return json({ ok: true, user: userInfo, hasActiveSession: false });
   } catch (e) {
@@ -14694,16 +15071,19 @@ a{display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;paddin
       const sessionToken = await createSessionToken(user.id, user.role, secret);
       const maxAge = 30 * 24 * 3600;
       const isAdmin = user.role === "admin" || row.type === "admin_magic" || row.type === "persistent_magic" && user.role === "admin";
-      const baseDest = isAdmin ? `${origin}/admin` : redirect ? `${origin}${redirect}` : `${origin}/app`;
-      const dest2 = `${baseDest}?_s=${encodeURIComponent(sessionToken)}`;
-      return new Response(null, {
-        status: 302,
-        headers: {
-          "Location": dest2,
-          "Set-Cookie": `dw_session=${sessionToken}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Lax; HttpOnly`,
-          "Cache-Control": "no-store"
-        }
-      });
+      const forceCustomer = url.searchParams.get("force_customer") === "1";
+      const baseDest = (isAdmin && !forceCustomer) ? `${origin}/admin` : redirect ? `${origin}${redirect}` : `${origin}/app`;
+      const sep = baseDest.includes('?') ? '&' : '?';
+      const dest2 = `${baseDest}${sep}_s=${encodeURIComponent(sessionToken)}`;
+      // Only set the dw_session cookie when redirecting to /admin.
+      // For /app redirects the token is already in the _s URL param (stored to localStorage by /app).
+      // Setting the cookie for /app routes overwrites the admin's dw_session cookie, breaking
+      // admin panel auth after impersonating a user.
+      const respHeaders = { "Location": dest2, "Cache-Control": "no-store" };
+      if (isAdmin && !forceCustomer) {
+        respHeaders["Set-Cookie"] = `dw_session=${sessionToken}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Lax; HttpOnly`;
+      }
+      return new Response(null, { status: 302, headers: respHeaders });
     }
   } catch (e) {
   }
@@ -15337,6 +15717,31 @@ async function handleChat(request, env, ctx) {
   if (!raw)
     return json({ error: "Session not found" }, 404);
   const session = JSON.parse(raw);
+  // Auth check: verify JWT token matches this session
+  const chatToken = extractToken(request);
+  if (chatToken) {
+    const jwtSecret = env.JWT_SECRET || "dev-secret-change-me";
+    const userPayload = await verifySessionToken(chatToken, jwtSecret);
+    if (userPayload) {
+      // User JWT (magic link path) — userId must match if session has one
+      if (session.userId && userPayload.userId && userPayload.userId !== session.userId) {
+        return json({ error: "Session access denied" }, 403);
+      }
+    } else {
+      // Try session-access JWT (Stripe checkout path, signed with TTL as key)
+      const sessionPayload = await verifySessionToken(chatToken, String(60 * 60 * 24 * 30));
+      if (sessionPayload && sessionPayload.userId?.sessionId) {
+        if (sessionPayload.userId.sessionId !== sessionId) {
+          return json({ error: "Session access denied" }, 403);
+        }
+      } else {
+        return json({ error: "Invalid or expired session token" }, 401);
+      }
+    }
+  } else if (session.userId) {
+    // Session has an owner but no token was provided
+    return json({ error: "Authorization required" }, 401);
+  }
   if (session.blueprintGenerated) {
     const bpMeta = await env.SESSIONS.get("bp_meta:" + sessionId, { type: "json" }).catch(() => null);
     return json({
@@ -15368,6 +15773,16 @@ async function handleChat(request, env, ctx) {
       message: "You are sending messages too quickly. Please wait a moment and try again."
     }, 429);
   }
+  // Concurrency lock: reject duplicate/racing requests to the same session
+  const lockKey = "chat_lock:" + sessionId;
+  const existingLock = await env.SESSIONS.get(lockKey);
+  if (existingLock) {
+    return json({
+      error: "request_in_flight",
+      message: "A response is already being generated. Please wait a moment before sending another message."
+    }, 429);
+  }
+  await env.SESSIONS.put(lockKey, "1", { expirationTtl: 120 });
   session.messages.push({ role: "user", content: message });
   await logEvent(env, sessionId, "message_sent", { phase: session.phase, messageCount: session.messages.length });
   let enrichmentData = null;
@@ -15426,6 +15841,21 @@ async function handleChat(request, env, ctx) {
         }
       }
       const apiStart = Date.now();
+      // BUG-RECOVERY-01: if session.phase in KV is lower than what message history shows,
+      // restore it so stuck sessions auto-heal on the next message.
+      {
+        const observedMaxPhase = (session.messages || []).reduce((max, m) => {
+          if (m.role !== "assistant") return max;
+          const mMatch = (m.content || "").match(/METADATA:\{"phase":(\d+)/);
+          return mMatch ? Math.max(max, parseInt(mMatch[1])) : max;
+        }, 0);
+        if (observedMaxPhase > (session.phase || 1)) {
+          const recoveredFrom = session.phase || 1;
+          console.log("[PhaseRecovery] session=" + sessionId + " restoring phase from " + recoveredFrom + " to " + observedMaxPhase);
+          session.phase = observedMaxPhase;
+          logSessionEvent(env, sessionId, "phase_recovered", { from: recoveredFrom, to: observedMaxPhase }).catch(() => {});
+        }
+      }
       const currentPhaseNum = session.phase || 1;
       const isBlueprintPhase = currentPhaseNum >= 8;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
@@ -15467,6 +15897,11 @@ async function handleChat(request, env, ctx) {
         autoAdvanceInjection = `\n\n[AUTO-ADVANCE] The user has answered ${userMsgsInCurrentPhase} questions in phase ${currentPhaseNum}. Acknowledge their last answer warmly and transition to phase ${nextPhase} now. You MUST emit METADATA:{"phase":${nextPhase},...} in your response.`;
         logSessionEvent(env, sessionId, "phase_auto_advanced", { from_phase: currentPhaseNum, to_phase: nextPhase, msg_count: userMsgsInCurrentPhase }).catch(() => {});
         console.log("[AutoAdvance] session=" + sessionId + " advancing from phase " + currentPhaseNum + " to " + nextPhase + " after " + userMsgsInCurrentPhase + " messages");
+      }
+      if (currentPhaseNum >= 8 && userMsgsInCurrentPhase >= 4 && !session.blueprintGenerated) {
+        autoAdvanceInjection = '[SYNTHESIS COMPLETE] The user has answered ' + userMsgsInCurrentPhase + ' questions in Phase 8. You have gathered sufficient material. Output the complete brand blueprint JSON now. Set sessionComplete:true and phaseProgress:100 in METADATA. Your ENTIRE response must be ONLY the ```json code block. No prose before or after.';
+        logSessionEvent(env, sessionId, "phase8_blueprint_forced", { msg_count: userMsgsInCurrentPhase }).catch(() => {});
+        console.log("[Phase8Force] session=" + sessionId + " forcing blueprint output after " + userMsgsInCurrentPhase + " Phase 8 messages");
       }
 
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
@@ -15654,9 +16089,12 @@ Use this to skip surface-level questions. Go deeper faster.` });
         metadata.phaseProgress = 95;
       }
       const currentPhase = session.phase || 1;
+      // Use the higher of stored phase vs metadata phase — the blueprint JSON often arrives in the same
+      // response that first emits METADATA:{"phase":8}, so session.phase is still 7 at that point.
+      const effectivePhase = Math.max(currentPhase, metadata.phase || 0);
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
       // Phase 8 hard gate — blueprint cannot generate until the AI has progressed through all 8 phases
-      const readyForBlueprint = currentPhase >= 8 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 8 && metadata.phaseProgress >= 100));
+      const readyForBlueprint = effectivePhase >= 8 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 8 && metadata.phaseProgress >= 100));
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
@@ -15784,8 +16222,9 @@ Use this to skip surface-level questions. Go deeper faster.` });
           ctx.waitUntil(Promise.all([depthTask, phaseTask, flagTask]));
         }
       }
-      if (metadata.phase)
-        session.phase = metadata.phase;
+      // BUG-REGRESSION-01: use effectivePhase (Math.max) so phase never goes backward.
+      // metadata.phase from AI can be lower than session.phase if the AI hallucinates an old phase.
+      session.phase = effectivePhase;
       if (blueprint) {
         await sendEvent({ type: "blueprint_ready", blueprint, apolloData: session.apolloData || null });
         try {
@@ -15802,7 +16241,8 @@ Use this to skip surface-level questions. Go deeper faster.` });
       // Fallback: if the AI attempted a blueprint (started outputting ```json) but it couldn't be
       // parsed (e.g. max_tokens truncation), trigger async generation rather than showing an error.
       const blueprintAttempted = fullContent.includes("```json");
-      if (isBlueprintPhase && !session.blueprintGenerated && !blueprint && blueprintAttempted) {
+      const inBpPhase = isBlueprintPhase || (metadata.phase >= 8);
+      if (inBpPhase && !session.blueprintGenerated && !blueprint && blueprintAttempted) {
         console.log("[Chat] Blueprint JSON incomplete (truncated?) — queuing async generation for session=" + sessionId);
         await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
         if (ctx) {
@@ -15880,6 +16320,9 @@ Use this to skip surface-level questions. Go deeper faster.` });
         await writer.close();
       } catch (_) {
       }
+    } finally {
+      // Always release the concurrency lock when streaming ends
+      env.SESSIONS.delete(lockKey).catch(() => {});
     }
   })();
   return new Response(readable, {
@@ -17557,6 +18000,13 @@ async function handleWebhook(request, env) {
         }
         if (user && env.RESEND_API_KEY) {
           try {
+            // Dedup: skip if a magic token was already created for this user in the last 10 minutes
+            const recentToken = await env.DB.prepare(
+              "SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'magic_login' AND created_at > datetime('now', '-10 minutes')"
+            ).bind(user.id).first().catch(() => null);
+            if (recentToken) {
+              console.log("[Webhook] Skipping duplicate email for user=" + user.id + " — token created within last 10 min");
+            } else {
             const token = generateMagicToken();
             await storeMagicToken(env, token, user.id, "magic_login", 72);
             const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
@@ -17598,6 +18048,7 @@ async function handleWebhook(request, env) {
             }).catch(function(e) {
               console.error("[Webhook] Admin notify failed:", e.message);
             });
+            }
           } catch (emailErr) {
             console.error("[Webhook] Email send failed:", emailErr.message);
           }
@@ -17682,6 +18133,13 @@ async function handleWebhook(request, env) {
         }
         if (user && env.RESEND_API_KEY) {
           try {
+            // Dedup: skip if a magic token was already created for this user in the last 10 minutes
+            const recentToken = await env.DB.prepare(
+              "SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'magic_login' AND created_at > datetime('now', '-10 minutes')"
+            ).bind(user.id).first().catch(() => null);
+            if (recentToken) {
+              console.log("[Webhook:PI] Skipping duplicate email for user=" + user.id + " — token created within last 10 min");
+            } else {
             const token = generateMagicToken();
             await storeMagicToken(env, token, user.id, "magic_login", 72);
             const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
@@ -17723,6 +18181,7 @@ async function handleWebhook(request, env) {
             }).catch(function(e) {
               console.error("[Webhook:PI] Admin notify failed:", e.message);
             });
+            }
           } catch (emailErr) {
             console.error("[Webhook:PI] Email send failed:", emailErr.message);
           }
@@ -18007,6 +18466,10 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   font-size: 13px; color: var(--text2); text-align: center;
   max-width: 520px; margin: 0 auto 32px;
 }
+.bp-score-frame {
+  font-size: 14px; font-style: italic; color: var(--text2); text-align: center;
+  max-width: 480px; margin: 0 auto 20px; line-height: 1.6;
+}
 .bp-score-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px; margin-bottom: 28px;
@@ -18083,6 +18546,14 @@ html, body { background: var(--bg); color: var(--text); font-family: 'Inter', sa
   flex: 1; padding: 20px; border-radius: 12px;
 }
 .bp-positioning-before { background: #F5F5F7; border: 1px solid #D1D1D6; }
+.bp-copy-btn {
+  display: inline-block; margin-top: 12px; padding: 7px 18px;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+  color: var(--gold); background: transparent;
+  border: 1.5px solid rgba(196,112,63,0.4); border-radius: 50px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.bp-copy-btn:hover { background: rgba(196,112,63,0.08); border-color: var(--gold); }
 .bp-positioning-after {
   background: linear-gradient(135deg, #FDF0E8, #FFF8F0);
   border: 1px solid rgba(196,112,63,0.3);
@@ -18885,7 +19356,7 @@ function renderChapter2(bp) {
   var quotesHTML = quotes.length ? quotes.map(function(q) {
     return '<div class="bp-quote-item"><div class="bp-quote-mark">\u201C</div><div class="bp-quote-text">' + escHtml(q.quote) + '</div><div class="bp-quote-descriptor">' + escHtml(q.descriptor) + "</div></div>";
   }).join("") : "";
-  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage || categoryOfOne || beforePositioning || afterPositioning || whyItWorks || marketViability ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (categoryOfOne ? '<div class="bp-category-one">' + escHtml(categoryOfOne) + '</div>' : '') + (beforePositioning && afterPositioning ? '<div class="bp-positioning-shift"><div class="bp-positioning-before"><div class="bp-positioning-label">Before</div><div class="bp-positioning-text">' + escHtml(beforePositioning) + '</div></div><div class="bp-positioning-arrow">\u2192</div><div class="bp-positioning-after"><div class="bp-positioning-label">After</div><div class="bp-positioning-text">' + escHtml(afterPositioning) + '</div></div></div>' : '') + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + (whyItWorks ? '<div class="bp-why-it-works"><div class="bp-landscape-subhead">Why This Works</div><p>' + escHtml(whyItWorks) + '</p></div>' : '') + (marketViability ? '<div class="bp-market-viability"><div class="bp-landscape-subhead">Market Viability</div><p>' + escHtml(marketViability) + '</p></div>' : '') + "</div></section>" : "") + "</div>";
+  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-frame">This score is not an assessment of your worth. It is the distance between where you are and what you have already earned.</div><div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage || categoryOfOne || beforePositioning || afterPositioning || whyItWorks || marketViability ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (categoryOfOne ? '<div class="bp-category-one">' + escHtml(categoryOfOne) + '</div>' : '') + (beforePositioning && afterPositioning ? '<div class="bp-positioning-shift"><div class="bp-positioning-before"><div class="bp-positioning-label">Before</div><div class="bp-positioning-text">' + escHtml(beforePositioning) + '</div></div><div class="bp-positioning-arrow">\u2192</div><div class="bp-positioning-after"><div class="bp-positioning-label">After</div><div class="bp-positioning-text">' + escHtml(afterPositioning) + '</div><button class="bp-copy-btn" data-copy-text="' + escHtml(afterPositioning) + '" onclick="copyBpText(this)">Copy positioning</button></div></div>' : '') + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + (whyItWorks ? '<div class="bp-why-it-works"><div class="bp-landscape-subhead">Why This Works</div><p>' + escHtml(whyItWorks) + '</p></div>' : '') + (marketViability ? '<div class="bp-market-viability"><div class="bp-landscape-subhead">Market Viability</div><p>' + escHtml(marketViability) + '</p></div>' : '') + "</div></section>" : "") + "</div>";
 }
 __name(renderChapter2, "renderChapter2");
 function renderChapter3(bp) {
@@ -19115,8 +19586,8 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
         insight: deb.paragraph5_invitation || ml.afterPositioning || ""
       },
       mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
-      mirror_connection: "",
-      arrogant_truth: deb.paragraph3_quote || bp.openingHook || "",
+      mirror_connection: deb.paragraph4_turn || il.connectionStatement || "",
+      arrogant_truth: deb.paragraph3_quote || "",
       mission_statement: bf.missionStatement || "",
       pricing_current: "",
       pricing_gap_belief: "",
@@ -19213,8 +19684,8 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
   if (moves.length > 0) {
     stepsHTML = '<div class="steps">' + moves.map((m, i) => {
       const t = escHtml(m.move || m.title || m.step || "Step " + (i + 1));
-      const d = escHtml(m.detail || m.description || m.body || "");
-      return `<div class="step"><div class="step-num">${i + 1}</div><div class="step-content"><div class="step-title">${t}</div><div class="step-body">${d}</div></div></div>`;
+      const d = escHtml(m.detail || m.description || m.body || "Start here. This is the move that creates the most momentum with the least resistance.");
+      return `<div class="step"><div class="step-num">${i + 1}</div><div class="step-content"><div class="step-title">${t}</div>${d ? `<div class="step-body">${d}</div>` : ""}</div></div>`;
     }).join("") + "</div>";
   } else {
     stepsHTML = `<div class="steps"><div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Name the Real Capability</div><div class="step-body">Not the job title. The actual thing you do that creates transformation for other people.</div></div></div><div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Build the System Around It</div><div class="step-body">Offer, pricing, positioning, delivery, and client selection. Everything restructured around what you actually do best.</div></div></div><div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Operate from the Center</div><div class="step-body">Once the system is aligned with your real capability, the work becomes lighter and more effective.</div></div></div></div>`;
@@ -19230,7 +19701,21 @@ With everything,
 Your future self`;
   const futureSelfRaw = (futureSelfLetter || marcusDefault).replace(/\s*Marcus Aurelius,?\s*Meditations\s*$/i, "").replace(/Three years from now,?\s*\/?\s*\[?\w+\]?\s*$/i, "").trim();
   const futureSelfHTML = marcusParas(futureSelfRaw);
-  const loveHTML = loveParas(v3.loveLetter || loveDefault);
+  const loveLetterContent = v3.loveLetter || (() => {
+    const paras = [`Dear younger ${firstName},`];
+    if (arrogantTruth) {
+      paras.push(`The thing you almost didn\u2019t say \u2014 \u201C${arrogantTruth}\u201D \u2014 the people who need you most have been waiting for that version of you to show up.`);
+    } else {
+      paras.push(`You\u2019ve been doing this longer than you think. And it has never been about what you thought it was about.`);
+    }
+    if (positioningStatement && positioningStatement !== "Your unique positioning statement." && positioningStatement.length > 10) {
+      paras.push(`You\u2019ve known for a long time that you do something other people can\u2019t quite name. Here\u2019s how it sounds when said clearly: \u201C${positioningStatement}\u201D`);
+    }
+    paras.push(`Stop trying to earn permission to be who you already are.`);
+    paras.push(`With everything, \/ Your future self`);
+    return paras.join("\n\n");
+  })();
+  const loveHTML = loveParas(loveLetterContent);
   const promptForJs = positioningStatement.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
   const bfPalette = bp.brandFoundation && Array.isArray(bp.brandFoundation.colorPalette) ? bp.brandFoundation.colorPalette : bp.part1 && bp.part1.visualDirection && Array.isArray(bp.part1.visualDirection.colors) ? bp.part1.visualDirection.colors : bp.part8 && Array.isArray(bp.part8.brandColors) ? bp.part8.brandColors.map(function(h) {
     return { hex: h };
@@ -19239,10 +19724,8 @@ Your future self`;
   const wpAccent = (bfPalette[1] && bfPalette[1].hex || "#C4703F").replace(/'/g, "");
   const firstNameJs = firstName.replace(/['"\\]/g, "");
   const css = `
-:root{--gold:#C4703F;--white:#FFFFFF;--off:#FAFAFA;--border:#F0F0F0;--text:#1D1D1F;--text2:#86868B;--dark:#0f0f0f;--warm:#FFF9F6;--radius:16px;}
-*{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
+#blueprint-body{--gold:#C4703F;--white:#FFFFFF;--off:#FAFAFA;--border:#F0F0F0;--text:#1D1D1F;--text2:#86868B;--dark:#0f0f0f;--warm:#FFF9F6;--radius:16px;background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
+#blueprint-body *{box-sizing:border-box;}
 #progress{position:fixed;top:0;left:0;width:0%;height:3px;background:var(--gold);z-index:1000;transition:width 0.1s;}
 .hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;overflow:hidden;background:#111;}
 .hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.45) 50%,rgba(0,0,0,0.15) 100%);}
@@ -19269,13 +19752,13 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .act-divider{position:relative;height:380px;overflow:hidden;background:#111;}
 .act-divider-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.35) 60%,rgba(0,0,0,0.1) 100%);}
 .act-label{position:absolute;bottom:0;left:0;right:0;padding:40px 64px;z-index:2;}
-.act-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:10px;}
-.act-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;max-width:640px;}
+.act-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
+.act-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;max-width:640px;text-shadow:0 2px 16px rgba(0,0,0,0.6);}
 .section{background:#fff;padding:80px 64px;}
 .section-inner{max-width:760px;margin:0 auto;}
 .eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
 .section-headline{font-family:'Outfit',sans-serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-0.02em;line-height:1.2;margin-bottom:20px;}
-.body-text{font-size:17px;line-height:1.75;color:#3a3a3a;margin-bottom:20px;}
+.body-text{font-size:17px;line-height:1.85;color:#3a3a3a;margin-bottom:24px;max-width:680px;}
 .pullquote{font-family:'Outfit',sans-serif;font-weight:600;font-size:clamp(18px,2.2vw,22px);line-height:1.55;color:var(--text);border-left:3px solid var(--gold);padding-left:24px;margin:36px 0;}
 .insight-card{background:var(--off);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 12px 12px 0;margin:28px 0;}
 .insight-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:8px;}
@@ -19288,7 +19771,7 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .step-body{font-size:15px;line-height:1.65;color:#555;}
 .prompt-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
 .prompt-inner{max-width:760px;margin:0 auto;text-align:center;}
-.prompt-card{background:#fff;border:2px solid var(--gold);border-radius:20px;padding:48px 56px;margin-top:24px;box-shadow:0 12px 48px rgba(196,112,63,0.12);}
+.prompt-card{background:#fff;border:2px solid var(--gold);border-radius:20px;padding:48px 56px;margin-top:24px;box-shadow:0 12px 48px rgba(196,112,63,0.15),0 0 0 1px rgba(196,112,63,0.08);}
 .prompt-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--gold);margin-bottom:20px;}
 .prompt-text{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.4;color:var(--text);margin-bottom:24px;}
 .prompt-context{font-size:14px;color:var(--text2);line-height:1.65;max-width:520px;margin:24px auto 0;padding-top:24px;border-top:1px solid var(--border);}
@@ -19312,7 +19795,7 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .vision-divider-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.6) 100%);}
 .vision-label{position:absolute;bottom:0;left:0;right:0;padding:48px 64px;z-index:2;text-align:center;}
 .vision-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
-.vision-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;}
+.vision-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;text-shadow:0 2px 20px rgba(0,0,0,0.7),0 0 40px rgba(0,0,0,0.4);}
 .forget-section{background:#fff;padding:80px 64px;border-top:1px solid var(--border);}
 .forget-inner{max-width:760px;margin:0 auto;text-align:center;}
 .forget-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px;}
@@ -19367,7 +19850,7 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
 .arrogant-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3vw,34px);color:var(--text);line-height:1.5;font-weight:400;}
 @media(max-width:768px){
 .hero-content{padding:48px 24px;}.hero-name{font-size:clamp(36px,10vw,52px);}
-.glance{padding:40px 24px 32px;}.glance-grid{grid-template-columns:1fr 1fr;gap:16px;}
+.glance{padding:40px 24px 32px;}.glance-grid{grid-template-columns:1fr 1fr 1fr;gap:12px;}
 .act-divider{height:280px;}.act-label{padding:24px 24px;}
 .section{padding:48px 24px;}.section-inner{max-width:100%;}
 .pullquote{padding-left:18px;margin:28px 0;}.step{gap:14px;}.step-num{width:34px;height:34px;font-size:14px;}
@@ -19393,32 +19876,33 @@ body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
   };
   const tierDescription = TIER_DESCRIPTIONS[tier.tier_title] || '';
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escHtml(firstName)}\u2019s Deep Work Interview</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet"><style>${css}</style><script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","w22t78gnya");<\/script></head><body>
-<script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var h=document.querySelector('.blueprint-header');if(h)h.style.display='none';var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
+<script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
 <div id="progress"></div>
 <div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div><div class="hero-tier-badge">${escHtml(tier.tier_title)}</div></div></div>
-<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 40)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))}</div><div class="glance-label">Honest Answers</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))) / 10 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${messagesLoaded ? breakthroughs : Math.max(0, Math.round(msgCount / 15))}</div><div class="glance-label">Breakthrough Moments</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? breakthroughs : Math.round(msgCount / 15)) / 5 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Belief Patterns Named</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num gold" style="font-size:16px;line-height:1.3;">${escHtml(tier.tier_title)}</div><div class="glance-label">Your Tier</div></div></div></div></div>
+${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">What I saw that you couldn\u2019t.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
+${mirrorConnection ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">The Mirror.</div><p class="saw-body">${escHtml(mirrorConnection)}</p></div></div>` : ""}
+${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
+<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 40)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))}</div><div class="glance-label">Honest Answers</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? honestAnswers : Math.max(1, Math.round(msgCount / 6))) / 10 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${(messagesLoaded ? breakthroughs : Math.max(0, Math.round(msgCount / 15))) || "\u2014"}</div><div class="glance-label">Breakthrough Moments</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, Math.round((messagesLoaded ? breakthroughs : Math.round(msgCount / 15)) / 5 * 100))}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : "\u2014"}</div><div class="glance-label">Belief Patterns Named</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num gold" style="font-size:16px;line-height:1.3;">${escHtml(tier.tier_title)}</div><div class="glance-label">Your Tier</div></div></div></div></div>
 <div class="section" style="padding:48px 64px;"><div class="glance-inner" style="max-width:720px;margin:0 auto;"><div class="tier-card"><div class="tier-card-title">${escHtml(tier.tier_title)}</div><p class="tier-card-body">${escHtml(tierDescription)}</p></div></div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201C${escHtml(csPullquote)}\u201D</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
-${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">A note from the interview.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
-${mirrorConnection ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">What this tells us.</div><p class="saw-body">${escHtml(mirrorConnection)}</p></div></div>` : ""}
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201C${escHtml(rpPullquote)}\u201D</div>` : ""}</div></div>
 <div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}${pricingGapBelief ? `<div class="insight-card" style="margin-top:24px;"><div class="insight-label">Pricing Mindset Shift</div><div class="insight-text">${escHtml(pricingGapBelief)}</div></div>` : ""}${pricingCurrent ? `<div class="insight-card" style="margin-top:12px;"><div class="insight-label">Current Pricing Reality</div><div class="insight-text">${escHtml(pricingCurrent)}</div></div>` : ""}</div></div>
-${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
 ${neverSaidPublicly && neverSaidPublicly !== arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you\u2019ve never said publicly.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(neverSaidPublicly)}\u201D</div></div></div>` : ""}
 ${missionStatement ? `<div class="section"><div class="section-inner"><div class="eyebrow">Your Mission</div><div class="section-headline">Why This Work Matters</div><div class="insight-card"><div class="insight-label">In your own words</div><div class="insight-text">${escHtml(missionStatement)}</div></div></div></div>` : ""}
-<div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">This is the thing you said you\u2019d never said publicly.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
-<div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-eyebrow">A Letter from Your Future Self</div><div class="marcus-card">${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
+<div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">The clearest version of what your work actually does.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
+<div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-card"><div class="marcus-eyebrow">A Letter from Your Future Self</div>${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
 <div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
 <div class="vision-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_vision_1.jpg');background-size:cover;background-position:center;"><div class="vision-divider-overlay"></div><div class="vision-label"><div class="vision-eyebrow">The After</div><div class="vision-title">${visHeadline ? escHtml(visHeadline) : "What the Right Life Actually Feels Like"}</div></div></div>
 <div class="section"><div class="section-inner"><div class="eyebrow">Your Vision</div><div class="section-headline">${visHeadline ? escHtml(visHeadline) : "Alignment Is a Daily Experience, Not a Destination"}</div>${bodyParas(visBody)}${visInsight ? `<div class="insight-card"><div class="insight-label">What Becomes Possible</div><div class="insight-text">${escHtml(visInsight)}</div></div>` : ""}</div></div>
-<div class="forget-section"><div class="forget-inner"><div class="eyebrow">Bookmark This</div><div class="forget-headline">On the days you forget who you are, come back here.</div><div class="forget-sub">Clarity isn\u2019t a one-time event. It\u2019s something you return to. These are the moments to reopen this blueprint.</div><div class="forget-triggers"><div class="forget-trigger"><div class="forget-trigger-label">When you undercharge</div><div class="forget-trigger-text">Reread Act III. You\u2019re not selling time. You\u2019re selling the system that only you can build.</div><div class="forget-trigger-action">Scroll to: The Path Forward</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you compare yourself</div><div class="forget-trigger-text">Reread Your Prompt. Nobody else does what you do the way you do it. That\u2019s the whole point.</div><div class="forget-trigger-action">Scroll to: Your Prompt</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you feel like a fraud</div><div class="forget-trigger-text">Reread the Love Letter. You were enough before any of this. You\u2019re still enough now.</div><div class="forget-trigger-action">Scroll to: A Letter to Your Younger Self</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you lose the thread</div><div class="forget-trigger-text">Reread the Meditation. The clarity you seek is already inside what you do best. Build from there.</div><div class="forget-trigger-action">Scroll to: A Meditation</div></div></div><div class="forget-timestamp">Blueprint generated ${dateStr} &middot; Deep Work Interview &middot; Session #${sessionShort}</div></div></div>
+<div class="forget-section"><div class="forget-inner"><div class="eyebrow">Bookmark This</div><div class="forget-headline">On the days you forget who you are, come back here.</div><div class="forget-sub">Clarity isn\u2019t a one-time event. It\u2019s something you return to. These are the moments to reopen this blueprint.</div><div class="forget-triggers"><div class="forget-trigger"><div class="forget-trigger-label">When you undercharge</div><div class="forget-trigger-text">${positioningStatement !== "Your unique positioning statement." ? "Reread Your Prompt. You are not selling time. You are selling this: \u201C" + escHtml(positioningStatement.length > 80 ? positioningStatement.slice(0, 77) + "..." : positioningStatement) + "\u201D" : "Reread Act III. You are not selling time. You are selling the system that only you can build."}</div><div class="forget-trigger-action">Scroll to: Your Prompt</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you compare yourself</div><div class="forget-trigger-text">${arrogantTruth ? "Reread what you almost did not say: \u201C" + escHtml(arrogantTruth.length > 80 ? arrogantTruth.slice(0, 77) + "..." : arrogantTruth) + "\u201D Nobody else can say that." : "Reread Your Prompt. Nobody else does what you do the way you do it. That is the whole point."}</div><div class="forget-trigger-action">Scroll to: ${arrogantTruth ? "The thing you almost didn\u2019t say" : "Your Prompt"}</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you feel like a fraud</div><div class="forget-trigger-text">${v3.bookmark_fraud ? escHtml(v3.bookmark_fraud) : "Reread the Love Letter. You were enough before any of this. You are still enough now."}</div><div class="forget-trigger-action">Scroll to: A Letter to Your Younger Self</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you lose the thread</div><div class="forget-trigger-text">${v3.bookmark_thread ? escHtml(v3.bookmark_thread) : "Reread the letter from your future self. The clarity you need is already inside what you do best. Build from there."}</div><div class="forget-trigger-action">Scroll to: A Letter from Your Future Self</div></div></div><div class="forget-timestamp">Blueprint generated ${dateStr} &middot; Deep Work Interview &middot; Session #${sessionShort}</div></div></div>
 <div class="wallpaper-section"><div class="wallpaper-inner"><div class="wallpaper-card"><div class="wallpaper-copy"><div class="wallpaper-eyebrow">Take This With You</div><div class="wallpaper-headline">Always remember who you are.</div><div class="wallpaper-sub">Your positioning statement, with you everywhere you go.</div><button onclick="downloadPhoneWallpaper('${wpPrimary}','${wpAccent}','${promptForJs}','${firstNameJs}')" style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1.5px solid #E8E8E8;cursor:pointer;margin-top:8px;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Save as Phone Background</button></div><div class="wallpaper-phones"><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Deep Work Interview</div></div></div><div class="phone-frame main"><div class="phone-screen"><div class="phone-text main">${escHtml(positioningStatement.slice(0, 60))}${positioningStatement.length > 60 ? "\u2026" : ""}</div></div></div><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Always remember<br>who you are.</div></div></div></div></div></div></div>
+<div class="section" style="background:var(--warm);border-top:1px solid var(--border);padding:64px 64px;"><div class="section-inner" style="text-align:center;"><p class="body-text" style="font-size:19px;color:var(--text);max-width:600px;margin:0 auto;line-height:1.8;">You just spent ${sessionMinutes > 0 ? sessionMinutes : '60+'} minutes being more honest about your work than you have been in years. This blueprint is proof that someone was listening. What comes next is where listening becomes building.</p></div></div>
 <div class="final-cta"><div class="final-inner"><div class="final-eyebrow">What Comes Next</div><div class="final-headline">This blueprint is the map.<br>The call is where we build it.</div><div class="final-sub">60 minutes with James to turn this blueprint into a living system. Your offer, your positioning, your pricing, your client selection. All of it, restructured around what you\u2019re actually great at.</div><div class="final-card"><div class="final-card-title">What happens on the Strategy Call</div><div class="final-card-items"><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Walk through your blueprint together, live</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Name the one offer that should be your entire business</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Price it based on transformation, not time</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Build your client selection criteria</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Map the 90 day implementation path</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Leave with a system, not just a strategy</div></div></div></div><div class="final-price"><div class="final-price-amount">$297</div><div class="final-price-label">One session. One system. One clear direction forward.</div></div><a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" class="final-btn">Book Your Strategy Call</a><div class="final-guarantee">If you don\u2019t leave the call with a clearer direction than you walked in with, you don\u2019t pay. That\u2019s the deal.</div><div class="final-testimonial"><p>\u201CIt just gave me a very honest, objective mirror back at myself. It pointed out that my biggest case study was nowhere on my website and asked, why are you burying all the leads? I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career.\u201D</p><div class="final-testimonial-author">Chris Van Loan II &mdash; Founder, Luminary Media</div></div></div></div>
 <div style="text-align:center;padding:48px 24px;background:#FAFAFA;border-top:1px solid #F0F0F0;"><div style="max-width:600px;margin:0 auto;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:12px;">Take This Further</div><div style="font-size:20px;font-weight:700;color:#1D1D1F;margin-bottom:8px;">Download your interview transcript</div><div style="font-size:15px;color:#86868B;margin-bottom:24px;">Take it to your AI to keep building your brand strategy.</div><a href="/api/session/export-transcript?sessionId=${sessionId}${downloadToken ? "&dltoken=" + downloadToken : ""}" style="display:inline-block;background:#1D1D1F;color:#fff;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;">Download Transcript (.md)</a></div></div>
-<script>window.addEventListener('scroll',function(){var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}if(typeof clarity==='function'){clarity('set','blueprint_viewed','true');clarity('set','session_id','${sessionId}');}document.addEventListener('DOMContentLoaded',function(){var ctaBtn=document.querySelector('.final-btn');if(ctaBtn){ctaBtn.addEventListener('click',function(){if(typeof clarity==='function'){clarity('set','strategy_cta_clicked','true');}});}});try{fetch('/api/event/tier-viewed',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'${sessionId}',tier:'${escHtml(tier.tier_title)}'})}).catch(function(){});}catch(e){} function downloadTranscript(sid){var btn=document.getElementById('transcriptBtn');if(btn)btn.textContent='Downloading\u2026';var token=(window.STATE&&STATE.sessionJwt)||localStorage.getItem('dw_session_jwt')||localStorage.getItem('dw_admin_token')||localStorage.getItem('dw_session')||'';var headers={};if(token)headers['Authorization']='Bearer '+token;fetch('/api/session/export-transcript?sessionId='+sid,{credentials:'include',headers:headers}).then(function(r){if(!r.ok)throw new Error('unauthorized');return r.blob();}).then(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='deep-work-transcript.md';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(btn)btn.textContent='Download Transcript (.md)';}).catch(function(){if(btn)btn.textContent='Download Transcript (.md)';alert('Could not download. Make sure you are logged in and try again.');});} function downloadPhoneWallpaper(primary,accent,statement,name){var c=document.createElement('canvas');c.width=1080;c.height=1920;var ctx=c.getContext('2d');var g=ctx.createLinearGradient(0,0,0,1920);g.addColorStop(0,primary||'#1D1D1F');g.addColorStop(1,_shade(primary||'#1D1D1F',-50));ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,1300,1080,620);ctx.fillStyle=accent||'#C4703F';ctx.font='500 32px Georgia,serif';ctx.textAlign='center';ctx.fillText('DEEP WORK INTERVIEW',540,260);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(180,300);ctx.lineTo(900,300);ctx.stroke();ctx.fillStyle='#FFFFFF';ctx.font='bold 74px Georgia,serif';ctx.textAlign='center';_wrap(ctx,statement||'Your positioning statement.',540,520,820,90);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=1;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(180,1560);ctx.lineTo(900,1560);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='32px Georgia,serif';ctx.fillText('Always remember who you are.',540,1630);ctx.fillStyle=accent||'#C4703F';ctx.font='600 26px sans-serif';ctx.fillText('jamesguldan.com/deep-work',540,1700);c.toBlob(function(blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=(name||'blueprint')+'-phone-wallpaper.png';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);},'image/png');} function _wrap(ctx,text,x,y,maxW,lh){var words=text.split(' '),line='';for(var i=0;i<words.length;i++){var t=line+words[i]+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lh;}else line=t;}ctx.fillText(line,x,y);} function _shade(hex,pct){var n=parseInt(hex.replace('#',''),16),a=Math.round(2.55*pct),R=Math.max(0,Math.min(255,(n>>16)+a)),G=Math.max(0,Math.min(255,(n>>8&255)+a)),B=Math.max(0,Math.min(255,(n&255)+a));return'#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);}<\/script></body></html>`;
+<script>window.addEventListener('scroll',function(){if(!document.getElementById('blueprint-screen')?.classList.contains('active'))return;var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}if(typeof clarity==='function'){clarity('set','blueprint_viewed','true');clarity('set','session_id','${sessionId}');}document.addEventListener('DOMContentLoaded',function(){var ctaBtn=document.querySelector('.final-btn');if(ctaBtn){ctaBtn.addEventListener('click',function(){if(typeof clarity==='function'){clarity('set','strategy_cta_clicked','true');}});}});try{fetch('/api/event/tier-viewed',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'${sessionId}',tier:'${escHtml(tier.tier_title)}'})}).catch(function(){});}catch(e){} function downloadTranscript(sid){var btn=document.getElementById('transcriptBtn');if(btn)btn.textContent='Downloading\u2026';var token=(window.STATE&&STATE.sessionJwt)||localStorage.getItem('dw_session_jwt')||localStorage.getItem('dw_admin_token')||localStorage.getItem('dw_session')||'';var headers={};if(token)headers['Authorization']='Bearer '+token;fetch('/api/session/export-transcript?sessionId='+sid,{credentials:'include',headers:headers}).then(function(r){if(!r.ok)throw new Error('unauthorized');return r.blob();}).then(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='deep-work-transcript.md';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(btn)btn.textContent='Download Transcript (.md)';}).catch(function(){if(btn)btn.textContent='Download Transcript (.md)';alert('Could not download. Make sure you are logged in and try again.');});} function downloadPhoneWallpaper(primary,accent,statement,name){var c=document.createElement('canvas');c.width=1080;c.height=1920;var ctx=c.getContext('2d');var g=ctx.createLinearGradient(0,0,0,1920);g.addColorStop(0,primary||'#1D1D1F');g.addColorStop(1,_shade(primary||'#1D1D1F',-50));ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,1300,1080,620);ctx.fillStyle=accent||'#C4703F';ctx.font='500 32px Georgia,serif';ctx.textAlign='center';ctx.fillText('DEEP WORK INTERVIEW',540,260);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(180,300);ctx.lineTo(900,300);ctx.stroke();ctx.fillStyle='#FFFFFF';ctx.font='bold 74px Georgia,serif';ctx.textAlign='center';_wrap(ctx,statement||'Your positioning statement.',540,520,820,90);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=1;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(180,1560);ctx.lineTo(900,1560);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='32px Georgia,serif';ctx.fillText('Always remember who you are.',540,1630);ctx.fillStyle=accent||'#C4703F';ctx.font='600 26px sans-serif';ctx.fillText('jamesguldan.com/deep-work',540,1700);c.toBlob(function(blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=(name||'blueprint')+'-phone-wallpaper.png';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);},'image/png');} function _wrap(ctx,text,x,y,maxW,lh){var words=text.split(' '),line='';for(var i=0;i<words.length;i++){var t=line+words[i]+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lh;}else line=t;}ctx.fillText(line,x,y);} function _shade(hex,pct){var n=parseInt(hex.replace('#',''),16),a=Math.round(2.55*pct),R=Math.max(0,Math.min(255,(n>>16)+a)),G=Math.max(0,Math.min(255,(n>>8&255)+a)),B=Math.max(0,Math.min(255,(n&255)+a));return'#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);}<\/script></body></html>`;
 }
 __name(renderBlueprintV3, "renderBlueprintV3");
 init_resend();
@@ -20336,7 +20820,34 @@ async function runBlueprintJob(sessionId, jobId, force, env) {
     return;
   }
 
-  const messages = Array.isArray(session.messages) ? session.messages : [];
+  // Race condition guard: check D1 first (authoritative) before starting generation.
+  // Two concurrent calls can both see blueprintGenerated:false in KV if they read
+  // before either has written back. D1 is the canonical source.
+  if (!force) {
+    try {
+      const d1Row = await env.DB.prepare("SELECT blueprint_generated FROM sessions WHERE id = ?").bind(sessionId).first();
+      if (d1Row && d1Row.blueprint_generated === 1) {
+        console.log("[runBlueprintJob] D1 gate: blueprint already generated for session=" + sessionId + " — skipping duplicate");
+        await updateJobKV({ status: "complete", progress: 100 });
+        return;
+      }
+    } catch (_) {}
+
+    // KV mutex: prevent two concurrent jobs for the same session.
+    const genLockKey = "bp_generating:" + sessionId;
+    const lockExists = await env.SESSIONS.get(genLockKey).catch(() => null);
+    if (lockExists) {
+      console.log("[runBlueprintJob] KV lock: another generation already in-flight for session=" + sessionId + " — skipping");
+      await updateJobKV({ status: "skipped", error: "Duplicate — another generation in flight" });
+      return;
+    }
+    await env.SESSIONS.put(genLockKey, "1", { expirationTtl: 600 }).catch(() => {});
+  }
+
+  const rawMessages = Array.isArray(session.messages) ? session.messages : [];
+  // Strip empty assistant messages, then deduplicate consecutive identical messages
+  const filteredMessages = rawMessages.filter((m) => m.content && m.content.trim().length > 0);
+  const messages = filteredMessages.filter((m, i) => i === 0 || m.content !== filteredMessages[i - 1].content || m.role !== filteredMessages[i - 1].role);
   const cleanMessages = messages.filter((msg) => !msg.content || !msg.content.includes("```json"));
   const recentMessages = cleanMessages.slice(-60);
 
@@ -20377,14 +20888,17 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
     "body": "3-4 paragraphs separated by double newlines. What becomes possible when the ideal client works with this person.",
     "insight": "One concrete sentence about what becomes possible."
   },
-  "mirror_observation": "2-3 paragraphs in second person. Start with You answered every question about... Name the single most striking behavioral pattern. Should feel slightly uncomfortable because it is true.",
+  "mirror_observation": "2 to 3 paragraphs in second person. Do NOT summarize what happened in the interview. Instead, name the one thing you noticed them doing repeatedly that they could not see themselves doing. The deflection pattern. The moment they answered a question about themselves by talking about their clients. The way they qualified every achievement the moment they said it. Name the specific pattern, give 2 to 3 specific examples from the transcript, and then name what it means. This should read like a therapist's note that is warm but precise. The reader should feel slightly exposed. Not judged. Seen.",
   "mirror_connection": "2-3 sentences connecting the origin wound or formative experience they described to the exact struggle their ideal client is going through right now. Make the line explicit.",
   "arrogant_truth": "One sentence starting with I can... or naming a specific capability with a specific outcome. Max 30 words. No hedging. Pull from Phase 7 answer if available.",
   "mission_statement": "One sentence. What this person would do even if no one paid them. Pull directly from Phase 8 answer if available.",
   "pricing_current": "What they charge right now. Pull from Phase 7 answer. Be specific — exact number or range.",
   "pricing_gap_belief": "The internalized voice that stops them from raising prices. Pull from Phase 7 answer about whose voice they hear. One to two sentences.",
   "never_said_publicly": "The thing they named in this interview for the first time. Pull from Phase 8 answer if available. One sentence in their voice.",
-  "futureSelfLetter": "Full letter 200-300 words from James Guldan to the client. Warm, honest, direct. References specific things from the interview."
+  "futureSelfLetter": "Full letter 200-300 words from James Guldan to the client. Warm, honest, direct. References specific things from the interview.",
+  "loveLetter": "A letter from the client to their younger self. 150 to 200 words. Reference the specific childhood moment or formative wound revealed in the interview. This is a letter of forgiveness and recognition. The younger self needs to hear that the thing they were ashamed of or punished for is the exact thing that made them extraordinary. Do not use generic language. Name the specific moment, the specific person, the specific feeling. End with a line that connects who they were then to who they are now. Start with 'Dear younger you,' — do not use their name.",
+  "bookmark_fraud": "One sentence. When they feel like a fraud, what specific moment from this interview proves they are not? Reference a real achievement or capability they named. Max 30 words.",
+  "bookmark_thread": "One sentence. When they lose direction, what was the single clearest statement of purpose from this interview? Reference it directly. Max 30 words."
 }`;
 
   const [callAResult, callBResult] = await Promise.all([
@@ -20427,6 +20941,9 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
       if (prose.pricing_gap_belief) blueprint.v3.pricing_gap_belief = prose.pricing_gap_belief;
       if (prose.never_said_publicly) blueprint.v3.never_said_publicly = prose.never_said_publicly;
       if (prose.futureSelfLetter) blueprint.v3.futureSelfLetter = prose.futureSelfLetter;
+      if (prose.loveLetter) blueprint.v3.loveLetter = prose.loveLetter;
+      if (prose.bookmark_fraud) blueprint.v3.bookmark_fraud = prose.bookmark_fraud;
+      if (prose.bookmark_thread) blueprint.v3.bookmark_thread = prose.bookmark_thread;
       if (prose.real_problem?.body && !blueprint.part3?.nicheStatement) {
         if (!blueprint.part3) blueprint.part3 = {};
         blueprint.part3.nicheStatement = prose.real_problem.body;
@@ -20515,6 +21032,8 @@ Return ONLY a valid JSON object with these fields (no markdown fences):
   extractSessionInsights(env, sessionId, session).catch(() => {});
   const li = blueprint?.leadIntel;
   if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
+  // Release KV mutex lock now that D1 is committed.
+  env.SESSIONS.delete("bp_generating:" + sessionId).catch(() => {});
   console.log("[runBlueprintJob] Done session=" + sessionId + " tokens=" + (callAResult.outputTokens + callBResult.outputTokens));
 }
 __name(runBlueprintJob, "runBlueprintJob");
@@ -22011,7 +22530,7 @@ a:hover{opacity:.7}
   <span class="adm-nav-brand">DWI Admin</span>
   <a class="adm-nav-link" href="/admin">Dashboard</a>
   <a class="adm-nav-link" href="/admin/people">People</a>
-  <a class="adm-nav-link" href="/admin/export-all">Export CSV</a>
+  <a class="adm-nav-link" href="/admin/settings">Settings</a>
   <span class="adm-nav-right"><a class="adm-nav-link" href="/logout" style="font-size:12px">Sign out</a></span>
 </nav>
 <div class="adm-body">
@@ -22500,12 +23019,20 @@ async function handleAdminPersonProfile(request, env, path) {
   try {
     var origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
 
-    // User info + magic token in parallel
+    // User info + magic token in parallel (prefer persistent_magic so the link is reusable)
     var [user, tokenRow] = await Promise.all([
       env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first(),
-      env.DB.prepare(`SELECT token FROM auth_tokens WHERE user_id = ? AND (type = 'persistent_magic' OR type = 'magic_login') AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1`).bind(userId).first().catch(()=>null)
+      env.DB.prepare(`SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'persistent_magic' AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1`).bind(userId).first().catch(()=>null)
     ]);
     if (!user) return new Response(adminLayout('Not Found', '<div class="adm-empty">User not found</div>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
+    // Auto-generate a reusable persistent_magic token if none exists
+    if (!tokenRow) {
+      try {
+        var newPmToken = generateMagicToken();
+        await storeMagicToken(env, newPmToken, userId, 'persistent_magic', 8760);
+        tokenRow = { token: newPmToken };
+      } catch(_) {}
+    }
     var magicLink = tokenRow ? origin + '/magic?token=' + tokenRow.token : '';
 
     // Sessions + cost in parallel
@@ -22835,11 +23362,19 @@ async function handleAdminSessionDetail(request, env, path) {
     var userMagicToken = null;
     if (sessionRow.user_id) {
       var mtRow = await env.DB.prepare(`
-        SELECT token FROM auth_tokens WHERE user_id = ? AND (type = 'persistent_magic' OR type = 'magic_login') AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1
+        SELECT token FROM auth_tokens WHERE user_id = ? AND type = 'persistent_magic' AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1
       `).bind(sessionRow.user_id).first().catch(() => null);
+      if (!mtRow) {
+        try {
+          var pmTok = generateMagicToken();
+          await storeMagicToken(env, pmTok, sessionRow.user_id, 'persistent_magic', 8760);
+          mtRow = { token: pmTok };
+        } catch(_) {}
+      }
       if (mtRow) userMagicToken = mtRow.token;
     }
-    var userMagicLink = userMagicToken ? (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/magic?token=" + userMagicToken : "";
+    // Embed the specific session ID in the redirect so "View as User" opens this exact session
+    var userMagicLink = userMagicToken ? (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/magic?token=" + userMagicToken + "&redirect=" + encodeURIComponent("/app?resumeSession=" + sessionId) : "";
     var events = eventsRes?.results || [];
     var insightRows = insRes?.results || [];
     var bp = null, kvMessages = [], kvSession = null;
@@ -23203,6 +23738,265 @@ async function handleAdminExportAll(request, env) {
   } catch (e) {
     return new Response("CSV error: " + e.message, { status: 500 });
   }
+}
+async function handleAdminRunChecks(request, env) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+
+  var origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+  var checks = [];
+
+  async function check(name, fn) {
+    var start = Date.now();
+    try {
+      var result = await fn();
+      checks.push({ name, pass: result.pass, detail: result.detail, ms: Date.now() - start });
+    } catch (e) {
+      checks.push({ name, pass: false, detail: e.message || "Error", ms: Date.now() - start });
+    }
+  }
+
+  await Promise.allSettled([
+    // Page health
+    check("Homepage (GET /)", async () => {
+      var r = await fetch(origin + "/", { signal: AbortSignal.timeout(8000) });
+      return { pass: r.status === 200, detail: "HTTP " + r.status };
+    }),
+    check("App page (GET /app)", async () => {
+      var r = await fetch(origin + "/app", { signal: AbortSignal.timeout(8000) });
+      return { pass: r.status === 200, detail: "HTTP " + r.status };
+    }),
+
+    // API contracts
+    check("Chat rejects empty body", async () => {
+      var r = await fetch(origin + "/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status + (r.status === 400 ? " (correct)" : "") };
+    }),
+    check("Webhook rejects invalid payload", async () => {
+      var r = await fetch(origin + "/api/webhook", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status + (r.status === 400 ? " (correct)" : "") };
+    }),
+    check("Session start responds", async () => {
+      var r = await fetch(origin + "/api/session/start", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status };
+    }),
+    check("Blueprint render responds", async () => {
+      var r = await fetch(origin + "/api/blueprint/render", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(8000) });
+      return { pass: r.status !== 500, detail: "HTTP " + r.status };
+    }),
+
+    // External API keys
+    check("Anthropic API key", async () => {
+      if (!env.ANTHROPIC_API_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 5, messages: [{ role: "user", content: "Reply OK" }] }),
+        signal: AbortSignal.timeout(10000)
+      });
+      return { pass: r.status === 200 || r.status === 201, detail: r.status === 200 ? "OK — key valid" : "HTTP " + r.status };
+    }),
+    check("Stripe API key", async () => {
+      if (!env.STRIPE_SECRET_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.stripe.com/v1/balance", {
+        headers: { "Authorization": "Bearer " + env.STRIPE_SECRET_KEY },
+        signal: AbortSignal.timeout(8000)
+      });
+      return { pass: r.status === 200, detail: r.status === 200 ? "OK — key valid, mode: " + (env.STRIPE_MODE || "unknown") : "HTTP " + r.status };
+    }),
+    check("Resend API key", async () => {
+      if (!env.RESEND_API_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.resend.com/domains", {
+        headers: { "Authorization": "Bearer " + env.RESEND_API_KEY },
+        signal: AbortSignal.timeout(8000)
+      });
+      var d = await r.json().catch(() => null);
+      var verified = d && d.data ? d.data.filter(x => x.status === "verified").length : 0;
+      return { pass: r.status === 200, detail: r.status === 200 ? verified + " verified domain(s)" : "HTTP " + r.status };
+    }),
+    check("Apollo API key", async () => {
+      if (!env.APOLLO_API_KEY) return { pass: false, detail: "Key not set" };
+      var r = await fetch("https://api.apollo.io/api/v1/auth/health", {
+        headers: { "Cache-Control": "no-cache", "Content-Type": "application/json", "X-Api-Key": env.APOLLO_API_KEY },
+        signal: AbortSignal.timeout(8000)
+      });
+      var remaining = r.headers.get("x-monthly-usage-remaining");
+      return { pass: r.status === 200, detail: r.status === 200 ? (remaining ? remaining + " credits remaining" : "OK") : "HTTP " + r.status };
+    }),
+  ]);
+
+  var passed = checks.filter(c => c.pass).length;
+  return json({ checks, passed, total: checks.length, timestamp: new Date().toISOString() });
+}
+__name(handleAdminRunChecks, "handleAdminRunChecks");
+
+async function handleAdminSettings(request, env) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return new Response("Forbidden", { status: 403 });
+
+  function maskKey(val) {
+    if (!val) return '<span style="color:#FF3B30">NOT SET</span>';
+    var s = String(val);
+    if (s.length <= 8) return "••••••••";
+    return s.slice(0, 4) + "••••••••" + s.slice(-4);
+  }
+  function keyBadge(val) {
+    return val ? '<span class="badge bg-green">Set</span>' : '<span class="badge bg-red">Missing</span>';
+  }
+
+  // Live checks — fire in parallel, fail gracefully
+  var apolloCredits = null, apolloLimit = null, resendDomains = null, stripeMode = null;
+  await Promise.allSettled([
+    // Apollo: check credits
+    env.APOLLO_API_KEY ? fetch("https://api.apollo.io/api/v1/auth/health", {
+      headers: { "Cache-Control": "no-cache", "Content-Type": "application/json", "X-Api-Key": env.APOLLO_API_KEY }
+    }).then(async r => {
+      var remaining = r.headers.get("x-monthly-usage-remaining");
+      var limit = r.headers.get("x-monthly-limit");
+      if (remaining !== null) apolloCredits = parseInt(remaining);
+      if (limit !== null) apolloLimit = parseInt(limit);
+    }).catch(() => {}) : Promise.resolve(),
+
+    // Resend: check domains
+    env.RESEND_API_KEY ? fetch("https://api.resend.com/domains", {
+      headers: { "Authorization": "Bearer " + env.RESEND_API_KEY }
+    }).then(async r => {
+      var d = await r.json().catch(() => null);
+      if (d && d.data) resendDomains = d.data;
+    }).catch(() => {}) : Promise.resolve(),
+
+    // Stripe mode from env var
+    Promise.resolve(stripeMode = env.STRIPE_MODE || "unknown")
+  ]);
+
+  // Apollo credit bar color
+  var apolloColor = "#34C759";
+  if (apolloCredits !== null && apolloLimit) {
+    var pct = apolloCredits / apolloLimit;
+    if (pct < 0.1) apolloColor = "#FF3B30";
+    else if (pct < 0.25) apolloColor = "#FF9500";
+  }
+
+  var apis = [
+    { name: "Anthropic", icon: "🤖", envKey: "ANTHROPIC_API_KEY", val: env.ANTHROPIC_API_KEY, use: "Interview AI + blueprint generation (Call A + Call B)", extra: "" },
+    { name: "Apollo.io", icon: "🔍", envKey: "APOLLO_API_KEY", val: env.APOLLO_API_KEY, use: "Email enrichment on session start (role, company, industry)", extra: apolloCredits !== null ? `<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:4px"><span>Monthly credits remaining</span><span style="color:${apolloColor};font-weight:600">${apolloCredits}${apolloLimit ? " / " + apolloLimit : ""}</span></div><div class="adm-progress"><div class="adm-progress-fill" style="width:${apolloLimit ? Math.round(apolloCredits/apolloLimit*100) : 100}%;background:${apolloColor}"></div></div>${apolloCredits <= 15 ? '<div style="font-size:11px;color:#FF3B30;margin-top:4px">⚠ Below warning threshold (15)</div>' : ""}</div>` : "" },
+    { name: "Resend", icon: "📧", envKey: "RESEND_API_KEY", val: env.RESEND_API_KEY, use: "Magic links, blueprint delivery, admin alerts, daily digest", extra: resendDomains ? resendDomains.map(d => `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px"><span class="badge ${d.status === "verified" ? "bg-green" : "bg-yellow"}">${d.status}</span><span>${d.name}</span></div>`).join("") : "" },
+    { name: "Stripe", icon: "💳", envKey: "STRIPE_SECRET_KEY", val: env.STRIPE_SECRET_KEY, use: "Checkout, payment webhooks, customer lookup", extra: `<div style="margin-top:6px;font-size:12px">Mode: <span class="badge ${stripeMode === "live" ? "bg-green" : "bg-yellow"}">${stripeMode}</span></div>` },
+    { name: "Calendly", icon: "📅", envKey: "CALENDLY_API_KEY", val: env.CALENDLY_API_KEY, use: "Strategy call booking link in blueprint CTA", extra: "" },
+    { name: "PhotoRoom", icon: "🖼", envKey: "PHOTOROOM_API_KEY", val: env.PHOTOROOM_API_KEY, use: "Background removal for uploaded photos", extra: "" },
+    { name: "Gemini Proxy", icon: "🎨", envKey: "GEMINI_PROXY_TOKEN", val: env.GEMINI_PROXY_TOKEN, use: "Brand image generation via Imagen proxy", extra: "" },
+    { name: "Browser Rendering", icon: "🌐", envKey: "BROWSER_RENDERING_TOKEN", val: env.BROWSER_RENDERING_TOKEN, use: "Website screenshot capture for site-in-sixty flow", extra: "" },
+  ];
+
+  var apiRows = apis.map(a => `
+    <tr>
+      <td><span style="font-size:16px;margin-right:6px">${a.icon}</span><strong>${a.name}</strong><div style="font-size:11px;color:#86868B;margin-top:2px">${a.envKey}</div></td>
+      <td>${keyBadge(a.val)}</td>
+      <td style="font-family:monospace;font-size:12px;color:#86868B">${maskKey(a.val)}</td>
+      <td style="font-size:12px;color:#86868B">${a.use}</td>
+      <td>${a.extra}</td>
+    </tr>
+  `).join("");
+
+  var envVars = [
+    { name: "APP_ORIGIN", val: env.APP_ORIGIN },
+    { name: "STRIPE_MODE", val: env.STRIPE_MODE },
+    { name: "FLAG_NUDGES_ENABLED", val: env.FLAG_NUDGES_ENABLED },
+  ];
+  var envRows = envVars.map(e => `
+    <tr>
+      <td style="font-family:monospace;font-size:12px">${e.name}</td>
+      <td style="font-family:monospace;font-size:12px;color:#C4703F">${e.val || '<span style="color:#86868B">not set</span>'}</td>
+    </tr>
+  `).join("");
+
+  var content = `
+    <div class="adm-page-title">Settings</div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">API Keys &amp; Integrations</div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr><th>Service</th><th>Status</th><th>Key (masked)</th><th>Used For</th><th>Live Status</th></tr></thead>
+          <tbody>${apiRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">Environment Variables</div>
+      <div class="adm-table-wrap">
+        <table class="adm-table">
+          <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+          <tbody>${envRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">System Health Check <button class="adm-btn adm-btn-sm" id="run-checks-btn" onclick="runHealthChecks()" style="margin-left:8px">Run Checks</button></div>
+      <div class="adm-panel">
+        <div style="font-size:12px;color:#86868B;margin-bottom:12px">Verifies all API keys are live, external integrations respond, and critical endpoints return correct status codes. Takes ~10 seconds.</div>
+        <div id="health-results" style="display:none">
+          <div id="health-summary" style="font-weight:600;font-size:13px;margin-bottom:10px"></div>
+          <table class="adm-table" style="margin-top:0">
+            <thead><tr><th>Check</th><th>Result</th><th>Detail</th><th>ms</th></tr></thead>
+            <tbody id="health-rows"></tbody>
+          </table>
+          <div id="health-ts" style="font-size:11px;color:#86868B;margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="adm-section">
+      <div class="adm-section-hd">Export</div>
+      <div class="adm-panel" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600;font-size:13px">Export all users as CSV</div>
+          <div style="font-size:12px;color:#86868B;margin-top:2px">Name, email, tier, phase, blueprint status, resonance score</div>
+        </div>
+        <a href="/admin/export-all" class="adm-btn adm-btn-outline adm-btn-sm">Download CSV</a>
+      </div>
+    </div>
+  `;
+
+  var settingsScript = `<script>
+function runHealthChecks(){
+  var btn=document.getElementById('run-checks-btn');
+  var results=document.getElementById('health-results');
+  var summary=document.getElementById('health-summary');
+  var rows=document.getElementById('health-rows');
+  var ts=document.getElementById('health-ts');
+  btn.disabled=true;btn.textContent='Running...';
+  results.style.display='none';
+  fetch('/api/admin/run-checks',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    rows.innerHTML=d.checks.map(function(c){
+      return '<tr>'
+        +'<td style="font-size:12px">'+c.name+'</td>'
+        +'<td><span class="badge '+(c.pass?'bg-green':'bg-red')+'" style="font-size:11px">'+(c.pass?'PASS':'FAIL')+'</span></td>'
+        +'<td style="font-size:12px;color:#86868B">'+c.detail+'</td>'
+        +'<td style="font-size:11px;color:#86868B;font-family:monospace">'+c.ms+'ms</td>'
+        +'</tr>';
+    }).join('');
+    var allPass=d.passed===d.total;
+    summary.innerHTML=(allPass?'<span style="color:#34C759">&#10003;</span>':'<span style="color:#FF3B30">&#10007;</span>')+' '+d.passed+'/'+d.total+' checks passed'+(allPass?' \u2014 all systems go':'');
+    summary.style.color=allPass?'#34C759':'#FF3B30';
+    ts.textContent='Run at '+new Date(d.timestamp).toLocaleTimeString();
+    results.style.display='block';
+    btn.disabled=false;btn.textContent='Run Checks';
+  })
+  .catch(function(e){
+    summary.textContent='Error: '+e.message;
+    summary.style.color='#FF3B30';
+    results.style.display='block';
+    btn.disabled=false;btn.textContent='Run Checks';
+  });
+}
+<\/script>`;
+
+  return new Response(adminLayout("Settings", content).replace('</body>', settingsScript + '</body>'), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
 }
 async function handleAdminDeleteUser(request, env, path, url) {
   var admin = await requireAdmin(request, env);
@@ -23644,6 +24438,10 @@ async function routeRequest(request, env, ctx) {
       return handleAdminExportSession(request, env, path);
     if (path === "/admin/export-all" && request.method === "GET")
       return handleAdminExportAll(request, env);
+    if (path === "/admin/settings" && request.method === "GET")
+      return handleAdminSettings(request, env);
+    if (path === "/api/admin/run-checks" && request.method === "POST")
+      return handleAdminRunChecks(request, env);
     if (path.startsWith("/admin/delete-user/") && request.method === "POST")
       return handleAdminDeleteUser(request, env, path, url);
     if (path === "/logout")
@@ -23911,6 +24709,55 @@ async function routeRequest(request, env, ctx) {
 __name(routeRequest, "routeRequest");
 
 // === Phase A: Nudge scanner ===
+// Cron: Find sessions stuck at phase 8 with no blueprint and fire async generation.
+// Catches users who reached phase 8 but stopped messaging before blueprint triggered.
+async function runPhase8AutoComplete(env) {
+  try {
+    const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+    const stuck = await env.DB.prepare(`
+      SELECT id, phase, message_count, last_active_at
+      FROM sessions
+      WHERE phase >= 8
+        AND blueprint_generated = 0
+        AND (status = 'active' OR status IS NULL)
+        AND last_active_at < datetime('now', '-1 hour')
+        AND last_active_at > datetime('now', '-7 days')
+      LIMIT 10
+    `).all();
+    const rows = stuck.results || [];
+    let triggered = 0;
+    for (const row of rows) {
+      try {
+        // Skip if a generation is already in-flight
+        const lockExists = await env.SESSIONS.get("bp_generating:" + row.id).catch(() => null);
+        if (lockExists) continue;
+        // Only generate if there are enough messages in KV
+        const kvRaw = await env.SESSIONS.get(row.id);
+        if (!kvRaw) continue;
+        let kvSession;
+        try { kvSession = JSON.parse(kvRaw); } catch (_) { continue; }
+        if (!kvSession.messages || kvSession.messages.length < 15) continue;
+        if (kvSession.blueprintGenerated) continue;
+        const jobId = "bpj_auto8_" + crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+        await env.SESSIONS.put("bp_job:" + jobId, JSON.stringify({ jobId, sessionId: row.id, status: "pending", progress: 0, startedAt: new Date().toISOString(), blueprint: null, error: null }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
+        await fetch(appOrigin + "/api/internal/generate-blueprint", {
+          method: "POST",
+          headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: row.id, jobId })
+        }).catch((e) => console.error("[Phase8AutoComplete] fetch error:", e.message));
+        triggered++;
+        console.log("[Phase8AutoComplete] Triggered async blueprint for stuck session=" + row.id + " phase=" + row.phase + " msgs=" + kvSession.messages.length);
+      } catch (e) {
+        console.error("[Phase8AutoComplete] Error for session=" + row.id + ":", e.message);
+      }
+    }
+    console.log("[Phase8AutoComplete] scanned=" + rows.length + " triggered=" + triggered);
+  } catch (e) {
+    console.error("[Phase8AutoComplete] Fatal:", e.message);
+  }
+}
+__name(runPhase8AutoComplete, "runPhase8AutoComplete");
+
 async function scanAndSendNudges(env) {
   const FLAG = env.FLAG_NUDGES_ENABLED || "off"; // "off" | "dry_run" | "live"
   if (FLAG === "off") return;
@@ -23963,6 +24810,7 @@ var src_default = {
         }
         if (event.cron === "0 * * * *") {
           await runHourlySnapshot(env);
+          await runPhase8AutoComplete(env);
         }
         await runAbandonmentCheck(env);
         if (event.cron === "0 9 * * *") {

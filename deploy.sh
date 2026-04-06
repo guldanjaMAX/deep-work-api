@@ -25,6 +25,7 @@ D1_DATABASE_ID="92121f3b-dcfb-4fa8-8482-b827224b611d"
 # Plain text vars (from [vars] in wrangler.toml)
 APP_ORIGIN="https://love.jamesguldan.com"
 STRIPE_MODE="live"
+FLAG_NUDGES_ENABLED="dry_run"
 
 # Health check endpoints
 HEALTH_ENDPOINTS=(
@@ -166,7 +167,8 @@ METADATA=$(cat <<'METAEOF'
     {"type": "r2_bucket", "name": "UPLOADS", "bucket_name": "R2_PLACEHOLDER"},
     {"type": "d1", "name": "DB", "id": "D1_ID_PLACEHOLDER"},
     {"type": "plain_text", "name": "APP_ORIGIN", "text": "APP_ORIGIN_PLACEHOLDER"},
-    {"type": "plain_text", "name": "STRIPE_MODE", "text": "STRIPE_MODE_PLACEHOLDER"}
+    {"type": "plain_text", "name": "STRIPE_MODE", "text": "STRIPE_MODE_PLACEHOLDER"},
+    {"type": "plain_text", "name": "FLAG_NUDGES_ENABLED", "text": "FLAG_NUDGES_ENABLED_PLACEHOLDER"}
   ],
   "compatibility_date": "2024-12-01",
   "keep_bindings": ["secret_text"]
@@ -180,7 +182,8 @@ METADATA=$(echo "$METADATA" | sed \
   -e "s|R2_PLACEHOLDER|$R2_BUCKET|g" \
   -e "s|D1_ID_PLACEHOLDER|$D1_DATABASE_ID|g" \
   -e "s|APP_ORIGIN_PLACEHOLDER|$APP_ORIGIN|g" \
-  -e "s|STRIPE_MODE_PLACEHOLDER|$STRIPE_MODE|g")
+  -e "s|STRIPE_MODE_PLACEHOLDER|$STRIPE_MODE|g" \
+  -e "s|FLAG_NUDGES_ENABLED_PLACEHOLDER|$FLAG_NUDGES_ENABLED|g")
 
 DEPLOY_RESPONSE=$(/usr/bin/curl -s -X PUT \
   "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/workers/scripts/$WORKER_NAME" \
@@ -252,6 +255,70 @@ check_route "/" "200 302"
 
 if [ "$ROUTES_OK" = false ]; then
   warn "Some routes returned unexpected codes. Worker is alive but may have issues."
+fi
+
+# --- Step 7: Smoke tests ---
+log "Step 7: Running smoke tests..."
+SMOKE_PASS=true
+SMOKE_TOTAL=0
+SMOKE_OK=0
+
+smoke_check() {
+  local desc="$1"
+  local method="$2"
+  local path="$3"
+  local body="$4"
+  local expect_not="${5:-500}"  # Code that means FAILURE (default 500)
+
+  SMOKE_TOTAL=$((SMOKE_TOTAL + 1))
+  local code
+  if [ "$method" = "POST" ]; then
+    code=$(/usr/bin/curl -s -o /dev/null -w "%{http_code}" \
+      -X POST "$APP_URL$path" \
+      -H "Content-Type: application/json" \
+      -d "$body" --max-time 10 2>/dev/null || echo "000")
+  else
+    code=$(/usr/bin/curl -s -o /dev/null -w "%{http_code}" \
+      "$APP_URL$path" --max-time 10 2>/dev/null || echo "000")
+  fi
+
+  if [ "$code" = "$expect_not" ] || [ "$code" = "000" ]; then
+    warn "  FAIL: $desc -> HTTP $code"
+    SMOKE_PASS=false
+  else
+    log "  OK: $desc -> HTTP $code"
+    SMOKE_OK=$((SMOKE_OK + 1))
+  fi
+}
+
+# Core pages
+smoke_check "Homepage loads" GET "/" "" "500"
+smoke_check "App page loads" GET "/app" "" "500"
+
+# API endpoints reject bad input (not crash)
+smoke_check "Chat rejects empty body" POST "/api/chat" '{}' "500"
+smoke_check "Chat rejects missing message" POST "/api/chat" '{"sessionId":"test"}' "500"
+smoke_check "Checkout endpoint alive" POST "/api/checkout" '{"tier":"blueprint"}' "500"
+smoke_check "Webhook rejects empty" POST "/api/webhook" '{}' "500"
+smoke_check "Session start responds" POST "/api/session/start" '{}' "500"
+
+# Auth endpoints
+smoke_check "Auth me without token" GET "/api/auth/me" "" "500"
+smoke_check "Unsubscribe endpoint" GET "/api/unsubscribe?email=smoketest@test.com" "" "500"
+
+# Blueprint render
+smoke_check "Blueprint render responds" POST "/api/blueprint/render" '{}' "500"
+
+log "  Smoke tests: $SMOKE_OK/$SMOKE_TOTAL passed"
+
+if [ "$SMOKE_PASS" = false ]; then
+  echo ""
+  warn "=================================================="
+  warn "  SMOKE TESTS FAILED — some endpoints returned 500"
+  warn "=================================================="
+  warn "The worker is alive but may have code errors."
+  warn "Check logs: npx wrangler tail --name $WORKER_NAME"
+  echo ""
 fi
 
 # --- Done ---

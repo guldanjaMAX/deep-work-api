@@ -8,7 +8,10 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit/ tests/snapshot/",
+    "test:e2e": "vitest run tests/e2e/",
+    "test:smoke": "bash tests/smoke/pre-deploy.sh"
   },
   "repository": {
     "type": "git",
