@@ -20180,7 +20180,14 @@ async function loadBlueprintForSession(env, sessionId) {
     const metaRaw = await env.SESSIONS.get("bp_meta:" + sessionId);
     if (metaRaw) {
       const meta = JSON.parse(metaRaw);
-      if (meta.blueprint) return meta;
+      if (meta.blueprint) {
+        // Always re-derive name from blueprint fields so cached sessions get the correct name
+        if (!meta.name) {
+          const _bp = meta.blueprint;
+          meta.name = _bp.name || _bp.brandFoundation?.brandName || (_bp.personalLetter?.salutation ? _bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || _bp.debrief?.recipientName || "";
+        }
+        return meta;
+      }
     }
   } catch (_) {
   }
