@@ -1,3 +1,6 @@
+--da68b85cdaa6d6c0227a4968f68aa0aad2549d308238d2ee6c812480c540
+Content-Disposition: form-data; name="index.js"
+
 // src/index.js
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -12,6 +15,7 @@ var __export = (target, all) => {
 var resend_exports = {};
 __export(resend_exports, {
   sendEmail: () => sendEmail,
+  sendTrackedEmail: () => sendTrackedEmail,
   verifyDomain: () => verifyDomain
 });
 async function sendEmail(env, { to, from, subject, html, replyTo, cc, bcc }) {
@@ -36,12 +40,88 @@ async function verifyDomain(env) {
     headers: { "Authorization": "Bearer " + env.RESEND_API_KEY }
   });
 }
+async function _resendAttemptSend(env, { to, from, subject, html, replyTo, cc, bcc }) {
+  try {
+    const payload = { from, to, subject, html };
+    if (replyTo) payload.reply_to = replyTo;
+    if (cc) payload.cc = cc;
+    if (bcc) payload.bcc = bcc;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { success: false, error: `Resend ${res.status}: ${text.slice(0, 200)}` };
+    }
+    const data = await res.json().catch(() => ({}));
+    return { success: true, resendId: data.id || null };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+async function _resendLogEmail(env, { resendId, userId, sessionId, emailTo, emailFrom, emailType, subject, status, attempt, errorMessage }) {
+  try {
+    const result = await env.DB.prepare(
+      "INSERT INTO email_log (resend_id, user_id, session_id, email_to, email_from, email_type, subject, status, attempt, error_message) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(resendId, userId, sessionId, emailTo, emailFrom, emailType, subject, status, attempt, errorMessage).run();
+    return result.meta?.last_row_id || null;
+  } catch (err) {
+    console.error("[email_log] Failed to log email:", err.message);
+    return null;
+  }
+}
+async function sendTrackedEmail(env, { to, from, subject, html, emailType, userId, sessionId, replyTo, cc, bcc }) {
+  const fromAddr = from || "James Guldan | Deep Work <noreply@jamesguldan.com>";
+  const toArr = Array.isArray(to) ? to : [to];
+  let result = await _resendAttemptSend(env, { to: toArr, from: fromAddr, subject, html, replyTo, cc, bcc });
+  if (!result.success) {
+    await new Promise((r) => setTimeout(r, 5e3));
+    result = await _resendAttemptSend(env, { to: toArr, from: fromAddr, subject, html, replyTo, cc, bcc });
+    result.attempt = 2;
+  }
+  const logId = await _resendLogEmail(env, {
+    resendId: result.resendId,
+    userId: userId || null,
+    sessionId: sessionId || null,
+    emailTo: toArr[0],
+    emailFrom: fromAddr,
+    emailType,
+    subject,
+    status: result.success ? "sent" : "failed",
+    attempt: result.attempt || 1,
+    errorMessage: result.error || null
+  });
+  return { success: result.success, resendId: result.resendId, error: result.error, logId };
+}
 var init_resend = __esm({
   "src/services/resend.js"() {
     __name(sendEmail, "sendEmail");
+    __name(sendTrackedEmail, "sendTrackedEmail");
     __name(verifyDomain, "verifyDomain");
+    __name(_resendAttemptSend, "_resendAttemptSend");
+    __name(_resendLogEmail, "_resendLogEmail");
   }
 });
+async function sendBlueprintCompletionEmail2(env, sessionId, email, blueprint, userName) {
+  if (!env.RESEND_API_KEY || !email) return;
+  const bp = blueprint?.blueprint || blueprint;
+  const firstName = (userName || bp?.name || "").split(" ")[0] || "there";
+  const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+  const viewUrl = `${appOrigin}/blueprint/${sessionId}`;
+  const positioningStatement = bp?.v3?.brandFoundation?.positioningStatement || bp?.part3?.nicheStatement || bp?.part1?.coreBrandPromise || "";
+  const esc2 = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const emailHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#f7f7f5;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f7f5;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;"><tr><td style="padding-bottom:28px;text-align:center;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:48px 40px 40px;text-align:center;"><p style="margin:0 0 16px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Your Blueprint Is Ready</p><h1 style="margin:0 0 16px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;">${esc2(firstName)}, you did something most people never do.</h1><p style="margin:0;font-size:16px;color:rgba(255,255,255,0.65);line-height:1.75;">You sat with the hard questions. You were honest. And now you have a positioning blueprint that is entirely, unmistakably yours.</p></td></tr>${positioningStatement ? `<tr><td style="background:#1d1d1f;padding:0 40px 40px;text-align:center;"><div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:28px;"><p style="margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Your Positioning</p><p style="margin:0;font-size:18px;font-weight:400;color:rgba(255,255,255,0.9);line-height:1.6;font-style:italic;">${esc2(positioningStatement.length > 200 ? positioningStatement.slice(0, 197) + "..." : positioningStatement)}</p></div></td></tr>` : ""}<tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:36px 40px;text-align:center;"><p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1d1d1f;">Download Your Blueprint</p><p style="margin:0 0 24px;font-size:14px;color:#86868b;line-height:1.6;">Save it. Share it with your coach, your team, or anyone who needs to understand what you do and why it matters.</p><table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${esc2(viewUrl)}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:700;">View Your Blueprint &rarr;</a></td></tr></table><p style="margin:20px 0 0;font-size:13px;color:#b0b0b0;">Once there, use the "Download Your Blueprint (PDF)" button to save or share.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:0 40px 32px;"><div style="border-top:1px solid #f0f0f0;padding-top:28px;"><p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#c4703f;">What to Do Next</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.8;"><strong>1.</strong> Download your PDF and keep it somewhere you will see it.<br><strong>2.</strong> Share the link with anyone who needs to understand your positioning.<br><strong>3.</strong> When you are ready to turn this into a living system, book a Strategy Call.</p></div></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:0 40px 36px;"><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Questions? Reply to this email or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a></p></td></tr></table></td></tr></table></body></html>`;
+  try {
+    const emailResult = await sendTrackedEmail(env, { to: email, subject: `${firstName}, your positioning blueprint is ready`, html: emailHtml, emailType: "blueprint_completion", sessionId, userId: null });
+    if (emailResult.success) console.log(`[CompletionEmail] Sent to ${email} for session ${sessionId}`);
+    else console.error(`[CompletionEmail] Failed: ${emailResult.error}`);
+  } catch (err) {
+    console.error(`[CompletionEmail] Error: ${err.message}`);
+  }
+}
+__name(sendBlueprintCompletionEmail2, "sendBlueprintCompletionEmail2");
 var ALLOWED_ORIGINS = [
   "https://love.jamesguldan.com",
   "https://jamesguldan.com",
@@ -368,18 +448,14 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   try {
     const isCritical = severity === "critical";
     const html = getAlertEmailHTML({ alertType, severity, title, message, isCritical });
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + env.RESEND_API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "Deep Work Alerts <alerts@jamesguldan.com>",
-        to: [ALERT_EMAIL],
-        subject: `${isCritical ? "\u{1F534}" : "\u{1F7E1}"} [Deep Work] ${title}`,
-        html
-      })
+    await sendTrackedEmail(env, {
+      from: "Deep Work Alerts <alerts@jamesguldan.com>",
+      to: ALERT_EMAIL,
+      subject: `${isCritical ? "\u{1F534}" : "\u{1F7E1}"} [Deep Work] ${title}`,
+      html,
+      emailType: "alert",
+      userId: null,
+      sessionId: null
     });
     await env.DB.prepare(`
       UPDATE alerts SET emailed = 1 WHERE alert_type = ? AND emailed = 0
@@ -389,6 +465,30 @@ async function sendAlertEmail(env, { alertType, severity, title, message }) {
   }
 }
 __name(sendAlertEmail, "sendAlertEmail");
+async function sendShallowCompletionAlert(env, sessionId, session, depthResult) {
+  const adminEmail = "james@jamesguldan.com";
+  const adminUrl = `https://love.jamesguldan.com/admin/session/${sessionId}`;
+  const userEmail = session.email || session.userEmail || session.user_email || "unknown";
+  const userName = session.userName || session.user_name || "unknown";
+  const breakdown = depthResult.breakdown || {};
+  const breakdownLines = Object.entries(breakdown).map(([k, v]) => `  ${k}: ${v}/5`).join("\n");
+  await sendTrackedEmail(env, {
+    from: "DWI Admin <noreply@jamesguldan.com>",
+    to: adminEmail,
+    subject: `[DWI] Shallow completion \u2014 ${userName} (${userEmail})`,
+    html: `<p>A user completed the interview but scored a C-grade (shallow depth).</p>
+             <p><strong>Session:</strong> ${sessionId}<br>
+             <strong>User:</strong> ${userName} (${userEmail})<br>
+             <strong>Score:</strong> ${depthResult.score}/25 \u2014 Grade: ${depthResult.grade}</p>
+             <pre>${breakdownLines}</pre>
+             <p><a href="${adminUrl}">View session in admin \u2192</a></p>`,
+    emailType: "alert",
+    sessionId,
+    userId: null
+  });
+  await logSessionEvent(env, sessionId, "admin_alert_fired", { alert_type: "shallow_completion", score: depthResult.score, grade: depthResult.grade });
+}
+__name(sendShallowCompletionAlert, "sendShallowCompletionAlert");
 async function trackFunnelEvent(env, eventName, data = {}) {
   try {
     await trackMetric(env, `funnel.${eventName}`, 1, data);
@@ -492,18 +592,14 @@ __name(generateDailyDigest, "generateDailyDigest");
 async function sendDigestEmail(env, digest) {
   const html = getDigestEmailHTML(digest);
   try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + env.RESEND_API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "Deep Work Digest <digest@jamesguldan.com>",
-        to: [ALERT_EMAIL],
-        subject: `\u{1F4CA} Deep Work Daily \u2014 ${digest.newSessions} sessions, $${digest.revenue} revenue`,
-        html
-      })
+    await sendTrackedEmail(env, {
+      from: "Deep Work Digest <digest@jamesguldan.com>",
+      to: ALERT_EMAIL,
+      subject: `\u{1F4CA} Deep Work Daily \u2014 ${digest.newSessions} sessions, $${digest.revenue} revenue`,
+      html,
+      emailType: "digest",
+      userId: null,
+      sessionId: null
     });
   } catch (e) {
     console.error("Failed to send digest email:", e);
@@ -4560,13 +4656,13 @@ async function sendMessage() {
               }
             } else if (ev.type === 'done') {
               // Fallback: if stream is done but blueprint overlay still showing, recover
-              // Skip recovery if async polling is active — the poll interval will handle it
+              // Skip recovery if async polling is active \u2014 the poll interval will handle it
               if (STATE.blueprintOverlayShown && !STATE.blueprintAsync) {
                 if (STATE.pendingBlueprint) {
                   hideBlueprintGenerating();
                   handleBlueprintReady(STATE.pendingBlueprint);
                 } else {
-                  // Blueprint overlay showing but no blueprint arrived — check session
+                  // Blueprint overlay showing but no blueprint arrived \u2014 check session
                   fetch('/api/session/' + STATE.sessionId, { credentials: 'include' })
                     .then(function(r) { return r.ok ? r.json() : null; })
                     .then(function(data) {
@@ -4582,7 +4678,7 @@ async function sendMessage() {
                     .catch(function() {
                       hideBlueprintGenerating();
                       STATE.blueprintOverlayShown = false;
-                      appendMessage('ai', 'Something went wrong generating your blueprint. Your conversation is saved — send a message to try again.');
+                      appendMessage('ai', 'Something went wrong generating your blueprint. Your conversation is saved \u2014 send a message to try again.');
                     });
                 }
               }
@@ -4924,7 +5020,7 @@ function showBlueprintGenerating() {
     const mins = Math.floor(elapsed / 60);
     const secs = Math.floor(elapsed % 60);
     const pad = secs < 10 ? '0' : '';
-    // Heartbeat: show reassurance for 8s at every 60s boundary (60-68s, 120-128s, …)
+    // Heartbeat: show reassurance for 8s at every 60s boundary (60-68s, 120-128s, \u2026)
     if (elapsed >= 60 && Math.floor(elapsed) % 60 < 8) {
       timerEl.textContent = 'Still working \u2014 this usually takes 3 to 5 minutes. Hang tight.';
     } else if (elapsed < 45) {
@@ -4950,7 +5046,7 @@ function showBlueprintGenerating() {
 
   overlay._progressInterval = progressInterval;
 
-  // Hard dismiss after 7 minutes — show error instead of endless spinner
+  // Hard dismiss after 7 minutes \u2014 show error instead of endless spinner
   overlay._hardDismiss = setTimeout(() => {
     if (!overlay.classList.contains('active')) return;
     hideBlueprintGenerating();
@@ -4986,12 +5082,12 @@ function showBlueprintGenerating() {
       } else if (checkData.blueprintGenerated) {
         location.reload();
       } else {
-        // Blueprint not ready yet — reassure user but keep overlay
+        // Blueprint not ready yet \u2014 reassure user but keep overlay
         var msgElR = document.getElementById('blueprint-gen-msg');
-        if (msgElR) msgElR.textContent = 'Still building. Hang tight — this usually takes 3 to 5 minutes.';
+        if (msgElR) msgElR.textContent = 'Still building. Hang tight \u2014 this usually takes 3 to 5 minutes.';
       }
     } catch (e) {
-      // Swallow — will retry at 8-minute mark
+      // Swallow \u2014 will retry at 8-minute mark
     }
   }, 90000);
 }
@@ -5056,12 +5152,12 @@ function hideBlueprintGenerating() {
   const retryEl = document.getElementById('blueprint-gen-retry');
 
   if (blueprintGenInterval) { clearInterval(blueprintGenInterval); blueprintGenInterval = null; }
-  if (STATE.blueprintPollInterval) { clearInterval(STATE.blueprintPollInterval); STATE.blueprintPollInterval = null; }
-  STATE.blueprintAsync = false;
   if (overlay._progressInterval) { clearInterval(overlay._progressInterval); }
   if (overlay._hardDismiss) { clearTimeout(overlay._hardDismiss); overlay._hardDismiss = null; }
   if (overlay._retryTimeout) { clearTimeout(overlay._retryTimeout); }
   if (overlay._autoRecovery) { clearTimeout(overlay._autoRecovery); }
+  if (STATE.blueprintPollInterval) { clearInterval(STATE.blueprintPollInterval); STATE.blueprintPollInterval = null; }
+  STATE.blueprintAsync = false;
   if (retryEl) retryEl.style.display = 'none';
 
   // Finish the bar
@@ -5360,27 +5456,17 @@ function handleBlueprintReady(blueprint) {
 }
 
 async function renderBlueprint(bp, strategistDebrief, isReturning) {
+  // Navigate to the standalone full-page blueprint instead of injecting into the app shell
+  if (STATE.sessionId) {
+    const body = document.getElementById('blueprint-body');
+    if (body) body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div style="font-family:Outfit,sans-serif;font-size:14px;color:#86868B;letter-spacing:0.05em;">Opening your blueprint\u2026</div></div>';
+    window.location.href = '/blueprint/' + STATE.sessionId;
+    return;
+  }
+  // Fallback if no sessionId (should not happen)
   const body = document.getElementById('blueprint-body');
   if (!body) return;
-  body.innerHTML = '<div style="text-align:center;padding:60px 20px;"><div style="font-family:Outfit,sans-serif;font-size:14px;color:#86868B;letter-spacing:0.05em;">Loading your blueprint...</div></div>';
-  try {
-    const res = await fetch('/api/blueprint/render', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: STATE.sessionId })
-    });
-    if (!res.ok) throw new Error('Failed to load blueprint');
-    const html = await res.text();
-    body.innerHTML = html;
-    // Re-execute scripts from injected blueprint HTML (innerHTML skips <script> execution)
-    body.querySelectorAll('script').forEach(function(old) {
-      var s = document.createElement('script');
-      s.textContent = old.textContent;
-      old.parentNode.replaceChild(s, old);
-    });
-  } catch (e) {
-    body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#C4703F;font-family:Outfit,sans-serif;font-size:14px;">Unable to load blueprint. Please refresh the page.</div>';
-  }
+  body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#C4703F;font-family:Outfit,sans-serif;font-size:14px;">Session not found. Please refresh and try again.</div>';
 }
 
 // \u2500\u2500 ORDER BUMP UPGRADE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -8255,6 +8341,23 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
           </div>
         </div>
 
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header"><h2>Email Analytics (30 days)</h2><button class="btn btn-outline btn-sm" onclick="loadEmailAnalytics()">Refresh</button></div>
+          <div style="padding:20px">
+            <div id="email-analytics-totals" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:20px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+              <div>
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:10px">By Type</div>
+                <div id="email-analytics-by-type"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#DC2626;margin-bottom:10px">Recent Failures</div>
+                <div id="email-analytics-failed"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div style="display:flex;gap:12px;">
           <button class="btn btn-primary btn-sm" onclick="runHealthCheck()">Run Health Check</button>
           <button class="btn btn-outline btn-sm" onclick="sendDigest()">Send Daily Digest</button>
@@ -8303,6 +8406,11 @@ var getAdminHTML = /* @__PURE__ */ __name(() => `<!DOCTYPE html>
               <div id="person-quotes-section" style="margin-bottom:20px;display:none">
                 <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:10px">Key Quotes</div>
                 <div id="person-quotes-list"></div>
+              </div>
+              <!-- Email Timeline -->
+              <div id="person-email-timeline" style="margin-bottom:20px;display:none">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--gold);margin-bottom:10px">Email History</div>
+                <div id="person-email-list"></div>
               </div>
               <!-- Action Buttons -->
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
@@ -8754,6 +8862,8 @@ async function showPersonDetail(sessionId) {
   document.getElementById('person-detail-name').textContent = 'Loading...';
   document.getElementById('person-intel-grid').innerHTML = '<div style="color:var(--text2)">Loading...</div>';
   document.getElementById('person-quotes-section').style.display = 'none';
+  document.getElementById('person-email-timeline').style.display = 'none';
+  document.getElementById('person-email-list').innerHTML = '';
   document.getElementById('person-transcript').innerHTML = '';
   document.getElementById('person-msg-count').textContent = '0';
   document.getElementById('person-blueprint-link').style.display = 'none';
@@ -8766,7 +8876,7 @@ async function showPersonDetail(sessionId) {
     // Action buttons
     const bpLink = document.getElementById('person-blueprint-link');
     if (s.blueprint_generated) {
-      bpLink.href = '/blueprint?sessionId=' + sessionId;
+      bpLink.href = '/blueprint/' + sessionId;
       bpLink.style.display = 'inline-block';
     } else {
       bpLink.style.display = 'none';
@@ -8813,6 +8923,38 @@ async function showPersonDetail(sessionId) {
         <div style="font-size:13px;white-space:pre-wrap">\${esc(m.content||'')}</div>
       </div>
     \`).join('');
+    // Email timeline
+    const emailTimeline = document.getElementById('person-email-timeline');
+    const emailList = document.getElementById('person-email-list');
+    const emails = res.emails || [];
+    emailTimeline.style.display = 'block';
+    const statusColors = { sent:'#6B7280', delivered:'#059669', failed:'#DC2626', bounced:'#D97706', complained:'#7C3AED' };
+    if (emails.length) {
+      emailList.innerHTML = emails.map(e=>{
+        const color = statusColors[e.status] || '#6B7280';
+        const dot = \`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:\${color};margin-right:5px;vertical-align:middle"></span>\`;
+        const typeLabel = (e.email_type||'').replace(/_/g,' ');
+        const sentDate = e.sent_at ? new Date(e.sent_at).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+        const extras = [];
+        if (e.delivered_at) extras.push('delivered');
+        if (e.opened_at) extras.push('opened');
+        if (e.clicked_at) extras.push('clicked');
+        if (e.attempt > 1) extras.push('retry '+e.attempt);
+        return \`<div style="display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">\${esc(e.subject||typeLabel)}</div>
+            <div style="font-size:11px;color:var(--text2)">\${esc(typeLabel)}\${sentDate?' \xB7 '+sentDate:''}</div>
+            \${e.error_message?'<div style="font-size:11px;color:#DC2626;margin-top:2px">'+esc(e.error_message)+'</div>':''}
+          </div>
+          <div style="text-align:right;white-space:nowrap;flex-shrink:0">
+            <div style="font-size:12px">\${dot}\${esc(e.status||'')}</div>
+            \${extras.length?'<div style="font-size:10px;color:var(--text2);margin-top:2px">'+extras.join(' \xB7 ')+'</div>':''}
+          </div>
+        </div>\`;
+      }).join('');
+    } else {
+      emailList.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:8px 0">No emails sent yet.</div>';
+    }
   } catch(e) {
     document.getElementById('person-intel-grid').innerHTML = '<div style="color:var(--text2)">Failed to load detail: ' + e.message + '</div>';
   }
@@ -9403,8 +9545,73 @@ async function loadMonitoring() {
     } else {
       el.innerHTML = '<p style="color:var(--green);font-size:14px">\u2713 No errors in log</p>';
     }
+    // Kick off email analytics in parallel (non-blocking)
+    loadEmailAnalytics().catch(() => {});
   } catch (err) {
     toast('Failed to load monitoring: ' + err.message);
+  }
+}
+
+async function loadEmailAnalytics() {
+  try {
+    const data = await api('GET', '/api/admin/email-analytics');
+    const t = data.totals || {};
+    const totalsEl = document.getElementById('email-analytics-totals');
+    if (totalsEl) {
+      const statTiles = [
+        ['Total', t.total || 0, '#6B7280'],
+        ['Sent', t.sent || 0, '#059669'],
+        ['Delivered', t.delivered || 0, '#2563EB'],
+        ['Opened', t.opened || 0, '#7C3AED'],
+        ['Failed', t.failed || 0, '#DC2626'],
+        ['Retried', t.retried || 0, '#D97706'],
+      ];
+      totalsEl.innerHTML = statTiles.map(([label, val, color]) =>
+        \`<div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:22px;font-weight:700;color:\${color}">\${val}</div>
+          <div style="font-size:11px;color:var(--text2);text-transform:uppercase;margin-top:2px">\${label}</div>
+        </div>\`
+      ).join('');
+    }
+    const byTypeEl = document.getElementById('email-analytics-by-type');
+    if (byTypeEl) {
+      const rows = data.byType || [];
+      if (rows.length) {
+        byTypeEl.innerHTML = rows.map(r => {
+          const typeLabel = (r.email_type || 'unknown').replace(/_/g, ' ');
+          const failPct = r.count > 0 ? Math.round(r.failures / r.count * 100) : 0;
+          return \`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+            <span style="color:var(--text)">\${typeLabel}</span>
+            <span style="display:flex;gap:8px">
+              <span style="font-weight:600">\${r.count}</span>
+              \${r.failures > 0 ? '<span style="color:#DC2626;font-size:11px">'+r.failures+' fail ('+failPct+'%)</span>' : ''}
+            </span>
+          </div>\`;
+        }).join('');
+      } else {
+        byTypeEl.innerHTML = '<div style="color:var(--text2);font-size:13px">No data yet.</div>';
+      }
+    }
+    const failedEl = document.getElementById('email-analytics-failed');
+    if (failedEl) {
+      const failed = data.failed || [];
+      if (failed.length) {
+        failedEl.innerHTML = failed.slice(0, 8).map(e => {
+          const typeLabel = (e.email_type || '').replace(/_/g, ' ');
+          const sentDate = e.sent_at ? new Date(e.sent_at).toLocaleDateString('en-US', {month:'short',day:'numeric'}) : '';
+          return \`<div style="padding:7px 0;border-bottom:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600;color:var(--text)">\${esc(e.email_to||'')} \xB7 \${esc(typeLabel)}</div>
+            <div style="font-size:11px;color:#DC2626;margin-top:1px">\${esc((e.error_message||'').slice(0,80))}</div>
+            <div style="font-size:11px;color:var(--text2)">\${sentDate}\${e.attempt>1?' \xB7 '+e.attempt+' attempts':''}</div>
+          </div>\`;
+        }).join('');
+      } else {
+        failedEl.innerHTML = '<div style="color:var(--green);font-size:13px">\u2713 No failures in last 30 days</div>';
+      }
+    }
+  } catch (err) {
+    const el = document.getElementById('email-analytics-totals');
+    if (el) el.innerHTML = '<div style="color:var(--text2);font-size:13px">Failed to load email analytics.</div>';
   }
 }
 
@@ -13353,6 +13560,90 @@ async function runWeeklySnapshot(env) {
   }
 }
 __name(runWeeklySnapshot, "runWeeklySnapshot");
+async function runConditionalDigest(env) {
+  const now = /* @__PURE__ */ new Date();
+  const isWeeklyHeartbeat = now.getUTCDay() === 0;
+  const [
+    stuckRow,
+    coldRow,
+    midDropRow,
+    shallowRow,
+    errorRow,
+    failedRow,
+    recentNudgesRow,
+    lowCompletionRow
+  ] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='stuck_phase' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='cold_abandoned' AND status='active' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='mid_drop' AND status='active'").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE session_health='shallow_complete' AND last_active_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE status='failed' AND created_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as cnt FROM nudges WHERE sent_at > datetime('now', '-24 hours')").first(),
+    env.DB.prepare("SELECT COUNT(*) as total, SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as completed FROM sessions WHERE created_at > datetime('now', '-7 days')").first()
+  ]);
+  const stuck = stuckRow?.cnt || 0;
+  const cold = coldRow?.cnt || 0;
+  const midDrop = midDropRow?.cnt || 0;
+  const shallow = shallowRow?.cnt || 0;
+  const errors = errorRow?.cnt || 0;
+  const failed = failedRow?.cnt || 0;
+  const nudgesSent = recentNudgesRow?.cnt || 0;
+  const weekTotal = lowCompletionRow?.total || 0;
+  const weekCompleted = lowCompletionRow?.completed || 0;
+  const completionRate = weekTotal > 0 ? Math.round(weekCompleted / weekTotal * 100) : null;
+  const lowCompletion = completionRate !== null && completionRate < 30;
+  const issues = [];
+  if (stuck > 0) issues.push(`\u{1F534} ${stuck} session(s) stuck in early phase`);
+  if (errors > 5) issues.push(`\u{1F534} ${errors} errors in last 24h`);
+  if (failed > 0) issues.push(`\u{1F7E1} ${failed} session(s) failed today`);
+  if (shallow > 0) issues.push(`\u{1F7E1} ${shallow} shallow completion(s) today`);
+  if (cold > 3) issues.push(`\u{1F7E1} ${cold} new cold abandonments (24h)`);
+  if (midDrop > 5) issues.push(`\u{1F7E1} ${midDrop} sessions in mid-drop`);
+  if (lowCompletion) issues.push(`\u{1F7E1} Completion rate ${completionRate}% this week (target: 30%+)`);
+  const hasIssues = issues.length > 0;
+  if (!hasIssues && !isWeeklyHeartbeat) {
+    console.log("[ConditionalDigest] No issues today \u2014 skipping email");
+    return;
+  }
+  const adminUrl = "https://love.jamesguldan.com/admin/health";
+  const subject = isWeeklyHeartbeat && !hasIssues ? `[DWI] Weekly heartbeat \u2014 all clear` : `[DWI] ${issues.length} issue${issues.length !== 1 ? "s" : ""} need attention`;
+  const issueHtml = hasIssues ? issues.map((i) => `<li>${i}</li>`).join("") : "<li>No issues \u2014 weekly check-in</li>";
+  const statsHtml = `
+    <p><strong>7-day stats:</strong> ${weekTotal} sessions started, ${weekCompleted} completed (${completionRate ?? "\u2014"}% rate)</p>
+    <p><strong>Nudges sent (24h):</strong> ${nudgesSent}</p>
+    <p><strong>Errors (24h):</strong> ${errors}</p>
+  `;
+  await sendTrackedEmail(env, {
+    from: "DWI Admin <noreply@jamesguldan.com>",
+    to: "james@jamesguldan.com",
+    subject,
+    html: `<h2>${subject}</h2><ul>${issueHtml}</ul>${statsHtml}<p><a href="${adminUrl}">Open health dashboard \u2192</a></p>`,
+    emailType: "alert",
+    userId: null,
+    sessionId: null
+  });
+  console.log("[ConditionalDigest] sent:", subject);
+}
+__name(runConditionalDigest, "runConditionalDigest");
+async function runHourlySnapshot(env) {
+  try {
+    const counts = await env.DB.prepare(
+      "SELECT session_health, COUNT(*) as cnt FROM sessions WHERE session_health IS NOT NULL GROUP BY session_health"
+    ).all();
+    const errorCount = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM error_log WHERE created_at > datetime('now', '-1 hour')"
+    ).first();
+    const payload = { counts: counts.results || [], errors_last_hour: errorCount?.cnt || 0, ts: (/* @__PURE__ */ new Date()).toISOString() };
+    await env.DB.prepare(
+      "INSERT INTO health_checks (check_type, status, details, created_at) VALUES ('hourly_snapshot', 'ok', ?, datetime('now'))"
+    ).bind(JSON.stringify(payload)).run();
+    console.log("[runHourlySnapshot] snapshot written:", JSON.stringify(payload));
+  } catch (e) {
+    console.error("[runHourlySnapshot] error:", e.message);
+  }
+}
+__name(runHourlySnapshot, "runHourlySnapshot");
 async function autoGenerateSalesBrief(env, sessionId, userId, leadIntel, session) {
   var buyingTemp = (leadIntel?.buyingTemperature || "").toLowerCase();
   if (buyingTemp !== "warm" && buyingTemp !== "hot") return;
@@ -14006,25 +14297,14 @@ async function handleRequestMagic(request, env) {
     const origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     const magicUrl = `${origin}/magic?token=${token}`;
     if (env.RESEND_API_KEY) {
-      let emailSent = false;
-      try {
-        const emailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-            to: [email],
-            subject: "Your Deep Work session is ready",
-            html: getMagicLinkEmail(magicUrl, email)
-          })
-        });
-        emailSent = emailRes.ok;
-      } catch (_) {
-      }
-      if (!emailSent) {
+      const emailResult = await sendTrackedEmail(env, {
+        to: email,
+        subject: "Your Deep Work session is ready",
+        html: getMagicLinkEmail(magicUrl, email),
+        emailType: "magic_link",
+        userId: user?.id || null
+      });
+      if (!emailResult.success) {
         await logError(env, { endpoint: "/api/auth/request-magic", method: "POST", statusCode: 503, errorType: "resend_failure", errorMessage: "Failed to deliver magic link email to " + email }).catch(() => {
         });
         return json({ error: "We could not send the login email right now. Please try again in a moment, or contact james@jamesguldan.com for help." }, 503);
@@ -14263,16 +14543,13 @@ async function handlePaymentSuccess(request, env, url) {
     const tierLabel = tier === "site" ? "Site In Sixty ($130)" : "Blueprint Session ($67)";
     const startUrl = `${origin}/app?session=${sessionId}&tier=${tier}&access=${accessToken}`;
     if (customerEmail) {
-      fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-          to: [customerEmail],
-          subject: "You're in \u2014 your Deep Work session is ready",
-          html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">You're in.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Payment confirmed. Your Deep Work Interview is ready. Eight conversations. One complete brand blueprint built around who you actually are.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:36px 40px 40px;"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border:1px solid #f0f0f0;border-radius:12px;overflow:hidden;"><tr><td style="padding:20px 24px;"><p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">What to expect</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.7;">About 60-90 minutes total. Pause and come back any time - your session saves automatically.</p></td></tr></table><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${startUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Begin My Session &rarr;</a></td></tr></table><p style="margin:0 0 24px;font-size:13px;color:#86868b;line-height:1.7;">This link is your direct access. Bookmark it or save this email.</p><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Questions? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`
-        })
-      }).catch(() => {
+      await sendTrackedEmail(env, {
+        to: customerEmail,
+        subject: "You're in \u2014 your Deep Work session is ready",
+        html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">You're in.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Payment confirmed. Your Deep Work Interview is ready. Eight conversations. One complete brand blueprint built around who you actually are.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:36px 40px 40px;"><table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;border:1px solid #f0f0f0;border-radius:12px;overflow:hidden;"><tr><td style="padding:20px 24px;"><p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">What to expect</p><p style="margin:0;font-size:14px;color:#1d1d1f;line-height:1.7;">About 60-90 minutes total. Pause and come back any time - your session saves automatically.</p></td></tr></table><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${startUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Begin My Session &rarr;</a></td></tr></table><p style="margin:0 0 24px;font-size:13px;color:#86868b;line-height:1.7;">This link is your direct access. Bookmark it or save this email.</p><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Questions? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Growth LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`,
+        emailType: "payment_success",
+        userId: null,
+        sessionId
       });
     }
   }
@@ -14364,9 +14641,11 @@ async function handleSessionStart(request, env, ctx) {
   ];
   const firstMessage = await callClaude(env, systemWithContext, openingMessages, false);
   const cleanFirst = stripMetadata(firstMessage);
+  const CONSENT_NOTICE = "Quick note before we begin: this session is conducted by an AI trained on James\u2019s methodology. Everything you share is used solely to build your brand blueprint \u2014 nothing is sold or shared. By continuing you agree to the Privacy Policy and Terms of Service at love.jamesguldan.com/privacy and love.jamesguldan.com/terms.\n\n";
+  const firstMessageWithConsent = CONSENT_NOTICE + cleanFirst;
   session.messages = [
     { role: "user", content: "Start the interview." },
-    { role: "assistant", content: firstMessage }
+    { role: "assistant", content: firstMessageWithConsent }
   ];
   await env.SESSIONS.put(session.id, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
   await initSessionInD1(env, session);
@@ -14403,7 +14682,7 @@ async function handleSessionStart(request, env, ctx) {
     });
     if (ctx && ctx.waitUntil) ctx.waitUntil(bgWork);
   }
-  return json({ ok: true, sessionId: session.id, firstMessage: cleanFirst });
+  return json({ ok: true, sessionId: session.id, firstMessage: firstMessageWithConsent });
 }
 __name(handleSessionStart, "handleSessionStart");
 async function handleSessionClaim(request, env) {
@@ -14514,8 +14793,8 @@ async function handleGetSession(request, env, path) {
     tier: session.tier,
     phase: session.phase,
     blueprintGenerated: session.blueprintGenerated,
-    blueprint: session.blueprintGenerated ? (session.blueprint || null) : undefined,
-    strategistDebrief: session.blueprintGenerated ? (session.strategistDebrief || null) : undefined,
+    blueprint: session.blueprintGenerated ? session.blueprint || null : void 0,
+    strategistDebrief: session.blueprintGenerated ? session.strategistDebrief || null : void 0,
     siteGenerated: session.siteGenerated,
     siteUrl: session.siteUrl || null,
     siteSlug: session.siteSlug || null
@@ -14914,7 +15193,7 @@ async function handleChat(request, env, ctx) {
       }
       const apiStart = Date.now();
       const currentPhaseNum = session.phase || 1;
-      const isBlueprintPhase = currentPhaseNum >= 6;
+      const isBlueprintPhase2 = currentPhaseNum >= 6;
       const maxTokens = getMaxTokensForPhase(currentPhaseNum);
       const recentMessages = smartTrimMessages(session.messages, currentPhaseNum);
       const RETRYABLE_STATUSES = /* @__PURE__ */ new Set([429, 500, 502, 503, 529]);
@@ -14922,7 +15201,7 @@ async function handleChat(request, env, ctx) {
       let res;
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         const chatAbort = new AbortController();
-        const chatTimeout = setTimeout(() => chatAbort.abort(), isBlueprintPhase ? 3e5 : 9e4);
+        const chatTimeout = setTimeout(() => chatAbort.abort(), isBlueprintPhase2 ? 3e5 : 9e4);
         try {
           res = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",
@@ -15083,7 +15362,7 @@ Use this to skip surface-level questions. Go deeper faster.` });
       }
       const currentPhase = session.phase || 1;
       const phaseMessages = session.messages.filter((m) => m.role === "user").length;
-      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || (metadata.phase >= 7 && metadata.phaseProgress >= 100));
+      const readyForBlueprint = currentPhase >= 6 && phaseMessages >= 10 && (metadata.sessionComplete === true || metadata.phase >= 7 && metadata.phaseProgress >= 100);
       if (blueprintMatch && readyForBlueprint) {
         try {
           blueprint = JSON.parse(blueprintMatch[1]);
@@ -15209,39 +15488,29 @@ Use this to skip surface-level questions. Go deeper faster.` });
         session.phase = metadata.phase;
       if (blueprint) {
         await sendEvent({ type: "blueprint_ready", blueprint, apolloData: session.apolloData || null });
-        try {
-          await sendEvent({ type: "debrief_status", message: "Your strategist is writing you a personal note..." });
-          const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
-          if (debrief) {
-            session.strategistDebrief = debrief;
-            await sendEvent({ type: "debrief", debrief });
-          }
-        } catch (debriefErr) {
-          console.error("[Debrief] Generation failed:", debriefErr.message);
-        }
-      }
-      // Fallback: if the AI attempted a blueprint (started outputting ```json) but it couldn't be
-      // parsed (e.g. max_tokens truncation), trigger async generation rather than showing an error.
-      const blueprintAttempted = fullContent.includes("```json");
-      if (isBlueprintPhase && !session.blueprintGenerated && !blueprint && blueprintAttempted) {
-        console.log("[Chat] Blueprint JSON incomplete (truncated?) — queuing async generation for session=" + sessionId);
-        await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
         if (ctx) {
-          const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
           ctx.waitUntil(
-            fetch(appOrigin + "/api/internal/generate-blueprint", {
-              method: "POST",
-              headers: { "X-Internal-Token": INTERNAL_BP_TOKEN, "Content-Type": "application/json" },
-              body: JSON.stringify({ sessionId })
-            }).catch((e) => console.error("[AsyncBP] Fallback self-fetch failed:", e.message))
+            generateStrategistDebrief(env, session, blueprint, sessionId).then(async (debrief) => {
+              if (!debrief) return;
+              try {
+                const kvRaw = await env.SESSIONS.get(sessionId);
+                if (kvRaw) {
+                  const kvSess = JSON.parse(kvRaw);
+                  kvSess.strategistDebrief = debrief;
+                  await env.SESSIONS.put(sessionId, JSON.stringify(kvSess), { expirationTtl: 60 * 60 * 24 * 180 });
+                }
+              } catch (saveErr) {
+                console.error("[Debrief] KV save failed:", saveErr.message);
+              }
+            }).catch((e) => console.error("[Debrief] Background generation failed:", e.message))
           );
+        } else {
+          try {
+            const debrief = await generateStrategistDebrief(env, session, blueprint, sessionId);
+            if (debrief) session.strategistDebrief = debrief;
+          } catch (_) {
+          }
         }
-        try {
-          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
-          await sendEvent({ type: "done" });
-          await writer.close();
-        } catch (_) {}
-        return;
       }
       await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
       await updateSessionPhaseInD1(env, sessionId, session.phase, session.messages.length, session.blueprintGenerated);
@@ -15269,10 +15538,11 @@ Use this to skip surface-level questions. Go deeper faster.` });
       console.error("Stream error:", err);
       const isBpAbort = (err.name === "AbortError" || (err.message || "").toLowerCase().includes("abort")) && isBlueprintPhase && !session.blueprintGenerated;
       if (isBpAbort) {
-        console.log("[Chat] Blueprint stream timed out — queuing async generation for session=" + sessionId);
+        console.log("[Chat] Blueprint stream timed out \u2014 queuing async generation for session=" + sessionId);
         try {
           await env.SESSIONS.put(sessionId, JSON.stringify(session), { expirationTtl: 60 * 60 * 24 * 180 });
-        } catch (_) {}
+        } catch (_) {
+        }
         if (ctx) {
           const appOrigin = env.APP_ORIGIN || "https://love.jamesguldan.com";
           ctx.waitUntil(
@@ -15284,10 +15554,11 @@ Use this to skip surface-level questions. Go deeper faster.` });
           );
         }
         try {
-          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated — this takes a few minutes for detailed conversations. The page will update automatically." });
+          await sendEvent({ type: "blueprint_generating", async: true, message: "Your blueprint is being generated \u2014 this takes a few minutes for detailed conversations. The page will update automatically." });
           await sendEvent({ type: "done" });
           await writer.close();
-        } catch (_) {}
+        } catch (_) {
+        }
         return;
       }
       try {
@@ -15549,7 +15820,7 @@ METADATA:{"phase":7,"phaseProgress":100,"sessionComplete":false,"key":"Three-tie
           },
           body: JSON.stringify({
             model: MODEL_OPUS,
-            max_tokens: 32768,
+            max_tokens: 16384,
             stream: true,
             system: (() => {
               const sysMsgs = [{ type: "text", text: session.systemPrompt, cache_control: { type: "ephemeral" } }];
@@ -15673,17 +15944,14 @@ Use this to skip surface-level questions. Go deeper faster.` });
             }
             const bpFallbackUrl = (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/app?session=" + sessionId;
             const bpViewUrl = blueprintMagicUrl || bpFallbackUrl;
-            fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-                to: [session.email],
-                reply_to: "james@jamesguldan.com",
-                subject: `${emailGreeting} Deep Work Interview results are ready`,
-                html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Interview</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p><div style="text-align:center;"><a href="${bpViewUrl}" style="display:inline-block;background:#C4703F;color:#ffffff;font-size:15px;font-weight:600;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:0.01em;">View My Results &rarr;</a></div></td></tr><tr><td style="background:#262626;border-radius:0 0 20px 20px;padding:28px 40px;"><p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.4);">Button not working? Paste this into your browser:</p><p style="margin:0;font-size:11px;"><a href="${bpViewUrl}" style="color:#C4703F;word-break:break-all;">${bpViewUrl}</a></p></td></tr></table></td></tr></table></body></html>`
-              })
-            }).catch(() => {
+            await sendTrackedEmail(env, {
+              to: session.email,
+              replyTo: "james@jamesguldan.com",
+              subject: `${emailGreeting} Deep Work Interview results are ready`,
+              html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter','Helvetica Neue',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:44px 40px 40px;"><p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#c4703f;">Deep Work Interview</p><h1 style="margin:0 0 20px;font-size:30px;font-weight:700;color:#ffffff;line-height:1.2;letter-spacing:-0.02em;">${firstName ? firstName + ", your" : "Your"} brand clarity<br>is ready.</h1><p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.6);line-height:1.8;">You just completed something most people never do. You sat down, answered the hard questions, and built a brand strategy from scratch. That takes real commitment.</p><div style="text-align:center;"><a href="${bpViewUrl}" style="display:inline-block;background:#C4703F;color:#ffffff;font-size:15px;font-weight:600;padding:16px 40px;border-radius:50px;text-decoration:none;letter-spacing:0.01em;">View My Results &rarr;</a></div></td></tr><tr><td style="background:#262626;border-radius:0 0 20px 20px;padding:28px 40px;"><p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.4);">Button not working? Paste this into your browser:</p><p style="margin:0;font-size:11px;"><a href="${bpViewUrl}" style="color:#C4703F;word-break:break-all;">${bpViewUrl}</a></p></td></tr></table></td></tr></table></body></html>`,
+              emailType: "blueprint_ready",
+              userId: session.userId || null,
+              sessionId
             });
           }
           const li = blueprint?.leadIntel;
@@ -16273,17 +16541,13 @@ async function handleDeployPickerSite(request, env) {
   } catch (_) {
   }
   if (session.email && env.RESEND_API_KEY) {
-    const brandName = bp.part1?.brandNames?.[0] || "Your Brand";
-    fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-        to: [session.email],
-        subject: "Your website is live",
-        html: `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:40px 20px;background:#fff;"><h2>Your site is live.</h2><p>Visit it here: <a href="${liveUrl}">${liveUrl}</a></p></body></html>`
-      })
-    }).catch(() => {
+    await sendTrackedEmail(env, {
+      to: session.email,
+      subject: "Your website is live",
+      html: `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:40px 20px;background:#fff;"><h2>Your site is live.</h2><p>Visit it here: <a href="${liveUrl}">${liveUrl}</a></p></body></html>`,
+      emailType: "site_deployed",
+      userId: session.userId || null,
+      sessionId
     });
   }
   return json({ ok: true, url: liveUrl, slug });
@@ -16641,16 +16905,13 @@ async function handleDeploy(request, env) {
     }
     await logEvent(env, sessionId, "site_deployed", { url: liveUrl, slug, seoOptimized: true });
     if (session.email && env.RESEND_API_KEY) {
-      fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-          to: [session.email],
-          subject: "Your website is live",
-          html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">Your site is live.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Your brand strategy is now a real website. Built from your blueprint, deployed, and ready to share with the world.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:36px 40px 0;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:12px;margin-bottom:28px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Your site URL</p><p style="margin:0;font-size:14px;"><a href="${liveUrl}" style="color:#c4703f;text-decoration:none;word-break:break-all;">${liveUrl}</a></p></td></tr></table></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:0 40px 40px;"><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${liveUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Visit My Site &rarr;</a></td></tr></table><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Want a custom domain? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Consulting LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`
-        })
-      }).catch(() => {
+      await sendTrackedEmail(env, {
+        to: session.email,
+        subject: "Your website is live",
+        html: `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:40px 20px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;"><tr><td style="padding-bottom:28px;"><p style="margin:0;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#1d1d1f;">JAMES GULDAN</p></td></tr><tr><td style="background:#1d1d1f;border-radius:20px 20px 0 0;padding:40px 40px 36px;"><p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#c4703f;">Deep Work</p><h1 style="margin:0 0 16px;font-size:28px;font-weight:700;color:#ffffff;line-height:1.2;">Your site is live.</h1><p style="margin:0;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.75;">Your brand strategy is now a real website. Built from your blueprint, deployed, and ready to share with the world.</p></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;padding:36px 40px 0;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:12px;margin-bottom:28px;"><tr><td style="padding:16px 20px;"><p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868b;">Your site URL</p><p style="margin:0;font-size:14px;"><a href="${liveUrl}" style="color:#c4703f;text-decoration:none;word-break:break-all;">${liveUrl}</a></p></td></tr></table></td></tr><tr><td style="background:#ffffff;border-left:1px solid #f0f0f0;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-radius:0 0 20px 20px;padding:0 40px 40px;"><table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="border-radius:50px;background:#1d1d1f;"><a href="${liveUrl}" style="display:inline-block;background:#1d1d1f;color:#ffffff;text-decoration:none;padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;letter-spacing:0.01em;">Visit My Site &rarr;</a></td></tr></table><hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;"><p style="margin:0;font-size:13px;color:#86868b;line-height:1.6;">Want a custom domain? Reply here or write to <a href="mailto:james@jamesguldan.com" style="color:#c4703f;text-decoration:none;">james@jamesguldan.com</a></p></td></tr><tr><td style="padding-top:24px;text-align:center;"><p style="margin:0;font-size:12px;color:#c0c0c0;">&copy; ${(/* @__PURE__ */ new Date()).getFullYear()} Align Growth LLC &middot; <a href="https://love.jamesguldan.com/legal/privacy" style="color:#c0c0c0;text-decoration:none;">Privacy Policy</a> &middot; <a href="mailto:james@jamesguldan.com" style="color:#c0c0c0;text-decoration:none;">Support</a></p></td></tr></table></td></tr></table></body></html>`,
+        emailType: "site_deployed",
+        userId: session.userId || null,
+        sessionId
       });
     }
     return json({ ok: true, url: liveUrl, slug, seoOptimized: true });
@@ -16990,26 +17251,22 @@ async function handleWebhook(request, env) {
 </div>
 <div style="text-align:center;margin-top:32px;font-size:12px;color:#C0C0C0;">Questions? Reply to this email or reach me at james@jamesguldan.com</div>
 </div></body></html>`;
-            await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-                to: [email],
-                reply_to: "james@jamesguldan.com",
-                subject: "You are in \u2014 your Deep Work session is ready",
-                html: emailHtml
-              })
+            await sendTrackedEmail(env, {
+              to: email,
+              from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+              replyTo: "james@jamesguldan.com",
+              subject: "You are in \u2014 your Deep Work session is ready",
+              html: emailHtml,
+              emailType: "payment_success",
+              userId: user.id
             });
-            await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: "Deep Work Notifications <noreply@jamesguldan.com>",
-                to: ["james@jamesguldan.com"],
-                subject: "New purchase: " + (s.customer_details?.name || email) + " ($" + (amountCents / 100).toFixed(2) + ")",
-                html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (s.customer_details?.name || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents / 100).toFixed(2) + "</p><p><strong>Time:</strong> " + (/* @__PURE__ */ new Date()).toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>"
-              })
+            await sendTrackedEmail(env, {
+              to: "james@jamesguldan.com",
+              from: "Deep Work Notifications <noreply@jamesguldan.com>",
+              subject: "New purchase: " + (s.customer_details?.name || email) + " ($" + (amountCents / 100).toFixed(2) + ")",
+              html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (s.customer_details?.name || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents / 100).toFixed(2) + "</p><p><strong>Time:</strong> " + (/* @__PURE__ */ new Date()).toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>",
+              emailType: "admin_notify",
+              userId: user.id
             }).catch(function(e) {
               console.error("[Webhook] Admin notify failed:", e.message);
             });
@@ -17115,26 +17372,22 @@ async function handleWebhook(request, env) {
 </div>
 <div style="text-align:center;margin-top:32px;font-size:12px;color:#C0C0C0;">Questions? Reply to this email or reach me at james@jamesguldan.com</div>
 </div></body></html>`;
-            await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
-                to: [email],
-                reply_to: "james@jamesguldan.com",
-                subject: "You are in \u2014 your Deep Work session is ready",
-                html: emailHtml
-              })
+            await sendTrackedEmail(env, {
+              to: email,
+              from: "James Guldan | Deep Work <noreply@jamesguldan.com>",
+              replyTo: "james@jamesguldan.com",
+              subject: "You are in \u2014 your Deep Work session is ready",
+              html: emailHtml,
+              emailType: "payment_success",
+              userId: user.id
             });
-            await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: "Deep Work Notifications <noreply@jamesguldan.com>",
-                to: ["james@jamesguldan.com"],
-                subject: "New purchase: " + (customerName || email) + " ($" + (amountCents / 100).toFixed(2) + ")",
-                html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (customerName || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents / 100).toFixed(2) + "</p><p><strong>Time:</strong> " + (/* @__PURE__ */ new Date()).toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>"
-              })
+            await sendTrackedEmail(env, {
+              to: "james@jamesguldan.com",
+              from: "Deep Work Notifications <noreply@jamesguldan.com>",
+              subject: "New purchase: " + (customerName || email) + " ($" + (amountCents / 100).toFixed(2) + ")",
+              html: "<div style='font-family:sans-serif;padding:20px;'><h2 style='margin:0 0 12px;'>New Deep Work Purchase</h2><p><strong>Customer:</strong> " + (customerName || "Unknown") + "</p><p><strong>Email:</strong> " + email + "</p><p><strong>Tier:</strong> " + tierLabel + "</p><p><strong>Amount:</strong> $" + (amountCents / 100).toFixed(2) + "</p><p><strong>Time:</strong> " + (/* @__PURE__ */ new Date()).toISOString() + "</p><p style='margin-top:16px;'><a href='https://love.jamesguldan.com/admin' style='background:#1D1D1F;color:#fff;padding:10px 24px;border-radius:50px;text-decoration:none;font-weight:600;'>View Admin Dashboard</a></p></div>",
+              emailType: "admin_notify",
+              userId: user.id
             }).catch(function(e) {
               console.error("[Webhook:PI] Admin notify failed:", e.message);
             });
@@ -17182,6 +17435,58 @@ async function handleWebhook(request, env) {
   return json({ received: true });
 }
 __name(handleWebhook, "handleWebhook");
+async function _verifyResendSignature(secret, headers, rawBody) {
+  const svixId = headers.get("svix-id");
+  const svixTimestamp = headers.get("svix-timestamp");
+  const svixSignature = headers.get("svix-signature");
+  if (!svixId || !svixTimestamp || !svixSignature) return false;
+  const now = Math.floor(Date.now() / 1e3);
+  const ts = parseInt(svixTimestamp, 10);
+  if (isNaN(ts) || Math.abs(now - ts) > 300) return false;
+  const signedContent = `${svixId}.${svixTimestamp}.${rawBody}`;
+  const secretBase64 = secret.replace(/^whsec_/, "");
+  const secretBytes = Uint8Array.from(atob(secretBase64), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey("raw", secretBytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sigBytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedContent));
+  const computed = btoa(String.fromCharCode(...new Uint8Array(sigBytes)));
+  const given = svixSignature.split(" ").filter((s) => s.startsWith("v1,")).map((s) => s.slice(3));
+  return given.some((s) => s === computed);
+}
+__name(_verifyResendSignature, "_verifyResendSignature");
+async function handleResendWebhook(request, env) {
+  const rawBody = await request.text();
+  if (env.RESEND_WEBHOOK_SECRET) {
+    const valid = await _verifyResendSignature(env.RESEND_WEBHOOK_SECRET, request.headers, rawBody).catch(() => false);
+    if (!valid) return json({ error: "Invalid signature" }, 400);
+  }
+  let event;
+  try {
+    event = JSON.parse(rawBody);
+  } catch (_e) {
+    return json({ error: "Invalid JSON" }, 400);
+  }
+  const { type, data } = event;
+  const emailId = data?.email_id;
+  if (!emailId) return json({ ok: true });
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  try {
+    if (type === "email.delivered") {
+      await env.DB.prepare("UPDATE email_log SET status='delivered', delivered_at=? WHERE resend_id=?").bind(now, emailId).run();
+    } else if (type === "email.opened") {
+      await env.DB.prepare("UPDATE email_log SET opened_at=COALESCE(opened_at,?) WHERE resend_id=?").bind(now, emailId).run();
+    } else if (type === "email.clicked") {
+      await env.DB.prepare("UPDATE email_log SET clicked_at=COALESCE(clicked_at,?) WHERE resend_id=?").bind(now, emailId).run();
+    } else if (type === "email.bounced") {
+      await env.DB.prepare("UPDATE email_log SET status='bounced', bounced_at=?, bounce_type=? WHERE resend_id=?").bind(now, data?.bounce?.type || null, emailId).run();
+    } else if (type === "email.complained") {
+      await env.DB.prepare("UPDATE email_log SET status='complained' WHERE resend_id=?").bind(emailId).run();
+    }
+  } catch (err) {
+    console.error("[ResendWebhook] DB update failed:", err.message);
+  }
+  return json({ ok: true });
+}
+__name(handleResendWebhook, "handleResendWebhook");
 function escHtml(str) {
   if (!str)
     return "";
@@ -18300,7 +18605,7 @@ function renderChapter2(bp) {
   var quotesHTML = quotes.length ? quotes.map(function(q) {
     return '<div class="bp-quote-item"><div class="bp-quote-mark">\u201C</div><div class="bp-quote-text">' + escHtml(q.quote) + '</div><div class="bp-quote-descriptor">' + escHtml(q.descriptor) + "</div></div>";
   }).join("") : "";
-  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage || categoryOfOne || beforePositioning || afterPositioning || whyItWorks || marketViability ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (categoryOfOne ? '<div class="bp-category-one">' + escHtml(categoryOfOne) + '</div>' : '') + (beforePositioning && afterPositioning ? '<div class="bp-positioning-shift"><div class="bp-positioning-before"><div class="bp-positioning-label">Before</div><div class="bp-positioning-text">' + escHtml(beforePositioning) + '</div></div><div class="bp-positioning-arrow">\u2192</div><div class="bp-positioning-after"><div class="bp-positioning-label">After</div><div class="bp-positioning-text">' + escHtml(afterPositioning) + '</div></div></div>' : '') + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + (whyItWorks ? '<div class="bp-why-it-works"><div class="bp-landscape-subhead">Why This Works</div><p>' + escHtml(whyItWorks) + '</p></div>' : '') + (marketViability ? '<div class="bp-market-viability"><div class="bp-landscape-subhead">Market Viability</div><p>' + escHtml(marketViability) + '</p></div>' : '') + "</div></section>" : "") + "</div>";
+  return '<div id="chapter2" data-chapter="2"><div class="chapter-divider"><span class="chapter-divider-label">Chapter 2: The Diagnosis</span></div><section class="bp-section"><div class="bp-inner bp-center"><div class="bp-score-ring-wrap"><div class="bp-score-ring"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="' + r + '" fill="none" stroke="#F0F0F0" stroke-width="8"/><circle class="bp-score-progress" cx="100" cy="100" r="' + r + '" fill="none" stroke="#D97706" stroke-width="8" stroke-linecap="round" data-score="' + Number(score) + '" style="stroke-dasharray:' + circumference.toFixed(2) + ";stroke-dashoffset:" + circumference.toFixed(2) + '"/></svg><div class="bp-score-number"><div class="bp-score-num">' + Number(score) + '</div><div class="bp-score-grade">' + escHtml(grade) + "</div></div></div></div>" + (contextLine ? '<div class="bp-context-line">' + escHtml(contextLine) + "</div>" : "") + (categoryHTML ? '<div class="bp-score-grid">' + categoryHTML + "</div>" : "") + (reframeLine ? '<div class="bp-reframe">' + escHtml(reframeLine) + "</div>" : "") + "</div></section>" + (competitorHTML || quotesHTML || advantage || categoryOfOne || beforePositioning || afterPositioning || whyItWorks || marketViability ? '<section class="bp-section" style="padding-top: 0;"><div class="bp-inner"><div class="eyebrow" style="margin-bottom:24px;">Market Landscape</div>' + (categoryOfOne ? '<div class="bp-category-one">' + escHtml(categoryOfOne) + "</div>" : "") + (beforePositioning && afterPositioning ? '<div class="bp-positioning-shift"><div class="bp-positioning-before"><div class="bp-positioning-label">Before</div><div class="bp-positioning-text">' + escHtml(beforePositioning) + '</div></div><div class="bp-positioning-arrow">\u2192</div><div class="bp-positioning-after"><div class="bp-positioning-label">After</div><div class="bp-positioning-text">' + escHtml(afterPositioning) + "</div></div></div>" : "") + (competitorHTML ? "<div>" + competitorHTML + "</div>" : "") + (quotesHTML ? '<div class="bp-market-quotes">' + quotesHTML + "</div>" : "") + (advantage ? '<div class="bp-advantage-hero">' + escHtml(advantage) + "</div>" : "") + (whyItWorks ? '<div class="bp-why-it-works"><div class="bp-landscape-subhead">Why This Works</div><p>' + escHtml(whyItWorks) + "</p></div>" : "") + (marketViability ? '<div class="bp-market-viability"><div class="bp-landscape-subhead">Market Viability</div><p>' + escHtml(marketViability) + "</p></div>" : "") + "</div></section>" : "") + "</div>";
 }
 __name(renderChapter2, "renderChapter2");
 function renderChapter3(bp) {
@@ -18492,6 +18797,17 @@ function renderBlueprintResults(bp, userName, apolloData, messageCount) {
   }).join("") + '</div><div class="bp-page">' + renderChapter1(bp, firstName, messageCount) + '<div style="text-align:center; padding: 8px 0 16px; font-size: 12px; color: #86868B; font-family: Inter, sans-serif; letter-spacing: 0.01em;">This blueprint was crafted by AI from your interview. Every insight is drawn from what you shared.</div>' + renderChapter2(bp) + renderChapter3(bp) + renderNicheSection(bp) + renderOfferSuite(bp) + renderHeadlines(bp) + renderWebsiteBlueprint(bp) + renderChapter4(bp, sessionId, firstName) + "</div><script>window.__blueprintData=" + bpDataJson + ";<\/script><script>" + getBlueprintJS(sessionId, firstName) + "<\/script></body></html>";
 }
 __name(renderBlueprintResults, "renderBlueprintResults");
+function computeUserTier(score) {
+  if (score === null || score === void 0) return null;
+  const s = Number(score);
+  if (isNaN(s)) return null;
+  if (s >= 23) return { grade: "A+", tier_title: "Didn't Flinch Once" };
+  if (s >= 20) return { grade: "A", tier_title: "Sat With The Fire" };
+  if (s >= 17) return { grade: "B+", tier_title: "Named The Pattern" };
+  if (s >= 14) return { grade: "B", tier_title: "Told On Yourself" };
+  return { grade: "C", tier_title: "Took The First Swing" };
+}
+__name(computeUserTier, "computeUserTier");
 function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) {
   const firstName = (userName || "Friend").split(" ")[0];
   if (!bp.v3) {
@@ -18502,13 +18818,12 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
     const p7 = bp.part7 || {};
     const deb = bp.debrief || {};
     const ps = p7.positioningStatements || {};
-    // New-format field references — fall back to these when old-format parts are empty
     const il = bp.idealClient || {};
-    const bf = bp.brandFoundation || {};
-    const ml = bp.marketLandscape || {};
-    const pl = bp.personalLetter || {};
+    const bf2 = bp.brandFoundation || {};
+    const ml2 = bp.marketLandscape || {};
+    const pl2 = bp.personalLetter || {};
     bp.v3 = {
-      positioningStatement: ps.website || ps.social || (Array.isArray(p1.taglines) && p1.taglines[0]) || p1.coreBrandPromise || bf.positioningStatement || ml.afterPositioning || "",
+      positioningStatement: ps.website || ps.social || Array.isArray(p1.taglines) && p1.taglines[0] || p1.coreBrandPromise || bf2.positioningStatement || ml2.afterPositioning || "",
       clientStory: {
         headline: p2.title || (p2.name ? "Meet " + p2.name : "") || (il.portrait ? il.portrait.split(".")[0] : ""),
         body: p2.avatarStory || p2.lifeSituation || [il.fears, il.wants].filter(Boolean).join("\n\n") || "",
@@ -18517,18 +18832,23 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
       },
       realProblem: {
         headline: p3.title || "The Real Problem",
-        body: p3.nicheStatement || [ml.whyItWorks, il.triedSolutions].filter(Boolean).join("\n\n") || "",
-        insight: p3.uniqueMechanism || p3.competitorGap || ml.competitiveAdvantage || ml.categoryOfOne || "",
-        pullquote: ml.categoryOfOne || ""
+        body: p3.nicheStatement || [ml2.whyItWorks, il.triedSolutions].filter(Boolean).join("\n\n") || "",
+        insight: p3.uniqueMechanism || p3.competitorGap || ml2.competitiveAdvantage || ml2.categoryOfOne || "",
+        pullquote: ml2.categoryOfOne || ""
       },
       vision: {
         headline: deb.paragraph4_turn ? "The Turn" : "What Alignment Actually Feels Like",
-        body: deb.paragraph4_turn || [ml.categoryOfOne, bf.positioningStatement].filter(Boolean).join("\n\n") || "",
-        insight: deb.paragraph5_invitation || ml.afterPositioning || ""
+        body: deb.paragraph4_turn || [ml2.categoryOfOne, bf2.positioningStatement].filter(Boolean).join("\n\n") || "",
+        insight: deb.paragraph5_invitation || ml2.afterPositioning || ""
       },
       mirror_observation: deb.paragraph2_mirror || il.connectionStatement || "",
-      arrogant_truth: deb.paragraph3_quote || bp.openingHook || "",
-      futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : (pl.proseBody || ""),
+      mirror_connection: deb.paragraph4_turn || il.connectionStatement || "",
+      arrogant_truth: deb.paragraph3_quote || "",
+      mission_statement: bf2.missionStatement || "",
+      pricing_current: "",
+      pricing_gap_belief: "",
+      never_said_publicly: "",
+      futureSelfLetter: deb.paragraph1_validation ? deb.paragraph1_validation + "\n\n" + (deb.paragraph2_mirror || "") : pl2.proseBody || "",
       loveLetter: ""
     };
     if (!bp.openingHook && Array.isArray(p5.heroHeadlines) && p5.heroHeadlines[0]) {
@@ -18540,255 +18860,1325 @@ function renderBlueprintV3(bp, userName, sessionId, sessionMeta, downloadToken) 
       });
     }
   }
+  const _isGeneric = (s) => !s || /^(Transform Your Business|Your unique positioning|My Brand|Core Program|Your Transformation)/i.test(s);
+  if (bp.v3) {
+    const _v = bp.v3;
+    if (!_v.positioningStatement) {
+      const _p7f = bp.part7 || {};
+      const _psf = _p7f.positioningStatements || {};
+      const _bff = bp.brandFoundation || {};
+      const _cands = [_bff.positioningStatement, _psf.website, _psf.social, bp.openingHook].filter((s) => s && !_isGeneric(s));
+      _v.positioningStatement = _cands[0] || _v.arrogant_truth || "";
+    }
+    if (!bp.openingHook) {
+      const _p5h = bp.part5 && Array.isArray(bp.part5.heroHeadlines) ? bp.part5.heroHeadlines[0] : null;
+      if (_p5h && !_isGeneric(_p5h)) bp.openingHook = _p5h;
+    }
+    if (!bp.firstThreeMoves && bp.firstMoves) {
+      bp.firstThreeMoves = (bp.firstMoves || []).slice(0, 3).map(function(m) {
+        return { move: m.title || "", detail: m.exactAction || "", description: m.exactAction || "" };
+      });
+    }
+    if (!_v.clientStory || typeof _v.clientStory !== "object") _v.clientStory = {};
+    if (!_v.realProblem || typeof _v.realProblem !== "object") _v.realProblem = {};
+    if (!_v.vision || typeof _v.vision !== "object") _v.vision = {};
+  }
   const v3 = bp.v3 || {};
+  const pl = bp.personalLetter || {};
+  const ml = bp.marketLandscape || {};
+  const ic = bp.idealClient || {};
+  const bf = bp.brandFoundation || {};
+  const cs = bp.credibilityScore || {};
+  const projScore = bp.projectedScore || {};
   const depthScore = sessionMeta && sessionMeta.emotional_depth_score || 0;
   const depthGrade = sessionMeta && sessionMeta.depth_grade || "";
-  const msgCount = sessionMeta && sessionMeta.message_count || 0;
-  const barPct = Math.min(100, Math.round(depthScore / 25 * 100));
-  const positioningStatement = v3.positioningStatement || bp.openingHook || "Your unique positioning statement.";
-  const cs = v3.clientStory || {};
-  const rp = v3.realProblem || {};
-  const vis = v3.vision || {};
-  const csHeadline = cs.headline || "The Person Who Knows They Have More to Give";
-  const csBody = cs.body || "";
-  const csPullquote = cs.pullquote || "";
-  const csTension = cs.tension || "";
-  const rpHeadline = rp.headline || "Not a Skill Problem. A Clarity Problem.";
-  const rpBody = rp.body || "";
-  const rpInsight = rp.insight || "";
-  const rpPullquote = rp.pullquote || "";
-  const visHeadline = vis.headline || "What Alignment Actually Feels Like";
-  const visBody = vis.body || "";
-  const visInsight = vis.insight || "";
-  const mirrorObservation = v3.mirror_observation || "";
-  const arrogantTruth = v3.arrogant_truth || "";
-  const futureSelfLetter = v3.futureSelfLetter || v3.marcusLetter || "";
-  function bodyParas(text) {
-    if (!text) return "";
-    return text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p class="body-text">${escHtml(s)}</p>`).join("");
-  }
-  function loveParas(text) {
-    if (!text) return "";
-    return text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${escHtml(s)}</p>`).join("");
-  }
-  function marcusParas(text) {
-    if (!text) return "";
-    return text.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${escHtml(s)}</p>`).join("");
-  }
-  const now = /* @__PURE__ */ new Date();
-  const dateStr = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-  const sessionShort = sessionId ? "DW-" + sessionId.slice(-6).toUpperCase() : "DW-0000";
-  let sessionMinutes = 0;
-  try {
-    const start = sessionMeta && sessionMeta.created_at ? new Date(sessionMeta.created_at) : null;
-    const end = sessionMeta && (sessionMeta.completed_at || sessionMeta.last_active_at) ? new Date(sessionMeta.completed_at || sessionMeta.last_active_at) : null;
-    if (start && end) sessionMinutes = Math.round((end - start) / 6e4);
-    if (sessionMinutes > 120 || sessionMinutes <= 0) {
-      sessionMinutes = msgCount > 0 ? Math.max(15, Math.round(msgCount * 0.75)) : 0;
+  const tier = computeUserTier(depthScore) || { grade: "C", tier_title: "Sat With The Fire" };
+  const completedDate = (() => {
+    try {
+      const d = new Date(sessionMeta && (sessionMeta.completed_at || sessionMeta.last_active_at) || Date.now());
+      return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    } catch (_) {
+      return (/* @__PURE__ */ new Date()).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
     }
-  } catch (_) {
-  }
-  const insightCount = sessionMeta && sessionMeta.insight_count || 0;
-  const beliefCount = sessionMeta && sessionMeta.belief_pattern_count || 0;
+  })();
+  const sessionShort = sessionId ? "DW-" + sessionId.slice(-6).toUpperCase() : "DW-000000";
+  const letterSalutation = pl.salutation || firstName + ",";
+  const letterItalic = pl.italicOpening || "";
+  const letterBodyText = pl.proseBody || pl.body || v3.futureSelfLetter || "";
+  const letterInsight = pl.keyInsight || v3.arrogant_truth || "";
+  const letterSignoff = pl.signoff ? typeof pl.signoff === "string" ? pl.signoff : pl.signoff.name || "James" : "James";
+  const rawHardTruths = sessionMeta && Array.isArray(sessionMeta.hard_truths) && sessionMeta.hard_truths || [];
+  const hardTruths = rawHardTruths.length > 0 ? rawHardTruths : buildHardTruthsFallback(bp, v3, ic, ml);
+  const rawOriginStory = sessionMeta && (sessionMeta.origin_story || sessionMeta.permission_gap) || "";
+  const originStoryText = rawOriginStory || v3.futureSelfLetter || "";
+  const permissionGap = sessionMeta && sessionMeta.permission_gap || v3.mirror_observation || "";
+  const verbatimQuotes = Array.isArray(bp.verbatimQuotes) ? bp.verbatimQuotes : buildVerbatimFallback(v3, ic);
+  const beforePos = ml.beforePositioning || "";
+  const afterPos = ml.afterPositioning || v3.positioningStatement || bp.openingHook || "";
+  const categoryOfOne = ml.categoryOfOne || "";
+  const whyItWorks = ml.whyItWorks || v3.realProblem && v3.realProblem.insight || "";
+  const icName = ic.name || (ic.portrait ? ic.portrait.split(/\s/)[0] : "") || "";
+  const icDemographics = ic.demographics || ic.portrait || "";
+  const icFears = ic.fears || "";
+  const icExactWords = ic.exactWords || (Array.isArray(ic.exactWords) ? ic.exactWords[0] : "") || v3.clientStory && v3.clientStory.pullquote || "";
+  const icTriedSolutions = ic.triedSolutions || v3.clientStory && v3.clientStory.tension || "";
+  const icWants = ic.wants || "";
+  const icConnection = ic.connectionStatement || v3.mirror_connection || "";
+  const brandName = bf.brandName || bf.name || bp.part1 && bp.part1.brandName || "";
+  const brandTagline = bf.tagline || bp.part1 && bp.part1.tagline || "";
+  const rawVoicePills = bf.voicePills || bf.voiceWords || bp.part8 && bp.part8.voiceWords || [];
+  const voicePills = Array.isArray(rawVoicePills) ? rawVoicePills.slice(0, 8) : [];
+  const rawPalette = bf.colorPalette || (bp.part1 && bp.part1.visualDirection && Array.isArray(bp.part1.visualDirection.colors) ? bp.part1.visualDirection.colors : []);
+  const colorPalette = Array.isArray(rawPalette) ? rawPalette.slice(0, 4) : [];
+  const rawSayThis = bf.sayThis || [];
+  const sayThis = Array.isArray(rawSayThis) ? rawSayThis.slice(0, 5) : [];
+  const rawNeverSay = bf.neverSay || [];
+  const neverSay = Array.isArray(rawNeverSay) ? rawNeverSay.slice(0, 5) : [];
+  const positioningStatement = bf.positioningStatement || v3.positioningStatement || afterPos;
+  const scoreNum = cs.score || cs.current || 0;
+  const scoreGrade = cs.grade || "";
+  const scoreContext = cs.contextLine || cs.context || "";
+  const scoreReframe = cs.reframeLine || cs.reframe || "";
+  const scoreCategories = Array.isArray(cs.categories) ? cs.categories : [];
+  const projNum = projScore.projected || projScore.current || 0;
+  const projGrade = projScore.projectedGrade || projScore.grade || "";
+  const ringOffset = Math.round(754 * (1 - Math.min(100, Math.max(0, scoreNum)) / 100));
   const moves = Array.isArray(bp.firstThreeMoves) ? bp.firstThreeMoves.slice(0, 3) : [];
-  let stepsHTML;
-  if (moves.length > 0) {
-    stepsHTML = '<div class="steps">' + moves.map((m, i) => {
-      const t = escHtml(m.move || m.title || m.step || "Step " + (i + 1));
-      const d = escHtml(m.detail || m.description || m.body || "");
-      return `<div class="step"><div class="step-num">${i + 1}</div><div class="step-content"><div class="step-title">${t}</div><div class="step-body">${d}</div></div></div>`;
-    }).join("") + "</div>";
-  } else {
-    stepsHTML = `<div class="steps"><div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Name the Real Capability</div><div class="step-body">Not the job title. The actual thing you do that creates transformation for other people.</div></div></div><div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Build the System Around It</div><div class="step-body">Offer, pricing, positioning, delivery, and client selection. Everything restructured around what you actually do best.</div></div></div><div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Operate from the Center</div><div class="step-body">Once the system is aligned with your real capability, the work becomes lighter and more effective.</div></div></div></div>`;
+  const lovablePrompt = bp.lovablePrompt || buildLovablePrompt(firstName, bp, ic, bf, v3, positioningStatement);
+  const closingLine = bp.closingLine || "";
+  const closingLetterText = bp.closingLetter || buildClosingLetter(firstName, closingLine, v3);
+  const starterPrompt = buildStarterPrompt(firstName);
+  function esc2(s) {
+    return escHtml(String(s || ""));
   }
-  const marcusDefault = "\u201CThe work you are doing is harder than most people can see. Not because of what it requires, but because of what it demands you let go of.\u201D\n\n\u201CWhen the path is unclear, return to what is most true about you. Build from there. Everything else will follow.\u201D";
-  const loveDefault = `Dear younger you,
-
-You didn\u2019t need to work so hard to prove yourself. The thing you were afraid wasn\u2019t enough\u2014it was always the best thing about you.
-
-Everything you\u2019ve built was pointing toward the same thing. You just needed someone to hold up a mirror.
-
-With everything,
-Your future self`;
-  const futureSelfRaw = (futureSelfLetter || marcusDefault).replace(/\s*Marcus Aurelius,?\s*Meditations\s*$/i, "").replace(/Three years from now,?\s*\/?\s*\[?\w+\]?\s*$/i, "").trim();
-  const futureSelfHTML = marcusParas(futureSelfRaw);
-  const loveHTML = loveParas(v3.loveLetter || loveDefault);
-  const promptForJs = positioningStatement.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-  const bfPalette = bp.brandFoundation && Array.isArray(bp.brandFoundation.colorPalette) ? bp.brandFoundation.colorPalette : bp.part1 && bp.part1.visualDirection && Array.isArray(bp.part1.visualDirection.colors) ? bp.part1.visualDirection.colors : bp.part8 && Array.isArray(bp.part8.brandColors) ? bp.part8.brandColors.map(function(h) {
-    return { hex: h };
-  }) : [];
-  const wpPrimary = (bfPalette[0] && bfPalette[0].hex || "#1D1D1F").replace(/'/g, "");
-  const wpAccent = (bfPalette[1] && bfPalette[1].hex || "#C4703F").replace(/'/g, "");
-  const firstNameJs = firstName.replace(/['"\\]/g, "");
+  function paras(text) {
+    if (!text) return "";
+    return String(text).split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${esc2(s)}</p>`).join("");
+  }
+  function paraNarrow(text) {
+    if (!text) return "";
+    return String(text).split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p style="max-width:64ch;font-size:var(--size-body-l);line-height:1.7;color:var(--ink);margin-bottom:1.3em;">${esc2(s)}</p>`).join("");
+  }
   const css = `
-:root{--gold:#C4703F;--white:#FFFFFF;--off:#FAFAFA;--border:#F0F0F0;--text:#1D1D1F;--text2:#86868B;--dark:#0f0f0f;--warm:#FFF9F6;--radius:16px;}
+:root{--bg:#FFFFFF;--bg-2:#F5F1E6;--bg-3:#EDE7D5;--ink:#141414;--ink-2:#5A5A58;--ink-3:#8B8680;--accent:#1C2B3A;--accent-2:#2A4159;--accent-soft:rgba(28,43,58,0.08);--divider:#E8E4DB;--divider-2:#D5CFC0;--font-display:'Playfair Display',Georgia,'Times New Roman',serif;--font-body:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;--font-hand:'Caveat',cursive;--size-hero:clamp(56px,10vw,112px);--size-display-l:clamp(40px,6vw,72px);--size-display-m:clamp(26px,3.4vw,42px);--size-display-s:clamp(20px,2vw,26px);--size-body-l:19px;--size-body:17px;--size-small:15px;--size-caption:13px;--size-caption-s:12px;--space-section:clamp(56px,7vw,96px);--space-block:clamp(40px,6vw,80px);--space-item:24px;--content-max:720px;--grid-max:1040px;--wide-max:1200px;--radius:2px;--radius-lg:4px;--ease:cubic-bezier(0.16,1,0.3,1);--shadow-xs:0 1px 2px rgba(60,40,10,0.04);--shadow-sm:0 2px 8px -2px rgba(60,40,10,0.07),0 1px 2px rgba(60,40,10,0.04);--shadow-md:0 10px 28px -10px rgba(60,40,10,0.12),0 3px 8px -3px rgba(60,40,10,0.06);--shadow-lg:0 28px 70px -24px rgba(40,30,10,0.18),0 8px 20px -8px rgba(60,40,10,0.08);--shadow-hover:0 32px 80px -24px rgba(28,43,58,0.22),0 8px 20px -8px rgba(28,43,58,0.10);--accent-copper:#C4703F;}
 *{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:#fff;font-family:'Inter',sans-serif;color:var(--text);}
-#progress{position:fixed;top:0;left:0;width:0%;height:3px;background:var(--gold);z-index:1000;transition:width 0.1s;}
-.hero{position:relative;min-height:100vh;display:flex;align-items:flex-end;overflow:hidden;background:#111;}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.45) 50%,rgba(0,0,0,0.15) 100%);}
-.hero-content{position:relative;z-index:2;padding:80px 64px;width:100%;max-width:1100px;margin:0 auto;}
-.hero-eyebrow{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.16em;color:#fff;margin-bottom:16px;text-shadow:0 1px 8px rgba(0,0,0,0.5);}
-.hero-name{font-family:'Outfit',sans-serif;font-size:clamp(48px,6vw,80px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1;margin-bottom:16px;}
-.hero-tagline{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(18px,2.5vw,24px);color:rgba(255,255,255,0.92);line-height:1.6;max-width:640px;margin-bottom:40px;}
-.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
-.hero-badge-pill{display:inline-flex;align-items:center;padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:20px;font-size:12px;font-weight:600;color:#fff;letter-spacing:0.04em;backdrop-filter:blur(4px);}
-.glance-quote-card{grid-column:1 / -1;text-align:left;padding:28px 32px;background:linear-gradient(135deg,rgba(196,112,63,0.06) 0%,rgba(196,112,63,0.02) 100%);border:1px solid rgba(196,112,63,0.18) !important;}
-.glance-quote-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:14px;}
-.glance-quote-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(18px,2vw,24px);line-height:1.55;color:var(--text);}
-.glance{background:#fff;padding:64px 64px 48px;border-bottom:1px solid var(--border);}
-.glance-inner{max-width:900px;margin:0 auto;}
-.glance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:28px;}
-.glance-stat{text-align:center;padding:24px 16px;background:var(--off);border-radius:12px;border:1px solid var(--border);}
-.glance-num{font-family:'Outfit',sans-serif;font-size:32px;font-weight:800;color:var(--text);letter-spacing:-0.02em;}
-.glance-num.gold{color:var(--gold);}
-.glance-label{font-size:12px;color:var(--text2);margin-top:6px;line-height:1.4;}
-.glance-bar-track{width:100%;height:6px;background:var(--border);border-radius:4px;margin-top:12px;overflow:hidden;}
-.glance-bar-fill{height:100%;background:var(--gold);border-radius:4px;}
-.act-divider{position:relative;height:380px;overflow:hidden;background:#111;}
-.act-divider-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.35) 60%,rgba(0,0,0,0.1) 100%);}
-.act-label{position:absolute;bottom:0;left:0;right:0;padding:40px 64px;z-index:2;}
-.act-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:10px;}
-.act-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;max-width:640px;}
-.section{background:#fff;padding:80px 64px;}
-.section-inner{max-width:760px;margin:0 auto;}
-.eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
-.section-headline{font-family:'Outfit',sans-serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-0.02em;line-height:1.2;margin-bottom:20px;}
-.body-text{font-size:17px;line-height:1.75;color:#3a3a3a;margin-bottom:20px;}
-.pullquote{font-family:'Outfit',sans-serif;font-weight:600;font-size:clamp(18px,2.2vw,22px);line-height:1.55;color:var(--text);border-left:3px solid var(--gold);padding-left:24px;margin:36px 0;}
-.insight-card{background:var(--off);border-left:3px solid var(--gold);padding:24px 28px;border-radius:0 12px 12px 0;margin:28px 0;}
-.insight-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:8px;}
-.insight-text{font-size:16px;line-height:1.65;}
-.steps{margin:32px 0;}
-.step{display:flex;gap:20px;margin-bottom:28px;align-items:flex-start;}
-.step-num{width:40px;height:40px;border-radius:50%;background:var(--gold);color:#fff;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
-.step-content{flex:1;}
-.step-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;}
-.step-body{font-size:15px;line-height:1.65;color:#555;}
-.prompt-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.prompt-inner{max-width:760px;margin:0 auto;text-align:center;}
-.prompt-card{background:#fff;border:2px solid var(--gold);border-radius:20px;padding:48px 56px;margin-top:24px;box-shadow:0 12px 48px rgba(196,112,63,0.12);}
-.prompt-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--gold);margin-bottom:20px;}
-.prompt-text{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.4;color:var(--text);margin-bottom:24px;}
-.prompt-context{font-size:14px;color:var(--text2);line-height:1.65;max-width:520px;margin:24px auto 0;padding-top:24px;border-top:1px solid var(--border);}
-.prompt-copy-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gold);color:#fff;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:20px;transition:transform 0.15s;}
-.prompt-copy-btn:hover{transform:scale(1.03);}
-.prompt-copied{color:var(--gold);font-size:13px;font-weight:600;margin-top:10px;opacity:0;transition:opacity 0.3s;}
-.prompt-copied.show{opacity:1;}
-.marcus-section{position:relative;background:var(--dark);padding:80px 64px;overflow:hidden;}
-.marcus-inner{position:relative;z-index:2;max-width:760px;margin:0 auto;}
-.marcus-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:20px;}
-.marcus-card{background:rgba(0,0,0,0.72);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius);padding:40px 48px;}
-.marcus-card p{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,19px);color:rgba(255,255,255,0.95);line-height:1.75;margin-bottom:20px;}
-.marcus-sig{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;}
-.love-section{background:var(--warm);padding:80px 64px;}
-.love-inner{max-width:760px;margin:0 auto;}
-.love-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:20px;}
-.love-card{background:#fff;border:1px solid #F0E8E0;border-radius:var(--radius);padding:40px 48px;box-shadow:0 4px 24px rgba(196,112,63,0.08);}
-.love-card p{font-size:17px;line-height:1.8;color:#3a3a3a;margin-bottom:18px;}
-.love-sig{font-family:'Outfit',sans-serif;font-weight:600;font-size:16px;color:var(--gold);}
-.vision-divider{position:relative;height:500px;overflow:hidden;background:#111;}
-.vision-divider-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.6) 100%);}
-.vision-label{position:absolute;bottom:0;left:0;right:0;padding:48px 64px;z-index:2;text-align:center;}
-.vision-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:12px;}
-.vision-title{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#fff;line-height:1.15;}
-.forget-section{background:#fff;padding:80px 64px;border-top:1px solid var(--border);}
-.forget-inner{max-width:760px;margin:0 auto;text-align:center;}
-.forget-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px;}
-.forget-sub{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,20px);color:#555;line-height:1.6;max-width:560px;margin:0 auto 40px;}
-.forget-triggers{display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:left;margin-bottom:40px;}
-.forget-trigger{background:var(--off);border:1px solid var(--border);border-radius:12px;padding:24px 28px;}
-.forget-trigger-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--gold);margin-bottom:10px;}
-.forget-trigger-text{font-size:15px;line-height:1.65;color:var(--text);}
-.forget-trigger-action{font-size:13px;color:var(--text2);margin-top:8px;}
-.forget-timestamp{font-size:13px;color:var(--text2);margin-top:32px;font-family:'Outfit',sans-serif;}
-.wallpaper-section{background:#fff;padding:80px 64px;}
-.wallpaper-inner{max-width:1000px;margin:0 auto;}
-.wallpaper-card{background:#fff;border:1px solid var(--border);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
-.wallpaper-copy{padding:48px;display:flex;flex-direction:column;justify-content:center;}
-.wallpaper-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:14px;}
-.wallpaper-headline{font-family:'Outfit',sans-serif;font-size:clamp(28px,3.5vw,40px);font-weight:800;letter-spacing:-0.02em;line-height:1.15;margin-bottom:14px;}
-.wallpaper-sub{font-size:16px;line-height:1.65;color:var(--text2);margin-bottom:28px;}
-.wallpaper-phones{background:#1D1D1F;padding:48px;display:flex;align-items:center;justify-content:center;gap:16px;}
-.phone-frame{width:100px;height:180px;background:#111;border-radius:18px;border:2px solid rgba(255,255,255,0.12);overflow:hidden;}
-.phone-frame.main{width:120px;height:210px;border-radius:22px;border:2px solid rgba(196,112,63,0.5);}
-.phone-screen{width:100%;height:100%;background:linear-gradient(160deg,#1a1208 0%,#2d1f0e 40%,#1D1D1F 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center;}
-.phone-text{font-family:'Outfit',sans-serif;font-size:7px;font-weight:700;color:rgba(196,112,63,0.9);text-transform:uppercase;letter-spacing:0.1em;line-height:1.4;}
-.phone-text.main{font-size:8px;}
-.final-cta{background:#1D1D1F;padding:96px 64px;}
-.final-inner{max-width:880px;margin:0 auto;text-align:center;}
-.final-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:24px;}
-.final-headline{font-family:'Outfit',sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.1;margin-bottom:16px;}
-.final-sub{font-family:'Inter',sans-serif;font-weight:400;font-size:clamp(16px,1.8vw,20px);color:rgba(255,255,255,0.75);max-width:560px;margin:0 auto 40px;line-height:1.6;}
-.final-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:48px;text-align:left;margin-bottom:40px;}
-.final-card-title{font-family:'Outfit',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:20px;}
-.final-card-items{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
-.final-item{display:flex;gap:12px;align-items:flex-start;}
-.final-check{width:24px;height:24px;border-radius:50%;background:rgba(196,112,63,0.2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px;}
-.final-item-text{font-size:15px;line-height:1.5;color:rgba(255,255,255,0.88);}
-.final-price{text-align:center;margin-bottom:32px;}
-.final-price-amount{font-family:'Outfit',sans-serif;font-size:48px;font-weight:800;color:#fff;letter-spacing:-0.03em;}
-.final-price-label{font-size:14px;color:rgba(255,255,255,0.65);margin-top:4px;}
-.final-btn{display:inline-block;padding:18px 48px;background:var(--gold);color:#fff;border-radius:50px;font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;text-decoration:none;letter-spacing:0.02em;transition:transform 0.15s;}
-.final-btn:hover{transform:scale(1.03);}
-.final-guarantee{margin-top:20px;font-size:13px;color:rgba(255,255,255,0.55);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.55;}
-.final-testimonial{margin-top:40px;padding:28px 32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;text-align:center;}
-.final-testimonial p{font-family:'Inter',sans-serif;font-weight:400;font-size:16px;color:rgba(255,255,255,0.8);line-height:1.7;margin-bottom:12px;}
-.final-testimonial-author{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;}
-.saw-section{background:#fff;padding:64px 64px;border-bottom:1px solid var(--border);}
-.saw-inner{max-width:760px;margin:0 auto;border-left:4px solid var(--gold);padding-left:32px;}
-.saw-eyebrow{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:16px;}
-.saw-body{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(18px,2.2vw,22px);color:var(--text);line-height:1.7;}
-.arrogant-section{background:var(--off);padding:80px 64px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-.arrogant-inner{max-width:760px;margin:0 auto;text-align:center;}
-.arrogant-label{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--gold);margin-bottom:24px;}
-.arrogant-bar{width:40px;height:2px;background:var(--gold);margin:0 auto 32px;}
-.arrogant-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(22px,3vw,34px);color:var(--text);line-height:1.5;font-weight:400;}
-@media(max-width:768px){
-.hero-content{padding:48px 24px;}.hero-name{font-size:clamp(36px,10vw,52px);}
-.glance{padding:40px 24px 32px;}.glance-grid{grid-template-columns:1fr 1fr;gap:16px;}
-.act-divider{height:280px;}.act-label{padding:24px 24px;}
-.section{padding:48px 24px;}.section-inner{max-width:100%;}
-.pullquote{padding-left:18px;margin:28px 0;}.step{gap:14px;}.step-num{width:34px;height:34px;font-size:14px;}
-.prompt-section{padding:48px 24px;}.prompt-card{padding:32px 24px;}
-.marcus-section{padding:48px 24px;}.marcus-card{padding:28px 24px;}
-.love-section{padding:48px 24px;}.love-card{padding:28px 24px;}
-.vision-divider{height:360px;}.vision-label{padding:32px 24px;}
-.forget-section{padding:48px 24px;}.forget-triggers{grid-template-columns:1fr;gap:14px;}
-.wallpaper-section{padding:48px 24px;}.wallpaper-card{grid-template-columns:1fr;}.wallpaper-copy{padding:32px 24px;}.wallpaper-phones{padding:32px 16px;}
-.final-cta{padding:56px 24px;}.final-card{padding:32px 24px;}.final-card-items{grid-template-columns:1fr;}.final-btn{padding:16px 36px;font-size:16px;}
-.saw-section{padding:40px 24px;}.arrogant-section{padding:56px 24px;}.arrogant-text{font-size:22px;}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:var(--size-body-l);line-height:1.72;font-weight:400;letter-spacing:-0.005em;}
+.display,h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.08;letter-spacing:-0.02em;}
+.hero-name{font-size:var(--size-hero);font-weight:400;line-height:0.92;letter-spacing:-0.035em;}
+.display-l{font-size:var(--size-display-l);}
+.display-m{font-size:var(--size-display-m);line-height:1.15;}
+.display-s{font-size:var(--size-display-s);line-height:1.25;}
+.italic{font-style:italic;}
+.caption{font-family:var(--font-body);font-size:var(--size-caption);text-transform:uppercase;letter-spacing:0.14em;font-weight:500;color:var(--ink-2);}
+.caption-accent{font-family:var(--font-body);font-size:var(--size-caption);text-transform:uppercase;letter-spacing:0.14em;font-weight:500;color:var(--accent);}
+.hand{font-family:var(--font-hand);font-size:24px;font-weight:500;color:var(--accent);line-height:1.3;}
+p{max-width:68ch;}
+.prose p+p{margin-top:1.1em;}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:rgba(255,255,255,0.88);backdrop-filter:saturate(160%) blur(20px);-webkit-backdrop-filter:saturate(160%) blur(20px);border-bottom:1px solid rgba(20,20,20,0.06);transition:padding 320ms var(--ease),background 320ms var(--ease),border-color 320ms var(--ease),box-shadow 320ms var(--ease);}
+.top-bar.scrolled{padding:10px 40px;background:rgba(255,255,255,0.94);border-bottom-color:rgba(20,20,20,0.08);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 10px 30px -20px rgba(0,0,0,0.08);}
+.tb-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);transition:color 240ms var(--ease);}
+.tb-brand:hover{color:var(--accent-copper);}
+.tb-wordmark{font-family:var(--font-display);font-size:18px;font-weight:500;letter-spacing:-0.01em;line-height:1;}
+.tb-wordmark span{color:var(--ink-2);font-weight:300;font-style:italic;}
+.top-bar nav{display:flex;align-items:center;gap:24px;}
+.top-bar a.tb-link{font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;transition:color 200ms var(--ease);}
+.top-bar a.tb-link:hover{color:var(--ink);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:var(--accent);color:#FAFAF7;font-family:var(--font-body);font-size:14px;font-weight:500;letter-spacing:0.01em;border:none;border-radius:var(--radius);cursor:pointer;text-decoration:none;transition:transform 280ms var(--ease),background 200ms,color 200ms,border-color 200ms,box-shadow 300ms var(--ease);}
+.btn:hover{background:#0E1A27;transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+.btn:active{transform:translateY(1px);}
+.btn.large{padding:18px 36px;font-size:16px;}
+.btn.huge{padding:22px 44px;font-size:17px;}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+.btn.ghost:hover{background:var(--accent-soft);}
+.btn.copied{background:var(--accent);color:#fff;border-color:var(--accent);}
+@media(max-width:720px){.top-bar{padding:14px 20px;}.top-bar nav{gap:14px;}.top-bar nav a.tb-link{display:none;}}
+main{padding-top:0;position:relative;z-index:2;}
+section.section{padding:var(--space-section) 40px;position:relative;}
+.wrap{max-width:var(--grid-max);margin:0 auto;}
+.reader{max-width:var(--content-max);margin:0 auto;}
+.section-num{font-family:var(--font-body);font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:500;display:inline-flex;align-items:center;gap:14px;margin-bottom:28px;font-variant-numeric:tabular-nums;}
+.section-num::before{content:'';display:inline-block;width:40px;height:1px;background:var(--accent);}
+.section-title{font-family:var(--font-display);font-size:var(--size-display-l);line-height:1.05;letter-spacing:-0.025em;margin-bottom:48px;font-weight:400;}
+.copy-btn{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--divider-2);color:var(--ink-2);font-family:var(--font-body);font-size:12px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;padding:8px 14px;border-radius:var(--radius);cursor:pointer;transition:all 200ms var(--ease);margin-top:24px;}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+.copy-btn.copied{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 1000ms var(--ease),transform 1000ms var(--ease);will-change:opacity,transform;}
+.reveal.in{opacity:1;transform:translateY(0);}
+.reveal.delay-1{transition-delay:120ms;}
+.reveal.delay-2{transition-delay:240ms;}
+.reveal.delay-3{transition-delay:360ms;}
+.reveal-wipe{opacity:0;clip-path:inset(0 0 100% 0);transition:opacity 1100ms var(--ease),clip-path 1100ms var(--ease);}
+.reveal-wipe.in{opacity:1;clip-path:inset(0 0 0 0);}
+@keyframes heroBreath{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+.hero-name.in{animation:heroBreath 7600ms ease-in-out 2000ms infinite;}
+@keyframes scrollPulse{0%,100%{opacity:0.4;transform:scaleY(0.6);transform-origin:top;}50%{opacity:1;transform:scaleY(1);transform-origin:top;}}
+.hero{min-height:clamp(500px,80vh,860px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 40px 80px;position:relative;}
+.hero .meta{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:48px;}
+.hero .meta .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;}
+.hero-name{margin-bottom:40px;}
+.hero-hook{font-family:var(--font-display);font-style:italic;font-size:clamp(22px,3vw,32px);line-height:1.3;color:var(--ink);max-width:680px;font-weight:300;letter-spacing:-0.01em;text-align:center;}
+.hero-signature{margin-top:80px;display:flex;align-items:center;justify-content:center;gap:16px;}
+.hero-signature .rule{width:60px;height:1px;background:var(--accent);}
+.section-letter{background:var(--bg);}
+.letter-salutation{font-family:var(--font-display);font-size:28px;font-weight:400;margin-bottom:28px;color:var(--ink);}
+.letter-opening{font-family:var(--font-display);font-style:italic;font-size:clamp(24px,3.2vw,34px);line-height:1.35;color:var(--ink);margin-bottom:36px;font-weight:400;letter-spacing:-0.01em;}
+.letter-body p{font-size:var(--size-body-l);line-height:1.7;color:var(--ink);margin-bottom:1.3em;max-width:64ch;}
+.letter-callout{font-family:var(--font-display);font-style:italic;font-size:clamp(28px,3.6vw,42px);line-height:1.25;color:var(--accent);margin:56px 0;padding-left:32px;max-width:28ch;font-weight:400;letter-spacing:-0.01em;position:relative;}
+.letter-callout::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:transform 1500ms var(--ease) 300ms;}
+.letter-callout.in::before{transform:scaleY(1);}
+.letter-signoff{font-family:var(--font-display);font-size:22px;margin-top:40px;color:var(--ink);}
+.letter-body.prose>p:first-child::first-letter{font-family:var(--font-display);font-size:clamp(62px,8.8vw,108px);font-weight:700;line-height:0.82;float:left;padding:10px 14px 0 0;color:var(--accent);}
+.section-crossroads{background:var(--bg);}
+.truths-list{display:flex;flex-direction:column;gap:0;margin-top:16px;}
+.truth-item{display:grid;grid-template-columns:48px 1fr;gap:28px;padding:36px 0;border-bottom:1px solid var(--divider);align-items:start;}
+.truth-item:first-child{border-top:1px solid var(--divider);}
+.truth-num{font-family:var(--font-display);font-size:36px;font-weight:400;color:var(--accent);font-style:italic;line-height:1;}
+.truth-text{font-size:var(--size-body-l);line-height:1.65;color:var(--ink);max-width:62ch;}
+.section-wound{background:var(--bg);}
+.wound-opener{font-family:var(--font-display);font-style:italic;font-size:clamp(28px,3.6vw,44px);line-height:1.25;color:var(--ink);margin-bottom:48px;font-weight:300;letter-spacing:-0.015em;max-width:22ch;}
+.wound-body p{font-size:var(--size-body-l);line-height:1.75;color:var(--ink);margin-bottom:1.4em;max-width:64ch;}
+.wound-body em,.wound-body .hl{color:var(--accent);font-style:italic;font-weight:500;}
+.section-quotes{background:var(--bg);}
+.quote-stack{display:flex;flex-direction:column;gap:36px;}
+.quote-card{background:linear-gradient(180deg,#FFFFFF 0%,#FCFAF3 100%);box-shadow:var(--shadow-sm);padding:48px 52px;border-radius:var(--radius-lg);position:relative;transition:transform 300ms var(--ease),box-shadow 300ms var(--ease);}
+.quote-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);}
+.quote-card .quote-text{font-family:var(--font-display);font-style:italic;font-size:clamp(22px,2.6vw,30px);line-height:1.35;color:var(--ink);margin-bottom:24px;font-weight:400;letter-spacing:-0.01em;}
+.quote-card .quote-reframe{font-size:var(--size-small);line-height:1.65;color:var(--ink-2);padding-top:20px;border-top:1px solid var(--divider-2);max-width:58ch;}
+.quote-card .quote-reframe strong{color:var(--accent);font-weight:500;}
+.quote-card .copy-btn{position:absolute;top:28px;right:28px;margin-top:0;}
+@media(max-width:720px){.quote-card{padding:32px 28px;}.quote-card .copy-btn{position:static;margin-top:20px;}}
+.interstitial{padding:100px 40px;text-align:center;background:var(--bg);}
+.interstitial-line{font-family:var(--font-display);font-size:clamp(36px,5vw,60px);font-style:italic;font-weight:300;letter-spacing:-0.02em;color:var(--ink);line-height:1.2;max-width:20ch;margin:0 auto;}
+.interstitial .rule{width:80px;height:1px;background:var(--accent);margin:0 auto 56px;}
+.interstitial .rule.after{margin:56px auto 0;}
+.section-positioning{background:var(--bg);}
+.positioning-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:60px;}
+.position-card{padding:48px 44px;border-radius:var(--radius-lg);}
+.position-card.before{background:transparent;border:1px dashed var(--divider-2);}
+.position-card.after{background:var(--bg-2);border:1px solid var(--accent);}
+.position-card .label{font-family:var(--font-body);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;font-weight:500;margin-bottom:20px;display:block;}
+.position-card.before .label{color:var(--ink-3);}
+.position-card.after .label{color:var(--accent);}
+.position-card p{font-family:var(--font-display);font-size:clamp(20px,2.2vw,26px);line-height:1.35;font-weight:400;letter-spacing:-0.01em;}
+.position-card.before p{color:var(--ink-3);}
+.position-card.after p{color:var(--ink);}
+.category-callout{font-family:var(--font-display);font-style:italic;font-size:clamp(24px,2.8vw,32px);line-height:1.35;color:var(--accent);max-width:36ch;margin:60px 0 40px;padding-left:28px;border-left:2px solid var(--accent);font-weight:400;}
+.why-it-works{max-width:58ch;}
+.why-it-works .label-line{font-family:var(--font-body);font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin-bottom:14px;}
+.why-it-works p{font-size:var(--size-small);line-height:1.7;color:var(--ink-2);}
+@media(max-width:860px){.positioning-grid{grid-template-columns:1fr;gap:32px;}}
+.section-who{background:var(--bg);}
+.portrait-name{font-family:var(--font-display);font-size:clamp(44px,5vw,68px);line-height:1;letter-spacing:-0.025em;color:var(--ink);margin-bottom:16px;font-weight:400;}
+.portrait-demo{font-size:var(--size-body);color:var(--ink-2);max-width:60ch;margin-bottom:48px;}
+.portrait-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px 60px;margin:48px 0;padding:48px 0;border-top:1px solid var(--divider);border-bottom:1px solid var(--divider);}
+.portrait-cell .cell-label{font-family:var(--font-body);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:16px;display:block;}
+.portrait-cell p{font-size:var(--size-small);line-height:1.7;color:var(--ink);max-width:40ch;}
+.portrait-cell.words p{font-family:var(--font-display);font-style:italic;font-size:clamp(17px,1.8vw,21px);line-height:1.55;color:var(--ink);}
+.portrait-close{font-family:var(--font-display);font-style:italic;font-size:clamp(22px,2.6vw,30px);line-height:1.35;color:var(--ink);max-width:36ch;font-weight:400;letter-spacing:-0.01em;margin-top:40px;}
+@media(max-width:860px){.portrait-grid{grid-template-columns:1fr;gap:36px;}}
+.section-brand{background:var(--bg);}
+.brand-name{font-family:var(--font-display);font-size:clamp(48px,6vw,80px);line-height:1;letter-spacing:-0.03em;margin-bottom:18px;font-weight:400;}
+.brand-tagline{font-family:var(--font-display);font-style:italic;font-size:clamp(22px,2.6vw,30px);line-height:1.3;color:var(--ink-2);margin-bottom:56px;font-weight:400;letter-spacing:-0.01em;}
+.brand-row{margin-bottom:56px;}
+.brand-row .label-line{font-family:var(--font-body);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:22px;}
+.voice-pills{display:flex;flex-wrap:wrap;gap:12px;}
+.pill{font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--accent);border:1px solid var(--accent);padding:10px 18px;border-radius:999px;letter-spacing:0.01em;transition:transform 260ms var(--ease),box-shadow 260ms var(--ease);}
+.pill:hover{transform:translateY(-2px);box-shadow:var(--shadow-xs);}
+.color-row{display:flex;gap:20px;flex-wrap:wrap;}
+.swatch{display:flex;flex-direction:column;align-items:flex-start;gap:12px;}
+.swatch .chip{width:88px;height:88px;border-radius:var(--radius-lg);border:1px solid var(--divider-2);box-shadow:var(--shadow-sm);transition:transform 320ms var(--ease),box-shadow 320ms var(--ease);}
+.swatch:hover .chip{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+.swatch .hex{font-family:'SF Mono',Menlo,monospace;font-size:12px;color:var(--ink);letter-spacing:0.02em;}
+.swatch .name{font-size:11px;color:var(--ink-3);letter-spacing:0.1em;text-transform:uppercase;font-weight:500;}
+.voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;}
+.voice-col ul{list-style:none;padding:0;}
+.voice-col li{font-family:var(--font-display);font-size:clamp(18px,2vw,22px);line-height:1.5;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--divider);font-weight:400;font-style:italic;}
+.voice-col.never li{color:var(--ink-3);text-decoration:line-through;text-decoration-color:var(--divider-2);}
+.brand-positioning{max-width:60ch;padding:36px;background:var(--bg-2);border-radius:var(--radius-lg);font-size:var(--size-body);line-height:1.7;color:var(--ink);margin-top:56px;}
+@media(max-width:720px){.voice-grid{grid-template-columns:1fr;gap:36px;}}
+.section-score{background:var(--bg);}
+.score-hero{display:grid;grid-template-columns:320px 1fr;gap:80px;align-items:center;margin-bottom:80px;}
+.ring-wrap{position:relative;width:300px;height:300px;}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--divider);stroke-width:2;}
+.ring-fill{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:butt;stroke-dasharray:754;stroke-dashoffset:754;transition:stroke-dashoffset 2200ms cubic-bezier(0.19,1,0.22,1);}
+.ring-wrap.draw .ring-fill{stroke-dashoffset:${ringOffset};}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.ring-score{font-family:var(--font-display);font-size:96px;font-weight:400;color:var(--ink);line-height:0.95;letter-spacing:-0.04em;}
+.ring-grade{font-family:var(--font-display);font-size:32px;font-style:italic;color:var(--accent);margin-top:4px;}
+.ring-label{font-family:var(--font-body);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-3);font-weight:500;margin-top:12px;}
+.score-right h3{font-family:var(--font-display);font-size:clamp(24px,2.8vw,32px);line-height:1.3;margin-bottom:14px;font-weight:400;}
+.projected-line{display:flex;align-items:baseline;gap:16px;margin:28px 0;}
+.projected-line .arrow{font-family:var(--font-display);font-size:24px;color:var(--accent);}
+.projected-line .num{font-family:var(--font-display);font-size:clamp(54px,6vw,78px);font-weight:400;color:var(--ink);line-height:1;letter-spacing:-0.03em;}
+.projected-line .grade{font-family:var(--font-display);font-size:28px;font-style:italic;color:var(--accent);}
+.score-categories{display:flex;flex-direction:column;gap:28px;}
+.score-cat{display:grid;grid-template-columns:1fr 60px;gap:16px 24px;align-items:baseline;padding:20px 0;border-top:1px solid var(--divider);transition:transform 280ms var(--ease);}
+.score-cat:last-child{border-bottom:1px solid var(--divider);}
+.score-cat:hover{transform:translateX(3px);}
+.score-cat .cat-name{font-family:var(--font-display);font-size:clamp(18px,2vw,22px);font-weight:400;color:var(--ink);}
+.score-cat .cat-grade{font-family:var(--font-display);font-size:clamp(22px,2.4vw,28px);font-weight:500;color:var(--accent);font-style:italic;text-align:right;}
+.score-cat .cat-note{grid-column:1/-1;font-size:var(--size-small);color:var(--ink-2);line-height:1.6;max-width:62ch;margin-top:4px;}
+.score-context{margin-top:56px;max-width:62ch;font-size:var(--size-body);color:var(--ink-2);line-height:1.7;}
+@media(max-width:860px){.score-hero{grid-template-columns:1fr;gap:48px;}.ring-wrap{margin:0 auto;}}
+.section-moves{background:var(--bg);}
+.moves-list{display:flex;flex-direction:column;gap:40px;}
+.move-card{display:grid;grid-template-columns:80px 1fr;gap:32px;padding:48px 0;border-top:1px solid var(--divider);transition:transform 320ms var(--ease);}
+.move-card:last-child{border-bottom:1px solid var(--divider);}
+.move-card:hover{transform:translateX(5px);}
+.move-num{font-family:var(--font-display);font-size:72px;font-weight:400;color:var(--accent);line-height:0.9;font-style:italic;letter-spacing:-0.03em;}
+.move-content h4{font-family:var(--font-display);font-size:clamp(26px,3vw,36px);line-height:1.2;margin-bottom:18px;font-weight:400;letter-spacing:-0.015em;}
+.move-content p{font-size:var(--size-body);line-height:1.7;color:var(--ink);margin-bottom:16px;max-width:60ch;}
+.move-content .why{font-size:var(--size-small);color:var(--ink-2);font-style:italic;max-width:58ch;}
+@media(max-width:720px){.move-card{grid-template-columns:1fr;gap:18px;}.move-num{font-size:56px;}}
+.section-lovable{background:var(--bg);position:relative;}
+.section-lovable::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.4;}
+.lovable-kicker{font-family:var(--font-body);font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:24px;display:block;}
+.lovable-title{font-family:var(--font-display);font-size:clamp(44px,6vw,80px);line-height:1;letter-spacing:-0.03em;margin-bottom:32px;font-weight:400;max-width:14ch;}
+.lovable-title em{font-style:italic;color:var(--accent);font-weight:400;}
+.lovable-setup{font-size:var(--size-body-l);line-height:1.65;color:var(--ink);max-width:60ch;margin-bottom:48px;}
+.lovable-setup strong{color:var(--accent);font-weight:600;}
+.lovable-block{background:#0F1620;color:#E8E4DB;padding:48px 52px;border-radius:var(--radius-lg);font-family:'SF Mono','Menlo','Consolas',monospace;font-size:13.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;position:relative;box-shadow:0 30px 80px -40px rgba(28,43,58,0.6);border:1px solid rgba(232,228,219,0.08);}
+.lovable-block .label-strip{display:flex;align-items:center;justify-content:space-between;padding-bottom:24px;margin-bottom:28px;border-bottom:1px solid rgba(232,228,219,0.12);font-family:var(--font-body);}
+.lovable-block .label-strip span{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#8B8680;font-weight:500;}
+.lovable-block .prompt-copy{background:#C9A84C;color:#0F1620;border:none;padding:10px 18px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:var(--radius);cursor:pointer;font-family:var(--font-body);transition:all 200ms var(--ease);}
+.lovable-block .prompt-copy:hover{background:#D5B55E;transform:translateY(-1px);}
+.lovable-block .prompt-copy.copied{background:#E8E4DB;}
+.lovable-block .prompt-text{font-family:'SF Mono','Menlo','Consolas',monospace;color:#D5CFC0;font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;}
+.lovable-block .prompt-text strong{color:#C9A84C;font-weight:600;}
+.lovable-actions{display:flex;align-items:center;gap:24px;margin-top:40px;flex-wrap:wrap;}
+.lovable-disclaimer{margin-top:32px;font-size:var(--size-small);color:var(--ink-2);font-style:italic;max-width:60ch;line-height:1.6;}
+.framework-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--divider);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:52px;}
+.fw-step{background:var(--bg-2);padding:20px 22px;}
+.fw-step-num{font-family:var(--font-body);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:6px;}
+.fw-step-label{font-family:var(--font-display);font-size:17px;font-weight:400;color:var(--ink);line-height:1.15;margin-bottom:4px;}
+.fw-step-desc{font-size:12px;color:var(--ink-3);line-height:1.45;}
+.lovable-tips{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:44px;margin-bottom:8px;}
+.tip-card{background:var(--bg-2);border:1px solid var(--divider);border-radius:var(--radius-lg);padding:20px 24px;}
+.tip-card .tip-num{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:8px;}
+.tip-card p{font-size:var(--size-small);color:var(--ink-2);line-height:1.6;}
+.tip-card strong{color:var(--ink);font-weight:600;}
+@media(max-width:720px){.lovable-block{padding:32px 24px;font-size:12px;}.lovable-title{font-size:44px;}.framework-strip{grid-template-columns:repeat(2,1fr);}.lovable-tips{grid-template-columns:1fr;}}
+@media(max-width:480px){.framework-strip{grid-template-columns:1fr;}}
+.section-closing{background:var(--bg);padding-bottom:var(--space-section);}
+.closing-letter{margin-bottom:60px;}
+.closing-letter p{font-size:var(--size-body-l);line-height:1.75;color:var(--ink);margin-bottom:1.2em;max-width:60ch;}
+.closing-signoff{font-family:var(--font-hand);font-size:40px;color:var(--accent);margin:32px 0 8px;line-height:1;}
+.closing-cta-block{margin-top:80px;background:var(--ink);border-radius:var(--radius-lg);padding:72px 56px;text-align:center;}
+.closing-cta-block h3{font-family:var(--font-display);font-size:clamp(32px,4vw,56px);line-height:1.05;font-weight:400;letter-spacing:-0.025em;color:#FAFAF7;margin-bottom:12px;}
+.closing-cta-block .price{font-family:var(--font-display);font-style:italic;font-size:22px;color:var(--accent-copper);margin-bottom:52px;}
+.closing-cta-block .features{display:flex;justify-content:center;flex-wrap:wrap;margin:0 auto 52px;max-width:720px;}
+.closing-cta-block .feat{flex:1;min-width:180px;padding:0 32px;border-right:1px solid rgba(255,255,255,0.1);}
+.closing-cta-block .feat:last-child{border-right:none;}
+.closing-cta-block .feat-label{font-size:var(--size-small);color:rgba(250,250,247,0.65);line-height:1.6;}
+.btn.light{background:#FAFAF7;color:var(--ink);}
+.btn.light:hover{background:#fff;transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,0,0,0.25);}
+@media(max-width:640px){.closing-cta-block{padding:48px 28px;}.closing-cta-block .features{flex-direction:column;gap:0;}.closing-cta-block .feat{border-right:none;border-bottom:1px solid rgba(255,255,255,0.1);padding:20px 0;}.closing-cta-block .feat:last-child{border-bottom:none;}}
+.closing-footer{text-align:center;margin-top:32px;font-size:var(--size-small);color:var(--ink-3);}
+.closing-footer a{color:var(--accent);text-decoration:none;}
+.section-next{background:var(--bg);border-top:1px solid var(--divider);}
+.page-footer{padding:48px 40px 56px;background:var(--bg);border-top:1px solid var(--divider);}
+.section-appendix{padding-top:96px;padding-bottom:140px;border-top:1px solid var(--divider);background:var(--bg);}
+.appendix-intro{margin-bottom:44px;font-size:var(--size-body);color:var(--ink-2);}
+.appendix-intro p{margin-bottom:16px;max-width:640px;}
+.appendix-actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:48px;}
+.appendix-hint{padding:32px 36px;background:var(--bg-2);border-radius:var(--radius-lg);max-width:640px;border:1px solid var(--divider);}
+.appendix-hint .hint-label{font-family:var(--font-body);font-size:var(--size-caption);text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-3);margin-bottom:14px;font-weight:500;}
+.appendix-hint ol{padding-left:22px;color:var(--ink-2);font-size:var(--size-small);line-height:1.75;}
+.appendix-hint ol li{margin-bottom:8px;}
+.appendix-hint em{color:var(--ink);font-style:normal;font-weight:500;}
+.scroll-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:200;pointer-events:none;background:transparent;}
+.scroll-progress span{display:block;height:100%;width:0;background:var(--accent);transform-origin:left center;transition:width 80ms linear;}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:99;opacity:0.16;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+.reveal.stagger>*{opacity:0;transform:translateY(16px);transition:opacity 800ms var(--ease),transform 800ms var(--ease);}
+.reveal.in.stagger>*{opacity:1;transform:translateY(0);}
+.reveal.in.stagger>*:nth-child(1){transition-delay:0ms;}
+.reveal.in.stagger>*:nth-child(2){transition-delay:120ms;}
+.reveal.in.stagger>*:nth-child(3){transition-delay:240ms;}
+.reveal.in.stagger>*:nth-child(4){transition-delay:360ms;}
+.reveal.in.stagger>*:nth-child(5){transition-delay:480ms;}
+@media(prefers-reduced-motion:reduce){.hero-name.in{animation:none;}.reveal,.reveal-wipe{transition-duration:0ms;}.letter-callout::before{transition:none;transform:scaleY(1);}html{scroll-behavior:auto;}.quote-card:hover,.swatch:hover .chip,.pill:hover,.move-card:hover,.score-cat:hover{transform:none;}}
+@media(max-width:600px){section.section{padding:52px 22px;}.hero{padding:88px 22px 52px;}.interstitial{padding:72px 22px;}.lovable-block{padding:28px 22px;}body{line-height:1.78;font-size:18px;}.letter-body p{font-size:18px;line-height:1.78;}.section-title{margin-bottom:36px;}}`;
+  const letterBodyParas = letterBodyText ? letterBodyText.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${esc2(s)}</p>`).join("") : `<p>What came through in our conversation was not what you have built. It was who you are underneath it. The expertise is real. The results are real. But the story you have been telling does not yet carry the weight of the person telling it.</p><p>That is what we are going to change.</p>`;
+  const truthsHTML = hardTruths.length > 0 ? hardTruths.slice(0, 4).map((t, i) => {
+    const text = typeof t === "string" ? t : t.truth || t.text || t.content || JSON.stringify(t);
+    return `<div class="truth-item reveal">
+          <div class="truth-num">${String(i + 1).padStart(2, "0")}</div>
+          <div class="truth-text">${esc2(text)}</div>
+        </div>`;
+  }).join("") : `<div class="truth-item reveal">
+        <div class="truth-num">01</div>
+        <div class="truth-text">The version of you that is on your website right now is the polished version. The real you is the brand. You have been hiding your proof of concept.</div>
+      </div>
+      <div class="truth-item reveal">
+        <div class="truth-num">02</div>
+        <div class="truth-text">Your positioning is a job title, not a category. The difference between a job title and a category is the difference between being findable and being irreplaceable.</div>
+      </div>
+      <div class="truth-item reveal">
+        <div class="truth-num">03</div>
+        <div class="truth-text">Your best proof point is treated as a footnote. The moment that most demonstrates what you do for people is buried or absent from where it matters most.</div>
+      </div>`;
+  const originParas = originStoryText ? originStoryText.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${esc2(s)}</p>`).join("") : `<p>The wound that became the work. The moment that looked like an ending that was actually a beginning. The thing that happened before you knew what it meant.</p><p>That story is in here. We found the outline of it together. The full narrative belongs in front of people, not buried in your private notes.</p>`;
+  const woundOpener = permissionGap || (originStoryText ? originStoryText.split(/[.!?]/)[0].trim() : "") || "The thing that happened before you knew what it meant.";
+  const quotesHTML = verbatimQuotes.length > 0 ? verbatimQuotes.slice(0, 5).map((q) => {
+    const qt = typeof q === "string" ? q : q.quote || q.text || "";
+    const rf = typeof q === "string" ? "" : q.reframe || q.why || "";
+    return `<div class="quote-card reveal">
+          <button class="copy-btn" data-copy="${esc2(qt)}">Copy</button>
+          <p class="quote-text">&ldquo;${esc2(qt)}&rdquo;</p>
+          ${rf ? `<p class="quote-reframe"><strong>Why this matters.</strong> ${esc2(rf)}</p>` : ""}
+        </div>`;
+  }).join("") : `<div class="quote-card reveal">
+        <p class="quote-text">&ldquo;${esc2(bp.openingHook || "The thing you said that matters most.")}&rdquo;</p>
+        <p class="quote-reframe"><strong>Why this matters.</strong> This is the sentence that contains everything. The positioning, the category, the permission. It is already there.</p>
+      </div>`;
+  const portraitGridHTML = [
+    icFears ? { label: "What keeps them up", content: icFears } : null,
+    icExactWords ? { label: "In their own words", content: icExactWords, words: true } : null,
+    icTriedSolutions ? { label: "What they have tried", content: icTriedSolutions } : null,
+    icWants ? { label: "What they actually want", content: icWants } : null
+  ].filter(Boolean).map((cell) => `
+    <div class="portrait-cell ${cell.words ? "words" : ""} reveal">
+      <span class="cell-label">${cell.label}</span>
+      <p>${esc2(cell.content)}</p>
+    </div>`).join("");
+  const swatchesHTML = colorPalette.length > 0 ? colorPalette.map((c) => {
+    const hex = typeof c === "string" ? c : c.hex || c.value || "#1C2B3A";
+    const name = typeof c === "string" ? "" : c.name || c.label || "";
+    return `<div class="swatch">
+          <div class="chip" style="background:${esc2(hex)};"></div>
+          <div class="hex">${esc2(hex)}</div>
+          ${name ? `<div class="name">${esc2(name)}</div>` : ""}
+        </div>`;
+  }).join("") : "";
+  const pillsHTML = voicePills.map((p) => `<span class="pill">${esc2(typeof p === "string" ? p : p.word || p)}</span>`).join("");
+  const sayHTML = sayThis.length > 0 ? sayThis.map((s) => `<li>${esc2(typeof s === "string" ? s : s.text || s)}</li>`).join("") : `<li>Say this instead.</li>`;
+  const neverHTML = neverSay.length > 0 ? neverSay.map((s) => `<li>${esc2(typeof s === "string" ? s : s.text || s)}</li>`).join("") : `<li>Never say this.</li>`;
+  const categoriesHTML = scoreCategories.length > 0 ? scoreCategories.map((cat) => {
+    const name = cat.name || cat.category || "";
+    const grade = cat.grade || cat.letter || "";
+    const note = cat.explanation || cat.note || cat.description || "";
+    return `<div class="score-cat reveal">
+          <div class="cat-name">${esc2(name)}</div>
+          <div class="cat-grade">${esc2(grade)}</div>
+          ${note ? `<div class="cat-note">${esc2(note)}</div>` : ""}
+        </div>`;
+  }).join("") : `<div class="score-cat reveal">
+        <div class="cat-name">Positioning Clarity</div>
+        <div class="cat-grade">${esc2(scoreGrade || "C")}</div>
+        <div class="cat-note">The category is there. The name is not yet carrying it in public.</div>
+      </div>`;
+  const movesHTMLContent = moves.length > 0 ? moves.map((m, i) => {
+    const t = m.move || m.title || m.step || "Move " + (i + 1);
+    const d = m.instruction || m.detail || m.description || m.body || "";
+    const w = m.why || m.whyFirst || "";
+    return `<div class="move-card reveal">
+          <div class="move-num">0${i + 1}</div>
+          <div class="move-content">
+            <h4>${esc2(t)}</h4>
+            ${d ? `<p>${esc2(d)}</p>` : ""}
+            ${w ? `<p class="why">Why this first. &nbsp;${esc2(w)}</p>` : ""}
+          </div>
+        </div>`;
+  }).join("") : `<div class="move-card reveal">
+        <div class="move-num">01</div>
+        <div class="move-content">
+          <h4>Name the category, in public.</h4>
+          <p>Change your headline. Write one post this week that explains what you actually do and why it is not what people call it. You will lose some followers. The ones that stay are the right ones.</p>
+          <p class="why">Why this first. &nbsp;The category name is load bearing for every move after this one. If you skip it, the rest feels incremental. If you do it first, the rest feels inevitable.</p>
+        </div>
+      </div>
+      <div class="move-card reveal">
+        <div class="move-num">02</div>
+        <div class="move-content">
+          <h4>Put the real story on the homepage.</h4>
+          <p>Replace the hero section with the origin story. The first thing anyone reads should be the moment that made you who you are. Three paragraphs. No stock photo. Just the story.</p>
+          <p class="why">Why this first. &nbsp;Nobody has ever booked a call with the polished version of you. They book calls with the person who admits the hard thing.</p>
+        </div>
+      </div>
+      <div class="move-card reveal">
+        <div class="move-num">03</div>
+        <div class="move-content">
+          <h4>Build the bridge offer.</h4>
+          <p>Price something between your lowest and highest price point. Your ideal client needs a way in that is not a giant commitment. The bridge closes the permission gap and the revenue gap at the same time.</p>
+          <p class="why">Why this first. &nbsp;The pricing problem is not a pricing problem. It is an offer architecture problem. The fastest 20 point score jump you have available is right here.</p>
+        </div>
+      </div>`;
+  const closingParas = closingLetterText ? closingLetterText.split(/\n\n+/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${esc2(s)}</p>`).join("") : `<p>${esc2(firstName)},</p>
+       <p>I am going to say this once more because it is the only thing in this document that actually matters. You have been writing permission slips for other people. Every one of them worked. You have not yet let yourself take the one you wrote for yourself.</p>
+       <p>The guide who finally tells their own story becomes uncatchable. <em>Go first.</em></p>`;
+  const starterPromptEsc = esc2(starterPrompt);
+  const js = `
+// Scroll reveal
+const revealables = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+revealables.forEach(el => io.observe(el));
+
+// Score ring draw + number count-up
+function animateNumber(el, target, duration) {
+  if (!el) return;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    el.textContent = Math.round(target * eased);
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
-@media(max-width:480px){
-.hero-name{font-size:36px;}.glance-grid{grid-template-columns:1fr;gap:12px;}.glance-stat{padding:16px 12px;}.glance-num{font-size:26px;}
-.act-divider{height:220px;}.prompt-text{font-size:22px;}.final-price-amount{font-size:40px;}
-}`;
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escHtml(firstName)}\u2019s Deep Work Interview</title><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet"><style>${css}</style><script type="text/javascript">(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","w22t78gnya");<\/script></head><body>
-<script>(function(){var b=document.getElementById('blueprint-body');if(b){b.style.maxWidth='none';b.style.padding='0';b.style.margin='0';b.style.width='100%';}var h=document.querySelector('.blueprint-header');if(h)h.style.display='none';var s=document.getElementById('blueprint-screen');if(s){s.style.padding='0';s.style.background='#fff';}var d=document.getElementById('strategist-debrief');if(d)d.style.display='none';})();<\/script>
-<div id="progress"></div>
-<div class="hero" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_hero_1.jpg');background-size:cover;background-position:center top;"><div class="hero-overlay"></div><div class="hero-content"><div class="hero-eyebrow">Remember Who You Are</div><div class="hero-name">${escHtml(firstName)}</div><div class="hero-tagline">${escHtml(positioningStatement)}</div><div class="hero-badges"><span class="hero-badge-pill">&#x2713; Interview Complete</span><span class="hero-badge-pill">&#x2713; Blueprint Generated</span><span class="hero-badge-pill">&#x2713; Brand Strategy Built</span></div></div></div>
-<div class="glance"><div class="glance-inner"><div class="eyebrow">Your Interview Results</div><div class="section-headline">Blueprint at a Glance</div><div class="glance-grid"><div class="glance-stat glance-quote-card"><div class="glance-quote-eyebrow">What I Saw in You</div><div class="glance-quote-text">\u201C${escHtml(bp.openingHook || (positioningStatement !== "Your unique positioning statement." ? positioningStatement : firstName + " is exactly who their clients need them to be.") )}\u201D</div></div><div class="glance-stat"><div class="glance-num">${sessionMinutes > 0 ? sessionMinutes : "\u2014"}</div><div class="glance-label">Minutes of Deep Work</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${Math.min(100, sessionMinutes > 0 ? Math.round(sessionMinutes / 90 * 100) : 0)}%"></div></div></div><div class="glance-stat"><div class="glance-num">${insightCount > 0 ? insightCount : msgCount ? Math.round(msgCount / 8) : "\u2014"}</div><div class="glance-label">Insights Unlocked</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${insightCount > 0 ? Math.min(100, Math.round(insightCount / 20 * 100)) : 75}%"></div></div></div><div class="glance-stat"><div class="glance-num">${beliefCount > 0 ? beliefCount : arrogantTruth ? 3 : "\u2014"}</div><div class="glance-label">Capabilities Named</div><div class="glance-bar-track"><div class="glance-bar-fill" style="width:${beliefCount > 0 ? Math.min(100, beliefCount * 25) : 75}%"></div></div></div></div></div></div>
-<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act1_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act I</div><div class="act-title">Your Client\u2019s Story</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">Who They Are</div><div class="section-headline">${escHtml(csHeadline)}</div>${bodyParas(csBody)}${csPullquote ? `<div class="pullquote">\u201C${escHtml(csPullquote)}\u201D</div>` : ""}${csTension ? `<div class="insight-card"><div class="insight-label">Core Tension</div><div class="insight-text">${escHtml(csTension)}</div></div>` : ""}</div></div>
-${mirrorObservation ? `<div class="saw-section"><div class="saw-inner"><div class="saw-eyebrow">A note from the interview.</div><p class="saw-body">${escHtml(mirrorObservation)}</p></div></div>` : ""}
-<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act2_1.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act II</div><div class="act-title">The Real Problem</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">The Root of It</div><div class="section-headline">${escHtml(rpHeadline)}</div>${bodyParas(rpBody)}${rpInsight ? `<div class="insight-card"><div class="insight-label">What\u2019s Actually Happening</div><div class="insight-text">${escHtml(rpInsight)}</div></div>` : ""}${rpPullquote ? `<div class="pullquote">\u201C${escHtml(rpPullquote)}\u201D</div>` : ""}</div></div>
-<div class="act-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_act3_2.jpg');background-size:cover;background-position:center;"><div class="act-divider-overlay"></div><div class="act-label"><div class="act-eyebrow">Act III</div><div class="act-title">The Path Forward</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">The Way Through</div><div class="section-headline">Your First Three Moves</div>${stepsHTML}</div></div>
-${arrogantTruth ? `<div class="arrogant-section"><div class="arrogant-inner"><div class="arrogant-label">The thing you almost didn\u2019t say.</div><div class="arrogant-bar"></div><div class="arrogant-text">\u201C${escHtml(arrogantTruth)}\u201D</div></div></div>` : ""}
-<div class="prompt-section"><div class="prompt-inner"><div class="eyebrow">What You Say</div><div class="section-headline">Your Prompt</div><div class="prompt-card"><div class="prompt-label">This is the thing you said you\u2019d never said publicly.</div><div class="prompt-text">\u201C${escHtml(positioningStatement)}\u201D</div><button class="prompt-copy-btn" onclick="copyPrompt(this)">\u2398 Copy to clipboard</button><div class="prompt-copied" id="promptCopied">Copied.</div><div class="prompt-context">This isn\u2019t a tagline. It\u2019s the clearest, most honest version of what your work actually does for people. Use it in conversations, on your site, in your proposals.</div></div></div></div>
-<div class="marcus-section" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_marcus_1.jpg');background-size:cover;background-position:center;"><div class="marcus-inner"><div class="marcus-eyebrow">A Letter from Your Future Self</div><div class="marcus-card">${futureSelfHTML}<div class="marcus-sig">Three years from now, / ${escHtml(firstName)}</div></div></div></div>
-<div class="love-section"><div class="love-inner"><div class="love-eyebrow">A Letter to Your Younger Self</div><img style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:40px;display:block;" src="https://deepwork.jamesguldan.com/blueprint/img_love_1.jpg" alt=""><div class="love-card">${loveHTML}</div></div></div>
-<div class="vision-divider" style="background-image:url('https://deepwork.jamesguldan.com/blueprint/img_vision_1.jpg');background-size:cover;background-position:center;"><div class="vision-divider-overlay"></div><div class="vision-label"><div class="vision-eyebrow">The After</div><div class="vision-title">${visHeadline ? escHtml(visHeadline) : "What the Right Life Actually Feels Like"}</div></div></div>
-<div class="section"><div class="section-inner"><div class="eyebrow">Your Vision</div><div class="section-headline">${visHeadline ? escHtml(visHeadline) : "Alignment Is a Daily Experience, Not a Destination"}</div>${bodyParas(visBody)}${visInsight ? `<div class="insight-card"><div class="insight-label">What Becomes Possible</div><div class="insight-text">${escHtml(visInsight)}</div></div>` : ""}</div></div>
-<div class="forget-section"><div class="forget-inner"><div class="eyebrow">Bookmark This</div><div class="forget-headline">On the days you forget who you are, come back here.</div><div class="forget-sub">Clarity isn\u2019t a one-time event. It\u2019s something you return to. These are the moments to reopen this blueprint.</div><div class="forget-triggers"><div class="forget-trigger"><div class="forget-trigger-label">When you undercharge</div><div class="forget-trigger-text">Reread Act III. You\u2019re not selling time. You\u2019re selling the system that only you can build.</div><div class="forget-trigger-action">Scroll to: The Path Forward</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you compare yourself</div><div class="forget-trigger-text">Reread Your Prompt. Nobody else does what you do the way you do it. That\u2019s the whole point.</div><div class="forget-trigger-action">Scroll to: Your Prompt</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you feel like a fraud</div><div class="forget-trigger-text">Reread the Love Letter. You were enough before any of this. You\u2019re still enough now.</div><div class="forget-trigger-action">Scroll to: A Letter to Your Younger Self</div></div><div class="forget-trigger"><div class="forget-trigger-label">When you lose the thread</div><div class="forget-trigger-text">Reread the Meditation. The clarity you seek is already inside what you do best. Build from there.</div><div class="forget-trigger-action">Scroll to: A Meditation</div></div></div><div class="forget-timestamp">Blueprint generated ${dateStr} &middot; Deep Work Interview &middot; Session #${sessionShort}</div></div></div>
-<div class="wallpaper-section"><div class="wallpaper-inner"><div class="wallpaper-card"><div class="wallpaper-copy"><div class="wallpaper-eyebrow">Take This With You</div><div class="wallpaper-headline">Always remember who you are.</div><div class="wallpaper-sub">Your positioning statement, with you everywhere you go.</div><button onclick="downloadPhoneWallpaper('${wpPrimary}','${wpAccent}','${promptForJs}','${firstNameJs}')" style="display:inline-flex;align-items:center;gap:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:#1D1D1F;background:transparent;padding:12px 28px;border-radius:50px;border:1.5px solid #E8E8E8;cursor:pointer;margin-top:8px;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M7 9l-3-3M7 9l3-3M1 12h12" stroke="#1D1D1F" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Save as Phone Background</button></div><div class="wallpaper-phones"><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Deep Work Interview</div></div></div><div class="phone-frame main"><div class="phone-screen"><div class="phone-text main">${escHtml(positioningStatement.slice(0, 60))}${positioningStatement.length > 60 ? "\u2026" : ""}</div></div></div><div class="phone-frame"><div class="phone-screen"><div class="phone-text">Always remember<br>who you are.</div></div></div></div></div></div></div>
-<div class="final-cta"><div class="final-inner"><div class="final-eyebrow">What Comes Next</div><div class="final-headline">This blueprint is the map.<br>The call is where we build it.</div><div class="final-sub">60 minutes with James to turn this blueprint into a living system. Your offer, your positioning, your pricing, your client selection. All of it, restructured around what you\u2019re actually great at.</div><div class="final-card"><div class="final-card-title">What happens on the Strategy Call</div><div class="final-card-items"><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Walk through your blueprint together, live</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Name the one offer that should be your entire business</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Price it based on transformation, not time</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Build your client selection criteria</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Map the 90 day implementation path</div></div><div class="final-item"><div class="final-check">&#10003;</div><div class="final-item-text">Leave with a system, not just a strategy</div></div></div></div><div class="final-price"><div class="final-price-amount">$297</div><div class="final-price-label">One session. One system. One clear direction forward.</div></div><a href="https://calendly.com/james-jamesguldan/60-minute-meeting-clone" class="final-btn">Book Your Strategy Call</a><div class="final-guarantee">If you don\u2019t leave the call with a clearer direction than you walked in with, you don\u2019t pay. That\u2019s the deal.</div><div class="final-testimonial"><p>\u201CIt just gave me a very honest, objective mirror back at myself. It pointed out that my biggest case study was nowhere on my website and asked, why are you burying all the leads? I spent 4 to 6 hours on it because I would get to a really hard question and need to go for a walk and really think about it, because this is the direction of my life and my career.\u201D</p><div class="final-testimonial-author">Chris Van Loan II &mdash; Founder, Luminary Media</div></div></div></div>
-<div style="text-align:center;padding:48px 24px;background:#FAFAFA;border-top:1px solid #F0F0F0;"><div style="max-width:600px;margin:0 auto;"><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:12px;">Take This Further</div><div style="font-size:20px;font-weight:700;color:#1D1D1F;margin-bottom:8px;">Download your interview transcript</div><div style="font-size:15px;color:#86868B;margin-bottom:24px;">Take it to your AI to keep building your brand strategy.</div><a href="/api/session/export-transcript?sessionId=${sessionId}${downloadToken ? "&dltoken=" + downloadToken : ""}" style="display:inline-block;background:#1D1D1F;color:#fff;padding:14px 36px;border-radius:50px;font-size:14px;font-weight:600;text-decoration:none;">Download Transcript (.md)</a></div></div>
-<script>window.addEventListener('scroll',function(){var s=document.documentElement.scrollTop||document.body.scrollTop;var t=document.documentElement.scrollHeight-document.documentElement.clientHeight;if(t>0)document.getElementById('progress').style.width=(s/t*100)+'%';});function copyPrompt(btn){navigator.clipboard.writeText('${promptForJs}').then(function(){document.getElementById('promptCopied').classList.add('show');setTimeout(function(){document.getElementById('promptCopied').classList.remove('show');},2000);}).catch(function(){});}if(typeof clarity==='function'){clarity('set','blueprint_viewed','true');clarity('set','session_id','${sessionId}');}document.addEventListener('DOMContentLoaded',function(){var ctaBtn=document.querySelector('.final-btn');if(ctaBtn){ctaBtn.addEventListener('click',function(){if(typeof clarity==='function'){clarity('set','strategy_cta_clicked','true');}});}}); function downloadTranscript(sid){var btn=document.getElementById('transcriptBtn');if(btn)btn.textContent='Downloading\u2026';var token=(window.STATE&&STATE.sessionJwt)||localStorage.getItem('dw_session_jwt')||localStorage.getItem('dw_admin_token')||localStorage.getItem('dw_session')||'';var headers={};if(token)headers['Authorization']='Bearer '+token;fetch('/api/session/export-transcript?sessionId='+sid,{credentials:'include',headers:headers}).then(function(r){if(!r.ok)throw new Error('unauthorized');return r.blob();}).then(function(blob){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='deep-work-transcript.md';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);if(btn)btn.textContent='Download Transcript (.md)';}).catch(function(){if(btn)btn.textContent='Download Transcript (.md)';alert('Could not download. Make sure you are logged in and try again.');});} function downloadPhoneWallpaper(primary,accent,statement,name){var c=document.createElement('canvas');c.width=1080;c.height=1920;var ctx=c.getContext('2d');var g=ctx.createLinearGradient(0,0,0,1920);g.addColorStop(0,primary||'#1D1D1F');g.addColorStop(1,_shade(primary||'#1D1D1F',-50));ctx.fillStyle=g;ctx.fillRect(0,0,1080,1920);ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(0,1300,1080,620);ctx.fillStyle=accent||'#C4703F';ctx.font='500 32px Georgia,serif';ctx.textAlign='center';ctx.fillText('DEEP WORK INTERVIEW',540,260);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(180,300);ctx.lineTo(900,300);ctx.stroke();ctx.fillStyle='#FFFFFF';ctx.font='bold 74px Georgia,serif';ctx.textAlign='center';_wrap(ctx,statement||'Your positioning statement.',540,520,820,90);ctx.strokeStyle=accent||'#C4703F';ctx.lineWidth=1;ctx.setLineDash([6,6]);ctx.beginPath();ctx.moveTo(180,1560);ctx.lineTo(900,1560);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(255,255,255,0.65)';ctx.font='32px Georgia,serif';ctx.fillText('Always remember who you are.',540,1630);ctx.fillStyle=accent||'#C4703F';ctx.font='600 26px sans-serif';ctx.fillText('jamesguldan.com/deep-work',540,1700);c.toBlob(function(blob){var u=URL.createObjectURL(blob);var a=document.createElement('a');a.href=u;a.download=(name||'blueprint')+'-phone-wallpaper.png';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u);},'image/png');} function _wrap(ctx,text,x,y,maxW,lh){var words=text.split(' '),line='';for(var i=0;i<words.length;i++){var t=line+words[i]+' ';if(ctx.measureText(t).width>maxW&&i>0){ctx.fillText(line,x,y);line=words[i]+' ';y+=lh;}else line=t;}ctx.fillText(line,x,y);} function _shade(hex,pct){var n=parseInt(hex.replace('#',''),16),a=Math.round(2.55*pct),R=Math.max(0,Math.min(255,(n>>16)+a)),G=Math.max(0,Math.min(255,(n>>8&255)+a)),B=Math.max(0,Math.min(255,(n&255)+a));return'#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);}<\/script></body></html>`;
+const ringWrap = document.getElementById('ringWrap');
+if (ringWrap) {
+  const ringObs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          ringWrap.classList.add('draw');
+          const scoreEl = document.getElementById('scoreNumber');
+          if (scoreEl) animateNumber(scoreEl, parseInt(scoreEl.dataset.target, 10), 2100);
+          const projEl = document.getElementById('projectedNumber');
+          if (projEl) setTimeout(() => animateNumber(projEl, parseInt(projEl.dataset.target, 10), 1600), 1400);
+        }, 200);
+        ringObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  ringObs.observe(ringWrap);
+}
+
+// Scroll progress bar
+const progressBar = document.getElementById('scrollProgressBar');
+function updateProgress() {
+  if (!progressBar) return;
+  const h = document.documentElement;
+  const scrolled = h.scrollTop;
+  const max = h.scrollHeight - h.clientHeight;
+  progressBar.style.width = (max > 0 ? (scrolled / max) * 100 : 0) + '%';
+}
+window.addEventListener('scroll', updateProgress, { passive: true });
+updateProgress();
+
+// Top bar scroll state
+const topBar = document.querySelector('.top-bar');
+if (topBar) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) topBar.classList.add('scrolled');
+    else topBar.classList.remove('scrolled');
+  }, { passive: true });
+}
+
+// Copy buttons on quote cards
+document.querySelectorAll('.copy-btn[data-copy]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(btn.dataset.copy);
+      const prev = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = prev; btn.classList.remove('copied'); }, 1600);
+    } catch (e) {}
+  });
+});
+
+// Lovable prompt copy button
+const promptBtn = document.getElementById('promptCopy');
+if (promptBtn) {
+  promptBtn.addEventListener('click', async () => {
+    const target = document.getElementById(promptBtn.dataset.target);
+    if (!target) return;
+    try {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = target.innerHTML;
+      const text = tmp.textContent || tmp.innerText || '';
+      await navigator.clipboard.writeText(text.trim());
+      promptBtn.textContent = 'Copied to clipboard';
+      promptBtn.classList.add('copied');
+      setTimeout(() => { promptBtn.textContent = 'Copy the brief'; promptBtn.classList.remove('copied'); }, 1800);
+    } catch (e) {}
+  });
+}
+
+// Magnetic buttons
+const isTouch = window.matchMedia('(hover: none)').matches || 'ontouchstart' in window;
+if (!isTouch) {
+  document.querySelectorAll('.btn.large, .btn.huge').forEach(el => {
+    el.addEventListener('mousemove', (e) => {
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      el.style.transform = 'translate(' + (x * 0.12) + 'px,' + (y * 0.18) + 'px)';
+    });
+    el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+  });
+}
+
+// Copy AI starter prompt
+const copyStarterBtn = document.getElementById('copyStarter');
+if (copyStarterBtn) {
+  copyStarterBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(${JSON.stringify(starterPrompt)});
+      copyStarterBtn.textContent = 'Starter prompt copied';
+      copyStarterBtn.classList.add('copied');
+      setTimeout(() => { copyStarterBtn.textContent = 'Copy AI starter prompt'; copyStarterBtn.classList.remove('copied'); }, 1800);
+    } catch (e) {}
+  });
+}
+
+// Download transcript button
+const dlTBtn = document.getElementById('downloadTranscript');
+if (dlTBtn) {
+  dlTBtn.addEventListener('click', () => {
+    const token = (window.STATE && STATE.sessionJwt) || localStorage.getItem('dw_session_jwt') || localStorage.getItem('dw_admin_token') || '';
+    const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+    dlTBtn.textContent = 'Downloading\u2026';
+    fetch('/api/session/export-transcript?sessionId=${sessionId}', { credentials: 'include', headers })
+      .then(r => { if (!r.ok) throw new Error('unauthorized'); return r.blob(); })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'deep-work-transcript.md';
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+        dlTBtn.textContent = 'Download transcript (.txt)';
+      })
+      .catch(() => { dlTBtn.textContent = 'Download transcript (.txt)'; alert('Could not download. Make sure you are logged in and try again.'); });
+  });
+}
+
+try {
+  fetch('/api/event/tier-viewed', {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: ${JSON.stringify(sessionId)}, tier: ${JSON.stringify(tier.tier_title || "")} })
+  }).catch(() => {});
+} catch (_) {}
+`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc2(firstName)}'s Deep Work Blueprint</title>
+<link rel="icon" type="image/x-icon" href="https://jamesguldan.com/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="https://jamesguldan.com/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://jamesguldan.com/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@300;400;500;600;700&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>${css}</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="scroll-progress"><span id="scrollProgressBar"></span></div>
+
+<!-- Top bar -->
+<header class="top-bar">
+  <a href="https://jamesguldan.com/deep-work/" class="tb-brand">
+    <svg class="tb-mark" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="13" cy="13" r="12" stroke="currentColor" stroke-width="1.4"/>
+      <circle cx="13" cy="13" r="4" fill="currentColor"/>
+    </svg>
+    <span class="tb-wordmark">Deep Work <span>Blueprint</span></span>
+  </a>
+  <nav>
+    <a href="#transcript" class="tb-link">Full Transcript</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- =========================================== HERO =========================================== -->
+<section class="hero">
+  <div class="meta">
+    <span class="caption-accent">${esc2(tier.tier_title || "Deep Work Interview")}</span>
+    <span class="dot"></span>
+    <span class="caption">${esc2(completedDate)}</span>
+    <span class="dot"></span>
+    <span class="caption">${esc2(sessionShort)}</span>
+  </div>
+  <h1 class="hero-name reveal">${esc2(firstName)}</h1>
+  <p class="hero-hook reveal delay-1">${esc2(bp.openingHook || "")}</p>
+  <div class="hero-signature reveal delay-2">
+    <span class="rule"></span>
+    <span class="caption-accent">A Deep Work Blueprint</span>
+  </div>
+</section>
+
+
+<!-- =========================================== 01: WHAT I SAW =========================================== -->
+<section class="section section-letter" id="s01">
+  <div class="reader">
+    <div class="section-num reveal">01 &nbsp;&middot;&nbsp; What I Saw</div>
+    <h2 class="section-title reveal">A letter from James.</h2>
+    <div class="letter-salutation reveal">${esc2(letterSalutation)}</div>
+    ${letterItalic ? `<p class="letter-opening reveal">${esc2(letterItalic)}</p>` : ""}
+    <div class="letter-body prose">
+      ${letterBodyParas.replace(/<p>/g, '<p class="reveal">')}
+    </div>
+    ${letterInsight ? `<blockquote class="letter-callout reveal">${esc2(letterInsight)}</blockquote>` : ""}
+    <div class="letter-signoff reveal">${esc2(letterSignoff)}</div>
+  </div>
+</section>
+
+
+<!-- =========================================== 02: HARD TRUTHS =========================================== -->
+<section class="section section-crossroads" id="s02">
+  <div class="reader">
+    <div class="section-num reveal">02 &nbsp;&middot;&nbsp; Hard Truths</div>
+    <h2 class="section-title reveal">The things nobody else told you.</h2>
+    <div class="truths-list">
+      ${truthsHTML}
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================== 03: ORIGIN STORY =========================================== -->
+<section class="section section-wound" id="s03">
+  <div class="reader">
+    <div class="section-num reveal">03 &nbsp;&middot;&nbsp; Your Origin Story</div>
+    <h2 class="section-title reveal">The wound that became the work.</h2>
+    <p class="wound-opener reveal">${esc2(woundOpener.length > 80 ? woundOpener.slice(0, 77) + "\u2026" : woundOpener)}</p>
+    <div class="wound-body">
+      ${originParas.replace(/<p>/g, '<p class="reveal">')}
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================== 04: WHAT YOU SAID =========================================== -->
+<section class="section section-quotes" id="s04">
+  <div class="wrap">
+    <div class="section-num reveal">04 &nbsp;&middot;&nbsp; What You Said That Matters</div>
+    <h2 class="section-title reveal">Your words, back at you.</h2>
+    <div class="quote-stack">
+      ${quotesHTML}
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================== INTERSTITIAL =========================================== -->
+<div class="interstitial">
+  <div class="rule"></div>
+  <p class="interstitial-line reveal">${esc2(categoryOfOne || afterPos || "Now let us talk about where this goes.")}</p>
+  <div class="rule after"></div>
+</div>
+
+
+<!-- =========================================== 05: POSITIONING =========================================== -->
+<section class="section section-positioning" id="s05">
+  <div class="wrap">
+    <div class="section-num reveal">05 &nbsp;&middot;&nbsp; Your Positioning</div>
+    <h2 class="section-title reveal">Before and after.</h2>
+    <div class="positioning-grid">
+      <div class="position-card before reveal">
+        <span class="label">Where you are</span>
+        <p>${esc2(beforePos || "Positioned as one of many")}</p>
+      </div>
+      <div class="position-card after reveal delay-1">
+        <span class="label">Where you are going</span>
+        <p>${esc2(afterPos || positioningStatement)}</p>
+      </div>
+    </div>
+    ${categoryOfOne ? `<blockquote class="category-callout reveal">${esc2(categoryOfOne)}</blockquote>` : ""}
+    ${whyItWorks ? `<div class="why-it-works reveal">
+      <div class="label-line">Why It Works</div>
+      <p>${esc2(whyItWorks)}</p>
+    </div>` : ""}
+  </div>
+</section>
+
+
+<!-- =========================================== 06: WHO YOU SERVE =========================================== -->
+<section class="section section-who" id="s06">
+  <div class="wrap">
+    <div class="section-num reveal">06 &nbsp;&middot;&nbsp; Who You Serve</div>
+    <h2 class="section-title reveal">Meet ${esc2(icName || "your ideal client")}.</h2>
+    ${icDemographics ? `<p class="portrait-demo reveal">${esc2(icDemographics)}</p>` : ""}
+    ${portraitGridHTML ? `<div class="portrait-grid">${portraitGridHTML}</div>` : ""}
+    ${icConnection ? `<p class="portrait-close reveal">${esc2(icConnection)}</p>` : ""}
+  </div>
+</section>
+
+
+<!-- =========================================== 07: YOUR BRAND =========================================== -->
+<section class="section section-brand" id="s07">
+  <div class="wrap">
+    <div class="section-num reveal">07 &nbsp;&middot;&nbsp; Your Brand</div>
+    ${brandName ? `<h2 class="brand-name reveal">${esc2(brandName)}</h2>` : `<h2 class="section-title reveal">Brand Foundation</h2>`}
+    ${brandTagline ? `<p class="brand-tagline reveal">${esc2(brandTagline)}</p>` : ""}
+    ${pillsHTML ? `<div class="brand-row reveal">
+      <div class="label-line">Voice</div>
+      <div class="voice-pills">${pillsHTML}</div>
+    </div>` : ""}
+    ${swatchesHTML ? `<div class="brand-row reveal">
+      <div class="label-line">Palette</div>
+      <div class="color-row">${swatchesHTML}</div>
+    </div>` : ""}
+    ${sayThis.length > 0 || neverSay.length > 0 ? `<div class="brand-row reveal">
+      <div class="label-line">Voice Guide</div>
+      <div class="voice-grid">
+        <div class="voice-col">
+          <div class="label-line" style="margin-bottom:16px;">Say this</div>
+          <ul>${sayHTML}</ul>
+        </div>
+        <div class="voice-col never">
+          <div class="label-line" style="margin-bottom:16px;">Never say</div>
+          <ul>${neverHTML}</ul>
+        </div>
+      </div>
+    </div>` : ""}
+    ${positioningStatement ? `<div class="brand-positioning reveal">${esc2(positioningStatement)}</div>` : ""}
+  </div>
+</section>
+
+
+<!-- =========================================== 08: CREDIBILITY SCORE =========================================== -->
+<section class="section section-score" id="s08">
+  <div class="wrap">
+    <div class="section-num reveal">08 &nbsp;&middot;&nbsp; Your Credibility Score</div>
+    <h2 class="section-title reveal">Where you stand, and where you are going.</h2>
+    <div class="score-hero reveal" id="ringWrap">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 300 300">
+          <circle class="ring-bg" cx="150" cy="150" r="120"/>
+          <circle class="ring-fill" cx="150" cy="150" r="120"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-score" id="scoreNumber" data-target="${scoreNum}">${scoreNum}</div>
+          ${scoreGrade ? `<div class="ring-grade">${esc2(scoreGrade)}</div>` : ""}
+          <div class="ring-label">out of 100</div>
+        </div>
+      </div>
+      <div class="score-right">
+        <h3>With focused effort, you get here.</h3>
+        <div class="projected-line">
+          <span class="arrow">&rarr;</span>
+          <span class="num" id="projectedNumber" data-target="${projNum}">${projNum}</span>
+          ${projGrade ? `<span class="grade">${esc2(projGrade)}</span>` : ""}
+        </div>
+        <div class="caption-accent">Projected score after your first three moves</div>
+      </div>
+    </div>
+    <div class="score-categories">
+      ${categoriesHTML}
+    </div>
+    ${scoreContext ? `<p class="score-context reveal">${esc2(scoreContext)}</p>` : ""}
+    ${scoreReframe ? `<p class="score-context reveal" style="margin-top:24px;">${esc2(scoreReframe)}</p>` : ""}
+  </div>
+</section>
+
+
+<!-- =========================================== 09: FIRST THREE MOVES =========================================== -->
+<section class="section section-moves" id="s09">
+  <div class="wrap">
+    <div class="section-num reveal">09 &nbsp;&middot;&nbsp; Your First Three Moves</div>
+    <h2 class="section-title reveal">Three things you can do before Friday.</h2>
+    <div class="moves-list">
+      ${movesHTMLContent}
+    </div>
+  </div>
+</section>
+
+
+<!-- =========================================== 10: THE LOVABLE PROMPT =========================================== -->
+<section class="section section-lovable" id="lovable">
+  <div class="wrap">
+    <span class="lovable-kicker reveal">10 &middot; Your website brief</span>
+    <h2 class="lovable-title reveal">A full site brief, built from your session.</h2>
+    <p class="lovable-setup reveal delay-1">This prompt took everything from your Deep Work session and translated it into a complete, eight-section website brief following the same narrative structure used by the highest-converting personal brand sites. Every section has a purpose. Every word came from you.</p>
+    <p class="lovable-setup reveal delay-2" style="margin-top:-20px;">Go to <strong>lovable.dev</strong>, start a blank project, and paste the prompt below. Then follow the protocol in the tips section: <strong>build one section at a time.</strong> This prevents cascading errors and lets you course-correct as you go.</p>
+
+    <div class="framework-strip reveal">
+      <div class="fw-step">
+        <div class="fw-step-num">01</div>
+        <div class="fw-step-label">Hero</div>
+        <div class="fw-step-desc">The first thing they see. Speaks to the reader, not about you.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">02</div>
+        <div class="fw-step-label">The Problem</div>
+        <div class="fw-step-desc">Make them feel seen before you offer anything.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">03</div>
+        <div class="fw-step-label">The Guide</div>
+        <div class="fw-step-desc">You as the trusted expert who has walked this road.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">04</div>
+        <div class="fw-step-label">The Plan</div>
+        <div class="fw-step-desc">Three steps. Makes working with you feel easy.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">05</div>
+        <div class="fw-step-label">The Invitation</div>
+        <div class="fw-step-desc">Primary offer + a gentler entry point for the not-yet-ready.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">06</div>
+        <div class="fw-step-label">The Stakes</div>
+        <div class="fw-step-desc">Honest urgency. What staying stuck actually costs.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">07</div>
+        <div class="fw-step-label">Social Proof</div>
+        <div class="fw-step-desc">Testimonials + the vision of what success looks like.</div>
+      </div>
+      <div class="fw-step">
+        <div class="fw-step-num">08</div>
+        <div class="fw-step-label">Final CTA</div>
+        <div class="fw-step-desc">One last clear invitation before they leave.</div>
+      </div>
+    </div>
+
+    <div class="lovable-block reveal">
+      <div class="label-strip">
+        <span>lovable.dev &middot; website brief</span>
+        <button class="prompt-copy" id="promptCopy" data-target="promptText">Copy the brief</button>
+      </div>
+      <pre class="prompt-text" id="promptText">${esc2(lovablePrompt)}</pre>
+    </div>
+
+    <div class="lovable-tips reveal">
+      <div class="tip-card">
+        <div class="tip-num">Pro tip 01</div>
+        <p><strong>One section at a time.</strong> After pasting, tell Lovable "Build section 01 only. Stop and wait for my approval before continuing." This prevents cascading errors and keeps each section clean.</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">Pro tip 02</div>
+        <p><strong>Lock what you like.</strong> After approving a section, say "Do not touch sections 01 or 02. Focus only on section 03." Lovable can overwrite previous work if you don't protect it.</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">Pro tip 03</div>
+        <p><strong>Describe before you fix.</strong> If something looks wrong, describe the current state AND the desired state. "The headline is left-aligned. Move it to center, full viewport width." Specifics beat vague requests every time.</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-num">Pro tip 04</div>
+        <p><strong>Switch to Chat mode for debugging.</strong> If something breaks, go to Chat mode and ask Lovable to analyze the error before making changes. This gets you to the root cause instead of layering fixes on top of symptoms.</p>
+      </div>
+    </div>
+
+    <div class="lovable-actions reveal">
+      <a href="https://lovable.dev" target="_blank" rel="noopener" class="btn large">Open lovable.dev</a>
+      <a href="#next" class="btn ghost large">Have James do this with me</a>
+    </div>
+    <p class="lovable-disclaimer reveal">The brief above is a first draft foundation. It contains everything load-bearing from your session. Expect the first Lovable output to be 80&ndash;90% there. The remaining 10% is your iteration and your taste.</p>
+  </div>
+</section>
+
+
+<!-- =========================================== 11: CLOSING =========================================== -->
+<section class="section section-closing" id="closing">
+  <div class="reader">
+    <div class="section-num reveal">11 &nbsp;&middot;&nbsp; Closing</div>
+    <h2 class="section-title reveal">One more thing before you go.</h2>
+    <div class="closing-letter reveal">
+      ${closingParas}
+    </div>
+    <div class="closing-signoff reveal">${esc2(letterSignoff)}</div>
+  </div>
+</section>
+
+
+<!-- =========================================== 12: WHAT COMES NEXT =========================================== -->
+<section class="section section-next" id="next">
+  <div class="reader">
+    <div class="section-num reveal">12 &nbsp;&middot;&nbsp; What comes next</div>
+    <h2 class="section-title reveal">If you want to go further.</h2>
+    <p class="next-intro reveal" style="font-size:var(--size-body-l);color:var(--ink-2);line-height:1.7;margin-bottom:56px;max-width:60ch;">Everything in this blueprint is yours. You can take it and run. But if you want a thought partner to walk through it with you, make the first three moves concrete, and leave with a 30-day plan, here is how.</p>
+
+    <div class="closing-cta-block reveal">
+      <h3>Strategy Call</h3>
+      <p class="price">$197 &nbsp;&middot;&nbsp; 60 minutes</p>
+      <div class="features">
+        <div class="feat">
+          <div class="feat-label">A focused 60-minute<br>deep dive with James</div>
+        </div>
+        <div class="feat">
+          <div class="feat-label">Walk through your blueprint<br>and lock in your first three moves</div>
+        </div>
+        <div class="feat">
+          <div class="feat-label">Leave with a concrete<br>30-day action plan</div>
+        </div>
+      </div>
+      <a href="https://calendly.com/james-jamesguldan/deep-work-review-consult" class="btn huge light" target="_blank" rel="noopener">Book the call</a>
+    </div>
+    <p class="closing-footer">You can also email <a href="mailto:james@jamesguldan.com">james@jamesguldan.com</a> if you want to talk first.</p>
+  </div>
+</section>
+
+
+<!-- =========================================== 13: TAKE IT WITH YOU =========================================== -->
+<section class="section section-appendix" id="transcript">
+  <div class="reader">
+    <div class="section-num reveal">13 &nbsp;&middot;&nbsp; Take it with you</div>
+    <h2 class="section-title reveal">The full ninety minutes, in your pocket.</h2>
+    <div class="appendix-intro reveal">
+      <p>This is the raw material. Every word you said in your Deep Work session, saved as plain text so you can take it anywhere.</p>
+      <p>Paste it into ChatGPT, Claude, Gemini, or whatever AI you like to think with. Ask it to pull more quotes. Ask it to draft your About page. Ask it to find the sentences that should live on your homepage. This transcript is yours to mine for as long as you want to keep writing your story.</p>
+    </div>
+    <div class="appendix-actions reveal">
+      <button class="btn large" id="downloadTranscript">Download transcript (.txt)</button>
+      <button class="btn ghost large" id="copyStarter">Copy AI starter prompt</button>
+    </div>
+    <div class="appendix-hint reveal">
+      <p class="hint-label">How to use this</p>
+      <ol>
+        <li>Click <em>Copy AI starter prompt</em> and paste it into your AI of choice.</li>
+        <li>Download or copy your transcript and paste that right after the prompt.</li>
+        <li>Send. The AI now has the full context of your session and can keep writing with you.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="page-footer">
+  <div class="reader" style="text-align:center;">
+    <span class="caption" style="color:var(--ink-3);font-size:12px;letter-spacing:0.14em;">A Deep Work Blueprint by James Guldan</span>
+  </div>
+</footer>
+
+<script>${js}<\/script>
+</body>
+</html>`;
 }
 __name(renderBlueprintV3, "renderBlueprintV3");
+function buildHardTruthsFallback(bp, v3, ic, ml) {
+  const truths = [];
+  if (v3 && v3.arrogant_truth) truths.push(v3.arrogant_truth);
+  if (v3 && v3.never_said_publicly && v3.never_said_publicly !== v3.arrogant_truth) truths.push(v3.never_said_publicly);
+  if (v3 && v3.mirror_observation && truths.length < 3) truths.push(v3.mirror_observation);
+  if (ml && ml.categoryOfOne && truths.length < 3) truths.push("Your category is not what you call yourself. " + ml.categoryOfOne);
+  return truths.slice(0, 4);
+}
+__name(buildHardTruthsFallback, "buildHardTruthsFallback");
+function buildVerbatimFallback(v3, ic) {
+  const quotes = [];
+  if (ic && ic.exactWords) {
+    const words = Array.isArray(ic.exactWords) ? ic.exactWords : [ic.exactWords];
+    words.forEach((w) => {
+      if (w && typeof w === "string") quotes.push({ quote: w, reframe: "This is the sentence your ideal client is already saying. It belongs in your positioning." });
+    });
+  }
+  if (v3 && v3.arrogant_truth && quotes.length < 3) {
+    quotes.push({ quote: v3.arrogant_truth, reframe: "This is the thing you almost did not say. It is the most powerful thing in this document." });
+  }
+  if (v3 && v3.mirror_observation && quotes.length < 3) {
+    quotes.push({ quote: v3.mirror_observation, reframe: "What you said here is the core of what you do. It belongs in public." });
+  }
+  return quotes;
+}
+__name(buildVerbatimFallback, "buildVerbatimFallback");
+function buildLovablePrompt(firstName, bp, ic, bf, v3, positioning) {
+  const brandName = bf && (bf.brandName || bf.name) || "Your Brand";
+  const tagline = bf && bf.tagline || "";
+  const icName = ic && (ic.name || (ic.portrait ? ic.portrait.split(/\s/)[0] : "") || (ic.demographics ? ic.demographics.split(/\s/)[0] : "")) || "your ideal client";
+  const icDesc = ic && (ic.demographics || (ic.portrait ? ic.portrait.split(/\n/)[0] : "")) || "";
+  const icExactWords = ic && (typeof ic.exactWords === "string" ? ic.exactWords : Array.isArray(ic.exactWords) ? ic.exactWords[0] : "") || v3 && v3.clientStory && v3.clientStory.pullquote || "";
+  const icFears = ic && ic.fears || "";
+  const icWants = ic && ic.wants || "";
+  const icTriedSolutions = ic && ic.triedSolutions || v3 && v3.clientStory && v3.clientStory.tension || "";
+  const openingHook = bp && bp.openingHook || positioning || tagline || "";
+  const mirrorObs = v3 && v3.mirror_observation || "";
+  const arrogantTruth = v3 && v3.arrogant_truth || "";
+  const visionBody = v3 && v3.vision && v3.vision.body || "";
+  const positioningStatement = positioning || v3 && v3.positioningStatement || tagline || "";
+  const colors = bf && Array.isArray(bf.colorPalette) && bf.colorPalette.length > 0 ? bf.colorPalette.slice(0, 4).map((c, i) => {
+    const hex = typeof c === "string" ? c : c.hex || "#1C2B3A";
+    const name = typeof c === "string" ? "Color " + (i + 1) : c.name || "Color " + (i + 1);
+    return `${hex} (${name})`;
+  }).join(", ") : "#1C2B3A (Primary), #C9A84C (Accent)";
+  const voicePills = bf && Array.isArray(bf.voicePills) && bf.voicePills.length > 0 ? bf.voicePills.slice(0, 6).join(", ") : bf && Array.isArray(bf.voiceWords) && bf.voiceWords.length > 0 ? bf.voiceWords.slice(0, 6).join(", ") : "";
+  const sayThisList = bf && Array.isArray(bf.sayThis) && bf.sayThis.length > 0 ? bf.sayThis.slice(0, 4).map((s) => `"${s}"`).join(", ") : "";
+  const neverSayList = bf && Array.isArray(bf.neverSay) && bf.neverSay.length > 0 ? bf.neverSay.slice(0, 4).map((s) => `"${s}"`).join(", ") : "";
+  const moves = bp && Array.isArray(bp.firstThreeMoves) ? bp.firstThreeMoves.slice(0, 3) : [];
+  const step1Label = moves[0] && (moves[0].move || moves[0].title) || "Deep dive into your story";
+  const step1Detail = moves[0] && (moves[0].detail || moves[0].description) || "";
+  const step2Label = moves[1] && (moves[1].move || moves[1].title) || "Clarify your positioning";
+  const step2Detail = moves[1] && (moves[1].detail || moves[1].description) || "";
+  const step3Label = moves[2] && (moves[2].move || moves[2].title) || "Build the brand and go live";
+  const step3Detail = moves[2] && (moves[2].detail || moves[2].description) || "";
+  const firstInitial = firstName ? firstName[0].toUpperCase() : "J";
+  const lines = [];
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`WEBSITE BRIEF: ${brandName}`);
+  lines.push(`Built from a 90-minute Deep Work brand session with ${firstName}`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`You are building a personal brand website for ${firstName}, founder of ${brandName}.`);
+  lines.push(``);
+  lines.push(`This is not a template. Every detail below came from a real interview. Use it word-for-word where possible. Do not substitute generic placeholder copy \u2014 the specificity is the point.`);
+  lines.push(``);
+  lines.push(`IMPORTANT BUILD PROTOCOL:`);
+  lines.push(`Build one section at a time. After building each section, stop and wait for my approval before continuing. This prevents cascading errors and lets me course-correct early. Start with Section 01.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`CONTEXT: WHO THIS SITE IS FOR`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Ideal client: ${icName}`);
+  if (icDesc) lines.push(`Profile: ${icDesc}`);
+  if (icExactWords) lines.push(`In their own words: "${icExactWords}"`);
+  if (icTriedSolutions) lines.push(`What they have already tried: ${icTriedSolutions}`);
+  if (icFears) lines.push(`What they secretly fear: ${icFears}`);
+  if (icWants) lines.push(`What they actually want: ${icWants}`);
+  lines.push(``);
+  lines.push(`The site must pass this test: the ideal client lands on it and thinks "This person gets me before I have said a word." If the copy is about ${firstName} instead of about the reader, rewrite it.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 01 \u2014 HERO (above the fold)`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`This is the most important section. The headline must speak TO the reader's world, not about the brand. Do not open with credentials, a founder photo, or the brand name.`);
+  lines.push(``);
+  lines.push(`Layout: Full viewport height. Pure typography \u2014 no hero image, no stock photos. Background in the brand's primary dark color.`);
+  lines.push(``);
+  if (openingHook) {
+    lines.push(`Main headline (large, centered, display font):`);
+    lines.push(`"${openingHook}"`);
+  } else {
+    lines.push(`Main headline: Write a one-sentence headline that describes the transformation ${icName} wants, not what ${firstName} offers.`);
+  }
+  lines.push(``);
+  if (tagline || positioningStatement) {
+    lines.push(`Subheadline (italic, slightly smaller, below the headline):`);
+    lines.push(`"${tagline || positioningStatement}"`);
+  }
+  lines.push(``);
+  lines.push(`Primary CTA button: "Book a Strategy Call"`);
+  lines.push(`Secondary CTA (ghost/outline below primary): "See how it works" \u2014 smooth scroll to Section 03`);
+  lines.push(``);
+  lines.push(`NO stock photos. NO hero image. Typography only.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 02 \u2014 THE PROBLEM (make them feel seen)`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Purpose: Earn trust by demonstrating deep understanding BEFORE offering a solution. This is a mirror, not a pain list.`);
+  lines.push(``);
+  lines.push(`Section header: "You already know something is off."`);
+  lines.push(``);
+  lines.push(`Three-column layout naming three levels of the problem:`);
+  lines.push(``);
+  lines.push(`Column 1 \u2014 The surface problem (what they would Google):`);
+  lines.push(`Label: "What it looks like"`);
+  if (icTriedSolutions) lines.push(`Hint: derive from "${icTriedSolutions}" \u2014 the visible external symptom.`);
+  else lines.push(`Write the external, visible symptom that ${icName} experiences.`);
+  lines.push(``);
+  lines.push(`Column 2 \u2014 The real problem (how it makes them feel inside):`);
+  lines.push(`Label: "What it feels like"`);
+  if (icFears) lines.push(`Use this: "${icFears}"`);
+  else lines.push(`Write the internal emotional experience \u2014 frustration, self-doubt, being overlooked.`);
+  lines.push(``);
+  lines.push(`Column 3 \u2014 The deeper problem (why it matters in the world):`);
+  lines.push(`Label: "What it costs you"`);
+  if (arrogantTruth) lines.push(`Use this: "${arrogantTruth}"`);
+  else lines.push(`Write the philosophical cost \u2014 what is fundamentally wrong about their situation, what they are losing by staying stuck.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 03 \u2014 THE GUIDE (who ${firstName} is)`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Key rule: present ${firstName} as the GUIDE who has walked this road \u2014 not as the hero of their own story. The reader is the hero. ${firstName} is the experienced companion who knows the terrain.`);
+  lines.push(``);
+  lines.push(`Layout: Two columns on desktop, stacked on mobile.`);
+  lines.push(`Left column: Square photo placeholder with initial "${firstInitial}" in brand accent color on dark background.`);
+  lines.push(`Right column: Bio copy, two paragraphs max.`);
+  lines.push(``);
+  lines.push(`Paragraph 1 \u2014 EMPATHY (show you understand their world, not your credentials):`);
+  if (mirrorObs) lines.push(`Use this: "${mirrorObs}"`);
+  else lines.push(`Write a paragraph showing ${firstName} understands exactly what ${icName} is experiencing. Lead with their world, not ${firstName}'s resume.`);
+  lines.push(``);
+  lines.push(`Paragraph 2 \u2014 AUTHORITY (specific results, not generic credentials):`);
+  if (arrogantTruth) lines.push(`Use this: "${arrogantTruth}"`);
+  else if (positioningStatement) lines.push(`Use this: "${positioningStatement}"`);
+  else lines.push(`Write one paragraph with specific, concrete proof that ${firstName} can solve this problem. Avoid generic claims. Use numbers, names, or specific outcomes.`);
+  lines.push(``);
+  lines.push(`Closing line below bio (italic, brand accent color):`);
+  lines.push(`"${positioningStatement || openingHook}"`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 04 \u2014 THE PLAN (how it works)`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Purpose: Remove the friction of "but how does this actually work?" with a simple three-step process.`);
+  lines.push(``);
+  lines.push(`Section header: "Here is exactly how it works."`);
+  lines.push(`Subheader: "Three steps between where you are and where you want to be."`);
+  lines.push(``);
+  lines.push(`Step 1: ${step1Label}`);
+  if (step1Detail) lines.push(`Description: ${step1Detail.slice(0, 200)}`);
+  lines.push(``);
+  lines.push(`Step 2: ${step2Label}`);
+  if (step2Detail) lines.push(`Description: ${step2Detail.slice(0, 200)}`);
+  lines.push(``);
+  lines.push(`Step 3: ${step3Label}`);
+  if (step3Detail) lines.push(`Description: ${step3Detail.slice(0, 200)}`);
+  lines.push(``);
+  lines.push(`Design: Three large numbered steps (number in 80\u2013100px brand accent color). Step title in display font. One-sentence description in body font. Horizontal row on desktop, vertical stack on mobile.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 05 \u2014 THE INVITATION (call to action)`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Full-width section. Brand primary dark background. White text. Two offers \u2014 one for people ready now, one for people who need a softer entry.`);
+  lines.push(``);
+  lines.push(`Section header: "Ready to build this?"`);
+  lines.push(``);
+  lines.push(`Primary offer (center stage):`);
+  lines.push(`Name: Strategy Call`);
+  lines.push(`Description: A focused 60-minute session to walk through your blueprint and lock in your first three moves.`);
+  lines.push(`Price: $297`);
+  lines.push(`CTA: "Book your strategy call" \u2014 white button, dark text`);
+  lines.push(``);
+  lines.push(`Transitional offer (below or beside the primary, for people not ready to commit):`);
+  lines.push(`Name: The Deep Work Interview`);
+  lines.push(`Description: The 90-minute session that builds a blueprint like this one.`);
+  lines.push(`Price: $67`);
+  lines.push(`CTA: "Start with the interview" \u2014 ghost button, white outline`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 06 \u2014 THE STAKES (what staying stuck costs)`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Purpose: Create honest urgency without manufactured scarcity or fake countdown timers.`);
+  lines.push(``);
+  lines.push(`One pull quote, centered, large italic display font:`);
+  if (arrogantTruth) {
+    lines.push(`"${arrogantTruth}"`);
+  } else if (icFears) {
+    lines.push(`Derive a stakes statement from: "${icFears}" \u2014 frame what they lose by waiting, not what they gain by buying.`);
+  } else {
+    lines.push(`"The person you are meant to help is already looking. They just cannot find you yet."`);
+  }
+  lines.push(``);
+  lines.push(`Below the quote, one short paragraph (2\u20133 sentences) about what delayed clarity costs ${icName}. Honest, direct, not dramatic.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 07 \u2014 SOCIAL PROOF + VISION`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Show the reader where they are going. Three testimonial cards + a vision paragraph.`);
+  lines.push(``);
+  lines.push(`Section header: "What this looks like when it works."`);
+  lines.push(``);
+  lines.push(`Testimonial card design: italic quote in display font, name and title in small caps below. Three cards in a row on desktop, stacked on mobile.`);
+  lines.push(``);
+  lines.push(`Use placeholder testimonials that follow this emotional arc:`);
+  lines.push(`Card 1: "Before I found ${firstName}, I was [struggling with X]. What changed was [specific insight]. Now [concrete result]." \u2014 Name, Title`);
+  lines.push(`Card 2: "[Specific thing ${firstName} helped me see that I could not see myself]. The result was [concrete outcome]." \u2014 Name, Title`);
+  lines.push(`Card 3: "I have worked with other [coaches/consultants/advisors]. ${firstName} was different because [specific differentiator that matches the brand's positioning]." \u2014 Name, Title`);
+  lines.push(``);
+  lines.push(`Vision paragraph below testimonials:`);
+  if (visionBody) lines.push(visionBody.slice(0, 400));
+  else lines.push(`Imagine knowing exactly who you help, exactly what you say, and having a website that proves it before you say a word. That is what this work produces.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`SECTION 08 \u2014 FINAL CTA + FOOTER`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`One last clean invitation before the footer.`);
+  lines.push(``);
+  lines.push(`Full-width section. Single centered headline:`);
+  lines.push(`"Ready when you are."`);
+  lines.push(``);
+  lines.push(`Primary CTA button: "Book your strategy call"`);
+  lines.push(`Below the button, one line: "Or email james@jamesguldan.com if you want to talk first."`);
+  lines.push(``);
+  lines.push(`Footer: Minimal. Brand name left. Nav links: About, Work With Me, Contact. Copyright. No social icons.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`VOICE AND TONE`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  if (voicePills) lines.push(`Brand voice: ${voicePills}`);
+  if (sayThisList) lines.push(`Say things like: ${sayThisList}`);
+  if (neverSayList) lines.push(`Never say: ${neverSayList}`);
+  lines.push(``);
+  lines.push(`Write like a confident human, not a brand. Short sentences. Direct. No hedging. No "leverage your potential" or "unlock your best self." If a sentence could appear on any other website, cut it and rewrite it specifically for ${firstName}.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`DESIGN SYSTEM`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Colors: ${colors}`);
+  lines.push(``);
+  lines.push(`Typography:`);
+  lines.push(`  Headlines/display: Playfair Display \u2014 use italic variant for pull quotes and emotional moments`);
+  lines.push(`  Body: Inter at 18px minimum`);
+  lines.push(`  Labels/captions: Inter 12px, uppercase, 0.12em letter-spacing`);
+  lines.push(``);
+  lines.push(`Layout:`);
+  lines.push(`  Section padding: 120px vertical on desktop, 64px on mobile`);
+  lines.push(`  Reading column max-width: 720px`);
+  lines.push(`  Grid/feature sections max-width: 1040px`);
+  lines.push(`  Generous whitespace \u2014 never crowded`);
+  lines.push(`  Scroll reveal on every section: 400ms fade + 20px translateY. No parallax.`);
+  lines.push(`  Mobile-first. Test every Tailwind breakpoint.`);
+  lines.push(`  Border radius: 2\u20134px. Editorial feel, not bubbly.`);
+  lines.push(`  No stock photography. No generic business imagery. Ever.`);
+  lines.push(``);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(`TECHNICAL SPEC`);
+  lines.push(`\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501`);
+  lines.push(``);
+  lines.push(`Stack: React + TypeScript + Tailwind CSS`);
+  lines.push(`Components: shadcn/ui for interactive elements`);
+  lines.push(`Start with a blank Lovable project.`);
+  lines.push(`Single-page application with anchor-based navigation.`);
+  lines.push(`Smooth scroll behavior. Mobile-first responsive.`);
+  lines.push(`Export as App.tsx with a default export.`);
+  lines.push(``);
+  lines.push(`BEGIN WITH SECTION 01. Stop after Section 01 and wait for my approval.`);
+  return lines.join("\n");
+}
+__name(buildLovablePrompt, "buildLovablePrompt");
+function buildClosingLetter(firstName, closingLine, v3) {
+  const lines = [];
+  lines.push(firstName + ",");
+  lines.push("I am going to say this once more because it is the only thing in this document that actually matters. You have been building permission structures for other people for years. Every one of them worked. You have not yet let yourself take the one that has your name on it.");
+  if (v3 && v3.mirror_observation) {
+    lines.push(v3.mirror_observation);
+  } else {
+    lines.push("Read the hardest section again. Read the ideal client section again. Notice that you felt something the first time you read it, and you will feel more the second time. That is not the document being beautiful. That is you finally being allowed to hear the thing you have been telling everyone else.");
+  }
+  if (closingLine) {
+    lines.push(closingLine + " Go first.");
+  } else {
+    lines.push("The guide who finally tells their own story becomes uncatchable. Go first.");
+  }
+  return lines.join("\n\n");
+}
+__name(buildClosingLetter, "buildClosingLetter");
+function buildStarterPrompt(firstName) {
+  return `I am going to paste a transcript from a ninety minute Deep Work interview I did with a brand strategist named James Guldan. The interview was designed to surface the deepest story behind my work, the pain I am actually qualified to help people with, and the category I should own.
+
+Please read the whole transcript carefully, then help me with the following, one at a time, in order.
+
+1. Pull the five most emotionally resonant direct quotes from me. Use my exact words, no paraphrasing, and tell me the timestamp.
+2. Tell me what you think my one sentence story is, in my own voice.
+3. Draft an About page for my website based on what you learned, in my voice, not generic marketing copy.
+4. Give me three homepage headline options that would stop the right person cold.
+5. Flag any place I contradicted myself, because that is usually where the real tension is.
+
+Ask me a clarifying question before you begin if anything is unclear. Here is the transcript:
+
+`;
+}
+__name(buildStarterPrompt, "buildStarterPrompt");
 init_resend();
 async function loadBlueprintForSession(env, sessionId) {
   try {
@@ -18841,6 +20231,45 @@ async function handleBlueprintRender(request, env) {
     }
   } catch (_) {
   }
+  try {
+    const insightRows = await env.DB.prepare(
+      "SELECT insight_type, insight_value FROM session_insights WHERE session_id = ? AND insight_type IN ('hard_truths','origin_story','permission_gap','feared_self') LIMIT 20"
+    ).bind(sessionId).all();
+    if (insightRows && insightRows.results && insightRows.results.length > 0 && sessionMeta) {
+      const hardTruths = [];
+      for (const row of insightRows.results) {
+        const raw = row.insight_value || "";
+        try {
+          const parsed = JSON.parse(raw);
+          if (row.insight_type === "hard_truths") {
+            if (Array.isArray(parsed)) {
+              parsed.forEach((t) => hardTruths.push(t));
+            } else if (typeof parsed === "string") {
+              hardTruths.push(parsed);
+            } else if (parsed && (parsed.truth || parsed.text)) {
+              hardTruths.push(parsed.truth || parsed.text);
+            }
+          } else if (row.insight_type === "origin_story") {
+            sessionMeta.origin_story = typeof parsed === "string" ? parsed : parsed.prose || parsed.story || raw;
+          } else if (row.insight_type === "permission_gap") {
+            sessionMeta.permission_gap = typeof parsed === "string" ? parsed : parsed.gap || parsed.text || raw;
+          } else if (row.insight_type === "feared_self") {
+            sessionMeta.feared_self = typeof parsed === "string" ? parsed : parsed.description || parsed.text || raw;
+          }
+        } catch (_) {
+          if (row.insight_type === "hard_truths") {
+            hardTruths.push(raw);
+          } else if (row.insight_type === "origin_story") {
+            sessionMeta.origin_story = raw;
+          } else if (row.insight_type === "permission_gap") {
+            sessionMeta.permission_gap = raw;
+          }
+        }
+      }
+      if (hardTruths.length > 0) sessionMeta.hard_truths = hardTruths;
+    }
+  } catch (_) {
+  }
   if (!userName) {
     try {
       const raw = await env.SESSIONS.get(sessionId);
@@ -18873,12 +20302,106 @@ async function handleBlueprintRender(request, env) {
     await env.SESSIONS.put("dltoken:" + downloadToken, sessionId, { expirationTtl: 7200 });
   } catch (_) {
   }
-  const html = renderBlueprintV3(meta.blueprint, userName, sessionId, sessionMeta, downloadToken);
-  return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=utf-8", ...CORS }
-  });
+  try {
+    const html = renderBlueprintV3(meta.blueprint, userName, sessionId, sessionMeta, downloadToken);
+    return new Response(html, {
+      headers: { "Content-Type": "text/html; charset=utf-8", ...CORS }
+    });
+  } catch (err) {
+    console.error("[blueprintRender] renderBlueprintV3 threw:", err && err.message);
+    return new Response(JSON.stringify({ error: "Blueprint render failed", detail: err && err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...CORS }
+    });
+  }
 }
 __name(handleBlueprintRender, "handleBlueprintRender");
+async function handleBlueprintPage(request, env, path) {
+  const sessionId = path.slice("/blueprint/".length).split("/")[0].split("?")[0];
+  if (!sessionId) {
+    return new Response(blueprintErrorPage("Missing Session", "No session ID was provided."), {
+      status: 400,
+      headers: { "Content-Type": "text/html; charset=utf-8" }
+    });
+  }
+  const meta = await loadBlueprintForSession(env, sessionId);
+  if (!meta) {
+    return new Response(blueprintErrorPage("Blueprint Not Found", "This blueprint may have expired or the link is incorrect."), {
+      status: 404,
+      headers: { "Content-Type": "text/html; charset=utf-8" }
+    });
+  }
+  let sessionMeta = null;
+  let userName = meta.name;
+  try {
+    const row = await env.DB.prepare(
+      "SELECT s.emotional_depth_score, s.depth_grade, s.message_count, s.created_at, s.completed_at, s.last_active_at, u.name as user_name FROM sessions s LEFT JOIN users u ON s.user_id = u.id WHERE s.id = ?"
+    ).bind(sessionId).first();
+    if (row) {
+      sessionMeta = row;
+      if (!userName && row.user_name) userName = row.user_name;
+    }
+  } catch (_) {
+  }
+  try {
+    const insightRows = await env.DB.prepare(
+      "SELECT insight_type, insight_value FROM session_insights WHERE session_id = ? AND insight_type IN ('hard_truths','origin_story','permission_gap','feared_self') LIMIT 20"
+    ).bind(sessionId).all();
+    if (insightRows && insightRows.results && insightRows.results.length > 0 && sessionMeta) {
+      const hardTruths = [];
+      for (const row of insightRows.results) {
+        const raw = row.insight_value || "";
+        try {
+          const parsed = JSON.parse(raw);
+          if (row.insight_type === "hard_truths") {
+            if (Array.isArray(parsed)) {
+              parsed.forEach((t) => hardTruths.push(t));
+            } else if (typeof parsed === "string") {
+              hardTruths.push(parsed);
+            } else if (parsed && (parsed.truth || parsed.text)) {
+              hardTruths.push(parsed.truth || parsed.text);
+            }
+          } else if (row.insight_type === "origin_story") {
+            sessionMeta.origin_story = typeof parsed === "string" ? parsed : parsed.prose || parsed.story || raw;
+          } else if (row.insight_type === "permission_gap") {
+            sessionMeta.permission_gap = typeof parsed === "string" ? parsed : parsed.gap || parsed.text || raw;
+          }
+        } catch (_) {
+          if (row.insight_type === "hard_truths") {
+            hardTruths.push(raw);
+          } else if (row.insight_type === "origin_story") {
+            sessionMeta.origin_story = raw;
+          } else if (row.insight_type === "permission_gap") {
+            sessionMeta.permission_gap = raw;
+          }
+        }
+      }
+      if (hardTruths.length > 0 && sessionMeta) sessionMeta.hard_truths = hardTruths;
+    }
+  } catch (_) {
+  }
+  let downloadToken = "";
+  try {
+    downloadToken = crypto.randomUUID().replace(/-/g, "");
+    await env.SESSIONS.put("dltoken:" + downloadToken, sessionId, { expirationTtl: 604800 });
+  } catch (_) {
+  }
+  try {
+    const html = renderBlueprintV3(meta.blueprint, userName, sessionId, sessionMeta, downloadToken);
+    return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+  } catch (err) {
+    console.error("[blueprintPage] renderBlueprintV3 threw:", err && err.message);
+    return new Response(blueprintErrorPage("Render Error", err && err.message || "An unexpected error occurred. Please try refreshing."), {
+      status: 500,
+      headers: { "Content-Type": "text/html; charset=utf-8" }
+    });
+  }
+}
+__name(handleBlueprintPage, "handleBlueprintPage");
+function blueprintErrorPage(title, message) {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${title} \u2014 Deep Work Blueprint</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:#FDFCFA;color:#141414;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 24px;}.card{max-width:480px;width:100%;text-align:center;}.num{font-family:'Fraunces',Georgia,serif;font-size:80px;font-weight:400;color:#EAE7E2;line-height:1;margin-bottom:16px;font-style:italic;}.title{font-family:'Fraunces',Georgia,serif;font-size:28px;font-weight:400;margin-bottom:12px;}.msg{font-size:15px;color:#5A5A58;line-height:1.7;margin-bottom:32px;}.btn{display:inline-flex;align-items:center;padding:12px 28px;background:#1C2B3A;color:#fff;border-radius:2px;font-size:14px;font-weight:500;text-decoration:none;transition:background 200ms;}.btn:hover{background:#0E1A27;}</style></head><body><div class="card"><div class="num">!</div><h1 class="title">${title}</h1><p class="msg">${message}</p><a href="/" class="btn">Back to Home</a></div></body></html>`;
+}
+__name(blueprintErrorPage, "blueprintErrorPage");
 async function handleBlueprintPDF(request, env) {
   const { sessionId } = await request.json();
   if (!sessionId)
@@ -19500,7 +21023,7 @@ async function handleAdminForceGenerateBlueprint(request, env) {
         },
         body: JSON.stringify({
           model: MODEL_OPUS,
-          max_tokens: 32768,
+          max_tokens: 16384,
           system: sysPrompt,
           messages: triggerMessages
         })
@@ -19583,33 +21106,26 @@ async function handleAdminForceGenerateBlueprint(request, env) {
   }
 }
 __name(handleAdminForceGenerateBlueprint, "handleAdminForceGenerateBlueprint");
-
 var INTERNAL_BP_TOKEN = "bp-internal-2026";
 async function handleInternalGenerateBlueprint(request, env) {
   if (request.headers.get("X-Internal-Token") !== INTERNAL_BP_TOKEN) {
     return json({ error: "Forbidden" }, 403);
   }
   try {
-    const { sessionId, force } = await request.json();
+    const { sessionId } = await request.json();
     if (!sessionId) return json({ error: "sessionId required" }, 400);
     const kvData = await env.SESSIONS.get(sessionId);
     if (!kvData) return json({ error: "Session not found" }, 404);
     const session = JSON.parse(kvData);
-    if (!force && session.blueprintGenerated && session.blueprint) {
+    if (session.blueprintGenerated && session.blueprint) {
       return json({ ok: true, alreadyDone: true });
     }
     const messages = Array.isArray(session.messages) ? session.messages : [];
-    // Strip any assistant messages containing a ```json block — these are previous failed
-    // blueprint attempts. Leaving them in confuses the AI into continuing the old/wrong
-    // schema instead of generating a clean new-format blueprint from scratch.
-    const cleanMessages = messages.filter(function(msg) {
-      return !msg.content || !msg.content.includes("```json");
-    });
     const triggerMessages = [
-      ...cleanMessages.slice(-60),
-      { role: "user", content: "Please generate my complete brand blueprint now. Use only the exact JSON schema shown in the system prompt. Start completely fresh — do not reference or continue any previous blueprint attempt. Begin your response with ```json and end with ```." }
+      ...messages.slice(-60),
+      { role: "user", content: "I am ready. Please generate my complete brand blueprint now." }
     ];
-    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length + " cleaned=" + cleanMessages.length);
+    console.log("[InternalBP] Generating for session=" + sessionId + " turns=" + messages.length);
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -19619,8 +21135,7 @@ async function handleInternalGenerateBlueprint(request, env) {
       },
       body: JSON.stringify({
         model: MODEL_OPUS,
-        max_tokens: 32768,
-        stream: true,
+        max_tokens: 16384,
         system: session.systemPrompt || DEEP_WORK_SYSTEM_PROMPT,
         messages: triggerMessages
       })
@@ -19630,35 +21145,8 @@ async function handleInternalGenerateBlueprint(request, env) {
       console.error("[InternalBP] Anthropic error", res.status, errText.slice(0, 300));
       return json({ error: "Anthropic error " + res.status }, 500);
     }
-    let fullContent = "";
-    let outputTokens = 0;
-    const bpReader = res.body.getReader();
-    const bpDecoder = new TextDecoder();
-    let bpBuffer = "";
-    try {
-      while (true) {
-        const { done, value } = await bpReader.read();
-        if (done) break;
-        bpBuffer += bpDecoder.decode(value, { stream: true });
-        const bpLines = bpBuffer.split("\n");
-        bpBuffer = bpLines.pop();
-        for (const line of bpLines) {
-          if (!line.startsWith("data: ")) continue;
-          const dataStr = line.slice(6).trim();
-          if (dataStr === "[DONE]") continue;
-          try {
-            const ev = JSON.parse(dataStr);
-            if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") {
-              fullContent += ev.delta.text;
-            } else if (ev.type === "message_delta" && ev.usage) {
-              outputTokens = ev.usage.output_tokens || outputTokens;
-            }
-          } catch (_) {}
-        }
-      }
-    } finally {
-      bpReader.releaseLock();
-    }
+    const aiData = await res.json();
+    const fullContent = aiData.content?.[0]?.text || "";
     if (!fullContent) return json({ error: "Empty Anthropic response" }, 500);
     const blueprintMatch = fullContent.match(/```json\r?\n?([\s\S]*?)\r?\n?```/) || fullContent.match(/```json\r?\n?([\s\S]*\})\s*(?:```|$)/);
     if (!blueprintMatch) {
@@ -19697,8 +21185,10 @@ async function handleInternalGenerateBlueprint(request, env) {
       name: blueprint.name || session.userName || "",
       apolloData: session.apolloData || null,
       messageCount: session.messages.length
-    }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
-    env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {});
+    }), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {
+    });
+    env.UPLOADS.put("sessions/" + sessionId + "/blueprint.json", JSON.stringify(blueprint)).catch(() => {
+    });
     await env.DB.prepare(
       "UPDATE sessions SET status = 'blueprint_complete', phase = ?, blueprint_generated = 1, completed_at = datetime('now') WHERE id = ?"
     ).bind(session.phase, sessionId).run().catch((e) => console.error("[InternalBP] D1 update failed:", e.message));
@@ -19714,15 +21204,20 @@ async function handleInternalGenerateBlueprint(request, env) {
             niche_statement: bp2?.part3?.nicheStatement || "",
             brand_name: bp2?.part1?.brandNames?.[0] || bp2?.part1?.brandName || "",
             next_step: bp2?.part8?.recommendation || "self_guided"
-          }).catch(() => {});
+          }).catch(() => {
+          });
         }
       }
-    } catch (_) {}
-    saveToRAG(env, session, blueprint).catch(() => {});
-    extractSessionInsights(env, sessionId, session).catch(() => {});
+    } catch (_) {
+    }
+    saveToRAG(env, session, blueprint).catch(() => {
+    });
+    extractSessionInsights(env, sessionId, session).catch(() => {
+    });
     const li = blueprint?.leadIntel;
-    if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {});
-    console.log("[InternalBP] Done — session=" + sessionId + " tokens=" + outputTokens);
+    if (li) autoGenerateSalesBrief(env, sessionId, session.userId, li, session).catch(() => {
+    });
+    console.log("[InternalBP] Done \u2014 session=" + sessionId + " tokens=" + (aiData.usage?.output_tokens || 0));
     return json({ ok: true, sessionId });
   } catch (e) {
     console.error("[InternalBP] Fatal:", e.message);
@@ -19730,7 +21225,6 @@ async function handleInternalGenerateBlueprint(request, env) {
   }
 }
 __name(handleInternalGenerateBlueprint, "handleInternalGenerateBlueprint");
-
 async function handleAdminGenerateV3Fields(request, env) {
   const key = request.headers.get("X-Admin-Key");
   if (key !== "dw-v3-generate-2026") return json({ error: "Forbidden" }, 403);
@@ -19831,6 +21325,33 @@ Generate the following as valid JSON only (no markdown, no explanation):
   }
 }
 __name(handleAdminGenerateV3Fields, "handleAdminGenerateV3Fields");
+async function handleAdminListBlueprints(request, env) {
+  const key = request.headers.get("X-Admin-Key");
+  if (key !== "dw-v3-generate-2026") return json({ error: "Forbidden" }, 403);
+  try {
+    const rows = await env.DB.prepare(`
+      SELECT s.id, u.email, u.name, s.phase, s.message_count, s.depth_grade,
+             s.emotional_depth_score, s.blueprint_generated, s.created_at
+      FROM sessions s
+      LEFT JOIN users u ON s.user_id = u.id
+      WHERE s.blueprint_generated = 1
+      ORDER BY s.created_at DESC
+    `).all();
+    const results = (rows?.results || []).map((r) => ({
+      sessionId: r.id,
+      email: r.email || "unknown",
+      name: r.name || null,
+      grade: r.depth_grade || null,
+      score: r.emotional_depth_score || null,
+      blueprintUrl: "https://love.jamesguldan.com/blueprint/" + r.id,
+      createdAt: r.created_at
+    }));
+    return json({ ok: true, count: results.length, blueprints: results });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminListBlueprints, "handleAdminListBlueprints");
 async function handleAdminBackfillLandscape(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin) return json({ error: "Forbidden" }, 403);
@@ -19843,16 +21364,20 @@ async function handleAdminBackfillLandscape(request, env) {
     if (!session.blueprint) return json({ error: "No blueprint in session" }, 400);
     const bp = session.blueprint?.blueprint || session.blueprint;
     const messages = Array.isArray(session.messages) ? session.messages : [];
-    const transcript = messages.filter(function(m) { return m.role === "user" || m.role === "assistant"; }).map(function(m) {
+    const transcript = messages.filter(function(m) {
+      return m.role === "user" || m.role === "assistant";
+    }).map(function(m) {
       let content = m.content;
-      if (Array.isArray(content)) content = content.map(function(c) { return typeof c === "object" ? c.text || "" : c; }).join(" ");
+      if (Array.isArray(content)) content = content.map(function(c) {
+        return typeof c === "object" ? c.text || "" : c;
+      }).join(" ");
       return m.role.toUpperCase() + ": " + String(content);
     }).join("\n\n");
     const brandName = bp.brandName || (bp.part1 || {}).brandName || "";
     const niche = bp.niche || (bp.part1 || {}).niche || "";
     const positioningStatement = (bp.v3 || {}).positioningStatement || "";
     const idealClient = JSON.stringify(bp.idealClient || bp.part2 || {}).slice(0, 600);
-    const prompt = `You are reading a complete Deep Work Interview transcript. Generate the Market Landscape section of this person's blueprint — analyzing where they stand in their market and positioning them as a category of one.
+    const prompt = `You are reading a complete Deep Work Interview transcript. Generate the Market Landscape section of this person's blueprint \u2014 analyzing where they stand in their market and positioning them as a category of one.
 
 CONTEXT:
 - Brand/Name: ${brandName}
@@ -19861,15 +21386,15 @@ CONTEXT:
 - Ideal Client: ${idealClient}
 
 FULL INTERVIEW TRANSCRIPT:
-${transcript.slice(0, 55000)}
+${transcript.slice(0, 55e3)}
 
 Generate the complete market landscape analysis as valid JSON only (no markdown, no explanation):
 {
-  "beforePositioning": "The generic thing they were saying before this conversation — their old website copy, their old elevator pitch. Be specific, quote what they described.",
+  "beforePositioning": "The generic thing they were saying before this conversation \u2014 their old website copy, their old elevator pitch. Be specific, quote what they described.",
   "afterPositioning": "The new, specific positioning statement they should use. Niched down, uncatchable, category of one.",
   "whyItWorks": "2-3 sentences explaining why this positioning shift is dramatically better. Connect it to market opportunity, client psychology, and competitive differentiation.",
   "marketViability": "2-3 sentences on niche size and viability. Address the fear that niching down means a smaller market. Show why the opposite is true for this specific person.",
-  "categoryOfOne": "One powerful sentence — why nobody can compete with them in this specific space. Hero callout. Bold, direct. Max 25 words.",
+  "categoryOfOne": "One powerful sentence \u2014 why nobody can compete with them in this specific space. Hero callout. Bold, direct. Max 25 words.",
   "competitors": [
     {"name": "Generic competitor type in their space", "positioning": "What that competitor typically says", "gap": "What they are missing that this person has"},
     {"name": "Second competitor type", "positioning": "Their positioning", "gap": "Their gap"}
@@ -19878,12 +21403,12 @@ Generate the complete market landscape analysis as valid JSON only (no markdown,
     {"quote": "Something their ideal client says about their frustration with the market", "descriptor": "Frustrated entrepreneur"},
     {"quote": "A second market insight from the interview", "descriptor": "Your ideal client"}
   ],
-  "competitiveAdvantage": "One paragraph — the specific, unchallengeable competitive advantage this person has based on their story, niche, and what emerged in this interview."
+  "competitiveAdvantage": "One paragraph \u2014 the specific, unchallengeable competitive advantage this person has based on their story, niche, and what emerged in this interview."
 }`;
     const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: "claude-opus-4-6", max_tokens: 3000, messages: [{ role: "user", content: prompt }] })
+      body: JSON.stringify({ model: "claude-opus-4-6", max_tokens: 3e3, messages: [{ role: "user", content: prompt }] })
     });
     const aiData = await aiResp.json();
     const rawText = aiData.content?.[0]?.text || "";
@@ -19957,21 +21482,17 @@ async function handleAdminResendBlueprint(request, env) {
     const blueprintUrl = origin + "/app?session=" + sessionId;
     const name = email.split("@")[0];
     const emailBody = '<!DOCTYPE html><html><body style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:0 auto;padding:40px 20px;color:#1D1D1F"><div style="text-align:center;margin-bottom:32px"><div style="font-family:Outfit,sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:#C4703F;margin-bottom:8px">Deep Work Interview</div><div style="font-size:24px;font-weight:800;font-family:Outfit,sans-serif">Your Results Are Ready</div></div><p style="font-size:16px;line-height:1.65;color:#3a3a3a">Hey ' + escHtml(name) + ',</p><p style="font-size:16px;line-height:1.65;color:#3a3a3a">Your Deep Work Interview results are ready to view. Click below to see them.</p><div style="text-align:center;margin:32px 0"><a href="' + blueprintUrl + '" style="display:inline-block;padding:16px 40px;background:#C4703F;color:#fff;border-radius:50px;font-family:Outfit,sans-serif;font-size:16px;font-weight:700;text-decoration:none">View My Blueprint</a></div><p style="font-size:13px;color:#86868B;margin-top:32px">If the button does not work, copy and paste this link: ' + blueprintUrl + "</p></body></html>";
-    const resendKey = env.RESEND_API_KEY;
-    if (!resendKey) return json({ error: "RESEND_API_KEY not configured" }, 500);
-    const sendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + resendKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: "James Guldan <james@jamesguldan.com>",
-        to: [email],
-        subject: "Your Deep Work Interview Results Are Ready",
-        html: emailBody
-      })
+    if (!env.RESEND_API_KEY) return json({ error: "RESEND_API_KEY not configured" }, 500);
+    const sendResult = await sendTrackedEmail(env, {
+      to: email,
+      from: "James Guldan <james@jamesguldan.com>",
+      subject: "Your Deep Work Interview Results Are Ready",
+      html: emailBody,
+      emailType: "blueprint_ready",
+      sessionId
     });
-    const sendData = await sendRes.json();
-    if (sendData.id) return json({ ok: true, emailId: sendData.id, sentTo: email });
-    return json({ error: "Send failed", detail: sendData }, 500);
+    if (sendResult.success) return json({ ok: true, emailId: sendResult.resendId, sentTo: email });
+    return json({ error: "Send failed", detail: sendResult.error }, 500);
   } catch (e) {
     return json({ error: e.message }, 500);
   }
@@ -20016,7 +21537,7 @@ async function handleAdminPersonDetail(request, env, path) {
   const sessionId = parts[4];
   if (!sessionId) return json({ error: "Missing sessionId" }, 400);
   const session = await env.DB.prepare(`
-    SELECT s.id, COALESCE(u.name, s.email) as name, COALESCE(u.email, s.email) as email,
+    SELECT s.id, s.user_id, COALESCE(u.name, s.email) as name, COALESCE(u.email, s.email) as email,
            s.created_at, s.blueprint_generated, s.phase, s.message_count, s.depth_grade, s.status
     FROM sessions s LEFT JOIN users u ON s.user_id = u.id
     WHERE s.id = ?
@@ -20036,15 +21557,73 @@ async function handleAdminPersonDetail(request, env, path) {
     if (kvData?.messages) messages = kvData.messages;
   } catch (_) {
   }
+  let emails = [];
+  try {
+    const emailQuery = session.user_id ? `SELECT id, resend_id, email_type, subject, status, attempt, error_message,
+               sent_at, delivered_at, opened_at, clicked_at, bounced_at, bounce_type
+         FROM email_log
+         WHERE session_id = ? OR (user_id = ? AND session_id IS NULL)
+         ORDER BY sent_at DESC LIMIT 50` : `SELECT id, resend_id, email_type, subject, status, attempt, error_message,
+               sent_at, delivered_at, opened_at, clicked_at, bounced_at, bounce_type
+         FROM email_log WHERE session_id = ? ORDER BY sent_at DESC LIMIT 50`;
+    const emailRows = session.user_id ? await env.DB.prepare(emailQuery).bind(sessionId, session.user_id).all() : await env.DB.prepare(emailQuery).bind(sessionId).all();
+    emails = emailRows.results || [];
+  } catch (_) {
+  }
   return json({
     session: { id: session.id, name: session.name, email: session.email, created_at: session.created_at, blueprint_generated: session.blueprint_generated, phase: session.phase, message_count: session.message_count, depth_grade: session.depth_grade, status: session.status },
     intel: intel ? { buying_temperature: intel.buying_temperature, industry: intel.industry, estimated_revenue: intel.estimated_revenue, years_in_business: intel.years_in_business, team_size: intel.team_size, brand_maturity: intel.brand_maturity, biggest_pain_point: intel.biggest_pain_point, budget_signals: intel.budget_signals, best_fit_service: intel.best_fit_service, best_fit_reason: intel.best_fit_reason, follow_up_angle: intel.follow_up_angle, recommendation: intel.recommendation } : null,
     quotes,
     messageCount: messages.length,
-    messages: messages.map((m) => ({ role: m.role, content: m.content, phase: m.phase }))
+    messages: messages.map((m) => ({ role: m.role, content: m.content, phase: m.phase })),
+    emails
   });
 }
 __name(handleAdminPersonDetail, "handleAdminPersonDetail");
+async function handleAdminEmailAnalytics(request, env) {
+  const admin = await requireAdmin(request, env);
+  if (!admin) return json({ error: "Forbidden" }, 403);
+  try {
+    const [totalsRow, byTypeRows, recentRows, failedRows] = await Promise.all([
+      env.DB.prepare(`
+        SELECT
+          COUNT(*) as total,
+          SUM(CASE WHEN status='sent' OR status='delivered' THEN 1 ELSE 0 END) as sent,
+          SUM(CASE WHEN status='delivered' THEN 1 ELSE 0 END) as delivered,
+          SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed,
+          SUM(CASE WHEN status='bounced' THEN 1 ELSE 0 END) as bounced,
+          SUM(CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END) as opened,
+          SUM(CASE WHEN attempt = 2 THEN 1 ELSE 0 END) as retried
+        FROM email_log
+        WHERE sent_at > datetime('now', '-30 days')
+      `).first(),
+      env.DB.prepare(`
+        SELECT email_type, COUNT(*) as count,
+               SUM(CASE WHEN status='failed' OR status='bounced' THEN 1 ELSE 0 END) as failures
+        FROM email_log
+        WHERE sent_at > datetime('now', '-30 days')
+        GROUP BY email_type ORDER BY count DESC
+      `).all(),
+      env.DB.prepare(`
+        SELECT id, email_type, email_to, subject, status, attempt, sent_at, delivered_at, opened_at, error_message
+        FROM email_log ORDER BY sent_at DESC LIMIT 20
+      `).all(),
+      env.DB.prepare(`
+        SELECT id, email_type, email_to, subject, status, attempt, sent_at, error_message
+        FROM email_log WHERE status='failed' ORDER BY sent_at DESC LIMIT 20
+      `).all()
+    ]);
+    return json({
+      totals: totalsRow,
+      byType: byTypeRows.results || [],
+      recent: recentRows.results || [],
+      failed: failedRows.results || []
+    });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
+}
+__name(handleAdminEmailAnalytics, "handleAdminEmailAnalytics");
 async function handleAdminTestBlueprint(request, env) {
   const admin = await requireAdmin(request, env);
   if (!admin)
@@ -21132,92 +22711,67 @@ function phaseBar(phase) {
 async function handleAdminDashboard(request, env) {
   var admin = await requireAdmin(request, env);
   if (!admin) {
-    // Don't clear the cookie — SPA will re-auth via localStorage and /api/auth/me will re-set it
-    // Clearing it was causing a cycle where the SSR admin could never load
     return handleAdmin(request, env);
   }
-  var searchQ = new URL(request.url).searchParams.get('q') || '';
+  var searchQ = new URL(request.url).searchParams.get("q") || "";
   try {
     var [statsRow, completedRow, costRow, avgMsgRow, revenueRow, usersRow] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) as total FROM sessions WHERE status != 'restarted'").first(),
       env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE blueprint_generated=1 AND status != 'restarted'").first(),
-      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total, COUNT(*) as calls FROM api_costs").first().catch(()=>({total:0,calls:0})),
-      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE blueprint_generated=1").first().catch(()=>({avg:0})),
-      env.DB.prepare("SELECT COALESCE(SUM(amount),0) as total, COUNT(*) as cnt FROM payments WHERE status='succeeded'").first().catch(()=>({total:0,cnt:0})),
-      env.DB.prepare("SELECT COUNT(*) as total FROM users WHERE role != 'admin'").first().catch(()=>({total:0}))
+      env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total, COUNT(*) as calls FROM api_costs").first().catch(() => ({ total: 0, calls: 0 })),
+      env.DB.prepare("SELECT AVG(message_count) as avg FROM sessions WHERE blueprint_generated=1").first().catch(() => ({ avg: 0 })),
+      env.DB.prepare("SELECT COALESCE(SUM(amount),0) as total, COUNT(*) as cnt FROM payments WHERE status='succeeded'").first().catch(() => ({ total: 0, cnt: 0 })),
+      env.DB.prepare("SELECT COUNT(*) as total FROM users WHERE role != 'admin'").first().catch(() => ({ total: 0 }))
     ]);
     var total = statsRow?.total || 0;
     var completed = completedRow?.cnt || 0;
-    var completionRate = total > 0 ? Math.round((completed/total)*100) : 0;
+    var completionRate = total > 0 ? Math.round(completed / total * 100) : 0;
     var totalCost = parseFloat(costRow?.total || 0).toFixed(2);
-    var avgCostPerSession = total > 0 ? (parseFloat(costRow?.total || 0) / total).toFixed(3) : '0.000';
+    var avgCostPerSession = total > 0 ? (parseFloat(costRow?.total || 0) / total).toFixed(3) : "0.000";
     var avgMsgs = avgMsgRow?.avg ? Math.round(avgMsgRow.avg) : 0;
-    var totalRevenue = (parseFloat(revenueRow?.total||0)/100).toFixed(0);
+    var totalRevenue = (parseFloat(revenueRow?.total || 0) / 100).toFixed(0);
     var paymentCount = revenueRow?.cnt || 0;
     var totalUsers = usersRow?.total || 0;
-
-    // Phase 1 dropoff
-    var phase1Row = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE phase <= 1 AND status != 'restarted'").first().catch(()=>({cnt:0}));
-    var phase1Pct = total > 0 ? Math.round((phase1Row.cnt/total)*100) : 0;
-
-    // Live sessions (last 30 min)
+    var phase1Row = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE phase <= 1 AND status != 'restarted'").first().catch(() => ({ cnt: 0 }));
+    var phase1Pct = total > 0 ? Math.round(phase1Row.cnt / total * 100) : 0;
     var liveRows = await env.DB.prepare(`
       SELECT s.id, s.phase, s.message_count, s.last_active_at, s.industry, s.niche, s.status,
              u.name, u.email, u.apollo_data
       FROM sessions s LEFT JOIN users u ON s.user_id=u.id
       WHERE s.status='active' AND s.last_active_at > datetime('now','-30 minutes')
       ORDER BY s.last_active_at DESC LIMIT 20
-    `).all().catch(()=>({results:[]}));
+    `).all().catch(() => ({ results: [] }));
     var liveList = (liveRows?.results || []).map(function(s) {
       var apollo = null;
-      try { if (s.apollo_data) apollo = JSON.parse(s.apollo_data); } catch(_){}
-      var apolloLine = '';
+      try {
+        if (s.apollo_data) apollo = JSON.parse(s.apollo_data);
+      } catch (_) {
+      }
+      var apolloLine = "";
       if (apollo?.person?.employment_history?.[0]) {
         var job = apollo.person.employment_history[0];
-        apolloLine = (job.title||'') + (job.organization_name ? ' @ '+job.organization_name : '');
+        apolloLine = (job.title || "") + (job.organization_name ? " @ " + job.organization_name : "");
       }
       var dotCls = liveColor(s.last_active_at);
-      return '<div class="adm-live-card">' +
-        '<div class="adm-live-dot ' + dotCls + '"></div>' +
-        '<div style="flex:1;min-width:0">' +
-          '<div class="adm-live-name">' + escA(s.name || s.email || 'Anonymous') + '</div>' +
-          '<div class="adm-live-sub">' + escA(s.email || '') + (apolloLine ? ' &middot; ' + escA(apolloLine) : '') + '</div>' +
-          '<div class="adm-live-meta">' +
-            '<span class="badge bg-gray">Phase ' + (s.phase||1) + '/8</span>' +
-            '<span class="badge bg-gray">' + (s.message_count||0) + ' msgs</span>' +
-            (s.industry ? '<span class="badge bg-copper">' + escA(s.industry) + '</span>' : '') +
-            '<span style="font-size:11px;color:#86868B;margin-left:2px">' + timeSince(s.last_active_at) + '</span>' +
-          '</div>' +
-          phaseBar(s.phase) +
-          '<div style="margin-top:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + s.id + '">View</a></div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    // Funnel chart data
-    var funnelRows = await env.DB.prepare('SELECT phase, COUNT(*) as cnt FROM sessions GROUP BY phase ORDER BY phase').all().catch(()=>({results:[]}));
+      return '<div class="adm-live-card"><div class="adm-live-dot ' + dotCls + '"></div><div style="flex:1;min-width:0"><div class="adm-live-name">' + escA(s.name || s.email || "Anonymous") + '</div><div class="adm-live-sub">' + escA(s.email || "") + (apolloLine ? " &middot; " + escA(apolloLine) : "") + '</div><div class="adm-live-meta"><span class="badge bg-gray">Phase ' + (s.phase || 1) + '/8</span><span class="badge bg-gray">' + (s.message_count || 0) + " msgs</span>" + (s.industry ? '<span class="badge bg-copper">' + escA(s.industry) + "</span>" : "") + '<span style="font-size:11px;color:#86868B;margin-left:2px">' + timeSince(s.last_active_at) + "</span></div>" + phaseBar(s.phase) + '<div style="margin-top:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + s.id + '">View</a></div></div></div>';
+    }).join("");
+    var funnelRows = await env.DB.prepare("SELECT phase, COUNT(*) as cnt FROM sessions GROUP BY phase ORDER BY phase").all().catch(() => ({ results: [] }));
     var funnelMap = {};
-    (funnelRows?.results||[]).forEach(function(r){funnelMap[r.phase]=r.cnt;});
+    (funnelRows?.results || []).forEach(function(r) {
+      funnelMap[r.phase] = r.cnt;
+    });
     var maxFunnel = Math.max(...Object.values(funnelMap), 1);
-    var funnelHTML = '';
-    for (var ph=1; ph<=8; ph++) {
+    var funnelHTML = "";
+    for (var ph = 1; ph <= 8; ph++) {
       var cnt = funnelMap[ph] || 0;
-      var pct = Math.round((cnt/maxFunnel)*100);
-      var prob = ph === 1 ? ' adm-funnel-bar-prob' : '';
-      funnelHTML += '<div class="adm-funnel-row">' +
-        '<div class="adm-funnel-label">Phase ' + ph + '</div>' +
-        '<div class="adm-funnel-bar-wrap"><div class="adm-funnel-bar' + prob + '" style="width:' + pct + '%"></div></div>' +
-        '<div class="adm-funnel-count">' + cnt + '</div>' +
-      '</div>';
+      var pct = Math.round(cnt / maxFunnel * 100);
+      var prob = ph === 1 ? " adm-funnel-bar-prob" : "";
+      funnelHTML += '<div class="adm-funnel-row"><div class="adm-funnel-label">Phase ' + ph + '</div><div class="adm-funnel-bar-wrap"><div class="adm-funnel-bar' + prob + '" style="width:' + pct + '%"></div></div><div class="adm-funnel-count">' + cnt + "</div></div>";
     }
-
-    // Cost by model
-    var costRows = await env.DB.prepare("SELECT model, COUNT(*) as calls, SUM(cost_usd) as total FROM api_costs GROUP BY model ORDER BY total DESC").all().catch(()=>({results:[]}));
-    var costTableRows = (costRows?.results||[]).map(function(r) {
-      return '<tr><td>' + escA(r.model||'unknown') + '</td><td>' + (r.calls||0) + '</td><td>$' + parseFloat(r.total||0).toFixed(3) + '</td><td>$' + (r.calls>0 ? (parseFloat(r.total||0)/r.calls).toFixed(4) : '0') + '</td></tr>';
-    }).join('');
-
-    // Session Health
+    var costRows = await env.DB.prepare("SELECT model, COUNT(*) as calls, SUM(cost_usd) as total FROM api_costs GROUP BY model ORDER BY total DESC").all().catch(() => ({ results: [] }));
+    var costTableRows = (costRows?.results || []).map(function(r) {
+      return "<tr><td>" + escA(r.model || "unknown") + "</td><td>" + (r.calls || 0) + "</td><td>$" + parseFloat(r.total || 0).toFixed(3) + "</td><td>$" + (r.calls > 0 ? (parseFloat(r.total || 0) / r.calls).toFixed(4) : "0") + "</td></tr>";
+    }).join("");
     var [v3CoverageRow, noBpRow, stalledRows, lowDepthRows] = await Promise.all([
       env.DB.prepare(`
         SELECT
@@ -21225,72 +22779,68 @@ async function handleAdminDashboard(request, env) {
           SUM(CASE WHEN blueprint_generated=1 THEN 1 ELSE 0 END) as with_bp,
           SUM(CASE WHEN depth_grade IS NOT NULL THEN 1 ELSE 0 END) as with_depth
         FROM sessions WHERE status='completed' OR blueprint_generated=1
-      `).first().catch(()=>({total_completed:0,with_bp:0,with_depth:0})),
+      `).first().catch(() => ({ total_completed: 0, with_bp: 0, with_depth: 0 })),
       env.DB.prepare(`
         SELECT s.id, u.name, u.email, s.phase, s.message_count, s.created_at
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id
         WHERE (s.status='completed' OR s.phase>=7) AND s.blueprint_generated=0
         ORDER BY s.created_at DESC LIMIT 10
-      `).all().catch(()=>({results:[]})),
+      `).all().catch(() => ({ results: [] })),
       env.DB.prepare(`
         SELECT s.id, u.name, u.email, s.phase, s.message_count, s.last_active_at
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id
         WHERE s.status='active' AND s.phase > 1 AND s.last_active_at < datetime('now','-24 hours')
         ORDER BY s.last_active_at DESC LIMIT 10
-      `).all().catch(()=>({results:[]})),
+      `).all().catch(() => ({ results: [] })),
       env.DB.prepare(`
         SELECT s.id, u.name, u.email, s.depth_grade, s.depth_score, s.phase
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id
         WHERE s.blueprint_generated=1 AND s.depth_score IS NOT NULL AND s.depth_score < 12
         ORDER BY s.depth_score ASC LIMIT 10
-      `).all().catch(()=>({results:[]}))
+      `).all().catch(() => ({ results: [] }))
     ]);
     var totalCompleted2 = v3CoverageRow?.total_completed || 0;
     var withBp = v3CoverageRow?.with_bp || 0;
     var withDepth = v3CoverageRow?.with_depth || 0;
-    var bpPct = totalCompleted2 > 0 ? Math.round((withBp/totalCompleted2)*100) : 0;
-    var depthPct = totalCompleted2 > 0 ? Math.round((withDepth/totalCompleted2)*100) : 0;
-
-    var noBpList = (noBpRow?.results||[]);
-    var stalledList = (stalledRows?.results||[]);
-    var lowDepthList = (lowDepthRows?.results||[]);
+    var bpPct = totalCompleted2 > 0 ? Math.round(withBp / totalCompleted2 * 100) : 0;
+    var depthPct = totalCompleted2 > 0 ? Math.round(withDepth / totalCompleted2 * 100) : 0;
+    var noBpList = noBpRow?.results || [];
+    var stalledList = stalledRows?.results || [];
+    var lowDepthList = lowDepthRows?.results || [];
     var attentionCount = noBpList.length + stalledList.length + lowDepthList.length;
-
-    var healthIssuesHTML = '';
+    var healthIssuesHTML = "";
     if (noBpList.length > 0) {
-      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#991B1B;margin-bottom:6px">Missing Blueprint (' + noBpList.length + ')</div>';
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#991B1B;margin-bottom:6px">Missing Blueprint (' + noBpList.length + ")</div>";
       noBpList.forEach(function(r) {
-        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-gray">Phase ' + (r.phase||'?') + '</span><span class="badge bg-gray">' + (r.message_count||0) + ' msgs</span><span style="color:#86868B">' + timeSince(r.created_at) + '</span></div>';
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name || r.email || "Anon") + '</a><span class="badge bg-gray">Phase ' + (r.phase || "?") + '</span><span class="badge bg-gray">' + (r.message_count || 0) + ' msgs</span><span style="color:#86868B">' + timeSince(r.created_at) + "</span></div>";
       });
-      healthIssuesHTML += '</div>';
+      healthIssuesHTML += "</div>";
     }
     if (stalledList.length > 0) {
-      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#856404;margin-bottom:6px">Stalled 24h+ (' + stalledList.length + ')</div>';
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#856404;margin-bottom:6px">Stalled 24h+ (' + stalledList.length + ")</div>";
       stalledList.forEach(function(r) {
-        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-yellow">Phase ' + (r.phase||'?') + '</span><span class="badge bg-gray">' + (r.message_count||0) + ' msgs</span><span style="color:#86868B">Last active ' + timeSince(r.last_active_at) + '</span></div>';
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name || r.email || "Anon") + '</a><span class="badge bg-yellow">Phase ' + (r.phase || "?") + '</span><span class="badge bg-gray">' + (r.message_count || 0) + ' msgs</span><span style="color:#86868B">Last active ' + timeSince(r.last_active_at) + "</span></div>";
       });
-      healthIssuesHTML += '</div>';
+      healthIssuesHTML += "</div>";
     }
     if (lowDepthList.length > 0) {
-      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#C4703F;margin-bottom:6px">Low Depth Score (' + lowDepthList.length + ')</div>';
+      healthIssuesHTML += '<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12px;color:#C4703F;margin-bottom:6px">Low Depth Score (' + lowDepthList.length + ")</div>";
       lowDepthList.forEach(function(r) {
-        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name||r.email||'Anon') + '</a><span class="badge bg-red">' + escA(r.depth_grade||'?') + ' (' + (r.depth_score||0) + '/25)</span></div>';
+        healthIssuesHTML += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px"><a href="/admin/session/' + r.id + '">' + escA(r.name || r.email || "Anon") + '</a><span class="badge bg-red">' + escA(r.depth_grade || "?") + " (" + (r.depth_score || 0) + "/25)</span></div>";
       });
-      healthIssuesHTML += '</div>';
+      healthIssuesHTML += "</div>";
     }
     if (!healthIssuesHTML) healthIssuesHTML = '<div style="font-size:12px;color:#86868B;padding:8px 0">All sessions healthy</div>';
-
-    // Recent sessions (filtered if search query present)
     var recentRows;
     if (searchQ.trim()) {
-      var sq = '%' + searchQ.trim() + '%';
+      var sq = "%" + searchQ.trim() + "%";
       recentRows = await env.DB.prepare(`
         SELECT s.id, s.user_id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
                u.name, u.email
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id
         WHERE (u.email LIKE ?1 OR u.name LIKE ?1 OR s.id LIKE ?1) AND s.status != 'restarted'
         ORDER BY s.created_at DESC LIMIT 50
-      `).bind(sq).all().catch(()=>({results:[]}));
+      `).bind(sq).all().catch(() => ({ results: [] }));
     } else {
       recentRows = await env.DB.prepare(`
         SELECT s.id, s.user_id, s.phase, s.message_count, s.blueprint_generated, s.status, s.created_at, s.depth_grade,
@@ -21298,90 +22848,28 @@ async function handleAdminDashboard(request, env) {
         FROM sessions s LEFT JOIN users u ON s.user_id=u.id
         WHERE s.status != 'restarted'
         ORDER BY s.created_at DESC LIMIT 20
-      `).all().catch(()=>({results:[]}));
+      `).all().catch(() => ({ results: [] }));
     }
-    var recentTableRows = (recentRows?.results||[]).map(function(r) {
-      var statusBadge = r.status==='active' ? 'bg-green' : r.status==='completed'||r.blueprint_generated ? 'bg-copper' : 'bg-gray';
-      var bpBadge = r.blueprint_generated ? '<span class="badge bg-copper">Blueprint</span>' : '';
-      var gradeColor2 = r.depth_grade?(r.depth_grade[0]==='A'?'#27ae60':r.depth_grade[0]==='B'?'#2980b9':r.depth_grade[0]==='C'?'#e67e22':'#e74c3c'):'#86868B';
-      var grade = r.depth_grade ? '<span style="font-weight:700;color:'+gradeColor2+'">'+escA(r.depth_grade)+'</span>' : '';
-      var userLink = r.user_id ? '<a href="/admin/people/' + escA(r.user_id) + '" style="font-weight:600;color:#1D1D1F">' + escA(r.name||r.email||'Anon') + '</a>' : '<span style="font-weight:600">' + escA(r.name||r.email||'Anon') + '</span>';
-      return '<tr>' +
-        '<td>'+userLink+'<div style="font-size:11px;color:#86868B">' + escA(r.email||r.id.slice(0,8)) + '</div></td>' +
-        '<td><span class="badge ' + statusBadge + '">' + escA(r.status||'?') + '</span></td>' +
-        '<td>' + (r.phase||1) + '/8</td>' +
-        '<td>' + (r.message_count||0) + '</td>' +
-        '<td>' + bpBadge + (r.depth_grade?' '+grade:'') + '</td>' +
-        '<td style="color:#86868B">' + timeSince(r.created_at) + '</td>' +
-        '<td><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + r.id + '">View</a> <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export/' + r.id + '">Export</a></td>' +
-      '</tr>';
-    }).join('');
-
-    var html = '<h1 class="adm-page-title">Dashboard</h1>' +
-
-      '<div style="margin-bottom:24px;display:flex;align-items:center;gap:12px">' +
-        '<form method="GET" action="/admin" style="display:flex;align-items:center;gap:8px;margin:0;flex:1;max-width:500px">' +
-          '<input type="text" name="q" placeholder="Search people by name or email..." value="' + escA(searchQ) + '" style="flex:1;padding:10px 16px;border:1px solid #D1D1D6;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff" />' +
-          '<button type="submit" class="adm-btn adm-btn-sm" style="padding:8px 18px;font-size:14px">Search</button>' +
-          (searchQ ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin">Clear</a>' : '') +
-        '</form>' +
-      '</div>' +
-
-      (searchQ ? '<div style="margin-bottom:20px;font-size:13px;color:#86868B">' + (recentRows?.results?.length||0) + ' result(s) for "<strong>' + escA(searchQ) + '</strong>"</div>' : '') +
-
-      '<div class="adm-stats">' +
-        '<div class="adm-stat" style="background:linear-gradient(135deg,#F0FFF4,#E8F5E9)"><div class="adm-stat-label">Revenue</div><div class="adm-stat-value" style="color:#27ae60">$' + totalRevenue + '</div><div class="adm-stat-sub">' + paymentCount + ' payment' + (paymentCount===1?'':'s') + '</div></div>' +
-        '<div class="adm-stat"><div class="adm-stat-label">People</div><div class="adm-stat-value">' + totalUsers + '</div><div class="adm-stat-sub">' + paymentCount + ' paid</div></div>' +
-        '<div class="adm-stat"><div class="adm-stat-label">Interviews</div><div class="adm-stat-value">' + total + '</div><div class="adm-stat-sub">' + completed + ' blueprints (' + completionRate + '%)</div></div>' +
-        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">Phase 1 Dropoff</div><div class="adm-stat-value">' + phase1Pct + '%</div><div class="adm-stat-sub">' + phase1Row.cnt + ' stuck at start</div></div>' +
-        '<div class="adm-stat"><div class="adm-stat-label">Avg Msgs</div><div class="adm-stat-value">' + avgMsgs + '</div><div class="adm-stat-sub">per completed session</div></div>' +
-        '<div class="adm-stat adm-stat-warn"><div class="adm-stat-label">API Spend</div><div class="adm-stat-value">$' + totalCost + '</div><div class="adm-stat-sub">$' + avgCostPerSession + '/session</div></div>' +
-        '<div class="adm-stat"><div class="adm-stat-label">Live Now</div><div class="adm-stat-value">' + (liveRows?.results?.length||0) + '</div><div class="adm-stat-sub">last 30 min</div></div>' +
-      '</div>' +
-
-      '<div class="adm-section">' +
-        '<div class="adm-section-hd"><span class="adm-live-dot adm-live-dot-green" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span> Live Sessions</div>' +
-        (liveList ? '<div class="adm-live-cards">' + liveList + '</div>' : '<div class="adm-empty">No active sessions in the last 30 minutes</div>') +
-      '</div>' +
-
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px">' +
-        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Funnel (Phase Dropoff)</div><div class="adm-funnel">' + funnelHTML + '<div style="font-size:11px;color:#C4703F;margin-top:8px">Phase 1 (copper) is the biggest leak point</div></div></div>' +
-        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Cost by Model</div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Model</th><th>Calls</th><th>Total</th><th>Per Call</th></tr></thead><tbody>' + (costTableRows||'<tr><td colspan="4" class="adm-empty">No data</td></tr>') + '</tbody></table></div></div>' +
-      '</div>' +
-
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px">' +
-        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Session Health</div>' +
-          '<div class="adm-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px">' +
-            '<div class="adm-stat"><div class="adm-stat-label">Blueprint Coverage</div><div class="adm-stat-value">' + bpPct + '%</div><div class="adm-stat-sub">' + withBp + '/' + totalCompleted2 + ' completed</div></div>' +
-            '<div class="adm-stat"><div class="adm-stat-label">Depth Scored</div><div class="adm-stat-value">' + depthPct + '%</div><div class="adm-stat-sub">' + withDepth + '/' + totalCompleted2 + '</div></div>' +
-            '<div class="adm-stat' + (attentionCount > 0 ? ' adm-stat-warn' : '') + '"><div class="adm-stat-label">Need Attention</div><div class="adm-stat-value">' + attentionCount + '</div></div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="adm-section" style="margin:0"><div class="adm-section-hd">Issues <button class="adm-btn adm-btn-sm" onclick="bulkV3()" style="margin-left:8px">Bulk Generate V3</button></div>' +
-          '<div class="adm-panel" style="max-height:280px;overflow-y:auto">' + healthIssuesHTML + '</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="adm-section">' +
-        '<div class="adm-section-hd">' + (searchQ ? 'Search Results' : 'Recent Sessions') + ' <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div>' +
-        '<div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>User</th><th>Status</th><th>Phase</th><th>Msgs</th><th>Blueprint</th><th>Created</th><th>Actions</th></tr></thead><tbody>' +
-        (recentTableRows||'<tr><td colspan="7" class="adm-empty">No sessions</td></tr>') +
-
-        '</tbody></table></div>' +
-      '</div>';
-
-    return new Response(adminLayout('Dashboard', html), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
-  } catch(e) {
-    return new Response('Admin error: ' + e.message, { status:500, headers:{'Content-Type':'text/plain'} });
+    var recentTableRows = (recentRows?.results || []).map(function(r) {
+      var statusBadge = r.status === "active" ? "bg-green" : r.status === "completed" || r.blueprint_generated ? "bg-copper" : "bg-gray";
+      var bpBadge = r.blueprint_generated ? '<span class="badge bg-copper">Blueprint</span>' : "";
+      var gradeColor2 = r.depth_grade ? r.depth_grade[0] === "A" ? "#27ae60" : r.depth_grade[0] === "B" ? "#2980b9" : r.depth_grade[0] === "C" ? "#e67e22" : "#e74c3c" : "#86868B";
+      var grade = r.depth_grade ? '<span style="font-weight:700;color:' + gradeColor2 + '">' + escA(r.depth_grade) + "</span>" : "";
+      var userLink = r.user_id ? '<a href="/admin/people/' + escA(r.user_id) + '" style="font-weight:600;color:#1D1D1F">' + escA(r.name || r.email || "Anon") + "</a>" : '<span style="font-weight:600">' + escA(r.name || r.email || "Anon") + "</span>";
+      return "<tr><td>" + userLink + '<div style="font-size:11px;color:#86868B">' + escA(r.email || r.id.slice(0, 8)) + '</div></td><td><span class="badge ' + statusBadge + '">' + escA(r.status || "?") + "</span></td><td>" + (r.phase || 1) + "/8</td><td>" + (r.message_count || 0) + "</td><td>" + bpBadge + (r.depth_grade ? " " + grade : "") + '</td><td style="color:#86868B">' + timeSince(r.created_at) + '</td><td><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + r.id + '">View</a> <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export/' + r.id + '">Export</a></td></tr>';
+    }).join("");
+    var html = '<h1 class="adm-page-title">Dashboard</h1><div style="margin-bottom:24px;display:flex;align-items:center;gap:12px"><form method="GET" action="/admin" style="display:flex;align-items:center;gap:8px;margin:0;flex:1;max-width:500px"><input type="text" name="q" placeholder="Search people by name or email..." value="' + escA(searchQ) + '" style="flex:1;padding:10px 16px;border:1px solid #D1D1D6;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff" /><button type="submit" class="adm-btn adm-btn-sm" style="padding:8px 18px;font-size:14px">Search</button>' + (searchQ ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin">Clear</a>' : "") + "</form></div>" + (searchQ ? '<div style="margin-bottom:20px;font-size:13px;color:#86868B">' + (recentRows?.results?.length || 0) + ' result(s) for "<strong>' + escA(searchQ) + '</strong>"</div>' : "") + '<div class="adm-stats"><div class="adm-stat" style="background:linear-gradient(135deg,#F0FFF4,#E8F5E9)"><div class="adm-stat-label">Revenue</div><div class="adm-stat-value" style="color:#27ae60">$' + totalRevenue + '</div><div class="adm-stat-sub">' + paymentCount + " payment" + (paymentCount === 1 ? "" : "s") + '</div></div><div class="adm-stat"><div class="adm-stat-label">People</div><div class="adm-stat-value">' + totalUsers + '</div><div class="adm-stat-sub">' + paymentCount + ' paid</div></div><div class="adm-stat"><div class="adm-stat-label">Interviews</div><div class="adm-stat-value">' + total + '</div><div class="adm-stat-sub">' + completed + " blueprints (" + completionRate + '%)</div></div><div class="adm-stat adm-stat-warn"><div class="adm-stat-label">Phase 1 Dropoff</div><div class="adm-stat-value">' + phase1Pct + '%</div><div class="adm-stat-sub">' + phase1Row.cnt + ' stuck at start</div></div><div class="adm-stat"><div class="adm-stat-label">Avg Msgs</div><div class="adm-stat-value">' + avgMsgs + '</div><div class="adm-stat-sub">per completed session</div></div><div class="adm-stat adm-stat-warn"><div class="adm-stat-label">API Spend</div><div class="adm-stat-value">$' + totalCost + '</div><div class="adm-stat-sub">$' + avgCostPerSession + '/session</div></div><div class="adm-stat"><div class="adm-stat-label">Live Now</div><div class="adm-stat-value">' + (liveRows?.results?.length || 0) + '</div><div class="adm-stat-sub">last 30 min</div></div></div><div class="adm-section"><div class="adm-section-hd"><span class="adm-live-dot adm-live-dot-green" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span> Live Sessions</div>' + (liveList ? '<div class="adm-live-cards">' + liveList + "</div>" : '<div class="adm-empty">No active sessions in the last 30 minutes</div>') + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px"><div class="adm-section" style="margin:0"><div class="adm-section-hd">Funnel (Phase Dropoff)</div><div class="adm-funnel">' + funnelHTML + '<div style="font-size:11px;color:#C4703F;margin-top:8px">Phase 1 (copper) is the biggest leak point</div></div></div><div class="adm-section" style="margin:0"><div class="adm-section-hd">Cost by Model</div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Model</th><th>Calls</th><th>Total</th><th>Per Call</th></tr></thead><tbody>' + (costTableRows || '<tr><td colspan="4" class="adm-empty">No data</td></tr>') + '</tbody></table></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px"><div class="adm-section" style="margin:0"><div class="adm-section-hd">Session Health</div><div class="adm-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:12px"><div class="adm-stat"><div class="adm-stat-label">Blueprint Coverage</div><div class="adm-stat-value">' + bpPct + '%</div><div class="adm-stat-sub">' + withBp + "/" + totalCompleted2 + ' completed</div></div><div class="adm-stat"><div class="adm-stat-label">Depth Scored</div><div class="adm-stat-value">' + depthPct + '%</div><div class="adm-stat-sub">' + withDepth + "/" + totalCompleted2 + '</div></div><div class="adm-stat' + (attentionCount > 0 ? " adm-stat-warn" : "") + '"><div class="adm-stat-label">Need Attention</div><div class="adm-stat-value">' + attentionCount + '</div></div></div></div><div class="adm-section" style="margin:0"><div class="adm-section-hd">Issues <button class="adm-btn adm-btn-sm" onclick="bulkV3()" style="margin-left:8px">Bulk Generate V3</button></div><div class="adm-panel" style="max-height:280px;overflow-y:auto">' + healthIssuesHTML + '</div></div></div><div class="adm-section"><div class="adm-section-hd">' + (searchQ ? "Search Results" : "Recent Sessions") + ' <a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/export-all" style="margin-left:8px">Export All CSV</a></div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>User</th><th>Status</th><th>Phase</th><th>Msgs</th><th>Blueprint</th><th>Created</th><th>Actions</th></tr></thead><tbody>' + (recentTableRows || '<tr><td colspan="7" class="adm-empty">No sessions</td></tr>') + "</tbody></table></div></div>";
+    return new Response(adminLayout("Dashboard", html), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    return new Response("Admin error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
   }
 }
-
 async function handleAdminPeople(request, env) {
   var admin = await requireAdmin(request, env);
   if (!admin) return handleAdmin(request, env);
   var url2 = new URL(request.url);
-  var searchQ = url2.searchParams.get('q') || '';
-  var filterVal = url2.searchParams.get('filter') || 'all';
+  var searchQ = url2.searchParams.get("q") || "";
+  var filterVal = url2.searchParams.get("filter") || "all";
   try {
     var baseSQL = `
       SELECT u.id, u.email, u.name, u.tier, u.role, u.created_at, u.last_login,
@@ -21394,97 +22882,46 @@ async function handleAdminPeople(request, env) {
     `;
     var params = [];
     if (searchQ.trim()) {
-      var sq = '%' + searchQ.trim() + '%';
+      var sq = "%" + searchQ.trim() + "%";
       baseSQL += " AND (u.email LIKE ?1 OR u.name LIKE ?1)";
       params.push(sq);
     }
-    if (filterVal === 'blueprint') {
-      baseSQL += ' AND s.blueprint_generated = 1';
-    } else if (filterVal === 'in_progress') {
-      baseSQL += ' AND s.id IS NOT NULL AND s.message_count > 0 AND COALESCE(s.blueprint_generated, 0) = 0';
-    } else if (filterVal === 'not_started') {
-      baseSQL += ' AND (s.id IS NULL OR s.message_count = 0)';
+    if (filterVal === "blueprint") {
+      baseSQL += " AND s.blueprint_generated = 1";
+    } else if (filterVal === "in_progress") {
+      baseSQL += " AND s.id IS NOT NULL AND s.message_count > 0 AND COALESCE(s.blueprint_generated, 0) = 0";
+    } else if (filterVal === "not_started") {
+      baseSQL += " AND (s.id IS NULL OR s.message_count = 0)";
     }
-    baseSQL += ' ORDER BY CASE WHEN s.blueprint_generated = 1 THEN 0 WHEN s.message_count > 0 THEN 1 ELSE 2 END, s.message_count DESC, u.created_at DESC LIMIT 100';
-
+    baseSQL += " ORDER BY CASE WHEN s.blueprint_generated = 1 THEN 0 WHEN s.message_count > 0 THEN 1 ELSE 2 END, s.message_count DESC, u.created_at DESC LIMIT 100";
     var usersRows;
     if (params.length > 0) {
-      usersRows = await env.DB.prepare(baseSQL).bind(params[0]).all().catch(()=>({results:[]}));
+      usersRows = await env.DB.prepare(baseSQL).bind(params[0]).all().catch(() => ({ results: [] }));
     } else {
-      usersRows = await env.DB.prepare(baseSQL).all().catch(()=>({results:[]}));
+      usersRows = await env.DB.prepare(baseSQL).all().catch(() => ({ results: [] }));
     }
     var users = usersRows?.results || [];
-    var origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
-
+    var origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
     var tableRows = users.map(function(u) {
-      var magicLink = u.magic_token ? origin + '/magic?token=' + u.magic_token : '';
+      var magicLink = u.magic_token ? origin + "/magic?token=" + u.magic_token : "";
       var statusBadge, statusColor;
       if (u.blueprint_generated === 1) {
-        statusBadge = 'Blueprint \u2713'; statusColor = 'background:#E8F5E9;color:#2E7D32';
+        statusBadge = "Blueprint \u2713";
+        statusColor = "background:#E8F5E9;color:#2E7D32";
       } else if (u.session_id && u.message_count > 0) {
-        statusBadge = 'In Progress'; statusColor = 'background:#FFF3E0;color:#E65100';
+        statusBadge = "In Progress";
+        statusColor = "background:#FFF3E0;color:#E65100";
       } else {
-        statusBadge = 'Not Started'; statusColor = 'background:#F5F5F5;color:#86868B';
+        statusBadge = "Not Started";
+        statusColor = "background:#F5F5F5;color:#86868B";
       }
-      var phaseStr = u.session_id ? (u.phase || 1) + '/8' : '\u2014';
+      var phaseStr = u.session_id ? (u.phase || 1) + "/8" : "\u2014";
       var msgStr = u.message_count || 0;
-      var gradeStr = u.depth_grade || '\u2014';
-      var gradeColor = u.depth_grade === 'A' ? '#2E7D32' : u.depth_grade === 'B+' ? '#558B2F' : u.depth_grade === 'B' ? '#F57F17' : u.depth_grade === 'C' ? '#E65100' : '#86868B';
-      return '<tr>' +
-        '<td><a href="/admin/people/' + escA(u.id) + '" style="text-decoration:none;color:inherit"><strong>' + escA(u.name || '(no name)') + '</strong><div style="font-size:11px;color:#86868B">' + escA(u.email) + '</div></a></td>' +
-        '<td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;' + statusColor + '">' + statusBadge + '</span></td>' +
-        '<td style="text-align:center">' + phaseStr + '</td>' +
-        '<td style="text-align:center">' + msgStr + '</td>' +
-        '<td style="text-align:center;font-weight:600;color:' + gradeColor + '">' + gradeStr + '</td>' +
-        '<td>' +
-          (magicLink
-            ? '<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="copyLink(this,\'' + escA(magicLink) + '\')">Copy Link</button>'
-            : '<button class="adm-btn adm-btn-sm" onclick="genLink(this,\'' + escA(u.id) + '\')">Generate</button>') +
-        '</td>' +
-        '<td><button class="adm-btn adm-btn-sm adm-btn-danger" onclick="deleteUser(\'' + escA(u.id) + '\',\'' + escA((u.name || u.email).replace(/'/g, '')) + '\')">Delete</button></td>' +
-      '</tr>';
-    }).join('');
-
-    var html = '<h1 class="adm-page-title">People</h1>' +
-
-      '<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:flex-start">' +
-
-        '<form method="GET" action="/admin/people" id="people-form" style="display:flex;align-items:center;gap:8px;margin:0;flex:1;max-width:600px">' +
-          '<input type="text" name="q" placeholder="Search by name or email..." value="' + escA(searchQ) + '" style="flex:1;padding:10px 16px;border:1px solid #D1D1D6;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff" />' +
-          '<select name="filter" onchange="document.getElementById(\'people-form\').submit()" style="padding:10px 12px;border:1px solid #D1D1D6;border-radius:10px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer">' +
-            '<option value="all"' + (filterVal === 'all' ? ' selected' : '') + '>All People</option>' +
-            '<option value="blueprint"' + (filterVal === 'blueprint' ? ' selected' : '') + '>Blueprint Done</option>' +
-            '<option value="in_progress"' + (filterVal === 'in_progress' ? ' selected' : '') + '>In Progress</option>' +
-            '<option value="not_started"' + (filterVal === 'not_started' ? ' selected' : '') + '>Not Started</option>' +
-          '</select>' +
-          '<button type="submit" class="adm-btn adm-btn-sm" style="padding:8px 18px;font-size:14px">Search</button>' +
-          ((searchQ || filterVal !== 'all') ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/people">Clear</a>' : '') +
-        '</form>' +
-
-        '<button class="adm-btn" onclick="document.getElementById(\'add-person-form\').style.display=document.getElementById(\'add-person-form\').style.display===\'none\'?\'block\':\'none\'">+ Add Person</button>' +
-
-      '</div>' +
-
-      ((searchQ || filterVal !== 'all') ? '<div style="margin-bottom:16px;font-size:13px;color:#86868B">' + users.length + ' result(s)' + (searchQ ? ' for "<strong>' + escA(searchQ) + '</strong>"' : '') + (filterVal !== 'all' ? ' &middot; Filter: <strong>' + escA(filterVal === 'blueprint' ? 'Blueprint Done' : filterVal === 'in_progress' ? 'In Progress' : 'Not Started') + '</strong>' : '') + '</div>' : '') +
-
-      '<div id="add-person-form" style="display:none;margin-bottom:24px;padding:20px;background:#fff;border:1px solid #F0F0F0;border-radius:12px">' +
-        '<div style="font-weight:600;margin-bottom:12px">Add New Person</div>' +
-        '<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">' +
-          '<div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Email *</label><input id="new-email" type="email" placeholder="name@example.com" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;width:240px;font-family:inherit" /></div>' +
-          '<div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Name</label><input id="new-name" type="text" placeholder="First name" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;width:160px;font-family:inherit" /></div>' +
-          '<div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Tier</label><select id="new-tier" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;font-family:inherit;background:#fff"><option value="blueprint">Blueprint</option><option value="site">Site</option><option value="done_for_you">Done for You</option></select></div>' +
-          '<button class="adm-btn" onclick="addPerson()">Create Account</button>' +
-          '<span id="add-status" style="font-size:13px;margin-left:8px"></span>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="adm-section">' +
-        '<div class="adm-section-hd">' + (searchQ ? 'Search Results' : 'All People') + ' <span style="font-size:12px;color:#86868B;font-weight:400">(' + users.length + ')</span></div>' +
-        '<div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Person</th><th>Status</th><th style="text-align:center">Phase</th><th style="text-align:center">Messages</th><th style="text-align:center">Grade</th><th>Magic Link</th><th></th></tr></thead><tbody>' +
-        (tableRows || '<tr><td colspan="7" class="adm-empty">No people found</td></tr>') +
-        '</tbody></table></div>' +
-      '</div>';
-
+      var gradeStr = u.depth_grade || "\u2014";
+      var gradeColor = u.depth_grade === "A" ? "#2E7D32" : u.depth_grade === "B+" ? "#558B2F" : u.depth_grade === "B" ? "#F57F17" : u.depth_grade === "C" ? "#E65100" : "#86868B";
+      return '<tr><td><a href="/admin/people/' + escA(u.id) + '" style="text-decoration:none;color:inherit"><strong>' + escA(u.name || "(no name)") + '</strong><div style="font-size:11px;color:#86868B">' + escA(u.email) + '</div></a></td><td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;' + statusColor + '">' + statusBadge + '</span></td><td style="text-align:center">' + phaseStr + '</td><td style="text-align:center">' + msgStr + '</td><td style="text-align:center;font-weight:600;color:' + gradeColor + '">' + gradeStr + "</td><td>" + (magicLink ? `<button class="adm-btn adm-btn-sm adm-btn-outline" onclick="copyLink(this,'` + escA(magicLink) + `')">Copy Link</button>` : `<button class="adm-btn adm-btn-sm" onclick="genLink(this,'` + escA(u.id) + `')">Generate</button>`) + `</td><td><button class="adm-btn adm-btn-sm adm-btn-danger" onclick="deleteUser('` + escA(u.id) + "','" + escA((u.name || u.email).replace(/'/g, "")) + `')">Delete</button></td></tr>`;
+    }).join("");
+    var html = '<h1 class="adm-page-title">People</h1><div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;align-items:flex-start"><form method="GET" action="/admin/people" id="people-form" style="display:flex;align-items:center;gap:8px;margin:0;flex:1;max-width:600px"><input type="text" name="q" placeholder="Search by name or email..." value="' + escA(searchQ) + `" style="flex:1;padding:10px 16px;border:1px solid #D1D1D6;border-radius:10px;font-size:14px;outline:none;font-family:inherit;background:#fff" /><select name="filter" onchange="document.getElementById('people-form').submit()" style="padding:10px 12px;border:1px solid #D1D1D6;border-radius:10px;font-size:13px;font-family:inherit;background:#fff;cursor:pointer"><option value="all"` + (filterVal === "all" ? " selected" : "") + '>All People</option><option value="blueprint"' + (filterVal === "blueprint" ? " selected" : "") + '>Blueprint Done</option><option value="in_progress"' + (filterVal === "in_progress" ? " selected" : "") + '>In Progress</option><option value="not_started"' + (filterVal === "not_started" ? " selected" : "") + '>Not Started</option></select><button type="submit" class="adm-btn adm-btn-sm" style="padding:8px 18px;font-size:14px">Search</button>' + (searchQ || filterVal !== "all" ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/people">Clear</a>' : "") + `</form><button class="adm-btn" onclick="document.getElementById('add-person-form').style.display=document.getElementById('add-person-form').style.display==='none'?'block':'none'">+ Add Person</button></div>` + (searchQ || filterVal !== "all" ? '<div style="margin-bottom:16px;font-size:13px;color:#86868B">' + users.length + " result(s)" + (searchQ ? ' for "<strong>' + escA(searchQ) + '</strong>"' : "") + (filterVal !== "all" ? " &middot; Filter: <strong>" + escA(filterVal === "blueprint" ? "Blueprint Done" : filterVal === "in_progress" ? "In Progress" : "Not Started") + "</strong>" : "") + "</div>" : "") + '<div id="add-person-form" style="display:none;margin-bottom:24px;padding:20px;background:#fff;border:1px solid #F0F0F0;border-radius:12px"><div style="font-weight:600;margin-bottom:12px">Add New Person</div><div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end"><div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Email *</label><input id="new-email" type="email" placeholder="name@example.com" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;width:240px;font-family:inherit" /></div><div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Name</label><input id="new-name" type="text" placeholder="First name" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;width:160px;font-family:inherit" /></div><div><label style="font-size:11px;color:#86868B;display:block;margin-bottom:4px">Tier</label><select id="new-tier" style="padding:8px 12px;border:1px solid #D1D1D6;border-radius:8px;font-size:13px;font-family:inherit;background:#fff"><option value="blueprint">Blueprint</option><option value="site">Site</option><option value="done_for_you">Done for You</option></select></div><button class="adm-btn" onclick="addPerson()">Create Account</button><span id="add-status" style="font-size:13px;margin-left:8px"></span></div></div><div class="adm-section"><div class="adm-section-hd">' + (searchQ ? "Search Results" : "All People") + ' <span style="font-size:12px;color:#86868B;font-weight:400">(' + users.length + ')</span></div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>Person</th><th>Status</th><th style="text-align:center">Phase</th><th style="text-align:center">Messages</th><th style="text-align:center">Grade</th><th>Magic Link</th><th></th></tr></thead><tbody>' + (tableRows || '<tr><td colspan="7" class="adm-empty">No people found</td></tr>') + "</tbody></table></div></div>";
     var pageScript = `
 <script>
 function copyLink(btn, link) {
@@ -21562,53 +22999,68 @@ function deleteUser(userId, name) {
   })
 
 }
-</script>`;
-
-    return new Response(adminLayout('People', html) .replace('</body>', pageScript + '</body>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
-  } catch(e) {
-    return new Response('Admin error: ' + e.message, { status:500, headers:{'Content-Type':'text/plain'} });
+<\/script>`;
+    return new Response(adminLayout("People", html).replace("</body>", pageScript + "</body>"), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    return new Response("Admin error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
   }
 }
-
 async function handleAdminPersonProfile(request, env, path) {
   var admin = await requireAdmin(request, env);
   if (!admin) return handleAdmin(request, env);
-  var userId = path.replace('/admin/people/', '');
-  if (!userId) return new Response('Missing user ID', { status: 400 });
+  var userId = path.replace("/admin/people/", "");
+  if (!userId) return new Response("Missing user ID", { status: 400 });
   try {
-    var origin = env.APP_ORIGIN || 'https://love.jamesguldan.com';
-
-    // User info + magic token in parallel
+    let clarityCard = function(label, score, why, interp) {
+      var c = score >= 8 ? "#27ae60" : score >= 6 ? "#2980b9" : score >= 4 ? "#e67e22" : "#e74c3c";
+      var cid = "cc" + label.replace(/\W/g, "").toLowerCase();
+      return '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:12px;padding:16px;text-align:center"><div style="font-family:Outfit,sans-serif;font-size:40px;font-weight:700;color:' + c + ';line-height:1">' + score + '</div><div style="font-size:10px;color:#86868B;margin:2px 0 6px">/10</div><div style="font-size:12px;font-weight:600;color:#1D1D1F">' + escA(label) + '</div><div style="font-size:11px;color:#86868B;margin:4px 0 8px;font-style:italic;line-height:1.4">' + escA(interp) + `</div><button onclick="var e=document.getElementById('` + cid + `');e.style.display=e.style.display==='none'?'block':'none'" style="background:none;border:1px solid #D1D1D6;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;color:#86868B">Why?</button><div id="` + cid + '" style="display:none;font-size:11px;color:#555;margin-top:8px;text-align:left;background:#F9F9F9;padding:8px;border-radius:6px;line-height:1.5">' + escA(why) + "</div></div>";
+    }, renderBPValuePP = function(val) {
+      if (typeof val === "string") return '<p style="line-height:1.6">' + escA(val) + "</p>";
+      if (Array.isArray(val)) return val.map(function(v) {
+        if (typeof v === "object" && v !== null) return '<div style="padding:8px 0;border-bottom:1px solid #F5F5F7">' + Object.entries(v).map(function(e3) {
+          return '<div style="display:flex;gap:8px"><span style="color:#86868B;min-width:120px;font-size:11px">' + escA(e3[0]) + "</span><span>" + escA(String(e3[1] || "")) + "</span></div>";
+        }).join("") + "</div>";
+        return '<div style="padding:4px 0;border-bottom:1px solid #F5F5F7">' + escA(String(v)) + "</div>";
+      }).join("");
+      if (typeof val === "object" && val !== null) return Object.entries(val).map(function(e4) {
+        return '<div style="padding:4px 0"><span style="color:#86868B;font-size:11px;display:inline-block;min-width:140px">' + escA(e4[0]) + "</span> " + escA(String(e4[1] || "")) + "</div>";
+      }).join("");
+      return "<p>" + escA(String(val || "")) + "</p>";
+    };
+    var origin = env.APP_ORIGIN || "https://love.jamesguldan.com";
+    var latestSessionRow = await env.DB.prepare("SELECT id FROM sessions WHERE user_id = ? AND status != 'restarted' ORDER BY created_at DESC LIMIT 1").bind(userId).first().catch(() => null);
+    if (latestSessionRow && latestSessionRow.id) {
+      return Response.redirect(origin + "/admin/operator/" + latestSessionRow.id, 302);
+    }
     var [user, tokenRow] = await Promise.all([
-      env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first(),
-      env.DB.prepare(`SELECT token FROM auth_tokens WHERE user_id = ? AND (type = 'persistent_magic' OR type = 'magic_login') AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1`).bind(userId).first().catch(()=>null)
+      env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first(),
+      env.DB.prepare(`SELECT token FROM auth_tokens WHERE user_id = ? AND (type = 'persistent_magic' OR type = 'magic_login') AND used = 0 AND expires_at > datetime('now') ORDER BY expires_at DESC LIMIT 1`).bind(userId).first().catch(() => null)
     ]);
-    if (!user) return new Response(adminLayout('Not Found', '<div class="adm-empty">User not found</div>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
-    var magicLink = tokenRow ? origin + '/magic?token=' + tokenRow.token : '';
-
-    // Sessions + cost in parallel
+    if (!user) return new Response(adminLayout("Not Found", '<div class="adm-empty">User not found</div>'), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+    var magicLink = tokenRow ? origin + "/magic?token=" + tokenRow.token : "";
     var [sessionsRes, costRow] = await Promise.all([
-      env.DB.prepare(`SELECT id, phase, message_count, blueprint_generated, status, created_at, last_active_at, depth_grade, emotional_depth_score, depth_breakdown, industry, niche FROM sessions WHERE user_id = ? AND status != 'restarted' ORDER BY created_at DESC LIMIT 10`).bind(userId).all().catch(()=>({results:[]})),
-      env.DB.prepare(`SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE session_id IN (SELECT id FROM sessions WHERE user_id = ?)`).bind(userId).first().catch(()=>({total:0}))
+      env.DB.prepare(`SELECT id, phase, message_count, blueprint_generated, status, created_at, last_active_at, depth_grade, emotional_depth_score, depth_breakdown, industry, niche FROM sessions WHERE user_id = ? AND status != 'restarted' ORDER BY created_at DESC LIMIT 10`).bind(userId).all().catch(() => ({ results: [] })),
+      env.DB.prepare(`SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE session_id IN (SELECT id FROM sessions WHERE user_id = ?)`).bind(userId).first().catch(() => ({ total: 0 }))
     ]);
     var sessions = sessionsRes?.results || [];
     var session = sessions[0] || null;
     var sessionId = session?.id || null;
-
-    // Depth breakdown
     var depthBreakdown = null;
-    if (session?.depth_breakdown) { try { depthBreakdown = JSON.parse(session.depth_breakdown); } catch(_){} }
-
-    // Phase scores + insights in parallel (for primary session)
+    if (session?.depth_breakdown) {
+      try {
+        depthBreakdown = JSON.parse(session.depth_breakdown);
+      } catch (_) {
+      }
+    }
     var phaseScores = [], insightRows = [], kvMessages = [], bp = null;
     if (sessionId) {
       var [psRes, insRes] = await Promise.all([
-        env.DB.prepare('SELECT * FROM phase_scores WHERE session_id = ? ORDER BY phase').bind(sessionId).all().catch(()=>({results:[]})),
-        env.DB.prepare('SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id = ? ORDER BY confidence DESC').bind(sessionId).all().catch(()=>({results:[]}))
+        env.DB.prepare("SELECT * FROM phase_scores WHERE session_id = ? ORDER BY phase").bind(sessionId).all().catch(() => ({ results: [] })),
+        env.DB.prepare("SELECT insight_type, insight_value, confidence FROM session_insights WHERE session_id = ? ORDER BY confidence DESC").bind(sessionId).all().catch(() => ({ results: [] }))
       ]);
       phaseScores = psRes?.results || [];
       insightRows = insRes?.results || [];
-      // KV: messages + blueprint
       try {
         var sessRaw = await env.SESSIONS.get(sessionId);
         if (sessRaw) {
@@ -21616,284 +23068,137 @@ async function handleAdminPersonProfile(request, env, path) {
           bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
           if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
         }
-      } catch(_){}
-      if (!bp) { try { var bpRaw = await env.SESSIONS.get('blueprint:'+sessionId); if(bpRaw) bp=JSON.parse(bpRaw); }catch(_){} }
+      } catch (_) {
+      }
+      if (!bp) {
+        try {
+          var bpRaw = await env.SESSIONS.get("blueprint:" + sessionId);
+          if (bpRaw) bp = JSON.parse(bpRaw);
+        } catch (_) {
+        }
+      }
     }
-
     var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
     var hasLandscape = !!(bp && bp.marketLandscape && bp.marketLandscape.categoryOfOne);
     var positioningStatement = hasV3 ? bp.v3.positioningStatement : null;
-
-    // Apollo data
-    var apolloTitle = '', apolloCompany = '', apolloLinkedin = '';
+    var apolloTitle = "", apolloCompany = "", apolloLinkedin = "";
     if (user.apollo_data) {
       try {
         var ap = JSON.parse(user.apollo_data);
-        var apJob = ((ap.person||{}).employment_history||[])[0]||{};
-        apolloTitle = apJob.title||''; apolloCompany = apJob.organization_name||''; apolloLinkedin = (ap.person||{}).linkedin_url||'';
-      } catch(_){}
+        var apJob = ((ap.person || {}).employment_history || [])[0] || {};
+        apolloTitle = apJob.title || "";
+        apolloCompany = apJob.organization_name || "";
+        apolloLinkedin = (ap.person || {}).linkedin_url || "";
+      } catch (_) {
+      }
     }
-
-    // Clarity scores from depth_breakdown (each dim is /5; map to /10)
     var clarityScores = null;
     if (depthBreakdown) {
-      var _ii = depthBreakdown.inciting_incident||0, _bs = depthBreakdown.belief_specificity||0;
-      var _cap = depthBreakdown.client_avatar_precision||0, _ps = depthBreakdown.personal_stakes||0, _mm = depthBreakdown.mirror_moment||0;
-      clarityScores = { story: _ii+_ps, beliefs: _bs*2, positioning: _cap+_mm, d:{ii:_ii,bs:_bs,cap:_cap,ps:_ps,mm:_mm} };
+      var _ii = depthBreakdown.inciting_incident || 0, _bs = depthBreakdown.belief_specificity || 0;
+      var _cap = depthBreakdown.client_avatar_precision || 0, _ps = depthBreakdown.personal_stakes || 0, _mm = depthBreakdown.mirror_moment || 0;
+      clarityScores = { story: _ii + _ps, beliefs: _bs * 2, positioning: _cap + _mm, d: { ii: _ii, bs: _bs, cap: _cap, ps: _ps, mm: _mm } };
     }
-
-    function clarityCard(label, score, why, interp) {
-      var c = score>=8?'#27ae60':score>=6?'#2980b9':score>=4?'#e67e22':'#e74c3c';
-      var cid = 'cc'+label.replace(/\W/g,'').toLowerCase();
-      return '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:12px;padding:16px;text-align:center">' +
-        '<div style="font-family:Outfit,sans-serif;font-size:40px;font-weight:700;color:'+c+';line-height:1">'+score+'</div>' +
-        '<div style="font-size:10px;color:#86868B;margin:2px 0 6px">/10</div>' +
-        '<div style="font-size:12px;font-weight:600;color:#1D1D1F">'+escA(label)+'</div>' +
-        '<div style="font-size:11px;color:#86868B;margin:4px 0 8px;font-style:italic;line-height:1.4">'+escA(interp)+'</div>' +
-        '<button onclick="var e=document.getElementById(\''+cid+'\');e.style.display=e.style.display===\'none\'?\'block\':\'none\'" style="background:none;border:1px solid #D1D1D6;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;color:#86868B">Why?</button>' +
-        '<div id="'+cid+'" style="display:none;font-size:11px;color:#555;margin-top:8px;text-align:left;background:#F9F9F9;padding:8px;border-radius:6px;line-height:1.5">'+escA(why)+'</div>' +
-      '</div>';
-    }
-
-    // Depth dimension bars
-    var dimLabels = {inciting_incident:'Inciting Incident',belief_specificity:'Belief Specificity',client_avatar_precision:'Client Avatar',personal_stakes:'Personal Stakes',mirror_moment:'Mirror Moment'};
-    var dimBarHTML = depthBreakdown ? Object.entries(depthBreakdown).map(function(e2){
-      var label2=dimLabels[e2[0]]||e2[0].replace(/_/g,' '), val2=e2[1], pct2=Math.round((val2/5)*100);
-      var col2=val2<2?'#e74c3c':val2<4?'#e67e22':'#27ae60';
-      return '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:2px"><span>'+escA(label2)+'</span><span style="font-weight:600;color:'+col2+'">'+val2+'/5</span></div><div style="background:#F0F0F0;height:5px;border-radius:3px"><div style="width:'+pct2+'%;height:100%;background:'+col2+';border-radius:3px"></div></div></div>';
-    }).join('') : '';
-
-    // Grade info
-    var gradeColor = session?.depth_grade?(session.depth_grade[0]==='A'?'#27ae60':session.depth_grade[0]==='B'?'#2980b9':session.depth_grade[0]==='C'?'#e67e22':'#e74c3c'):'#86868B';
-    var gradeExplanation = '';
-    var g2 = session?.depth_grade||'';
-    if (g2==='A') gradeExplanation='Exceptional. Raw story, specific beliefs, clear client avatar, defined personal stakes, and mirror moment all fully explored.';
-    else if (g2==='B+') gradeExplanation='Strong depth. Most dimensions well-explored with minor gaps. Blueprint will be rich and specific.';
-    else if (g2==='B') gradeExplanation='Good depth. Key themes surfaced but some areas stayed surface-level. Blueprint will be solid.';
-    else if (g2==='C') gradeExplanation='Moderate depth. Interview moved through phases without fully mining core material.';
-    else if (g2) gradeExplanation='Below average. Core emotional material was not reached in this session.';
-
-    // Health signals
+    var dimLabels = { inciting_incident: "Inciting Incident", belief_specificity: "Belief Specificity", client_avatar_precision: "Client Avatar", personal_stakes: "Personal Stakes", mirror_moment: "Mirror Moment" };
+    var dimBarHTML = depthBreakdown ? Object.entries(depthBreakdown).map(function(e2) {
+      var label2 = dimLabels[e2[0]] || e2[0].replace(/_/g, " "), val2 = e2[1], pct2 = Math.round(val2 / 5 * 100);
+      var col2 = val2 < 2 ? "#e74c3c" : val2 < 4 ? "#e67e22" : "#27ae60";
+      return '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;color:#86868B;margin-bottom:2px"><span>' + escA(label2) + '</span><span style="font-weight:600;color:' + col2 + '">' + val2 + '/5</span></div><div style="background:#F0F0F0;height:5px;border-radius:3px"><div style="width:' + pct2 + "%;height:100%;background:" + col2 + ';border-radius:3px"></div></div></div>';
+    }).join("") : "";
+    var gradeColor = session?.depth_grade ? session.depth_grade[0] === "A" ? "#27ae60" : session.depth_grade[0] === "B" ? "#2980b9" : session.depth_grade[0] === "C" ? "#e67e22" : "#e74c3c" : "#86868B";
+    var gradeExplanation = "";
+    var g2 = session?.depth_grade || "";
+    if (g2 === "A") gradeExplanation = "Exceptional. Raw story, specific beliefs, clear client avatar, defined personal stakes, and mirror moment all fully explored.";
+    else if (g2 === "B+") gradeExplanation = "Strong depth. Most dimensions well-explored with minor gaps. Blueprint will be rich and specific.";
+    else if (g2 === "B") gradeExplanation = "Good depth. Key themes surfaced but some areas stayed surface-level. Blueprint will be solid.";
+    else if (g2 === "C") gradeExplanation = "Moderate depth. Interview moved through phases without fully mining core material.";
+    else if (g2) gradeExplanation = "Below average. Core emotional material was not reached in this session.";
     var flags = [];
-    if (!session) { flags.push({t:'gray',m:'No session created yet'}); }
-    else if (session.blueprint_generated) { flags.push({t:hasV3?'green':'yellow', m:hasV3?'Blueprint complete — all fields present':'Blueprint done but V3 fields missing'}); }
-    else if (session.message_count > 0) { flags.push({t:'yellow', m:'Interview in progress — Phase '+(session.phase||1)+'/8 · '+session.message_count+' messages'}); }
-    else { flags.push({t:'gray', m:'Account created — interview not started'}); }
-    var fBg={green:'#E8F8ED',yellow:'#FFF3E0',red:'#FEE2E2',gray:'#F5F5F5'}, fTx={green:'#1A7F3C',yellow:'#E65100',red:'#991B1B',gray:'#86868B'}, fDot={green:'🟢',yellow:'🟡',red:'🔴',gray:'⚪'};
-    var flagsHTML = flags.map(function(f){return '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:'+fBg[f.t]+';margin-bottom:6px"><span>'+fDot[f.t]+'</span><span style="font-size:12px;color:'+fTx[f.t]+'">'+escA(f.m)+'</span></div>';}).join('');
-
-    // Status chip
-    var statusChip = session?.blueprint_generated
-      ? '<span style="background:#E8F5E9;color:#2E7D32;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">Blueprint Done</span>'
-      : session?.message_count>0
-        ? '<span style="background:#FFF3E0;color:#E65100;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">In Progress — Phase '+(session.phase||1)+'/8</span>'
-        : '<span style="background:#F5F5F5;color:#86868B;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">Not Started</span>';
-
-    // Psychology Brief from phase_scores
-    function renderBPValuePP(val) {
-      if (typeof val==='string') return '<p style="line-height:1.6">'+escA(val)+'</p>';
-      if (Array.isArray(val)) return val.map(function(v){
-        if (typeof v==='object'&&v!==null) return '<div style="padding:8px 0;border-bottom:1px solid #F5F5F7">'+Object.entries(v).map(function(e3){return '<div style="display:flex;gap:8px"><span style="color:#86868B;min-width:120px;font-size:11px">'+escA(e3[0])+'</span><span>'+escA(String(e3[1]||''))+'</span></div>';}).join('')+'</div>';
-        return '<div style="padding:4px 0;border-bottom:1px solid #F5F5F7">'+escA(String(v))+'</div>';
-      }).join('');
-      if (typeof val==='object'&&val!==null) return Object.entries(val).map(function(e4){return '<div style="padding:4px 0"><span style="color:#86868B;font-size:11px;display:inline-block;min-width:140px">'+escA(e4[0])+'</span> '+escA(String(e4[1]||''))+'</div>';}).join('');
-      return '<p>'+escA(String(val||''))+'</p>';
+    if (!session) {
+      flags.push({ t: "gray", m: "No session created yet" });
+    } else if (session.blueprint_generated) {
+      flags.push({ t: hasV3 ? "green" : "yellow", m: hasV3 ? "Blueprint complete \u2014 all fields present" : "Blueprint done but V3 fields missing" });
+    } else if (session.message_count > 0) {
+      flags.push({ t: "yellow", m: "Interview in progress \u2014 Phase " + (session.phase || 1) + "/8 \xB7 " + session.message_count + " messages" });
+    } else {
+      flags.push({ t: "gray", m: "Account created \u2014 interview not started" });
     }
-
-    var psychCards = phaseScores.filter(function(ps){return ps.phase_summary;}).map(function(ps){
-      var quotes=[]; try{quotes=JSON.parse(ps.key_quotes||'[]');}catch(_){}
-      var rfArr=[]; try{rfArr=JSON.parse(ps.red_flags||'[]');}catch(_){}
-      var yfArr=[]; try{yfArr=JSON.parse(ps.yellow_flags||'[]');}catch(_){}
-      var depthCol=ps.emotional_depth>=7?'#E8F5E9;color:#2E7D32':ps.emotional_depth>=4?'#FFF3E0;color:#E65100':'#FEE2E2;color:#991B1B';
-      var engCol=ps.engagement==='high'?'#27ae60':ps.engagement==='medium'?'#e67e22':'#e74c3c';
-      return '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:12px;padding:16px;margin-bottom:12px">'+
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">'+
-          '<span style="background:#F5F5F7;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">Phase '+ps.phase+'</span>'+
-          '<span style="background:'+depthCol+';padding:3px 8px;border-radius:20px;font-size:11px">Depth: '+(ps.emotional_depth||'?')+'/10</span>'+
-          '<span style="font-size:11px;color:'+engCol+';font-weight:500">'+escA(ps.engagement||'')+' engagement</span>'+
-        '</div>'+
-        '<div style="font-size:13px;color:#1D1D1F;line-height:1.6;margin-bottom:10px">'+escA(ps.phase_summary||'')+'</div>'+
-        (quotes.length?'<div style="border-left:3px solid #C4703F;padding-left:12px;margin-bottom:8px">'+quotes.slice(0,2).map(function(q){return '<div style="font-size:12px;font-style:italic;color:#444;margin-bottom:6px;line-height:1.5">\u201c'+escA(q)+'\u201d</div>';}).join('')+'</div>':'')+
-        (rfArr.length?'<div style="font-size:11px;color:#991B1B;background:#FEE2E2;padding:6px 10px;border-radius:6px;margin-bottom:4px">\uD83D\uDD34 '+escA(rfArr[0])+'</div>':'')+
-        (yfArr.length?'<div style="font-size:11px;color:#856404;background:#FFF3CD;padding:6px 10px;border-radius:6px">'+escA(yfArr[0])+'</div>':'')+
-      '</div>';
-    }).join('');
-
-    // Transcript
-    var displayMessages = kvMessages.map(function(m,i){
-      var c=m.content; if(Array.isArray(c))c=c.map(function(x){return typeof x==='object'?(x.text||''):x;}).join(' '); c=String(c||'').replace(/\s*METADATA:\{[^}]*\}/g,'').trim();
-      return {role:m.role,content:c,idx:i};
-    }).filter(function(m){return m.content;});
-    var transcriptHTML = displayMessages.map(function(m){
-      var isUser=m.role==='user';
-      return '<div style="margin-bottom:14px">'+
-        '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#86868B;margin-bottom:4px">'+(isUser?escA(user.name||'User'):'Claude')+'</div>'+
-        '<div style="background:'+(isUser?'#F5F5F7':'#FDF0E8')+';padding:10px 14px;border-radius:'+(isUser?'12px 12px 4px 12px':'12px 12px 12px 4px')+';font-size:13px;line-height:1.6;white-space:pre-wrap">'+escA(m.content)+'</div>'+
-      '</div>';
-    }).join('');
-
-    // Blueprint
-    var blueprintHTML = bp
-      ? Object.entries(bp).map(function(e5){return '<div style="margin-bottom:16px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden"><div style="background:#F5F5F7;padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C4703F">'+escA(e5[0])+'</div><div style="padding:12px 14px;font-size:13px">'+renderBPValuePP(e5[1])+'</div></div>';}).join('')
-      : '<div style="color:#86868B;padding:24px;text-align:center">No blueprint generated yet.</div>';
-
-    // Insights
-    var insightsHTML = insightRows.length
-      ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">'+insightRows.map(function(r){return '<div style="background:#F5F5F7;padding:10px 14px;border-radius:8px;font-size:12px;border-left:3px solid #C4703F"><div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">'+escA(r.insight_type)+' <span style="color:#86868B;font-weight:400">('+Math.round(r.confidence*100)+'%)</span></div><div>'+escA(String(r.insight_value||'').slice(0,200))+'</div></div>';}).join('')+'</div>'
-      : '<div style="color:#86868B;padding:24px;text-align:center">No insights extracted yet.</div>';
-
-    // Tier badge
-    var tierBadge = user.tier==='done_for_you'?'bg-copper':user.tier==='blueprint'?'bg-green':'bg-gray';
-
-    // ─── BUILD HTML ───────────────────────────────────────────────────────────
-    var html = '<style>'+
-      '.qa-tab{background:none;border:none;padding:10px 18px;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;color:#86868B;border-bottom:2px solid transparent;margin-bottom:-1px}'+
-      '.qa-tab:hover{color:#1D1D1F}.qa-tab-active{color:#C4703F;border-bottom-color:#C4703F;font-weight:500}'+
-    '</style>'+
-    '<a class="adm-back" href="/admin/people">&larr; All People</a>'+
-    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap">'+
-      '<h1 class="adm-page-title" style="margin:0">'+escA(user.name||user.email)+'</h1>'+
-      statusChip+
-    '</div>'+
-    ((apolloTitle||apolloCompany)?'<div style="font-size:13px;color:#86868B;margin-bottom:20px">'+escA(apolloTitle+(apolloCompany?' at '+apolloCompany:''))+(apolloLinkedin?' &middot; <a href="'+escA(apolloLinkedin)+'" target="_blank" style="color:#C4703F">LinkedIn</a>':'')+'</div>':'<div style="margin-bottom:20px"></div>')+
-
-    // ROW 1: 3 columns
-    '<div style="display:grid;grid-template-columns:280px 1fr 240px;gap:16px;margin-bottom:20px">'+
-
-      // Col 1: Profile + Quick Actions stacked
-      '<div style="display:flex;flex-direction:column;gap:12px">'+
-        '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px">'+
-          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Profile</div>'+
-          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Email</div><div style="font-size:13px;margin-bottom:10px;word-break:break-all">'+escA(user.email)+'</div>'+
-          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Tier</div><div style="margin-bottom:10px"><span class="badge '+tierBadge+'">'+escA(user.tier||'free')+'</span></div>'+
-          (user.phone?'<div style="font-size:12px;color:#86868B;margin-bottom:1px">Phone</div><div style="font-size:13px;margin-bottom:10px">'+escA(user.phone)+'</div>':'')+
-          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Member since</div><div style="font-size:13px;margin-bottom:10px">'+escA((user.created_at||'').slice(0,10))+'</div>'+
-          '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Last login</div><div style="font-size:13px">'+timeSince(user.last_login)+'</div>'+
-        '</div>'+
-        '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px">'+
-          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Quick Actions</div>'+
-          '<div style="margin-bottom:10px">'+
-            '<div style="font-size:11px;color:#86868B;margin-bottom:5px">Magic Link</div>'+
-            (magicLink
-              ?'<div style="display:flex;gap:6px"><input id="magic-url" type="text" readonly value="'+escA(magicLink)+'" onclick="navigator.clipboard.writeText(this.value);this.style.background=\'#E8F5E9\'" style="flex:1;padding:6px 8px;border:1px solid #D1D1D6;border-radius:7px;font-size:11px;font-family:monospace;background:#F9F7F4;cursor:pointer;min-width:0" title="Click to copy" /><button class="adm-btn adm-btn-sm" onclick="copyMagicLink()">Copy</button></div>'
-              :'<button class="adm-btn adm-btn-sm" id="gen-link-btn" onclick="genProfileLink(\''+escA(userId)+'\')">Generate Link</button><span id="gen-link-status" style="font-size:11px;margin-left:6px"></span>'
-            )+
-          '</div>'+
-          (magicLink?'<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="'+escA(magicLink)+'" target="_blank" style="display:block;text-align:center">Open Their View &rarr;</a></div>':'')+
-          (sessionId&&session?.blueprint_generated?'<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session='+escA(sessionId)+'" target="_blank" style="display:block;text-align:center;background:#C4703F;color:#fff">Preview Blueprint</a></div>':'')+
-          (sessionId&&session?.blueprint_generated&&!hasLandscape?'<div style="margin-bottom:8px"><button class="adm-btn adm-btn-sm adm-btn-outline" id="backfill-landscape-btn" onclick="backfillLandscape(\''+escA(sessionId)+'\')" style="display:block;width:100%;text-align:center">Backfill Landscape</button><div id="backfill-landscape-status" style="font-size:11px;color:#86868B;margin-top:4px;text-align:center"></div></div>':'')+
-          '<div style="font-size:11px;color:#86868B;padding-top:8px;border-top:1px solid #F5F5F5">'+sessions.length+' session &middot; $'+parseFloat(costRow?.total||0).toFixed(2)+' API cost</div>'+
-        '</div>'+
-      '</div>'+
-
-      // Col 2: Interview Depth
-      '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:20px">'+
-        '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:16px">Interview Depth</div>'+
-        (session
-          ?'<div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:16px">'+
-              '<div style="text-align:center;flex-shrink:0">'+
-                '<div style="font-family:Outfit,sans-serif;font-size:56px;font-weight:700;color:'+gradeColor+';line-height:1">'+escA(session.depth_grade||'—')+'</div>'+
-                '<div style="font-size:11px;color:#86868B;margin-top:4px">'+(session.emotional_depth_score?session.emotional_depth_score+'/25':'depth')+'</div>'+
-              '</div>'+
-              '<div style="flex:1">'+
-                (gradeExplanation?'<div style="font-size:12px;color:#444;line-height:1.6;margin-bottom:12px">'+escA(gradeExplanation)+'</div>':'')+
-                '<div style="font-size:11px;color:#86868B;margin-bottom:5px">Phase '+(session.phase||1)+' of 8</div>'+
-                phaseBar(session.phase)+
-                '<div style="font-size:11px;color:#86868B;margin-top:6px">'+kvMessages.length+' messages</div>'+
-              '</div>'+
-            '</div>'+
-            (dimBarHTML?'<div style="border-top:1px solid #F5F5F5;padding-top:14px">'+dimBarHTML+'</div>':'')
-          :'<div style="color:#86868B;font-size:13px;padding:12px 0">No interview data yet.</div>'
-        )+
-      '</div>'+
-
-      // Col 3: Health + Danger
-      '<div style="display:flex;flex-direction:column;gap:12px">'+
-        '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px">'+
-          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Health</div>'+
-          flagsHTML+
-        '</div>'+
-        '<div style="background:#fff;border:1px solid #FFE0E0;border-radius:14px;padding:18px">'+
-          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#FF3B30;margin-bottom:10px">Danger Zone</div>'+
-          '<button class="adm-btn adm-btn-sm adm-btn-danger" onclick="deleteUser(\''+escA(userId)+'\',\''+escA((user.name||user.email).replace(/'/g,''))+'\')">Delete User</button>'+
-        '</div>'+
-      '</div>'+
-
-    '</div>'+
-
-    // Positioning Statement — full width callout
-    (positioningStatement
-      ?'<div style="background:linear-gradient(135deg,#FDF0E8,#FFF8F0);border:1px solid #E8D5C0;border-radius:14px;padding:24px 28px;margin-bottom:20px">'+
-          '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#C4703F;margin-bottom:10px">One-Sentence Positioning Statement</div>'+
-          '<div style="font-family:Outfit,sans-serif;font-size:20px;font-weight:600;color:#1D1D1F;line-height:1.4">\u201c'+escA(positioningStatement)+'\u201d</div>'+
-        '</div>'
-      :''
-    )+
-
-    // Clarity Scores
-    (clarityScores
-      ?'<div style="margin-bottom:20px">'+
-          '<div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Clarity Scores</div>'+
-          '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'+
-            clarityCard('Story Clarity',clarityScores.story,
-              'Inciting incident ('+clarityScores.d.ii+'/5) + personal stakes ('+clarityScores.d.ps+'/5). Measures how raw and specific the foundational story was.',
-              clarityScores.story>=8?'Crystal clear story with defined stakes.':clarityScores.story>=6?'Good story foundation with room for depth.':clarityScores.story>=4?'Story surfaced but needs more specificity.':'Core story not fully mined.')+
-            clarityCard('Beliefs Clarity',clarityScores.beliefs,
-              'Belief specificity ('+clarityScores.d.bs+'/5 \u00d7 2). Measures how ownable and specific the belief system is vs generic.',
-              clarityScores.beliefs>=8?'Specific, ownable beliefs that differentiate.':clarityScores.beliefs>=6?'Good beliefs with some specificity.':clarityScores.beliefs>=4?'Beliefs stated but could be sharper.':'Belief system not fully articulated.')+
-            clarityCard('Positioning Clarity',clarityScores.positioning,
-              'Client avatar precision ('+clarityScores.d.cap+'/5) + mirror moment ('+clarityScores.d.mm+'/5). Measures how clearly they know who they serve and why.',
-              clarityScores.positioning>=8?'Crystal clear on who they serve and why.':clarityScores.positioning>=6?'Good client clarity with minor gaps.':clarityScores.positioning>=4?'Client picture forming but not yet sharp.':'Avatar needs significant development.')+
-          '</div>'+
-        '</div>'
-      :''
-    )+
-
-    // Psychology Brief
-    (psychCards
-      ?'<div style="background:#F9F7F4;border:1px solid #E8E0D8;border-radius:14px;padding:20px;margin-bottom:20px">'+
-          '<div style="font-family:Outfit,sans-serif;font-weight:700;font-size:14px;color:#C4703F;margin-bottom:2px">Psychology Brief</div>'+
-          '<div style="font-size:11px;color:#86868B;margin-bottom:16px">Phase-by-phase analysis extracted during the interview</div>'+
-          psychCards+
-        '</div>'
-      :''
-    )+
-
-    // Tabbed: Transcript | Blueprint | Insights
-    (sessionId
-      ?'<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;overflow:hidden;margin-bottom:20px">'+
-          '<div style="display:flex;border-bottom:1px solid #F0F0F0;background:#FAFAFA">'+
-            '<button class="qa-tab qa-tab-active" onclick="switchTab(this,\'transcript\')">Transcript ('+displayMessages.length+')</button>'+
-            '<button class="qa-tab" onclick="switchTab(this,\'blueprint\')">Blueprint'+(bp?' ('+Object.keys(bp).length+'p)':'')+'</button>'+
-            '<button class="qa-tab" onclick="switchTab(this,\'insights\')">Insights ('+insightRows.length+')</button>'+
-          '</div>'+
-          '<div style="padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #F0F0F0;display:flex;gap:8px;flex-wrap:wrap">'+
-            '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+escA(sessionId)+'/transcript.txt">\u2193 Transcript</a>'+
-            '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+escA(sessionId)+'">Full Session Detail &rarr;</a>'+
-            (bp?'<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/'+escA(sessionId)+'/blueprint.json">\u2193 Blueprint JSON</a>':'')+
-          '</div>'+
-          '<div id="tab-transcript" class="qa-tab-panel" style="padding:20px;max-height:600px;overflow-y:auto">'+(transcriptHTML||'<div style="color:#86868B;text-align:center;padding:24px">No messages yet</div>')+'</div>'+
-          '<div id="tab-blueprint" class="qa-tab-panel" style="display:none;padding:20px;max-height:600px;overflow-y:auto">'+blueprintHTML+'</div>'+
-          '<div id="tab-insights" class="qa-tab-panel" style="display:none;padding:20px;max-height:600px;overflow-y:auto">'+insightsHTML+'</div>'+
-        '</div>'
-      :''
-    );
-
-    var pageScript = '<script>'+
-      'function switchTab(btn,name){document.querySelectorAll(".qa-tab-panel").forEach(function(p){p.style.display="none"});document.getElementById("tab-"+name).style.display="block";document.querySelectorAll(".qa-tab").forEach(function(t){t.classList.remove("qa-tab-active")});btn.classList.add("qa-tab-active");}'+
-      'function copyMagicLink(){var v=document.getElementById("magic-url").value;navigator.clipboard.writeText(v).then(function(){var b=document.querySelector("[onclick=\'copyMagicLink()\']");b.textContent="Copied!";setTimeout(function(){b.textContent="Copy";},2000);});}'+
-      'function genProfileLink(uid){var btn=document.getElementById("gen-link-btn");btn.disabled=true;btn.textContent="Generating...";fetch("/api/admin/magic-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:uid})}).then(function(r){return r.json();}).then(function(d){if(d.magicLink){navigator.clipboard.writeText(d.magicLink);location.reload();}else{btn.textContent="Error";btn.disabled=false;}}).catch(function(){btn.textContent="Error";btn.disabled=false;});}'+
-      'function deleteUser(uid,name){if(!confirm("Delete "+name+"? This removes ALL their data. Cannot be undone."))return;if(!confirm("Are you absolutely sure?"))return;fetch("/admin/delete-user/"+uid+"?confirm=DELETE",{method:"POST"}).then(function(r){return r.json();}).then(function(d){if(d.ok||d.success){alert("User deleted.");window.location.href="/admin/people";}else{alert("Error: "+(d.error||"Unknown"));}}).catch(function(e){alert("Error: "+e.message);});}'+
-      'function backfillLandscape(sid){var btn=document.getElementById("backfill-landscape-btn");var st=document.getElementById("backfill-landscape-status");btn.disabled=true;btn.textContent="Generating...";st.textContent="This may take 30 seconds...";fetch("/api/admin/backfill-landscape",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:sid})}).then(function(r){return r.json();}).then(function(d){if(d.ok){st.textContent="Done! Refresh to see blueprint.";st.style.color="#27ae60";btn.textContent="Done";}else{st.textContent="Error: "+(d.error||"Unknown");st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";}}).catch(function(e){st.textContent="Error: "+e.message;st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";});}'+
-    '<\/script>';
-
-    return new Response(adminLayout(user.name || user.email, html).replace('</body>', pageScript + '</body>'), { headers: {'Content-Type':'text/html;charset=UTF-8'} });
-  } catch(e) {
-    return new Response('Admin error: ' + e.message, { status:500, headers:{'Content-Type':'text/plain'} });
+    var fBg = { green: "#E8F8ED", yellow: "#FFF3E0", red: "#FEE2E2", gray: "#F5F5F5" }, fTx = { green: "#1A7F3C", yellow: "#E65100", red: "#991B1B", gray: "#86868B" }, fDot = { green: "\u{1F7E2}", yellow: "\u{1F7E1}", red: "\u{1F534}", gray: "\u26AA" };
+    var flagsHTML = flags.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:' + fBg[f.t] + ';margin-bottom:6px"><span>' + fDot[f.t] + '</span><span style="font-size:12px;color:' + fTx[f.t] + '">' + escA(f.m) + "</span></div>";
+    }).join("");
+    var statusChip = session?.blueprint_generated ? '<span style="background:#E8F5E9;color:#2E7D32;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">Blueprint Done</span>' : session?.message_count > 0 ? '<span style="background:#FFF3E0;color:#E65100;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">In Progress \u2014 Phase ' + (session.phase || 1) + "/8</span>" : '<span style="background:#F5F5F5;color:#86868B;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:500">Not Started</span>';
+    var psychCards = phaseScores.filter(function(ps) {
+      return ps.phase_summary;
+    }).map(function(ps) {
+      var quotes = [];
+      try {
+        quotes = JSON.parse(ps.key_quotes || "[]");
+      } catch (_) {
+      }
+      var rfArr = [];
+      try {
+        rfArr = JSON.parse(ps.red_flags || "[]");
+      } catch (_) {
+      }
+      var yfArr = [];
+      try {
+        yfArr = JSON.parse(ps.yellow_flags || "[]");
+      } catch (_) {
+      }
+      var depthCol = ps.emotional_depth >= 7 ? "#E8F5E9;color:#2E7D32" : ps.emotional_depth >= 4 ? "#FFF3E0;color:#E65100" : "#FEE2E2;color:#991B1B";
+      var engCol = ps.engagement === "high" ? "#27ae60" : ps.engagement === "medium" ? "#e67e22" : "#e74c3c";
+      return '<div style="background:#fff;border:1px solid #F0F0F0;border-radius:12px;padding:16px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><span style="background:#F5F5F7;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600">Phase ' + ps.phase + '</span><span style="background:' + depthCol + ';padding:3px 8px;border-radius:20px;font-size:11px">Depth: ' + (ps.emotional_depth || "?") + '/10</span><span style="font-size:11px;color:' + engCol + ';font-weight:500">' + escA(ps.engagement || "") + ' engagement</span></div><div style="font-size:13px;color:#1D1D1F;line-height:1.6;margin-bottom:10px">' + escA(ps.phase_summary || "") + "</div>" + (quotes.length ? '<div style="border-left:3px solid #C4703F;padding-left:12px;margin-bottom:8px">' + quotes.slice(0, 2).map(function(q) {
+        return '<div style="font-size:12px;font-style:italic;color:#444;margin-bottom:6px;line-height:1.5">\u201C' + escA(q) + "\u201D</div>";
+      }).join("") + "</div>" : "") + (rfArr.length ? '<div style="font-size:11px;color:#991B1B;background:#FEE2E2;padding:6px 10px;border-radius:6px;margin-bottom:4px">\u{1F534} ' + escA(rfArr[0]) + "</div>" : "") + (yfArr.length ? '<div style="font-size:11px;color:#856404;background:#FFF3CD;padding:6px 10px;border-radius:6px">' + escA(yfArr[0]) + "</div>" : "") + "</div>";
+    }).join("");
+    var displayMessages = kvMessages.map(function(m, i) {
+      var c = m.content;
+      if (Array.isArray(c)) c = c.map(function(x) {
+        return typeof x === "object" ? x.text || "" : x;
+      }).join(" ");
+      c = String(c || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      return { role: m.role, content: c, idx: i };
+    }).filter(function(m) {
+      return m.content;
+    });
+    var transcriptHTML = displayMessages.map(function(m) {
+      var isUser = m.role === "user";
+      return '<div style="margin-bottom:14px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#86868B;margin-bottom:4px">' + (isUser ? escA(user.name || "User") : "Claude") + '</div><div style="background:' + (isUser ? "#F5F5F7" : "#FDF0E8") + ";padding:10px 14px;border-radius:" + (isUser ? "12px 12px 4px 12px" : "12px 12px 12px 4px") + ';font-size:13px;line-height:1.6;white-space:pre-wrap">' + escA(m.content) + "</div></div>";
+    }).join("");
+    var blueprintHTML = bp ? Object.entries(bp).map(function(e5) {
+      return '<div style="margin-bottom:16px;border:1px solid #F0F0F0;border-radius:10px;overflow:hidden"><div style="background:#F5F5F7;padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#C4703F">' + escA(e5[0]) + '</div><div style="padding:12px 14px;font-size:13px">' + renderBPValuePP(e5[1]) + "</div></div>";
+    }).join("") : '<div style="color:#86868B;padding:24px;text-align:center">No blueprint generated yet.</div>';
+    var insightsHTML = insightRows.length ? '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">' + insightRows.map(function(r) {
+      return '<div style="background:#F5F5F7;padding:10px 14px;border-radius:8px;font-size:12px;border-left:3px solid #C4703F"><div style="font-weight:700;color:#C4703F;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">' + escA(r.insight_type) + ' <span style="color:#86868B;font-weight:400">(' + Math.round(r.confidence * 100) + "%)</span></div><div>" + escA(String(r.insight_value || "").slice(0, 200)) + "</div></div>";
+    }).join("") + "</div>" : '<div style="color:#86868B;padding:24px;text-align:center">No insights extracted yet.</div>';
+    var tierBadge = user.tier === "done_for_you" ? "bg-copper" : user.tier === "blueprint" ? "bg-green" : "bg-gray";
+    var html = '<style>.qa-tab{background:none;border:none;padding:10px 18px;font-size:13px;font-family:Inter,sans-serif;cursor:pointer;color:#86868B;border-bottom:2px solid transparent;margin-bottom:-1px}.qa-tab:hover{color:#1D1D1F}.qa-tab-active{color:#C4703F;border-bottom-color:#C4703F;font-weight:500}</style><a class="adm-back" href="/admin/people">&larr; All People</a><div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap"><h1 class="adm-page-title" style="margin:0">' + escA(user.name || user.email) + "</h1>" + statusChip + "</div>" + (apolloTitle || apolloCompany ? '<div style="font-size:13px;color:#86868B;margin-bottom:20px">' + escA(apolloTitle + (apolloCompany ? " at " + apolloCompany : "")) + (apolloLinkedin ? ' &middot; <a href="' + escA(apolloLinkedin) + '" target="_blank" style="color:#C4703F">LinkedIn</a>' : "") + "</div>" : '<div style="margin-bottom:20px"></div>') + // ROW 1: 3 columns
+    '<div style="display:grid;grid-template-columns:280px 1fr 240px;gap:16px;margin-bottom:20px"><div style="display:flex;flex-direction:column;gap:12px"><div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px"><div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Profile</div><div style="font-size:12px;color:#86868B;margin-bottom:1px">Email</div><div style="font-size:13px;margin-bottom:10px;word-break:break-all">' + escA(user.email) + '</div><div style="font-size:12px;color:#86868B;margin-bottom:1px">Tier</div><div style="margin-bottom:10px"><span class="badge ' + tierBadge + '">' + escA(user.tier || "free") + "</span></div>" + (user.phone ? '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Phone</div><div style="font-size:13px;margin-bottom:10px">' + escA(user.phone) + "</div>" : "") + '<div style="font-size:12px;color:#86868B;margin-bottom:1px">Member since</div><div style="font-size:13px;margin-bottom:10px">' + escA((user.created_at || "").slice(0, 10)) + '</div><div style="font-size:12px;color:#86868B;margin-bottom:1px">Last login</div><div style="font-size:13px">' + timeSince(user.last_login) + '</div></div><div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px"><div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Quick Actions</div><div style="margin-bottom:10px"><div style="font-size:11px;color:#86868B;margin-bottom:5px">Magic Link</div>' + (magicLink ? '<div style="display:flex;gap:6px"><input id="magic-url" type="text" readonly value="' + escA(magicLink) + `" onclick="navigator.clipboard.writeText(this.value);this.style.background='#E8F5E9'" style="flex:1;padding:6px 8px;border:1px solid #D1D1D6;border-radius:7px;font-size:11px;font-family:monospace;background:#F9F7F4;cursor:pointer;min-width:0" title="Click to copy" /><button class="adm-btn adm-btn-sm" onclick="copyMagicLink()">Copy</button></div>` : `<button class="adm-btn adm-btn-sm" id="gen-link-btn" onclick="genProfileLink('` + escA(userId) + `')">Generate Link</button><span id="gen-link-status" style="font-size:11px;margin-left:6px"></span>`) + "</div>" + (magicLink ? '<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm adm-btn-outline" href="' + escA(magicLink) + '" target="_blank" style="display:block;text-align:center">Open Their View &rarr;</a></div>' : "") + (sessionId && session?.blueprint_generated ? '<div style="margin-bottom:8px"><a class="adm-btn adm-btn-sm" href="https://love.jamesguldan.com/app?session=' + escA(sessionId) + '" target="_blank" style="display:block;text-align:center;background:#C4703F;color:#fff">Preview Blueprint</a></div>' : "") + (sessionId && session?.blueprint_generated && !hasLandscape ? `<div style="margin-bottom:8px"><button class="adm-btn adm-btn-sm adm-btn-outline" id="backfill-landscape-btn" onclick="backfillLandscape('` + escA(sessionId) + `')" style="display:block;width:100%;text-align:center">Backfill Landscape</button><div id="backfill-landscape-status" style="font-size:11px;color:#86868B;margin-top:4px;text-align:center"></div></div>` : "") + '<div style="font-size:11px;color:#86868B;padding-top:8px;border-top:1px solid #F5F5F5">' + sessions.length + " session &middot; $" + parseFloat(costRow?.total || 0).toFixed(2) + ' API cost</div></div></div><div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:20px"><div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:16px">Interview Depth</div>' + (session ? '<div style="display:flex;align-items:flex-start;gap:20px;margin-bottom:16px"><div style="text-align:center;flex-shrink:0"><div style="font-family:Outfit,sans-serif;font-size:56px;font-weight:700;color:' + gradeColor + ';line-height:1">' + escA(session.depth_grade || "\u2014") + '</div><div style="font-size:11px;color:#86868B;margin-top:4px">' + (session.emotional_depth_score ? session.emotional_depth_score + "/25" : "depth") + '</div></div><div style="flex:1">' + (gradeExplanation ? '<div style="font-size:12px;color:#444;line-height:1.6;margin-bottom:12px">' + escA(gradeExplanation) + "</div>" : "") + '<div style="font-size:11px;color:#86868B;margin-bottom:5px">Phase ' + (session.phase || 1) + " of 8</div>" + phaseBar(session.phase) + '<div style="font-size:11px;color:#86868B;margin-top:6px">' + kvMessages.length + " messages</div></div></div>" + (dimBarHTML ? '<div style="border-top:1px solid #F5F5F5;padding-top:14px">' + dimBarHTML + "</div>" : "") : '<div style="color:#86868B;font-size:13px;padding:12px 0">No interview data yet.</div>') + '</div><div style="display:flex;flex-direction:column;gap:12px"><div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;padding:18px"><div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Health</div>' + flagsHTML + `</div><div style="background:#fff;border:1px solid #FFE0E0;border-radius:14px;padding:18px"><div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#FF3B30;margin-bottom:10px">Danger Zone</div><button class="adm-btn adm-btn-sm adm-btn-danger" onclick="deleteUser('` + escA(userId) + "','" + escA((user.name || user.email).replace(/'/g, "")) + `')">Delete User</button></div></div></div>` + // Positioning Statement — full width callout
+    (positioningStatement ? '<div style="background:linear-gradient(135deg,#FDF0E8,#FFF8F0);border:1px solid #E8D5C0;border-radius:14px;padding:24px 28px;margin-bottom:20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#C4703F;margin-bottom:10px">One-Sentence Positioning Statement</div><div style="font-family:Outfit,sans-serif;font-size:20px;font-weight:600;color:#1D1D1F;line-height:1.4">\u201C' + escA(positioningStatement) + "\u201D</div></div>" : "") + // Clarity Scores
+    (clarityScores ? '<div style="margin-bottom:20px"><div style="font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#86868B;margin-bottom:12px">Clarity Scores</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">' + clarityCard(
+      "Story Clarity",
+      clarityScores.story,
+      "Inciting incident (" + clarityScores.d.ii + "/5) + personal stakes (" + clarityScores.d.ps + "/5). Measures how raw and specific the foundational story was.",
+      clarityScores.story >= 8 ? "Crystal clear story with defined stakes." : clarityScores.story >= 6 ? "Good story foundation with room for depth." : clarityScores.story >= 4 ? "Story surfaced but needs more specificity." : "Core story not fully mined."
+    ) + clarityCard(
+      "Beliefs Clarity",
+      clarityScores.beliefs,
+      "Belief specificity (" + clarityScores.d.bs + "/5 \xD7 2). Measures how ownable and specific the belief system is vs generic.",
+      clarityScores.beliefs >= 8 ? "Specific, ownable beliefs that differentiate." : clarityScores.beliefs >= 6 ? "Good beliefs with some specificity." : clarityScores.beliefs >= 4 ? "Beliefs stated but could be sharper." : "Belief system not fully articulated."
+    ) + clarityCard(
+      "Positioning Clarity",
+      clarityScores.positioning,
+      "Client avatar precision (" + clarityScores.d.cap + "/5) + mirror moment (" + clarityScores.d.mm + "/5). Measures how clearly they know who they serve and why.",
+      clarityScores.positioning >= 8 ? "Crystal clear on who they serve and why." : clarityScores.positioning >= 6 ? "Good client clarity with minor gaps." : clarityScores.positioning >= 4 ? "Client picture forming but not yet sharp." : "Avatar needs significant development."
+    ) + "</div></div>" : "") + // Psychology Brief
+    (psychCards ? '<div style="background:#F9F7F4;border:1px solid #E8E0D8;border-radius:14px;padding:20px;margin-bottom:20px"><div style="font-family:Outfit,sans-serif;font-weight:700;font-size:14px;color:#C4703F;margin-bottom:2px">Psychology Brief</div><div style="font-size:11px;color:#86868B;margin-bottom:16px">Phase-by-phase analysis extracted during the interview</div>' + psychCards + "</div>" : "") + // Tabbed: Transcript | Blueprint | Insights
+    (sessionId ? `<div style="background:#fff;border:1px solid #F0F0F0;border-radius:14px;overflow:hidden;margin-bottom:20px"><div style="display:flex;border-bottom:1px solid #F0F0F0;background:#FAFAFA"><button class="qa-tab qa-tab-active" onclick="switchTab(this,'transcript')">Transcript (` + displayMessages.length + `)</button><button class="qa-tab" onclick="switchTab(this,'blueprint')">Blueprint` + (bp ? " (" + Object.keys(bp).length + "p)" : "") + `</button><button class="qa-tab" onclick="switchTab(this,'insights')">Insights (` + insightRows.length + ')</button></div><div style="padding:10px 16px;background:#FAFAFA;border-bottom:1px solid #F0F0F0;display:flex;gap:8px;flex-wrap:wrap"><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + escA(sessionId) + '/transcript.txt">\u2193 Transcript</a><a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + escA(sessionId) + '">Full Session Detail &rarr;</a>' + (bp ? '<a class="adm-btn adm-btn-sm adm-btn-outline" href="/admin/session/' + escA(sessionId) + '/blueprint.json">\u2193 Blueprint JSON</a>' : "") + '</div><div id="tab-transcript" class="qa-tab-panel" style="padding:20px;max-height:600px;overflow-y:auto">' + (transcriptHTML || '<div style="color:#86868B;text-align:center;padding:24px">No messages yet</div>') + '</div><div id="tab-blueprint" class="qa-tab-panel" style="display:none;padding:20px;max-height:600px;overflow-y:auto">' + blueprintHTML + '</div><div id="tab-insights" class="qa-tab-panel" style="display:none;padding:20px;max-height:600px;overflow-y:auto">' + insightsHTML + "</div></div>" : "");
+    var pageScript = `<script>function switchTab(btn,name){document.querySelectorAll(".qa-tab-panel").forEach(function(p){p.style.display="none"});document.getElementById("tab-"+name).style.display="block";document.querySelectorAll(".qa-tab").forEach(function(t){t.classList.remove("qa-tab-active")});btn.classList.add("qa-tab-active");}function copyMagicLink(){var v=document.getElementById("magic-url").value;navigator.clipboard.writeText(v).then(function(){var b=document.querySelector("[onclick='copyMagicLink()']");b.textContent="Copied!";setTimeout(function(){b.textContent="Copy";},2000);});}function genProfileLink(uid){var btn=document.getElementById("gen-link-btn");btn.disabled=true;btn.textContent="Generating...";fetch("/api/admin/magic-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:uid})}).then(function(r){return r.json();}).then(function(d){if(d.magicLink){navigator.clipboard.writeText(d.magicLink);location.reload();}else{btn.textContent="Error";btn.disabled=false;}}).catch(function(){btn.textContent="Error";btn.disabled=false;});}function deleteUser(uid,name){if(!confirm("Delete "+name+"? This removes ALL their data. Cannot be undone."))return;if(!confirm("Are you absolutely sure?"))return;fetch("/admin/delete-user/"+uid+"?confirm=DELETE",{method:"POST"}).then(function(r){return r.json();}).then(function(d){if(d.ok||d.success){alert("User deleted.");window.location.href="/admin/people";}else{alert("Error: "+(d.error||"Unknown"));}}).catch(function(e){alert("Error: "+e.message);});}function backfillLandscape(sid){var btn=document.getElementById("backfill-landscape-btn");var st=document.getElementById("backfill-landscape-status");btn.disabled=true;btn.textContent="Generating...";st.textContent="This may take 30 seconds...";fetch("/api/admin/backfill-landscape",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:sid})}).then(function(r){return r.json();}).then(function(d){if(d.ok){st.textContent="Done! Refresh to see blueprint.";st.style.color="#27ae60";btn.textContent="Done";}else{st.textContent="Error: "+(d.error||"Unknown");st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";}}).catch(function(e){st.textContent="Error: "+e.message;st.style.color="#e74c3c";btn.disabled=false;btn.textContent="Retry";});}<\/script>`;
+    return new Response(adminLayout(user.name || user.email, html).replace("</body>", pageScript + "</body>"), { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    return new Response("Admin error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
   }
 }
-
-
 async function handleAdminSessionDetail(request, env, path) {
   var admin = await requireAdmin(request, env);
   if (!admin) return handleAdmin(request, env);
@@ -22135,6 +23440,1210 @@ async function handleAdminSessionDetail(request, env, path) {
     return new Response("Error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
   }
 }
+async function handleAdminOperatorProfile(request, env, path) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return handleAdmin(request, env);
+  var sessionId = path.split("/")[3];
+  if (!sessionId) return new Response("Missing session ID", { status: 400 });
+  try {
+    var [sessionRow, eventsRes, costsRow, insRes, phaseRes] = await Promise.all([
+      env.DB.prepare(`
+        SELECT s.*, u.name as user_name, u.email as user_email, u.apollo_data, u.phone as user_phone, u.tier as user_tier, u.role as user_role, u.created_at as user_created_at
+        FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?
+      `).bind(sessionId).first(),
+      env.DB.prepare("SELECT * FROM session_events WHERE session_id=? ORDER BY created_at ASC LIMIT 500").bind(sessionId).all(),
+      env.DB.prepare("SELECT SUM(cost_usd) as total, COUNT(*) as calls FROM api_costs WHERE session_id=?").bind(sessionId).first().catch(() => ({ total: 0, calls: 0 })),
+      env.DB.prepare("SELECT insight_type, insight_value, confidence, phase_source FROM session_insights WHERE session_id=? ORDER BY confidence DESC").bind(sessionId).all().catch(() => ({ results: [] })),
+      env.DB.prepare("SELECT phase, emotional_depth, specificity, engagement, key_quotes, red_flags, yellow_flags, phase_summary FROM phase_scores WHERE session_id=? ORDER BY phase ASC").bind(sessionId).all().catch(() => ({ results: [] }))
+    ]);
+    if (!sessionRow) return new Response("Session not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+    var events = eventsRes?.results || [];
+    var insights = insRes?.results || [];
+    var phaseScores = phaseRes?.results || [];
+    var bp = null, kvMessages = [], kvSession = null;
+    try {
+      var sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        kvSession = JSON.parse(sessRaw);
+        bp = kvSession.blueprint?.blueprint || kvSession.blueprint || null;
+        if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
+      }
+    } catch (_) {
+    }
+    if (!bp) {
+      try {
+        var bpRaw = await env.SESSIONS.get("blueprint:" + sessionId);
+        if (bpRaw) bp = JSON.parse(bpRaw);
+      } catch (_) {
+      }
+    }
+    var extraction = null;
+    try {
+      var extRaw = await env.SESSIONS.get("operator_extraction:" + sessionId);
+      if (extRaw) extraction = JSON.parse(extRaw);
+    } catch (_) {
+    }
+    var hasV3 = bp && bp.v3 && bp.v3.positioningStatement;
+    var hasLandscape = !!(bp && bp.marketLandscape && bp.marketLandscape.categoryOfOne);
+    var hasExtraction = extraction && extraction.extracted_at;
+    var name = sessionRow.name || sessionRow.user_name || sessionRow.email || sessionRow.user_email || "Anonymous";
+    var email = sessionRow.email || sessionRow.user_email || "";
+    var depthBreakdown = null;
+    try {
+      if (sessionRow.depth_breakdown) depthBreakdown = JSON.parse(sessionRow.depth_breakdown);
+    } catch (_) {
+    }
+    var apolloData = null;
+    try {
+      if (sessionRow.apollo_data) apolloData = JSON.parse(sessionRow.apollo_data);
+    } catch (_) {
+    }
+    var company = apolloData?.organization?.name || "";
+    var jobTitle = apolloData?.title || "";
+    var roleStr = company ? company + (jobTitle ? " \xB7 " + jobTitle : "") : jobTitle || "";
+    var duration = "";
+    var durationMin = 0;
+    if (events.length >= 2) {
+      var first = new Date(events[0].created_at).getTime();
+      var last = new Date(events[events.length - 1].created_at).getTime();
+      durationMin = Math.round((last - first) / 6e4);
+      if (durationMin > 0) duration = durationMin + " min";
+    }
+    var statusText = sessionRow.status === "completed" ? "Complete" : sessionRow.status === "active" ? "In progress" : sessionRow.status || "Unknown";
+    var completedTime = sessionRow.completed_at ? new Date(sessionRow.completed_at) : null;
+    var eyebrowText = "Profile" + (completedTime ? " \xB7 completed " + completedTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase() + " \xB7 " + completedTime.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : sessionRow.status === "active" ? " \xB7 in progress" : "");
+    var mirrorQuote = extraction?.mirror_moment?.quote || (hasV3 ? bp.v3.mirror_observation : "") || "";
+    var mirrorPhase = extraction?.mirror_moment?.phase || "";
+    var mirrorIntensity = extraction?.mirror_moment?.intensity || "";
+    var allRedFlags = [], allYellowFlags = [];
+    phaseScores.forEach(function(ps) {
+      try {
+        var rf = JSON.parse(ps.red_flags || "[]");
+        if (Array.isArray(rf)) allRedFlags = allRedFlags.concat(rf.map(function(f) {
+          return { text: f, phase: ps.phase };
+        }));
+      } catch (_) {
+      }
+      try {
+        var yf = JSON.parse(ps.yellow_flags || "[]");
+        if (Array.isArray(yf)) allYellowFlags = allYellowFlags.concat(yf.map(function(f) {
+          return { text: f, phase: ps.phase };
+        }));
+      } catch (_) {
+      }
+    });
+    var peaks = phaseScores.filter(function(ps) {
+      return ps.emotional_depth >= 6;
+    }).sort(function(a2, b) {
+      return b.emotional_depth - a2.emotional_depth;
+    }).slice(0, 3);
+    var peakQuotes = peaks.map(function(p) {
+      var quotes = [];
+      try {
+        quotes = JSON.parse(p.key_quotes || "[]");
+      } catch (_) {
+      }
+      return { phase: p.phase, intensity: Math.round(p.emotional_depth * 10), title: p.phase_summary || "Phase " + p.phase, quote: quotes[0] || "" };
+    });
+    var sessionCount = 1;
+    if (sessionRow.user_id) {
+      try {
+        var scRow = await env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE user_id=? AND status != 'restarted'").bind(sessionRow.user_id).first();
+        sessionCount = scRow?.cnt || 1;
+      } catch (_) {
+      }
+    }
+    var resonance = 0;
+    var resonancePeakPhase = "";
+    phaseScores.forEach(function(ps) {
+      var score = Math.round(ps.emotional_depth * 10);
+      if (score > resonance) {
+        resonance = score;
+        resonancePeakPhase = "phase " + ps.phase + " peak";
+      }
+    });
+    var fitScore = extraction?.coachfit?.composite || (sessionRow.emotional_depth_score ? Math.round(sessionRow.emotional_depth_score / 25 * 100) : 0);
+    var fitDashoffset = Math.round(565.48 * (1 - fitScore / 100));
+    var recentEvents = events.slice(-5).reverse().map(function(e) {
+      var d = {};
+      try {
+        d = JSON.parse(e.data || "{}");
+      } catch (_) {
+      }
+      var time = e.created_at ? e.created_at.slice(11, 19) : "";
+      var label = "", cls = "";
+      if (e.event_type === "session_completed" || d.event === "session_completed") {
+        label = "session completed";
+        cls = "DONE";
+      } else if (e.event_type === "phase_advanced" || d.event === "phase_advanced") {
+        label = "advanced to " + (d.phase || "?");
+        cls = "PHASE";
+      } else if (e.event_type === "message_sent") {
+        label = "user \xB7 " + (d.chars || "?") + " chars";
+        cls = "MSG";
+      } else if (e.event_type === "message_received") {
+        label = "assistant probe";
+        cls = "MSG";
+      } else if (e.event_type === "emotional_peak" || d.event === "emotional_peak") {
+        label = "emotional spike \xB7 phase " + (d.phase || "?");
+        cls = "PEAK";
+      } else {
+        label = e.event_type || "event";
+        cls = "EVT";
+      }
+      return { time, label, cls };
+    });
+    var userMagicToken = null;
+    if (sessionRow.user_id) {
+      var mtRow = await env.DB.prepare("SELECT token FROM auth_tokens WHERE user_id=? AND type='persistent_magic' AND used=0 AND expires_at>datetime('now') ORDER BY expires_at DESC LIMIT 1").bind(sessionRow.user_id).first().catch(() => null);
+      if (!mtRow) {
+        try {
+          var pmTok = generateMagicToken();
+          await storeMagicToken(env, pmTok, sessionRow.user_id, "persistent_magic", 8760);
+          mtRow = { token: pmTok };
+        } catch (_) {
+        }
+      }
+      if (mtRow) userMagicToken = mtRow.token;
+    }
+    var magicLink = userMagicToken ? (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/magic?token=" + userMagicToken + "&redirect=" + encodeURIComponent("/app?resumeSession=" + sessionId) : "";
+    var getInsight = function(type) {
+      var i = insights.find(function(r) {
+        return r.insight_type === type;
+      });
+      return i ? i.insight_value : "";
+    };
+    var ext = extraction || {};
+    var coachfitHTML = "";
+    if (ext.coachfit) {
+      var cf = ext.coachfit;
+      var cfRows = [
+        ["Coachable", cf.coachable],
+        ["Kind", cf.kind],
+        ["Committed to purpose", cf.committed_to_purpose],
+        ["Committed to work", cf.committed_to_work],
+        ["Ready to build", cf.ready_to_build],
+        ["Respects complementary", cf.respects_complementary],
+        ["Secure attachment", cf.secure_attachment],
+        ["Safe, non reactive", cf.safe_non_reactive]
+      ];
+      coachfitHTML = cfRows.map(function(r) {
+        var warn = r[1] < 80 ? " warn" : "";
+        return '<div class="cf-row"><div class="n">' + escA(r[0]) + '</div><div class="b' + warn + '"><div class="f" style="--w:' + r[1] + '%;"></div></div><div class="v">' + r[1] + "</div></div>";
+      }).join("") + '<div class="cf-total"><div class="lbl">Composite</div><div class="val">' + (cf.composite || 0) + "</div></div>";
+    } else {
+      coachfitHTML = '<div style="padding:8px 0;color:var(--ink2);font-size:12px;text-align:center">Run deep analysis to unlock</div>';
+    }
+    var signalsHTML = "";
+    if (ext.signals && ext.signals.length) {
+      signalsHTML = ext.signals.map(function(s) {
+        var dotCls = s.severity === "red" ? " r" : s.severity === "green" ? " g" : "";
+        return '<div class="sig-item"><div class="dot' + dotCls + '"></div><div class="t">' + escA(s.text) + "<small>" + escA(s.detail || "") + '</small></div><div class="c">' + (s.count || 0) + "</div></div>";
+      }).join("");
+    } else if (allRedFlags.length || allYellowFlags.length) {
+      signalsHTML = allYellowFlags.map(function(f) {
+        return '<div class="sig-item"><div class="dot"></div><div class="t">' + escA(f.text) + "<small>phase " + f.phase + '</small></div><div class="c">1</div></div>';
+      }).join("") + allRedFlags.map(function(f) {
+        return '<div class="sig-item"><div class="dot r"></div><div class="t">' + escA(f.text) + "<small>phase " + f.phase + '</small></div><div class="c">1</div></div>';
+      }).join("");
+    } else {
+      signalsHTML = '<div style="padding:8px 0;color:var(--ink2);font-size:12px;text-align:center">No signals detected</div>';
+    }
+    var nextHTML = "";
+    if (ext.next_best_action) {
+      nextHTML = '<div class="title">' + escA(ext.next_best_action.title) + '</div><div class="why">' + escA(ext.next_best_action.why) + "</div>";
+    } else {
+      nextHTML = '<div class="title" style="color:var(--ink2)">Run deep analysis to generate</div>';
+    }
+    var runBtnText = hasExtraction ? "Loaded \xB7 " + new Date(extraction.extracted_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase() : "Run Deep Analysis";
+    var runBtnClass = hasExtraction ? "loaded" : "";
+    var runStatusHTML = hasExtraction ? "last extraction <b>" + timeSince(extraction.extracted_at) + "</b>" : "ready to extract";
+    var runMetaHTML = hasExtraction ? "<span>Model: " + escA(extraction.model || "claude-sonnet-4-6") + "</span><span>$" + parseFloat(extraction.cost_usd || 0).toFixed(2) + "</span>" : "<span>Model: claude-sonnet-4-6</span><span>~$0.15</span>";
+    var bpStatusHTML = "";
+    if (sessionRow.blueprint_generated) {
+      var bpDate = sessionRow.completed_at ? new Date(sessionRow.completed_at).toLocaleDateString("en-US", { month: "long", day: "numeric" }) + ", " + new Date(sessionRow.completed_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase() : "";
+      bpStatusHTML = '<div class="bp-status"><div class="bp-ready"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#1E8E3E" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="#1E8E3E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Generated</span></div><div class="bp-date">' + escA(bpDate) + "</div></div>";
+    } else {
+      bpStatusHTML = '<div class="bp-status"><div class="bp-date" style="color:var(--amber)">Not yet generated</div></div>';
+    }
+    var depthBarsHTML = "";
+    if (depthBreakdown) {
+      var barNames = { inciting_incident: "Inciting incident", belief_specificity: "Belief specificity", client_avatar_precision: "Client avatar precision", personal_stakes: "Personal stakes", mirror_moment: "Mirror moment" };
+      depthBarsHTML = Object.entries(depthBreakdown).map(function(e) {
+        var pct = Math.round(e[1] / 5 * 100);
+        var isCop = e[0] === "mirror_moment";
+        return '<div class="row"><div class="n">' + escA(barNames[e[0]] || e[0].replace(/_/g, " ")) + '</div><div class="b' + (isCop ? " cop" : "") + '"><div class="f" style="--w:' + pct + '%;"></div></div><div class="v">' + Math.round(pct) + "</div></div>";
+      }).join("");
+    } else if (phaseScores.length) {
+      depthBarsHTML = phaseScores.slice(0, 5).map(function(ps) {
+        var pct = Math.round(ps.emotional_depth * 10);
+        return '<div class="row"><div class="n">Phase ' + ps.phase + '</div><div class="b"><div class="f" style="--w:' + pct + '%;"></div></div><div class="v">' + pct + "</div></div>";
+      }).join("");
+    }
+    var depthAISummary = ext.ai_summary || "";
+    var strengthsHTML = "";
+    if (ext.strengths && ext.strengths.length) {
+      strengthsHTML = ext.strengths.map(function(s, i) {
+        return '<div class="strength"><div class="num">0' + (i + 1) + "</div><h4>" + escA(s.title) + "</h4><p>" + escA(s.body) + "</p>" + (s.evidence ? '<div class="ev">' + escA(s.evidence) + "</div>" : "") + (s.tag ? '<div class="tag">' + escA(s.tag) + "</div>" : "") + "</div>";
+      }).join("");
+    }
+    var attachmentHTML = "", loveLangHTML = "", coreWoundHTML = "", workStyleHTML = "";
+    if (ext.attachment) {
+      var a = ext.attachment;
+      attachmentHTML = '<div class="insight"><div class="l">Attachment style</div><h3>' + escA(a.style) + (a.detail ? '<span class="sub">' + escA(a.detail) + "</span>" : "") + "</h3><p>" + escA(a.body || "") + "</p>" + (a.evidence ? '<div class="ev">' + escA(a.evidence) + "</div>" : "") + (a.tags && a.tags.length ? '<div class="tags">' + a.tags.map(function(t) {
+        return '<span class="tag">' + escA(t) + "</span>";
+      }).join("") + "</div>" : "") + "</div>";
+    }
+    if (ext.love_language) {
+      var ll = ext.love_language;
+      loveLangHTML = '<div class="insight"><div class="l">Love language</div><h3>' + escA(ll.primary) + (ll.secondary ? '<span class="sub">secondary ' + escA(ll.secondary) + "</span>" : "") + "</h3><p>" + escA(ll.body || "") + "</p>" + (ll.evidence ? '<div class="ev">' + escA(ll.evidence) + "</div>" : "") + (ll.tags && ll.tags.length ? '<div class="tags">' + ll.tags.map(function(t) {
+        return '<span class="tag">' + escA(t) + "</span>";
+      }).join("") + "</div>" : "") + "</div>";
+    }
+    if (ext.core_wound || getInsight("core_wound")) {
+      var cw = ext.core_wound || { title: "Core wound", body: getInsight("core_wound") };
+      coreWoundHTML = '<div class="insight"><div class="l">Core wound</div><h3>' + escA(cw.title) + "</h3><p>" + escA(cw.body || "") + "</p>" + (cw.evidence ? '<div class="ev">' + escA(cw.evidence) + "</div>" : "") + (cw.tags && cw.tags.length ? '<div class="tags">' + cw.tags.map(function(t) {
+        return '<span class="tag">' + escA(t) + "</span>";
+      }).join("") + "</div>" : "") + "</div>";
+    }
+    if (ext.work_style) {
+      var ws = ext.work_style;
+      workStyleHTML = '<div class="insight"><div class="l">Work style read</div><h3>' + escA(ws.triad ? ws.triad.join(" \xB7 ") : "Work style") + "</h3><p>" + escA(ws.body || "") + "</p>" + (ws.evidence ? '<div class="ev">' + escA(ws.evidence) + "</div>" : "") + "</div>";
+    }
+    var valuesHTML = "";
+    if (ext.values && ext.values.length) {
+      valuesHTML = ext.values.map(function(v, i) {
+        return '<div class="val"><div class="num">0' + (i + 1) + "</div><h4>" + escA(v.title) + "</h4><p>" + escA(v.body) + "</p></div>";
+      }).join("");
+    }
+    var beliefsHTML = "";
+    var contrarian = ext.beliefs?.contrarian || getInsight("contrarian_belief") || "";
+    var operating = ext.beliefs?.operating || "";
+    if (operating || contrarian) {
+      if (operating) beliefsHTML += '<div class="belief"><div class="l">Operating belief</div><p>' + escA(operating) + "</p></div>";
+      if (contrarian) beliefsHTML += '<div class="belief"><div class="l">Contrarian belief</div><p>' + escA(contrarian) + "</p></div>";
+    }
+    var peaksHTML = "";
+    var peakData = ext.emotional_peaks && ext.emotional_peaks.length ? ext.emotional_peaks : peakQuotes;
+    if (peakData.length) {
+      peaksHTML = peakData.map(function(p) {
+        return '<div class="peak"><div class="ph">Phase ' + p.phase + " \xB7 intensity " + p.intensity + "</div><h4>" + escA(p.title) + '</h4><div class="q">' + escA(p.quote) + '</div><div class="intensity"><span>' + p.intensity + '</span><div class="b"><div class="f" style="width:' + p.intensity + '%;"></div></div></div></div>';
+      }).join("");
+    }
+    var briefHTML = "";
+    if (ext.sales_brief) {
+      var sb = ext.sales_brief;
+      var briefRows = [["Who she is", sb.who_she_is], ["What she needs", sb.what_she_needs], ["What to say", sb.what_to_say], ["What to avoid", sb.what_to_avoid], ["Close posture", sb.close_posture]].filter(function(r) {
+        return r[1];
+      });
+      briefHTML = '<div class="brief-grid">' + briefRows.map(function(r) {
+        return '<div class="k">' + escA(r[0]) + '</div><div class="v">' + escA(r[1]) + "</div>";
+      }).join("") + "</div>";
+    }
+    var transcriptMessages = kvMessages.map(function(m, i) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c) {
+        return typeof c === "object" ? c.text || "" : c;
+      }).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      return { role: m.role, content, idx: i };
+    }).filter(function(m) {
+      return m.content;
+    });
+    var phaseByMsgIndex = {};
+    var currentPhase = 1;
+    var msgIdx = 0;
+    events.forEach(function(e) {
+      var d = {};
+      try {
+        d = JSON.parse(e.data || "{}");
+      } catch (_) {
+      }
+      if (d.phase && d.phase !== currentPhase) {
+        phaseByMsgIndex[msgIdx] = d.phase;
+        currentPhase = d.phase;
+      }
+      if (e.event_type === "message_sent" || e.event_type === "message_received") msgIdx++;
+    });
+    var EMOTIONAL_KEYWORDS = ["afraid", "fear", "never", "always", "truth", "real", "wound", "core", "pain", "hurt", "shame", "guilt", "alone", "abandon", "trust", "worth", "enough", "belong", "lost", "broken"];
+    var peakMsgIndices = /* @__PURE__ */ new Set();
+    transcriptMessages.forEach(function(m) {
+      if (m.role === "user" && m.content.length > 200) {
+        var lower = m.content.toLowerCase();
+        var found = EMOTIONAL_KEYWORDS.filter(function(k) {
+          return lower.indexOf(k) > -1;
+        });
+        if (found.length >= 2) peakMsgIndices.add(m.idx);
+      }
+    });
+    var transcriptHTML = transcriptMessages.map(function(m) {
+      var phaseDiv = phaseByMsgIndex[m.idx] ? '<div class="phase-divider"><div class="line"></div><div class="num">PHASE ' + phaseByMsgIndex[m.idx] + '</div><div class="line"></div></div>' : "";
+      var isPeak = peakMsgIndices.has(m.idx);
+      var cls = m.role === "user" ? "msg user" + (isPeak ? " peak" : "") : "msg ai";
+      return phaseDiv + '<div class="' + cls + '"><div class="bubble">' + escA(m.content) + "</div></div>";
+    }).join("");
+    var hasPsychData = attachmentHTML || loveLangHTML || coreWoundHTML || workStyleHTML;
+    var hasDeepData = hasExtraction || hasPsychData || strengthsHTML || valuesHTML || beliefsHTML || briefHTML;
+    var skelCard = function(label) {
+      return '<div class="skel-card"><div class="l">' + escA(label) + '</div><div class="shimmer s"></div><div class="shimmer m"></div><div class="shimmer l"></div></div>';
+    };
+    var userId = sessionRow.user_id;
+    var allSessions = [], totalUserCost = 0, fullUser = null;
+    if (userId) {
+      var [allSessionsRes, userCostRow, fullUserRow] = await Promise.all([
+        env.DB.prepare("SELECT id, status, phase, message_count, depth_grade, blueprint_generated, created_at, emotional_depth_score FROM sessions WHERE user_id = ? AND status != 'restarted' ORDER BY created_at DESC LIMIT 20").bind(userId).all(),
+        env.DB.prepare("SELECT COALESCE(SUM(cost_usd),0) as total FROM api_costs WHERE session_id IN (SELECT id FROM sessions WHERE user_id = ?)").bind(userId).first(),
+        env.DB.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first()
+      ]);
+      allSessions = allSessionsRes?.results || [];
+      totalUserCost = userCostRow?.total || 0;
+      fullUser = fullUserRow || null;
+    }
+    var apolloTitle = apolloData?.title || "";
+    var apolloCompany = apolloData?.organization?.name || apolloData?.organization_name || "";
+    var apolloLinkedin = apolloData?.linkedin_url || "";
+    var magicLinkDirect = userMagicToken ? (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/magic?token=" + userMagicToken : "";
+    var emailLog = [];
+    if (userId) {
+      try {
+        var emailRes = await env.DB.prepare(
+          "SELECT id, email_type, subject, status, sent_at, delivered_at, opened_at, clicked_at, bounced_at, bounce_type, error_message, attempt FROM email_log WHERE user_id = ? ORDER BY sent_at DESC LIMIT 20"
+        ).bind(userId).all();
+        emailLog = emailRes?.results || [];
+      } catch (_) {
+      }
+    }
+    var emailTypeLabels = { magic_link: "Magic link", payment_success: "Payment", blueprint_ready: "Blueprint ready", blueprint_export: "Blueprint export", blueprint_completion: "Blueprint complete", site_deployed: "Site deployed", nudge_cold_48h: "Nudge (48h)", nudge_cold_7d: "Nudge (7d)", nudge_mid_drop_initial: "Drop-off", nudge_mid_drop_followup: "Drop-off follow-up", alert: "Alert", digest: "Digest" };
+    var emailLogHTML = "";
+    if (emailLog.length) {
+      emailLogHTML = emailLog.map(function(em) {
+        var statusCls = em.status === "opened" || em.status === "clicked" ? "g" : em.status === "delivered" ? "b" : em.status === "bounced" || em.status === "failed" ? "r" : "";
+        var statusLabel = em.status === "clicked" ? "clicked" : em.status === "opened" ? "opened" : em.status === "delivered" ? "delivered" : em.status === "bounced" ? "bounced" : em.status === "failed" ? "failed" : "sent";
+        var typeLabel = emailTypeLabels[em.email_type] || em.email_type.replace(/_/g, " ");
+        var timeAgo = timeSince(em.sent_at);
+        return '<div class="em-row"><div class="em-dot ' + statusCls + '"></div><div class="em-info"><div class="em-type">' + escA(typeLabel) + '</div><div class="em-time">' + escA(timeAgo) + " \xB7 " + escA(statusLabel) + "</div></div></div>";
+      }).join("");
+    } else {
+      emailLogHTML = '<div style="padding:8px 0;color:var(--ink2);font-size:12px;text-align:center">No emails sent yet</div>';
+    }
+    var clarityScores = [];
+    try {
+      var depthBd = sessionRow.depth_breakdown ? typeof sessionRow.depth_breakdown === "string" ? JSON.parse(sessionRow.depth_breakdown) : sessionRow.depth_breakdown : null;
+      if (depthBd && depthBd.dimensions) {
+        var dims = depthBd.dimensions;
+        var clarityMap = [
+          { key: "inciting_incident", label: "Inciting Incident", desc: "Origin story clarity" },
+          { key: "belief_specificity", label: "Belief Specificity", desc: "How specific their beliefs are" },
+          { key: "client_avatar", label: "Client Avatar", desc: "Who they serve" },
+          { key: "personal_stakes", label: "Personal Stakes", desc: "Skin in the game" },
+          { key: "mirror_moment", label: "Mirror Moment", desc: "Self-awareness depth" }
+        ];
+        clarityMap.forEach(function(c) {
+          if (dims[c.key] !== void 0) {
+            clarityScores.push({ label: c.label, score: dims[c.key], desc: c.desc });
+          }
+        });
+      }
+    } catch (_) {
+    }
+    var sessionPickerHTML = "";
+    if (allSessions.length > 1) {
+      sessionPickerHTML = `<div class="session-picker"><select onchange="window.location.href='/admin/operator/'+this.value">`;
+      allSessions.forEach(function(s) {
+        var selected = s.id === sessionId ? " selected" : "";
+        var label = (s.created_at || "").slice(0, 10) + " \xB7 Phase " + (s.phase || 1) + " \xB7 " + (s.status || "active");
+        if (s.blueprint_generated) label += " \xB7 Blueprint";
+        sessionPickerHTML += '<option value="' + escA(s.id) + '"' + selected + ">" + escA(label) + "</option>";
+      });
+      sessionPickerHTML += "</select></div>";
+    }
+    var clarityHTML = "";
+    if (clarityScores.length > 0) {
+      clarityHTML = '<div class="section-title">Clarity scores</div><div class="pp-clarity">';
+      clarityScores.forEach(function(c) {
+        var color = c.score >= 8 ? "var(--green)" : c.score >= 5 ? "var(--amber)" : "var(--red)";
+        clarityHTML += '<div class="pp-ccard"><div class="sc" style="color:' + color + '">' + c.score + '</div><div class="of">/10</div><div class="ti">' + escA(c.label) + '</div><div class="desc">' + escA(c.desc) + "</div></div>";
+      });
+      clarityHTML += "</div>";
+    }
+    var html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deep Work Interview \xB7 ${escA(name)} \xB7 The Operator</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFFFFF;--card:#FAFAFA;--card2:#FCFCFC;--border:#F0F0F0;--border2:#E5E5E5;--ink:#1D1D1F;--ink2:#86868B;--ink3:#B5B5B9;--copper:#C4703F;--copper-soft:#F5E6DB;--copper-dim:#E8CBB7;--blue:#0A84FF;--blue-soft:#E7F2FF;--blue-dim:#CFE4FF;--red:#D93025;--red-soft:#FCEAE8;--amber:#B8860B;--amber-soft:#FCF3D7;--green:#1E8E3E;--green-soft:#E6F4EA}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+.topnav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.82);backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 32px;gap:24px}
+.topnav .brand{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;letter-spacing:-0.01em;color:var(--ink)}
+.topnav .brand .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--copper);margin-right:8px;vertical-align:middle}
+.topnav .nav-links{display:flex;gap:4px;align-items:center;margin-left:20px}
+.topnav .nav-link{padding:6px 14px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;color:var(--ink2);text-decoration:none;border-radius:8px;transition:all .15s ease;display:flex;align-items:center;gap:7px;cursor:pointer}
+.topnav .nav-link:hover{color:var(--ink);background:var(--card)}
+.topnav .nav-link.active{color:var(--ink);background:var(--card);font-weight:600}
+.topnav .sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.topnav .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.topnav .pill{padding:6px 12px;border-radius:999px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--ink);background:#fff;cursor:pointer;transition:all .15s ease}
+.topnav .pill:hover{border-color:var(--ink3)}
+.topnav .pill.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.topnav .avatar{width:28px;height:28px;border-radius:50%;background:var(--copper-soft);display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--copper);cursor:pointer}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.85)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ringfill{to{stroke-dashoffset:var(--off)}}
+@keyframes barfill{to{width:var(--w)}}
+
+.sovereign{max-width:1240px;margin:0 auto;padding:64px 40px 48px;display:grid;grid-template-columns:1fr auto;gap:48px;align-items:center;animation:fadeUp .8s ease both}
+.sov-left .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--copper);letter-spacing:0.18em;text-transform:uppercase;margin-bottom:18px}
+.sov-left h1{font-family:'Outfit',sans-serif;font-size:56px;font-weight:700;letter-spacing:-0.025em;line-height:1;color:var(--ink);margin-bottom:8px}
+.sov-left .role{font-size:16px;color:var(--ink2);margin-bottom:22px}
+.sov-left .role b{color:var(--ink);font-weight:500}
+.sov-left .quote{font-family:'Playfair Display',serif;font-style:italic;font-size:22px;color:var(--ink);line-height:1.5;max-width:580px;border-left:3px solid var(--copper);padding-left:22px}
+.sov-left .quote .src{display:block;margin-top:10px;font-family:'Inter',sans-serif;font-style:normal;font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink2)}
+
+.fit-ring{width:200px;height:200px;position:relative;flex-shrink:0}
+.fit-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.fit-ring .t{fill:none;stroke:var(--border);stroke-width:8}
+.fit-ring .f{fill:none;stroke:var(--blue);stroke-width:8;stroke-linecap:round;stroke-dasharray:565.48;stroke-dashoffset:565.48;--off:${fitDashoffset};animation:ringfill 1.6s cubic-bezier(.2,.9,.3,1) .3s forwards}
+.fit-ring .label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.fit-ring .pct{font-family:'Outfit',sans-serif;font-size:56px;font-weight:700;letter-spacing:-0.04em;color:var(--ink);line-height:1}
+.fit-ring .sub{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink2);margin-top:8px}
+
+.meta-row{max-width:1240px;margin:0 auto;padding:0 40px 40px;border-bottom:1px solid var(--border)}
+.meta-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:24px;padding-top:12px}
+.meta-item .k{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.meta-item .v{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;line-height:1.1}
+.meta-item .v small{font-size:12px;font-weight:500;color:var(--ink2);margin-left:4px;letter-spacing:0}
+.meta-item .s{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);margin-top:3px}
+
+.body{max-width:1240px;margin:0 auto;padding:48px 40px 96px;display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:start}
+.rail{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px}
+.rail-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+.rail-card .label{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.rail-card .label .dot{width:5px;height:5px;border-radius:50%;background:var(--copper)}
+
+.live{background:#fff;border:1px solid var(--blue-dim);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden}
+.live::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+.live .state{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.live .state .bubble{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;background:var(--blue-soft);border-radius:999px;font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;color:var(--blue);letter-spacing:0.04em}
+.live .kpi{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:6px}
+.live .kpi .k{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:3px}
+.live .kpi .v{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-0.02em;line-height:1}
+.live .kpi .v small{font-size:11px;font-weight:500;color:var(--ink2);margin-left:3px}
+.stream{margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.stream .head{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px}
+.stream .evt{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.stream .evt:last-child{border-bottom:none}
+.stream .evt .t{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink2);padding-top:1px}
+.stream .evt .e{font-size:11.5px;color:var(--ink);line-height:1.45}
+.stream .evt .e .k{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.1em;color:var(--copper);display:inline-block;margin-right:4px}
+.stream .evt .e .k.b{color:var(--blue)}
+
+.cf-row{display:grid;grid-template-columns:1fr 90px 28px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.cf-row:last-child{border-bottom:none}
+.cf-row .n{font-size:12px;color:var(--ink);font-weight:500}
+.cf-row .b{height:5px;background:var(--border);border-radius:3px;overflow:hidden;position:relative}
+.cf-row .b .f{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:3px;width:0;animation:barfill 1.2s cubic-bezier(.2,.9,.3,1) .6s forwards}
+.cf-row .b.warn .f{background:var(--copper)}
+.cf-row .v{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);text-align:right}
+.cf-total{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:baseline;justify-content:space-between}
+.cf-total .lbl{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink2)}
+.cf-total .val{font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;color:var(--ink);letter-spacing:-0.025em}
+
+.sig-item{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.sig-item:last-child{border-bottom:none}
+.sig-item .dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.sig-item .dot.r{background:var(--red)}
+.sig-item .dot.g{background:var(--green)}
+.sig-item .t{font-size:12px;color:var(--ink);font-weight:500;line-height:1.35}
+.sig-item .t small{display:block;font-size:10px;color:var(--ink2);font-weight:400;margin-top:2px}
+.sig-item .c{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink2)}
+
+.next{background:linear-gradient(180deg,var(--copper-soft) 0%,#FAF0E8 100%);border:1px solid var(--copper-dim);border-radius:14px;padding:20px 22px}
+.next .label{color:var(--copper)}
+.next .title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;margin-bottom:8px;line-height:1.3}
+.next .why{font-size:12px;color:var(--ink);line-height:1.55}
+
+.run{background:linear-gradient(180deg,#1D1D1F 0%,#000 100%);border-radius:14px;padding:22px 22px 20px;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.1);cursor:pointer}
+.run::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--copper),transparent);opacity:.6}
+.run .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.run .top .bd{width:6px;height:6px;border-radius:50%;background:var(--copper)}
+.run .top .lbl{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--copper)}
+.run .btn{display:block;text-align:center;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:#fff;padding:14px 0 2px;letter-spacing:-0.01em}
+.run .btn.loaded{color:var(--copper)}
+.run .status{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#86868B;margin-top:4px}
+.run .status b{color:#fff;font-weight:500}
+.run .meta{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:#86868B}
+
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.qa button.magic{grid-column:1/-1;background:var(--blue-soft);border-color:var(--blue-dim);color:var(--blue)}
+
+.bp-status{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.bp-ready{display:flex;align-items:center;gap:7px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;color:var(--green)}
+.bp-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+.bp-preview{display:flex;align-items:center;gap:14px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;cursor:pointer;transition:all .15s ease}
+.bp-preview:hover{border-color:var(--border2);background:#fff}
+.bp-thumb{width:52px;height:68px;background:#fff;border:1px solid var(--border2);border-radius:4px;padding:8px 6px;flex-shrink:0}
+.bp-page .bp-h{width:60%;height:5px;background:var(--ink);border-radius:2px;margin-bottom:6px}
+.bp-page .bp-l{height:2px;background:var(--border2);border-radius:1px;margin-bottom:3px}
+.bp-page .bp-l.w60{width:60%}.bp-page .bp-l.w90{width:90%}.bp-page .bp-l.w75{width:75%}.bp-page .bp-l.w45{width:45%}.bp-page .bp-l.w80{width:80%}
+.bp-name{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.bp-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+.bp-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bp-btn{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;color:var(--ink);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 0;cursor:pointer;transition:all .15s ease;text-align:center}
+.bp-btn:hover{background:#fff;border-color:var(--ink3)}
+.bp-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.main{display:flex;flex-direction:column;gap:28px}
+.section-title{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--copper);margin-bottom:14px;margin-top:12px;display:flex;align-items:center;gap:12px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.section-title:first-child{margin-top:0}
+
+.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:32px 36px;animation:fadeUp .9s ease both}
+.card:hover{border-color:var(--border2)}
+.card .head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:20px}
+.card .head .l{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink2);margin-bottom:8px}
+.card .head h2{font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:var(--ink);line-height:1.1}
+.card .head h2 .italic{font-family:'Playfair Display',serif;font-style:italic;font-weight:500;color:var(--copper)}
+
+.depth-layout{display:grid;grid-template-columns:200px 1fr;gap:36px;align-items:start}
+.grade-block{text-align:center;padding:20px;background:var(--card);border-radius:14px}
+.grade-block .grade{font-family:'Outfit',sans-serif;font-size:96px;font-weight:700;color:var(--ink);letter-spacing:-0.05em;line-height:0.9}
+.grade-block .grade .plus{font-size:56px;color:var(--copper)}
+.grade-block .composite{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);margin-top:6px;letter-spacing:0.04em}
+.grade-block .composite b{color:var(--ink);font-weight:500}
+.ai-sum{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--ink);line-height:1.65;border-left:3px solid var(--blue);padding-left:18px;margin-bottom:24px}
+.depth-bars .row{display:grid;grid-template-columns:160px 1fr 36px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.depth-bars .row:last-child{border-bottom:none}
+.depth-bars .n{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--ink)}
+.depth-bars .b{height:6px;background:var(--border);border-radius:4px;overflow:hidden;position:relative}
+.depth-bars .b .f{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--blue),#5AB5FF);border-radius:4px;width:0;animation:barfill 1.4s cubic-bezier(.2,.9,.3,1) .8s forwards}
+.depth-bars .b.cop .f{background:linear-gradient(90deg,var(--copper),#D98C5A)}
+.depth-bars .v{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink2);text-align:right}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.insight{background:#fff;border:1px solid var(--border);border-radius:14px;padding:26px 30px;transition:all .2s ease;animation:fadeUp .9s ease both}
+.insight:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.03)}
+.insight .l{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--copper);margin-bottom:10px}
+.insight h3{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.015em;color:var(--ink);line-height:1.2;margin-bottom:12px}
+.insight h3 .sub{display:block;font-family:'Inter',sans-serif;font-size:13px;font-weight:400;color:var(--ink2);margin-top:4px;letter-spacing:0}
+.insight p{font-size:14px;color:var(--ink);line-height:1.65;margin-bottom:12px}
+.insight .ev{font-family:'Playfair Display',serif;font-style:italic;font-size:14.5px;color:var(--ink);border-left:3px solid var(--copper);padding:4px 0 4px 16px;line-height:1.55;margin-top:14px}
+.insight .ev small{display:block;font-family:'Inter',sans-serif;font-style:normal;font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink2);margin-top:6px}
+.insight .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.insight .tag{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;color:var(--ink);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:4px 11px}
+
+.mirror{background:#fff;border:1px solid var(--border);border-radius:16px;padding:48px 56px;text-align:center;position:relative;overflow:hidden}
+.mirror::before,.mirror::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:60px;height:1px;background:var(--copper)}
+.mirror::before{top:28px}
+.mirror::after{bottom:28px}
+.mirror .l{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.24em;text-transform:uppercase;color:var(--copper);margin-bottom:26px}
+.mirror .q{font-family:'Playfair Display',serif;font-style:italic;font-size:36px;color:var(--ink);line-height:1.35;max-width:720px;margin:0 auto;letter-spacing:-0.01em}
+.mirror .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);margin-top:22px;letter-spacing:0.08em}
+
+.values{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.val{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px}
+.val .num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--copper);letter-spacing:0.12em;margin-bottom:10px}
+.val h4{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;margin-bottom:8px;line-height:1.2}
+.val p{font-size:12.5px;color:var(--ink2);line-height:1.55}
+
+.strengths{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:4px}
+.strength{background:#fff;border:1px solid var(--border);border-left:3px solid var(--copper);border-radius:14px;padding:26px 30px;transition:all .2s ease}
+.strength:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,0.04)}
+.strength .num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--copper);letter-spacing:0.14em;margin-bottom:12px}
+.strength h4{font-family:'Outfit',sans-serif;font-size:21px;font-weight:700;color:var(--ink);letter-spacing:-0.015em;margin-bottom:12px;line-height:1.15}
+.strength p{font-size:13.5px;color:var(--ink);line-height:1.6;margin-bottom:14px}
+.strength .ev{font-family:'Playfair Display',serif;font-style:italic;font-size:13px;color:var(--ink2);line-height:1.55;border-left:2px solid var(--copper-dim);padding-left:12px}
+.strength .tag{display:inline-block;margin-top:12px;font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--copper);background:var(--copper-soft);padding:4px 10px;border-radius:999px}
+
+.beliefs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.belief{padding:22px 26px;background:var(--card);border:1px solid var(--border);border-left:3px solid var(--copper);border-radius:14px}
+.belief .l{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--copper);margin-bottom:10px}
+.belief p{font-family:'Playfair Display',serif;font-style:italic;font-size:16px;color:var(--ink);line-height:1.55}
+
+.peaks{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.peak{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px 26px;position:relative}
+.peak::before{content:'';position:absolute;top:0;left:24px;width:32px;height:3px;background:var(--copper);border-radius:0 0 3px 3px}
+.peak .ph{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--copper);letter-spacing:0.12em;margin-bottom:10px;margin-top:6px}
+.peak h4{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;margin-bottom:10px;line-height:1.25}
+.peak .q{font-family:'Playfair Display',serif;font-style:italic;font-size:13px;color:var(--ink);line-height:1.55;margin-bottom:10px}
+.peak .intensity{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+.peak .intensity .b{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.peak .intensity .b .f{height:100%;background:var(--copper)}
+
+.brief-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:36px 44px}
+.brief-card .brief-grid{display:grid;grid-template-columns:160px 1fr;gap:22px 32px}
+.brief-card .brief-grid .k{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--copper);padding-top:4px}
+.brief-card .brief-grid .v{font-size:15px;color:var(--ink);line-height:1.65;border-bottom:1px solid var(--border);padding-bottom:22px}
+
+.transcript{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.transcript .t-head{padding:24px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.transcript .t-head .l{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink2)}
+.transcript .t-head h2{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.01em;margin-top:4px}
+.transcript .t-head .controls{display:flex;gap:6px}
+.transcript .t-head .controls button{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;color:var(--ink2);background:var(--card);border:1px solid var(--border);border-radius:999px;padding:6px 12px;cursor:pointer}
+.transcript .t-head .controls button.active{color:var(--ink);background:#fff;border-color:var(--ink3)}
+.t-body{padding:28px 32px 32px;max-height:620px;overflow-y:auto}
+.phase-divider{display:flex;align-items:center;gap:14px;margin:24px 0 18px}
+.phase-divider:first-child{margin-top:0}
+.phase-divider .line{flex:1;height:1px;background:var(--border)}
+.phase-divider .num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--copper);letter-spacing:0.14em}
+.msg{display:flex;margin-bottom:12px}
+.msg.user{justify-content:flex-end}
+.msg .bubble{max-width:78%;padding:13px 18px;border-radius:18px;font-size:14px;line-height:1.55}
+.msg.user .bubble{background:var(--copper);color:#fff;border-bottom-right-radius:6px}
+.msg.ai .bubble{background:var(--card);color:var(--ink);border-bottom-left-radius:6px;border:1px solid var(--border)}
+.msg.peak{position:relative}
+.msg.peak::after{content:'PEAK';position:absolute;top:-6px;right:0;font-family:'Outfit',sans-serif;font-size:8px;font-weight:700;letter-spacing:0.14em;color:var(--copper);background:#fff;padding:2px 8px;border:1px solid var(--copper);border-radius:999px}
+
+.skel-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:26px 30px;margin-bottom:14px;opacity:0.85}
+.skel-card .l{font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
+.skel-card .shimmer{height:24px;background:linear-gradient(90deg,var(--border) 0%,#F7F7F7 50%,var(--border) 100%);background-size:200% 100%;border-radius:6px;animation:shimmer 2s ease-in-out infinite}
+.skel-card .shimmer.s{width:65%;margin-bottom:8px}
+.skel-card .shimmer.m{width:100%;height:12px;margin-bottom:6px}
+.skel-card .shimmer.l{width:88%;height:12px}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+footer{max-width:1240px;margin:80px auto 0;padding:40px;text-align:center;font-family:'Playfair Display',serif;font-style:italic;color:var(--ink2);font-size:15px;border-top:1px solid var(--border)}
+
+@media(max-width:820px){
+.topnav{padding:0 16px;gap:12px;height:52px;overflow-x:auto}.topnav .brand{font-size:13px;white-space:nowrap}.topnav .nav-links{gap:2px;margin-left:8px}.topnav .nav-link{font-size:11px;padding:5px 10px;white-space:nowrap}.topnav .sep{display:none}.topnav .pill{font-size:10px;padding:5px 10px}.topnav .avatar{width:26px;height:26px;font-size:10px}
+.sovereign{padding:36px 20px 32px;grid-template-columns:1fr;gap:28px;text-align:center}.sov-left .eyebrow{font-size:10px;margin-bottom:14px}.sov-left h1{font-size:36px}.sov-left .role{font-size:14px;margin-bottom:18px}.sov-left .quote{font-size:18px;border-left:none;padding-left:0;text-align:center;margin:0 auto;border-top:1px solid var(--copper-dim);border-bottom:1px solid var(--copper-dim);padding:18px 0}.fit-ring{width:140px;height:140px;margin:0 auto}.fit-ring .pct{font-size:42px}.fit-ring .sub{font-size:9px}
+.meta-row{padding:0 20px 28px}.meta-grid{grid-template-columns:repeat(4,1fr);gap:12px 16px}.meta-item .v{font-size:18px}.meta-item .s{font-size:9px}
+.body{grid-template-columns:1fr;padding:28px 20px 64px;gap:20px}.rail{position:static;gap:14px}
+.live .kpi{grid-template-columns:repeat(4,1fr);gap:10px}.live .kpi .v{font-size:16px}
+.cf-row{grid-template-columns:1fr 80px 28px}
+.two-col{grid-template-columns:1fr;gap:14px}.insight{padding:22px 24px}.insight h3{font-size:19px}
+.depth-layout{grid-template-columns:1fr;gap:24px}.grade-block{display:flex;align-items:center;gap:20px;text-align:left;padding:16px 20px}.grade-block .grade{font-size:64px}
+.strengths{grid-template-columns:1fr}.mirror{padding:36px 24px}.mirror .q{font-size:24px}
+.values{grid-template-columns:1fr;gap:12px}.beliefs{grid-template-columns:1fr;gap:12px}
+.peaks{grid-template-columns:1fr;gap:14px}
+.pp-clarity{grid-template-columns:1fr}
+.brief-card{padding:24px 22px}.brief-card .brief-grid{grid-template-columns:1fr;gap:0}.brief-card .brief-grid .k{padding-top:18px;margin-bottom:6px}
+.transcript .t-head{padding:18px 20px;flex-direction:column;align-items:flex-start;gap:12px}.t-body{padding:20px;max-height:480px}.msg .bubble{max-width:88%;padding:11px 14px;font-size:13px;border-radius:16px}
+footer{padding:28px 20px;margin-top:48px;font-size:13px}
+}
+@media(max-width:480px){
+.topnav{height:48px;padding:0 12px}.topnav .nav-link{font-size:10px;padding:4px 8px}
+.sovereign{padding:28px 16px 24px}.sov-left h1{font-size:28px}.sov-left .quote{font-size:16px}.fit-ring{width:110px;height:110px}.fit-ring .pct{font-size:34px}
+.meta-row{padding:0 16px 20px}.meta-grid{grid-template-columns:repeat(3,1fr);gap:10px}.meta-item .v{font-size:16px}.meta-item:nth-child(n+7){display:none}
+.body{padding:20px 16px 56px;gap:16px}.card{padding:20px 18px}
+.strengths{grid-template-columns:1fr}.strength{padding:20px 22px}.strength h4{font-size:16px}
+.mirror{padding:28px 18px}.mirror .q{font-size:20px}
+.qa{grid-template-columns:1fr 1fr}
+.msg .bubble{max-width:92%;font-size:12.5px;padding:10px 12px}
+.live .kpi{grid-template-columns:repeat(2,1fr)}
+.pp-clarity{grid-template-columns:1fr}
+}
+
+.phase-progress{text-align:center;padding:20px}
+.phase-label{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:12px}
+.phase-bar{width:160px;height:8px;background:var(--border);border-radius:4px;margin:0 auto 10px;overflow:hidden}
+.phase-fill{height:100%;background:var(--copper);border-radius:4px;transition:width .3s ease}
+.phase-status{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);text-transform:uppercase;letter-spacing:0.08em}
+
+.session-picker{margin-top:12px}
+.session-picker select{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;min-width:280px}
+.session-picker select:hover{border-color:var(--ink3)}
+
+.qa button,.qa a{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;color:var(--ink);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 0;cursor:pointer;transition:all .15s ease;text-align:center;text-decoration:none;display:block}
+.qa button:hover,.qa a:hover{background:#fff;border-color:var(--ink3);transform:translateY(-1px)}
+.qa button.copper,.qa a.copper{background:var(--copper-soft);border-color:var(--copper-dim);color:var(--copper)}
+
+.pp-danger{background:var(--bg);border:1px solid #FFD4D4;border-radius:14px;padding:18px 22px}
+
+.em-row{display:grid;grid-template-columns:10px 1fr;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.em-row:last-child{border-bottom:none}
+.em-dot{width:8px;height:8px;border-radius:50%;background:var(--ink3)}
+.em-dot.g{background:var(--green)}
+.em-dot.b{background:var(--blue)}
+.em-dot.r{background:var(--red)}
+.em-info{min-width:0}
+.em-type{font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;color:var(--ink);line-height:1.3}
+.em-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2);margin-top:2px}
+.em-count{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.em-count .n{font-family:'Outfit',sans-serif;font-size:22px;font-weight:700;color:var(--ink)}
+.em-count .l{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+
+.action-bar{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 32px;display:flex;align-items:center;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.action-bar::-webkit-scrollbar{display:none}
+.action-bar .ab-group{display:flex;align-items:center;gap:8px}
+.action-bar .ab-sep{width:1px;height:20px;background:var(--border);margin:0 8px;flex-shrink:0}
+.action-bar .ab-btn{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;transition:all .15s ease;text-align:center;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1}
+.action-bar .ab-btn:hover{background:#fff;border-color:var(--ink3);transform:translateY(-1px)}
+.action-bar .ab-btn.copper{background:var(--copper-soft);border-color:var(--copper-dim);color:var(--copper)}
+.action-bar .ab-btn.copper:hover{background:#F5E6D8}
+.action-bar .ab-btn .ab-ico{font-size:13px;line-height:1}
+@media(max-width:820px){.action-bar{padding:10px 20px}}
+@media(max-width:480px){.action-bar{padding:8px 16px;gap:6px}.action-bar .ab-btn{padding:7px 10px;font-size:10px}}
+
+.adm-btn{display:inline-block;background:var(--ink);color:#fff;font-family:'Outfit',sans-serif;font-weight:600;font-size:12px;padding:7px 18px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;transition:all .15s ease}
+.adm-btn:hover{opacity:.85}
+.adm-btn-sm{padding:5px 14px;font-size:11px}
+.adm-btn-danger{background:#D93025}
+
+.pp-clarity{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.pp-ccard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;transition:border-color .15s}
+.pp-ccard:hover{border-color:var(--border2)}
+.pp-ccard .sc{font-family:'Outfit',sans-serif;font-size:36px;font-weight:700;letter-spacing:-0.03em;line-height:1}
+.pp-ccard .of{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink2);margin-bottom:8px}
+.pp-ccard .ti{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.pp-ccard .desc{font-size:12px;color:var(--ink2);line-height:1.5}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand"><span class="dot"></span>Deep Work Interview</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/admin">Dashboard</a>
+    <a class="nav-link" href="/admin">Interviews</a>
+    <a class="nav-link" href="/admin/analytics">Analytics</a>
+    <a class="nav-link" href="/admin/people">People</a>
+    <div class="sep"></div>
+    <a class="nav-link" href="/admin/health">Health</a>
+  </div>
+  <div class="right">
+    <a class="pill" href="/admin/settings">Settings</a>
+    <div class="avatar">JG</div>
+  </div>
+</nav>
+
+<header class="sovereign">
+  <div class="sov-left">
+    <div class="eyebrow">${escA(eyebrowText)}</div>
+    <h1>${escA(name)}</h1>
+    ${apolloTitle || apolloCompany ? '<div class="role">' + escA(apolloTitle) + (apolloCompany ? " at <b>" + escA(apolloCompany) + "</b>" : "") + (apolloLinkedin ? ' &middot; <a href="' + escA(apolloLinkedin) + '" target="_blank" style="color:var(--copper)">LinkedIn</a>' : "") + "</div>" : roleStr ? '<div class="role"><b>' + escA(roleStr) + "</b></div>" : ""}
+    ${mirrorQuote ? '<blockquote class="quote">' + escA(mirrorQuote) + '<span class="src">Mirror moment' + (mirrorPhase ? " \xB7 phase " + mirrorPhase : "") + "</span></blockquote>" : ""}
+    ${sessionPickerHTML}
+  </div>
+  ${sessionRow.blueprint_generated ? `
+  <div class="fit-ring">
+    <svg viewBox="0 0 200 200"><circle class="t" cx="100" cy="100" r="90"/><circle class="f" cx="100" cy="100" r="90"/></svg>
+    <div class="label">
+      <div class="pct">${fitScore}</div>
+      <div class="sub">${hasExtraction ? "Client Fit" : "Depth %"}</div>
+    </div>
+  </div>
+` : `
+  <div class="phase-progress">
+    <div class="phase-label">Phase ${sessionRow.phase || 1} of 8</div>
+    <div class="phase-bar"><div class="phase-fill" style="width:${(sessionRow.phase || 1) / 8 * 100}%"></div></div>
+    <div class="phase-status">${sessionRow.status === "active" ? "Interview in progress" : escA(sessionRow.status || "active")}</div>
+  </div>
+`}
+</header>
+
+<div class="meta-row">
+  <div class="meta-grid">
+    <div class="meta-item"><div class="k">Status</div><div class="v">${escA(statusText)}</div><div class="s">${completedTime ? completedTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase() + " \xB7 today" : ""}</div></div>
+    <div class="meta-item"><div class="k">Phase</div><div class="v">${sessionRow.phase || 1}<small>of 8</small></div><div class="s">${sessionRow.status === "completed" ? "no drop offs" : "in progress"}</div></div>
+    <div class="meta-item"><div class="k">Messages</div><div class="v">${kvMessages.length || sessionRow.message_count || 0}</div><div class="s">${duration ? duration + " elapsed" : ""}</div></div>
+    ${sessionRow.depth_grade ? '<div class="meta-item"><div class="k">Depth</div><div class="v">' + escA(sessionRow.depth_grade) + '</div><div class="s">' + (sessionRow.emotional_depth_score ? "composite " + sessionRow.emotional_depth_score : "") + "</div></div>" : ""}
+    ${resonance ? '<div class="meta-item"><div class="k">Resonance</div><div class="v">' + resonance + '</div><div class="s">' + (resonancePeakPhase || "") + "</div></div>" : ""}
+    <div class="meta-item"><div class="k">API Cost</div><div class="v">$${parseFloat(totalUserCost).toFixed(2)}</div></div>
+    <div class="meta-item"><div class="k">Sessions</div><div class="v">${sessionCount}</div><div class="s">${sessionCount > 1 ? "came back " + (sessionCount - 1) + "x" : "first session"}</div></div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <div class="ab-group">
+    ${magicLinkDirect ? `<button class="ab-btn" onclick="navigator.clipboard.writeText('` + escA(magicLinkDirect) + `');this.querySelector('.ab-lbl').textContent='Copied!';var b=this;setTimeout(function(){b.querySelector('.ab-lbl').textContent='Copy link'},2000)"><span class="ab-ico">\u{1F517}</span><span class="ab-lbl">Copy link</span></button>` : ""}
+    ${magicLinkDirect ? '<a class="ab-btn" href="' + escA(magicLinkDirect) + '" target="_blank"><span class="ab-ico">\u2197</span>Open their view</a>' : ""}
+  </div>
+  <div class="ab-sep"></div>
+  <div class="ab-group">
+    ${email ? `<button class="ab-btn" onclick="navigator.clipboard.writeText('` + escA(email) + `');this.querySelector('.ab-lbl').textContent='Copied!';var b=this;setTimeout(function(){b.querySelector('.ab-lbl').textContent='Copy email'},2000)"><span class="ab-ico">\u2709</span><span class="ab-lbl">Copy email</span></button>` : ""}
+  </div>
+  <div class="ab-sep"></div>
+  <div class="ab-group">
+    ${sessionRow.blueprint_generated ? '<a class="ab-btn copper" href="' + (env.APP_ORIGIN || "https://love.jamesguldan.com") + "/app?session=" + escA(sessionId) + '" target="_blank"><span class="ab-ico">\u{1F4C4}</span>Blueprint</a>' : ""}
+    ${(sessionRow.message_count || 0) > 5 ? '<a class="ab-btn" href="/admin/export/' + escA(sessionId) + '"><span class="ab-ico">\u{1F4E6}</span>Export</a>' : ""}
+    <a class="ab-btn" href="/admin/session/${escA(sessionId)}/transcript.txt" target="_blank"><span class="ab-ico">\u{1F4DD}</span>Transcript</a>
+  </div>
+  ${sessionRow.blueprint_generated && !hasLandscape ? '<div class="ab-sep"></div><div class="ab-group"><button class="ab-btn" onclick="backfillLandscape()"><span class="ab-ico">\u{1F3D4}</span>Backfill landscape</button></div>' : ""}
+</div>
+
+<div class="body">
+  <aside class="rail">
+
+    <!-- LIVE SESSION -->
+    <div class="live">
+      <div class="label" style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--blue);margin-bottom:14px;display:flex;align-items:center;gap:8px">Session \xB7 live read</div>
+      <div class="state"><div class="bubble">${escA(statusText.toUpperCase())}</div></div>
+      <div class="kpi">
+        <div><div class="k">Phase</div><div class="v">${sessionRow.phase || 1}<small>of 8</small></div></div>
+        <div><div class="k">Messages</div><div class="v">${kvMessages.length || sessionRow.message_count || 0}</div></div>
+        <div><div class="k">Duration</div><div class="v">${durationMin || "?"}<small>min</small></div></div>
+        <div><div class="k">Depth</div><div class="v">${escA(sessionRow.depth_grade || "\u2014")}</div></div>
+      </div>
+      <div class="stream">
+        <div class="head">Recent events</div>
+        ${recentEvents.map(function(e) {
+      var kCls = e.cls === "MSG" ? "k b" : "k";
+      return '<div class="evt"><div class="t">' + escA(e.time) + '</div><div class="e"><span class="' + kCls + '">' + escA(e.cls) + "</span>" + escA(e.label) + "</div></div>";
+    }).join("")}
+      </div>
+    </div>
+
+    ${hasExtraction ? `
+    <!-- COACHFIT -->
+    <div class="rail-card">
+      <div class="label"><span class="dot"></span>CoachFit</div>
+      ${coachfitHTML}
+    </div>
+` : ""}
+
+    ${hasExtraction || allRedFlags.length || allYellowFlags.length ? `
+    <!-- SIGNALS -->
+    <div class="rail-card">
+      <div class="label"><span class="dot"></span>Signals to watch</div>
+      ${signalsHTML}
+    </div>
+` : ""}
+
+    <!-- NEXT BEST ACTION -->
+    <div class="next">
+      <div class="label" style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--copper);margin-bottom:14px;display:flex;align-items:center;gap:8px"><span style="width:5px;height:5px;border-radius:50%;background:var(--copper);display:inline-block"></span>Next best action</div>
+      ${nextHTML}
+    </div>
+
+    <!-- RUN DEEP ANALYSIS -->
+    <div class="run" onclick="runDeepAnalysis()" id="run-cta">
+      <div class="top"><div class="bd"></div><div class="lbl">Deep analysis</div></div>
+      <div class="btn ${runBtnClass}" id="run-btn">${escA(runBtnText)}</div>
+      <div class="status" id="run-status">${runStatusHTML}</div>
+      <div class="meta">${runMetaHTML}</div>
+    </div>
+
+    ${sessionRow.blueprint_generated ? `
+    <!-- BLUEPRINT -->
+    <div class="rail-card bp">
+      <div class="label"><span class="dot"></span>Blueprint</div>
+      ${bpStatusHTML}
+      <div class="bp-preview" onclick="window.open('/admin/session/${escA(sessionId)}/blueprint-formatted','_blank')">
+        <div class="bp-thumb"><div class="bp-page"><div class="bp-h"></div><div class="bp-l w60"></div><div class="bp-l w90"></div><div class="bp-l w75"></div><div class="bp-l w45"></div><div class="bp-l w80"></div></div></div>
+        <div><div class="bp-name">${escA(name)}'s Blueprint</div><div class="bp-meta">${hasV3 ? "V3 fields present" : "Standard blueprint"}</div></div>
+      </div>
+      <div class="bp-actions">
+        <a class="bp-btn primary" href="/admin/session/${escA(sessionId)}/blueprint-formatted" target="_blank" style="text-decoration:none">View blueprint</a>
+        <button class="bp-btn" onclick="navigator.clipboard.writeText('${escA(magicLink)}');this.textContent='Copied!'">Copy link</button>
+      </div>
+    </div>
+` : ""}
+
+    <!-- PROFILE -->
+    <div class="rail-card">
+      <div class="label"><span class="dot"></span>Profile</div>
+      <div style="font-size:12px;line-height:1.8;color:var(--ink2)">
+        ${email ? '<div><b style="color:var(--ink)">Email</b> ' + escA(email) + "</div>" : ""}
+        ${fullUser?.phone ? '<div><b style="color:var(--ink)">Phone</b> ' + escA(fullUser.phone) + "</div>" : ""}
+        <div><b style="color:var(--ink)">Tier</b> ${escA(fullUser?.tier || "free")}</div>
+        <div><b style="color:var(--ink)">Member since</b> ${escA((fullUser?.created_at || "").slice(0, 10))}</div>
+        <div><b style="color:var(--ink)">Last login</b> ${timeSince(fullUser?.last_login)}</div>
+        <div><b style="color:var(--ink)">Sessions</b> ${allSessions.length}</div>
+        <div><b style="color:var(--ink)">API cost</b> $${parseFloat(totalUserCost).toFixed(2)}</div>
+      </div>
+      ${magicLinkDirect ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><div style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px">Magic Link</div><div style="display:flex;gap:6px"><input id="magic-url" type="text" readonly value="` + escA(magicLinkDirect) + `" onclick="navigator.clipboard.writeText(this.value);this.style.borderColor='#1E8E3E'" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:10px;font-family:'JetBrains Mono',monospace;background:var(--card);cursor:pointer;min-width:0;transition:border-color .2s" title="Click to copy" /><button class="adm-btn adm-btn-sm" onclick="copyMagicLink()">Copy</button></div></div>` : ""}
+    </div>
+
+    <!-- EMAILS -->
+    <div class="rail-card">
+      <div class="label"><span class="dot"></span>Emails</div>
+      ${emailLog.length ? '<div class="em-count"><div class="n">' + emailLog.length + '</div><div class="l">' + (emailLog.length === 1 ? "email sent" : "emails sent") + "</div></div>" : ""}
+      ${emailLogHTML}
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="pp-danger">
+      <div style="font-family:'Outfit',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--red);margin-bottom:10px">Danger zone</div>
+      <button class="adm-btn adm-btn-danger adm-btn-sm" onclick="deleteUser('${escA(userId)}','${escA(email)}')">Delete user</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="section-title">Interview depth</div>
+
+    <div class="card">
+      <div class="head">
+        <div>
+          <div class="l">How deep they actually went</div>
+          <h2>${sessionRow.depth_grade ? "A " + (sessionRow.depth_grade[0] === "A" ? "strong" : sessionRow.depth_grade[0] === "B" ? "solid" : "developing") + ' <span class="italic">' + escA(sessionRow.depth_grade) + "</span>" + (resonancePeakPhase ? " with a " + resonancePeakPhase + "." : ".") : "Depth assessment pending."}</h2>
+        </div>
+      </div>
+      <div class="depth-layout">
+        <div class="grade-block">
+          <div class="grade">${sessionRow.depth_grade ? escA(sessionRow.depth_grade).replace("+", '<span class="plus">+</span>').replace("-", '<span class="minus">\u2212</span>') : "\u2014"}</div>
+          <div class="composite">composite <b>${sessionRow.emotional_depth_score || "?"}</b> / 25</div>
+        </div>
+        <div>
+          ${depthAISummary ? '<div class="ai-sum">' + escA(depthAISummary) + "</div>" : hasExtraction ? "" : ""}
+          <div class="depth-bars">${depthBarsHTML}</div>
+        </div>
+      </div>
+    </div>
+
+    ${clarityHTML}
+
+    ${strengthsHTML ? `
+    <div class="section-title">At their best</div>
+    <div class="card">
+      <div class="head"><div><div class="l">The qualities worth remembering</div><h2>Who ${escA(name.split(" ")[0])} is <span class="italic">at their best.</span></h2></div></div>
+      <div class="strengths">${strengthsHTML}</div>
+    </div>` : ""}
+
+    ${hasPsychData ? `
+    <div class="section-title">Psychological profile</div>
+    ${attachmentHTML || loveLangHTML ? '<div class="two-col">' + (attachmentHTML || "<div></div>") + (loveLangHTML || "<div></div>") + "</div>" : ""}
+    ${coreWoundHTML || workStyleHTML ? '<div class="two-col">' + (coreWoundHTML || "<div></div>") + (workStyleHTML || "<div></div>") + "</div>" : ""}
+    ` : ""}
+
+    ${mirrorQuote ? `
+    <div class="section-title">The mirror moment</div>
+    <div class="mirror">
+      <div class="l">${mirrorPhase ? "Phase " + escA(String(mirrorPhase)) + " \xB7 Unprompted" : "Mirror moment"}</div>
+      <div class="q">${escA(mirrorQuote)}</div>
+      ${mirrorIntensity ? '<div class="meta">Emotional intensity ' + mirrorIntensity + "</div>" : ""}
+    </div>` : ""}
+
+    ${valuesHTML || beliefsHTML ? `
+    <div class="section-title">Values and beliefs</div>
+    ${valuesHTML ? '<div class="values">' + valuesHTML + "</div>" : ""}
+    ${beliefsHTML ? '<div class="beliefs">' + beliefsHTML + "</div>" : ""}
+    ` : ""}
+
+    ${peaksHTML ? `
+    <div class="section-title">Emotional peaks</div>
+    <div class="peaks">${peaksHTML}</div>
+    ` : ""}
+
+    ${briefHTML ? `
+    <div class="section-title">First call brief</div>
+    <div class="brief-card">${briefHTML}</div>
+    ` : ""}
+
+    ${!hasDeepData && sessionRow.blueprint_generated ? `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:32px 36px;margin-top:12px">
+      ${skelCard("Psychological profile")}
+      ${skelCard("Core wound")}
+      ${skelCard("Values and beliefs")}
+      <div style="margin-top:20px;background:linear-gradient(180deg,#1D1D1F 0%,#000 100%);border-radius:14px;padding:32px 40px;color:#fff;text-align:center;position:relative">
+        ${sessionRow.blueprint_generated ? `
+        <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--copper);margin-bottom:14px">Deep analysis \xB7 auto-extracting</div>
+        <h3 id="auto-extract-title" style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-0.02em">Running deep analysis...</h3>
+        <p id="auto-extract-status" style="color:#86868B;font-size:14px;margin-bottom:24px">Extracting psychological profile, values, beliefs, and coaching signals.</p>
+        <div id="auto-extract-btn" style="display:inline-block;background:var(--copper);color:#fff;padding:16px 36px;border-radius:999px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.02em;box-shadow:0 10px 30px rgba(196,112,63,0.3);animation:pulse 2s ease-in-out infinite">Extracting...</div>
+        <div style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#86868B">estimated cost ~$0.15 \xB7 30 seconds \xB7 claude-sonnet-4-6</div>
+        ` : `
+        <div style="font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--copper);margin-bottom:14px">Deep analysis \xB7 available after blueprint</div>
+        <h3 style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-0.02em;opacity:0.5">Complete the interview to unlock.</h3>
+        <p style="color:#86868B;font-size:14px;margin-bottom:24px">Attachment, love language, values, beliefs, core wound, work style, CoachFit, signals to watch, and emotional peaks.</p>
+        <div style="display:inline-block;background:var(--copper);color:#fff;padding:16px 36px;border-radius:999px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.02em;opacity:0.4;cursor:default">Available After Blueprint</div>
+        `}
+      </div>
+    </div>` : ""}
+
+    <div class="section-title">Full transcript</div>
+    <div class="transcript">
+      <div class="t-head">
+        <div>
+          <div class="l">Session ${escA(sessionId.slice(0, 24))}</div>
+          <h2>${kvMessages.length || sessionRow.message_count || 0} messages across ${sessionRow.phase || "?"} phases</h2>
+        </div>
+        <div class="controls">
+          <button class="active" onclick="filterTranscript('all',this)">All</button>
+          <button onclick="filterTranscript('peaks',this)">Peaks only</button>
+          <button onclick="filterTranscript('user',this)">User only</button>
+        </div>
+      </div>
+      <div class="t-body" id="t-body">
+        ${transcriptHTML}
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer>Deep Work Interview \xB7 The Operator \xB7 profile v1</footer>
+
+<script>
+// Auto-fire deep analysis on page load when blueprint is done but no extraction exists
+(function(){
+  var shouldAutoFire = ${sessionRow.blueprint_generated && !extraction ? "true" : "false"};
+  if (!shouldAutoFire) return;
+  var btn = document.getElementById('auto-extract-btn');
+  var title = document.getElementById('auto-extract-title');
+  var status = document.getElementById('auto-extract-status');
+  if (!btn) return;
+  fetch('/api/admin/operator-extract',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'${escA(sessionId)}'})})
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if(d.ok){
+      btn.textContent='Done! Reloading...';btn.style.animation='none';
+      title.textContent='Analysis complete.';
+      status.textContent='Reloading with full profile...';
+      setTimeout(function(){location.reload()},1500);
+    } else {
+      btn.textContent='Error';btn.style.animation='none';btn.style.background='var(--red)';
+      status.innerHTML='<span style="color:var(--red)">'+(d.error||'Extraction failed')+'</span>';
+    }
+  })
+  .catch(function(e){
+    btn.textContent='Error';btn.style.animation='none';btn.style.background='var(--red)';
+    status.innerHTML='<span style="color:var(--red)">'+e.message+'</span>';
+  });
+})();
+function filterTranscript(mode,btn){
+  document.querySelectorAll('.controls button').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  var msgs=document.querySelectorAll('#t-body .msg');
+  var dividers=document.querySelectorAll('#t-body .phase-divider');
+  msgs.forEach(function(m){
+    if(mode==='all'){m.style.display='flex';}
+    else if(mode==='peaks'){m.style.display=m.classList.contains('peak')?'flex':'none';}
+    else if(mode==='user'){m.style.display=m.classList.contains('user')?'flex':'none';}
+  });
+  dividers.forEach(function(d){d.style.display=mode==='all'?'flex':'none';});
+}
+function copyMagicLink(){
+  var el=document.getElementById('magic-url');
+  if(el){navigator.clipboard.writeText(el.value);el.style.borderColor='#1E8E3E';setTimeout(function(){el.style.borderColor=''},2000);}
+}
+function backfillLandscape(){
+  if(!confirm('Backfill landscape data for this session?'))return;
+  fetch('/api/admin/backfill-landscape',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'${escA(sessionId)}'})})
+  .then(function(r){return r.json()}).then(function(d){alert(d.ok?'Done! Reload to see.':'Error: '+(d.error||'Unknown'));});
+}
+function deleteUser(uid,em){
+  if(!confirm('Delete '+em+'? This cannot be undone.'))return;
+  if(!confirm('Are you absolutely sure? All sessions and data for '+em+' will be permanently deleted.'))return;
+  if(!confirm('FINAL WARNING: Deleting '+em+'. This is irreversible.'))return;
+  fetch('/api/admin/users?userId='+uid,{method:'DELETE'}).then(function(r){return r.json()}).then(function(d){if(d.ok){alert('Deleted.');window.location.href='/admin/people';}else{alert('Error: '+(d.error||'Unknown'));}});
+}
+<\/script>
+</body>
+</html>`;
+    return new Response(html, { headers: { "Content-Type": "text/html;charset=UTF-8" } });
+  } catch (e) {
+    console.error("[Operator] Error:", e.message, e.stack);
+    return new Response("Error: " + e.message, { status: 500, headers: { "Content-Type": "text/plain" } });
+  }
+}
+__name(handleAdminOperatorProfile, "handleAdminOperatorProfile");
+async function handleAdminOperatorExtract(request, env) {
+  var admin = await requireAdmin(request, env);
+  if (!admin) return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), { status: 403, headers: { "Content-Type": "application/json" } });
+  try {
+    var body = await request.json();
+    var sessionId = body.sessionId;
+    if (!sessionId) return new Response(JSON.stringify({ ok: false, error: "Missing sessionId" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    var sessionRow = await env.DB.prepare("SELECT s.*, u.name as user_name, u.email as user_email FROM sessions s LEFT JOIN users u ON s.user_id=u.id WHERE s.id=?").bind(sessionId).first();
+    if (!sessionRow) return new Response(JSON.stringify({ ok: false, error: "Session not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+    var kvMessages = [];
+    try {
+      var sessRaw = await env.SESSIONS.get(sessionId);
+      if (sessRaw) {
+        var kvSession = JSON.parse(sessRaw);
+        if (Array.isArray(kvSession.messages)) kvMessages = kvSession.messages;
+      }
+    } catch (_) {
+    }
+    if (kvMessages.length < 5) return new Response(JSON.stringify({ ok: false, error: "Not enough messages for extraction" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    var transcript = kvMessages.map(function(m, i) {
+      var content = m.content;
+      if (Array.isArray(content)) content = content.map(function(c) {
+        return typeof c === "object" ? c.text || "" : c;
+      }).join(" ");
+      content = String(content || "").replace(/\s*METADATA:\{[^}]*\}/g, "").trim();
+      return (m.role === "user" ? "USER" : "INTERVIEWER") + ": " + content;
+    }).join("\n\n");
+    if (transcript.length > 8e4) transcript = transcript.slice(0, 8e4) + "\n\n[transcript truncated]";
+    var clientName = sessionRow.name || sessionRow.user_name || "the client";
+    var systemPrompt = `You are a master executive coach and depth psychologist analyzing a Deep Work Interview transcript. Extract a comprehensive psychological and coaching profile.
+
+The interview subject is ${clientName}. Analyze the full transcript and return a JSON object with these exact fields. Be specific, use evidence from the transcript, and write in a warm but precise editorial voice. All text should be written as if describing the person to their future coach.
+
+Return ONLY valid JSON with this structure:
+{
+  "coachfit": {
+    "coachable": <0-100>,
+    "kind": <0-100>,
+    "committed_to_purpose": <0-100>,
+    "committed_to_work": <0-100>,
+    "ready_to_build": <0-100>,
+    "respects_complementary": <0-100>,
+    "secure_attachment": <0-100>,
+    "safe_non_reactive": <0-100>,
+    "composite": <0-100 weighted average>
+  },
+  "signals": [
+    {"text": "signal name", "detail": "phase and context", "severity": "amber|red|green", "count": <int>}
+  ],
+  "next_best_action": {"title": "one sentence action", "why": "2-3 sentence rationale"},
+  "strengths": [
+    {"title": "short title", "body": "2-3 sentences", "evidence": "direct quote from transcript", "tag": "2-word label"}
+  ],
+  "attachment": {"style": "primary style", "detail": "softening direction", "body": "2-3 sentences", "evidence": "quote with phase ref", "tags": ["tag1","tag2"]},
+  "love_language": {"primary": "primary language", "secondary": "secondary", "body": "2-3 sentences", "evidence": "quote", "tags": ["tag1","tag2"]},
+  "core_wound": {"title": "one sentence", "body": "2-3 sentences about the wound pattern", "evidence": "quote with phase ref", "tags": ["tag1","tag2","tag3"]},
+  "work_style": {"triad": ["word1","word2","word3"], "body": "2-3 sentences", "evidence": "quote"},
+  "mirror_moment": {"quote": "the exact mirror moment quote", "phase": <phase number>, "intensity": <0-100>},
+  "values": [{"title": "value name", "body": "1-2 sentences"}],
+  "beliefs": {"operating": "one sentence belief", "contrarian": "one sentence contrarian belief"},
+  "emotional_peaks": [{"phase": <int>, "intensity": <0-100>, "title": "short title", "quote": "key quote"}],
+  "sales_brief": {
+    "who_she_is": "2-3 sentences",
+    "what_she_needs": "2-3 sentences",
+    "what_to_say": "2-3 sentences coaching the caller",
+    "what_to_avoid": "2-3 sentences",
+    "close_posture": "2-3 sentences"
+  },
+  "ai_summary": "3-4 sentence editorial summary of the interview depth and quality"
+}
+
+Provide 3-4 strengths, 3 values, 2-4 signals, and 3 emotional peaks. Be specific and grounded in evidence.`;
+    var startTime = Date.now();
+    var result = await callClaude(env, systemPrompt, [{ role: "user", content: "Here is the full interview transcript:\n\n" + transcript }], false, 4096);
+    var elapsed = Date.now() - startTime;
+    if (!result) return new Response(JSON.stringify({ ok: false, error: "Claude returned empty response" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    var jsonStr = result;
+    var jsonMatch = result.match(/```json?\s*([\s\S]*?)```/);
+    if (jsonMatch) jsonStr = jsonMatch[1];
+    jsonStr = jsonStr.trim();
+    var extraction;
+    try {
+      extraction = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      return new Response(JSON.stringify({ ok: false, error: "Failed to parse extraction JSON: " + parseErr.message, raw: result.slice(0, 500) }), { status: 500, headers: { "Content-Type": "application/json" } });
+    }
+    extraction.extracted_at = (/* @__PURE__ */ new Date()).toISOString();
+    extraction.model = "claude-sonnet-4-6";
+    extraction.cost_usd = 0.15;
+    extraction.session_id = sessionId;
+    extraction.elapsed_ms = elapsed;
+    await env.SESSIONS.put("operator_extraction:" + sessionId, JSON.stringify(extraction), { expirationTtl: 86400 * 365 });
+    try {
+      await env.DB.prepare("INSERT INTO api_costs (id, session_id, model, input_tokens, output_tokens, cost_usd, purpose, created_at) VALUES (?, ?, ?, 0, 0, ?, 'operator_extraction', datetime('now'))").bind(
+        "ext_" + sessionId.slice(0, 20) + "_" + Date.now(),
+        sessionId,
+        "claude-sonnet-4-6",
+        extraction.cost_usd
+      ).run();
+    } catch (_) {
+    }
+    return new Response(JSON.stringify({ ok: true, extracted_at: extraction.extracted_at, elapsed_ms: elapsed }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    console.error("[OperatorExtract] Error:", e.message, e.stack);
+    return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+__name(handleAdminOperatorExtract, "handleAdminOperatorExtract");
 async function handleAdminExportSession(request, env, path) {
   var admin = await requireAdmin(request, env);
   if (!admin) return new Response("Forbidden", { status: 403 });
@@ -22700,6 +25209,8 @@ async function routeRequest(request, env, ctx) {
       return handleRoot(request, env);
     if (path === "/app")
       return handleApp(request, env);
+    if (path.match(/^\/blueprint\/[^/]+/) && request.method === "GET")
+      return handleBlueprintPage(request, env, path);
     if (path === "/admin" || path === "/admin/")
       return handleAdminDashboard(request, env);
     if (path.match(/^\/admin\/session\/[^/]+\/transcript\.txt$/) && request.method === "GET")
@@ -22714,6 +25225,10 @@ async function routeRequest(request, env, ctx) {
       return handleAdminPeople(request, env);
     if (path.startsWith("/admin/people/") && path !== "/admin/people")
       return handleAdminPersonProfile(request, env, path);
+    if (path.startsWith("/admin/operator/") && path !== "/admin/operator" && request.method === "GET")
+      return handleAdminOperatorProfile(request, env, path);
+    if (path === "/api/admin/operator-extract" && request.method === "POST")
+      return handleAdminOperatorExtract(request, env);
     if (path.startsWith("/admin/session/") && request.method === "GET")
       return handleAdminSessionDetail(request, env, path);
     if (path.startsWith("/admin/export/") && !path.includes("export-all") && request.method === "GET")
@@ -22855,6 +25370,8 @@ async function routeRequest(request, env, ctx) {
       return handleCheckout(request, env);
     if (path === "/api/webhook" && request.method === "POST")
       return handleWebhook(request, env);
+    if (path === "/api/webhook/resend" && request.method === "POST")
+      return handleResendWebhook(request, env);
     if (path === "/api/admin/stats" && request.method === "GET")
       return handleAdminStats(request, env);
     if (path === "/api/admin/users" && request.method === "GET")
@@ -22881,6 +25398,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminForceGenerateBlueprint(request, env);
     if (path === "/api/admin/generate-v3-fields" && request.method === "POST")
       return handleAdminGenerateV3Fields(request, env);
+    if (path === "/api/admin/list-blueprints" && request.method === "GET")
+      return handleAdminListBlueprints(request, env);
     if (path === "/api/admin/backfill-landscape" && request.method === "POST")
       return handleAdminBackfillLandscape(request, env);
     if (path === "/api/internal/generate-blueprint" && request.method === "POST")
@@ -22935,6 +25454,8 @@ async function routeRequest(request, env, ctx) {
       return handleAdminPeopleSearch(request, env);
     if (path.startsWith("/api/admin/people/") && path.endsWith("/detail") && request.method === "GET")
       return handleAdminPersonDetail(request, env, path);
+    if (path === "/api/admin/email-analytics" && request.method === "GET")
+      return handleAdminEmailAnalytics(request, env);
     return new Response(getErrorPageHTML(404, "Page Not Found", ERROR_PAGES[404].message), {
       status: 404,
       headers: htmlHeaders()
@@ -22998,3 +25519,4 @@ export {
   src_default as default
 };
 
+--da68b85cdaa6d6c0227a4968f68aa0aad2549d308238d2ee6c812480c540--
