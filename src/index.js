@@ -20184,7 +20184,7 @@ async function loadBlueprintForSession(env, sessionId) {
         // Always re-derive name from blueprint fields so cached sessions get the correct name
         if (!meta.name) {
           const _bp = meta.blueprint;
-          meta.name = _bp.name || _bp.brandFoundation?.brandName || (_bp.personalLetter?.salutation ? _bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || _bp.debrief?.recipientName || "";
+          meta.name = _bp.name || (_bp.personalLetter?.salutation ? _bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || _bp.debrief?.recipientName || _bp.brandFoundation?.brandName || "";
         }
         return meta;
       }
@@ -20198,7 +20198,7 @@ async function loadBlueprintForSession(env, sessionId) {
   if (!bp) return null;
   return {
     blueprint: bp,
-    name: bp.name || bp.brandFoundation?.brandName || (bp.personalLetter?.salutation ? bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || bp.debrief?.recipientName || session.name || session.userName || "",
+    name: bp.name || (bp.personalLetter?.salutation ? bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || bp.debrief?.recipientName || session.name || session.userName || bp.brandFoundation?.brandName || "",
     apolloData: session.apolloData || null,
     messageCount: Array.isArray(session.messages) ? session.messages.length : 0
   };
@@ -20589,7 +20589,7 @@ async function handleTestimonialCapture(request, env) {
     const session = raw ? JSON.parse(raw) : {};
     const bp = session.blueprint?.blueprint || session.blueprint || {};
     const leadIntel = bp.leadIntel || {};
-    const name = bp.name || bp.brandFoundation?.brandName || (bp.personalLetter?.salutation ? bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || bp.debrief?.recipientName || session.name || "Deep Work User";
+    const name = bp.name || (bp.personalLetter?.salutation ? bp.personalLetter.salutation.replace(/[,!.]+$/, "").trim() : "") || bp.debrief?.recipientName || session.name || bp.brandFoundation?.brandName || "Deep Work User";
     const email = session.email || "";
     const industry = leadIntel.industry || "";
     const title = leadIntel.title || "";
