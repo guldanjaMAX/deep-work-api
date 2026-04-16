@@ -1,6 +1,3 @@
---da68b85cdaa6d6c0227a4968f68aa0aad2549d308238d2ee6c812480c540
-Content-Disposition: form-data; name="index.js"
-
 // src/index.js
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -14641,7 +14638,7 @@ async function handleSessionStart(request, env, ctx) {
   ];
   const firstMessage = await callClaude(env, systemWithContext, openingMessages, false);
   const cleanFirst = stripMetadata(firstMessage);
-  const CONSENT_NOTICE = "Quick note before we begin: this session is conducted by an AI trained on James\u2019s methodology. Everything you share is used solely to build your brand blueprint \u2014 nothing is sold or shared. By continuing you agree to the Privacy Policy and Terms of Service at love.jamesguldan.com/privacy and love.jamesguldan.com/terms.\n\n";
+  const CONSENT_NOTICE = "Quick note before we begin: this session is conducted by an AI trained on James\u2019s methodology. Everything you share is used solely to build your brand blueprint \u2014 nothing is sold or shared. By continuing you agree to the Privacy Policy and Terms of Service at love.jamesguldan.com/privacy and love.jamesguldan.com/terms." + "\n\n";
   const firstMessageWithConsent = CONSENT_NOTICE + cleanFirst;
   session.messages = [
     { role: "user", content: "Start the interview." },
@@ -19787,6 +19784,7 @@ try {
       ${closingParas}
     </div>
     <div class="closing-signoff reveal">${esc2(letterSignoff)}</div>
+
   </div>
 </section>
 
@@ -25518,5 +25516,3 @@ var src_default = {
 export {
   src_default as default
 };
-
---da68b85cdaa6d6c0227a4968f68aa0aad2549d308238d2ee6c812480c540--
