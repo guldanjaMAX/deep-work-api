@@ -14636,7 +14636,7 @@ async function handleSessionStart(request, env, ctx) {
   const openingMessages = [
     { role: "user", content: "Start the interview. Introduce yourself briefly and ask your first question for Phase 1." }
   ];
-  const firstMessageWithConsent = "Hey, welcome. Before we dive in, quick thing: I\u2019m an AI James built to guide you through the Deep Work Interview. Everything you share stays between us. It\u2019s used only to build your blueprint, and James\u2019s team may review it so they can follow up with you. Nothing gets sold, nothing gets shared anywhere else. When you reply, you\u2019re agreeing to the Privacy Policy and Terms at love.jamesguldan.com/privacy and love.jamesguldan.com/terms.\n\nSound good? Let\u2019s start simple. What\u2019s your first name?";
+  const firstMessageWithConsent = "Hey, welcome to the Deep Work Interview. I\u2019m the AI James built to walk you through it.\n\nQuick thing before we start: everything you share stays between us. It\u2019s used to build your blueprint, and James\u2019s team may review it so they can follow up. Nothing gets sold, nothing gets shared anywhere else. Replying means you\u2019re good with our Privacy Policy and Terms at love.jamesguldan.com/privacy and love.jamesguldan.com/terms.\n\nLet\u2019s start easy. What\u2019s your first name?";
   session.messages = [
     { role: "user", content: "Start the interview." },
     { role: "assistant", content: firstMessageWithConsent }
